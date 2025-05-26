@@ -1,0 +1,11 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\Sever",
+    "\\Sever\\Sever",
+    "\\Sever\\Sever\\Sever",
+    "\\Sever\\Sever\\Sever\\Migrations"
+  ],
+  "SelectedNode": "\\Sever\\Sever\\Sever\\Migrations\\DataContextModelSnapshot.cs",
+  "PreviewInSolutionExplorer": false
+}

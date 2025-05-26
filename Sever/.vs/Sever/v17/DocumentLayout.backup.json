@@ -1,0 +1,637 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\migrations\\datacontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\migrations\\datacontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250526023106_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Sever\\Migrations\\20250526023106_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\context\\datacontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\context\\datacontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\files.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\files.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\eventtype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\eventtype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\studentprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\studentprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\schoolinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\schoolinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\policyandterm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\policyandterm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\vaccine.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\vaccine.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\vaccinationrecord.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\vaccinationrecord.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\notify.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\notify.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\news.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\news.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\medicine.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\medicine.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\medicalevent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\medicalevent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\healthprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\healthprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\healthcheckup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\healthcheckup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\form.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\form.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\configsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\configsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\model\\appointment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\model\\appointment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250526022234_UpdateUser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Sever\\Migrations\\20250526022234_UpdateUser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525142324_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Sever\\Migrations\\20250525142324_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525142046_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Sever\\Migrations\\20250525142046_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141904_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Sever\\Migrations\\20250525141904_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141612_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Sever\\Migrations\\20250525141612_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141557_SchoolMedicalManagement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Sever\\Migrations\\20250525141557_SchoolMedicalManagement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141542_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Sever\\Migrations\\20250525141542_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141039_SchoolMedicalManagement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Sever\\Migrations\\20250525141039_SchoolMedicalManagement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\controllers\\weatherforecastcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\controllers\\weatherforecastcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\sever.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\sever.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\sever.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\sever.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\sever.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\sever.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|d:\\fptu\\semester_5\\swp391\\project\\sever\\sever\\sever\\weatherforecast.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AA3A335D-E449-4364-88FD-0739A2F7BFF6}|Sever\\Sever.csproj|solutionrelative:sever\\weatherforecast.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 138,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "DataContextModelSnapshot.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\DataContextModelSnapshot.cs",
+              "RelativeDocumentMoniker": "Sever\\Migrations\\DataContextModelSnapshot.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\DataContextModelSnapshot.cs",
+              "RelativeToolTip": "Sever\\Migrations\\DataContextModelSnapshot.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAABFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-26T02:32:38.651Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "20250526023106_init.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250526023106_init.cs",
+              "RelativeDocumentMoniker": "Sever\\Migrations\\20250526023106_init.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250526023106_init.cs",
+              "RelativeToolTip": "Sever\\Migrations\\20250526023106_init.cs",
+              "ViewState": "AgIAAGQAAAAAAAAAAAAgwEMAAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-26T02:31:06.251Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "20250526022234_UpdateUser.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250526022234_UpdateUser.cs",
+              "RelativeDocumentMoniker": "Sever\\Migrations\\20250526022234_UpdateUser.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250526022234_UpdateUser.cs",
+              "RelativeToolTip": "Sever\\Migrations\\20250526022234_UpdateUser.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-26T02:22:34.268Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "20250525142324_init.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525142324_init.cs",
+              "RelativeDocumentMoniker": "Sever\\Migrations\\20250525142324_init.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525142324_init.cs",
+              "RelativeToolTip": "Sever\\Migrations\\20250525142324_init.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T14:23:24.673Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "20250525142046_init.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525142046_init.cs",
+              "RelativeDocumentMoniker": "Sever\\Migrations\\20250525142046_init.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525142046_init.cs",
+              "RelativeToolTip": "Sever\\Migrations\\20250525142046_init.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T14:20:46.849Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "20250525141904_init.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141904_init.cs",
+              "RelativeDocumentMoniker": "Sever\\Migrations\\20250525141904_init.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141904_init.cs",
+              "RelativeToolTip": "Sever\\Migrations\\20250525141904_init.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T14:19:05.073Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "20250525141612_init.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141612_init.cs",
+              "RelativeDocumentMoniker": "Sever\\Migrations\\20250525141612_init.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141612_init.cs",
+              "RelativeToolTip": "Sever\\Migrations\\20250525141612_init.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T14:16:12.947Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "20250525141557_SchoolMedicalManagement.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141557_SchoolMedicalManagement.cs",
+              "RelativeDocumentMoniker": "Sever\\Migrations\\20250525141557_SchoolMedicalManagement.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141557_SchoolMedicalManagement.cs",
+              "RelativeToolTip": "Sever\\Migrations\\20250525141557_SchoolMedicalManagement.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T14:15:57.631Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "20250525141542_init.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141542_init.cs",
+              "RelativeDocumentMoniker": "Sever\\Migrations\\20250525141542_init.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141542_init.cs",
+              "RelativeToolTip": "Sever\\Migrations\\20250525141542_init.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T14:15:42.685Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "20250525141039_SchoolMedicalManagement.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141039_SchoolMedicalManagement.cs",
+              "RelativeDocumentMoniker": "Sever\\Migrations\\20250525141039_SchoolMedicalManagement.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Migrations\\20250525141039_SchoolMedicalManagement.cs",
+              "RelativeToolTip": "Sever\\Migrations\\20250525141039_SchoolMedicalManagement.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T14:10:39.723Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Notify.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\Notify.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\Notify.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\Notify.cs",
+              "RelativeToolTip": "Sever\\Model\\Notify.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T13:26:22.761Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "Appointment.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\Appointment.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\Appointment.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\Appointment.cs",
+              "RelativeToolTip": "Sever\\Model\\Appointment.cs",
+              "ViewState": "AgIAAAIAAAAAAAAAAAAUwBoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T13:11:43.568Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "HealthCheckUp.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\HealthCheckUp.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\HealthCheckUp.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\HealthCheckUp.cs",
+              "RelativeToolTip": "Sever\\Model\\HealthCheckUp.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAkAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T13:05:44.904Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Medicine.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\Medicine.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\Medicine.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\Medicine.cs",
+              "RelativeToolTip": "Sever\\Model\\Medicine.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T12:59:30.12Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "VaccinationRecord.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\VaccinationRecord.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\VaccinationRecord.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\VaccinationRecord.cs",
+              "RelativeToolTip": "Sever\\Model\\VaccinationRecord.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T12:51:37.072Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "MedicalEvent.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\MedicalEvent.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\MedicalEvent.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\MedicalEvent.cs",
+              "RelativeToolTip": "Sever\\Model\\MedicalEvent.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAqwBcAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T12:35:53.431Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Files.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\Files.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\Files.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\Files.cs",
+              "RelativeToolTip": "Sever\\Model\\Files.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAzAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T12:33:51.274Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "PolicyAndTerm.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\PolicyAndTerm.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\PolicyAndTerm.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\PolicyAndTerm.cs",
+              "RelativeToolTip": "Sever\\Model\\PolicyAndTerm.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T10:26:23.433Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "HealthProfile.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\HealthProfile.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\HealthProfile.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\HealthProfile.cs",
+              "RelativeToolTip": "Sever\\Model\\HealthProfile.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAA8AAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T10:16:06.893Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Vaccine.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\Vaccine.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\Vaccine.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\Vaccine.cs",
+              "RelativeToolTip": "Sever\\Model\\Vaccine.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T10:14:55.684Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "News.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\News.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\News.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\News.cs",
+              "RelativeToolTip": "Sever\\Model\\News.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T10:00:30.736Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "ConfigSystem.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\ConfigSystem.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\ConfigSystem.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\ConfigSystem.cs",
+              "RelativeToolTip": "Sever\\Model\\ConfigSystem.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T09:58:22.237Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "Form.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\Form.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\Form.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\Form.cs",
+              "RelativeToolTip": "Sever\\Model\\Form.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T09:56:28.084Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "SchoolInfo.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\SchoolInfo.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\SchoolInfo.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\SchoolInfo.cs",
+              "RelativeToolTip": "Sever\\Model\\SchoolInfo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T09:52:08.948Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "EventType.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\EventType.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\EventType.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\EventType.cs",
+              "RelativeToolTip": "Sever\\Model\\EventType.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T09:50:56.56Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "StudentProfile.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\StudentProfile.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\StudentProfile.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\StudentProfile.cs",
+              "RelativeToolTip": "Sever\\Model\\StudentProfile.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAxwBgAAAA6AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T09:42:43.505Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "DataContext.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Context\\DataContext.cs",
+              "RelativeDocumentMoniker": "Sever\\Context\\DataContext.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Context\\DataContext.cs",
+              "RelativeToolTip": "Sever\\Context\\DataContext.cs",
+              "ViewState": "AgIAAGcAAAAAAAAAAAAwwIoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T09:26:08.352Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Role.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\Role.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\Role.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\Role.cs",
+              "RelativeToolTip": "Sever\\Model\\Role.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAkAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T09:01:01.246Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "User.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\User.cs",
+              "RelativeDocumentMoniker": "Sever\\Model\\User.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Model\\User.cs",
+              "RelativeToolTip": "Sever\\Model\\User.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAwAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T08:59:17.205Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "Sever.http",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Sever.http",
+              "RelativeDocumentMoniker": "Sever\\Sever.http",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Sever.http",
+              "RelativeToolTip": "Sever\\Sever.http",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
+              "WhenOpened": "2025-05-25T08:43:51.249Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\appsettings.json",
+              "RelativeDocumentMoniker": "Sever\\appsettings.json",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\appsettings.json",
+              "RelativeToolTip": "Sever\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAABNAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-05-25T08:39:51.025Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "Sever\\Properties\\launchSettings.json",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Properties\\launchSettings.json",
+              "RelativeToolTip": "Sever\\Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-05-25T08:17:54.838Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "WeatherForecast.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\WeatherForecast.cs",
+              "RelativeDocumentMoniker": "Sever\\WeatherForecast.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\WeatherForecast.cs",
+              "RelativeToolTip": "Sever\\WeatherForecast.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T08:02:37.234Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "WeatherForecastController.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Controllers\\WeatherForecastController.cs",
+              "RelativeDocumentMoniker": "Sever\\Controllers\\WeatherForecastController.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Controllers\\WeatherForecastController.cs",
+              "RelativeToolTip": "Sever\\Controllers\\WeatherForecastController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T08:02:33.389Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Program.cs",
+              "RelativeDocumentMoniker": "Sever\\Program.cs",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Program.cs",
+              "RelativeToolTip": "Sever\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-25T07:48:19.644Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "Sever",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Sever.csproj",
+              "RelativeDocumentMoniker": "Sever\\Sever.csproj",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Sever.csproj",
+              "RelativeToolTip": "Sever\\Sever.csproj",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-05-25T07:39:47.901Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "Sever.csproj",
+              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Sever.csproj",
+              "RelativeDocumentMoniker": "Sever\\Sever.csproj",
+              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Sever\\Sever\\Sever\\Sever.csproj",
+              "RelativeToolTip": "Sever\\Sever.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-05-25T07:34:13.088Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

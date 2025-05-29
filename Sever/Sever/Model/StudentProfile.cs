@@ -18,11 +18,10 @@ namespace Sever.Model
         [ForeignKey("ParentID")]
         public User Parent { get; set; }
         public List<HealthProfile> HealthProfiles { get; set; } 
-        public List<MedicalEvent> MedicalEvent { get; set; }
         public List<VaccinationRecord> VaccinationRecord { get; set; }
-        public List<Medicine> Medicine {  get; set; }
-        public List<HealthCheckUp> HealthCheckUp { get; set; }
-        public List<Appointment> Appointment { get; set; }
+        //public List<HealthCheckUp> HealthCheckUp { get; set; }
+        public List<MedicalEventDetail> MedicalEventDetail { get; set; }
+
     }
 
 }

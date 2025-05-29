@@ -14,6 +14,10 @@ namespace Sever.Model
         [ForeignKey("MedicalEventID")]
         public MedicalEvent MedicalEvent { get; set; }
         public string? NewsID { get; set; }
+        [ForeignKey("NewsID")]
         public News News { get; set; }
+        public string SchoolID { get; set; }
+        [ForeignKey("SchoolID")]
+        public SchoolInfo SchoolInfo { get; set; }
     }
 }

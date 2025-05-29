@@ -17,9 +17,7 @@ namespace Sever.Model
         public string? VisionRight { get; set; }
         public string? ToothDecay { get; set; }
         public string? OtheHealthIssues { get; set; }
-        [Required]
         public string StudentID { get; set; }
-
         [ForeignKey("StudentID")]
         public StudentProfile Student { get; set; }
 

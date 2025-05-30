@@ -1,4 +1,4 @@
-﻿namespace Sever.Model
+﻿namespace Sever.DTO
 {
     public class LoginRequest
     {

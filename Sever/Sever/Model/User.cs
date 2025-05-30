@@ -14,7 +14,7 @@ namespace Sever.Model
         public string? Name { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
-        public int RoleID { get; set; }
+        public string RoleID { get; set; }
         [ForeignKey("RoleID")]
         public Role Role { get; set; }
         public List<StudentProfile> StudentProfile { get; set; }

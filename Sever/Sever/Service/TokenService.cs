@@ -20,11 +20,11 @@ namespace Sever.Service
                 new Claim(ClaimTypes.Name, username) 
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SecertKey"]!));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SecretKey"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                expires: DateTime.UtcNow.AddMinutes(15),
+                expires: DateTime.UtcNow.AddDays(7),
                 claims: claims,
                 signingCredentials: creds
             );

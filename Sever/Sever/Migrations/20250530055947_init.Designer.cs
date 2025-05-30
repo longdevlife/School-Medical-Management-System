@@ -12,7 +12,7 @@ using Sever.Context;
 namespace Sever.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250529091249_init")]
+    [Migration("20250530055947_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -483,11 +483,8 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.Role", b =>
                 {
-                    b.Property<int>("RoleID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RoleID"));
+                    b.Property<string>("RoleID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RoleName")
                         .IsRequired()
@@ -589,8 +586,9 @@ namespace Sever.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoleID")
-                        .HasColumnType("int");
+                    b.Property<string>("RoleID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UserName")
                         .IsRequired()

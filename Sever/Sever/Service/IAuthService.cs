@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using Sever.DTO;
 using Sever.Model;
 using Sever.Repository;
 using System.IdentityModel.Tokens.Jwt;
@@ -11,10 +12,12 @@ namespace Sever.Service
     {
         Task<TokenResponse?> LoginAsync(LoginRequest request);
         Task<TokenResponse?> RefreshTokenAsync(string accessToken, string refreshToken);
+        Task<bool> LogoutAsync(string refreshToken);
     }
 
     public class AuthService : IAuthService
     {
+        private readonly IConfiguration _config;
         private readonly IUserRepository _userRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly TokenService _tokenService;
@@ -37,10 +40,10 @@ namespace Sever.Service
                 return null;
 
             // Xác thực password
-            var passwordHasher = new PasswordHasher<User>();
-            var verifyResult = passwordHasher.VerifyHashedPassword(user, user.Password, request.Password);
-            if (verifyResult == PasswordVerificationResult.Failed)
+           if(request.Password != user.Password)
+            {
                 return null;
+            }
 
             var accessToken = _tokenService.GenerateAccessToken(user.UserName);
             var refreshTokenString = _tokenService.GenerateRefreshToken();
@@ -60,6 +63,17 @@ namespace Sever.Service
                 AccessToken = accessToken,
                 RefreshToken = refreshTokenString
             };
+        }
+
+        public async Task<bool> LogoutAsync(string refreshToken)
+        {
+            var tokenEntity = await _refreshTokenRepository.GetByTokenAsync(refreshToken);
+            if (tokenEntity == null) return false;
+            await _refreshTokenRepository.DeleteAsync(tokenEntity);
+            await _refreshTokenRepository.SaveChangesAsync();
+
+            return true;
+
         }
 
         public async Task<TokenResponse?> RefreshTokenAsync(string accessToken, string refreshToken)
@@ -100,7 +114,7 @@ namespace Sever.Service
         private string? GetUsernameFromExpiredToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes("your-very-secret-key");
+            var key = Encoding.UTF8.GetBytes(_config["JWT:SecretKey"]!);
 
             try
             {

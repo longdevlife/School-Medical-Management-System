@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Sever.Model;
+using Sever.DTO;
 using Sever.Service;
 
 namespace Sever.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -36,6 +36,14 @@ namespace Sever.Controllers
                 return Unauthorized();
 
             return Ok(tokenResponse);
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] string refreshToken)
+        {
+            var success = await _authService.LogoutAsync(refreshToken);
+            if (!success) return NotFound(new { message = "Refresh token not found" });
+            return Ok(new { message = "Logged out successfully" });
         }
     }
 }

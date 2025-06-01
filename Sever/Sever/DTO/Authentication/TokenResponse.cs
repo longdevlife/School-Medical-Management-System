@@ -1,4 +1,4 @@
-﻿namespace Sever.DTO
+﻿namespace Sever.DTO.Authentication
 {
     public class TokenResponse
     {

@@ -1,10 +1,16 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Google.Apis.Auth;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using Sever.DTO;
+using Sever.DTO.Authentication;
 using Sever.Model;
 using Sever.Repository;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 using System.Text;
+using static System.Net.WebRequestMethods;
 
 namespace Sever.Service
 {
@@ -13,6 +19,9 @@ namespace Sever.Service
         Task<TokenResponse?> LoginAsync(LoginRequest request);
         Task<TokenResponse?> RefreshTokenAsync(string accessToken, string refreshToken);
         Task<bool> LogoutAsync(string refreshToken);
+        Task<TokenResponse> AuthenticateWithGoogleAsync(string idToken);
+        Task<string> SendForgotPasswordEmailAsync(string usernameOrEmail, string resetUrlBase);
+        Task<bool> ResetPasswordAsync(string token, string newPassword);
     }
 
     public class AuthService : IAuthService
@@ -21,15 +30,23 @@ namespace Sever.Service
         private readonly IUserRepository _userRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly TokenService _tokenService;
+        private readonly IForgotPasswordTokenRepository _forgotRepo;
+        private readonly IEmailService _emailService;
 
         public AuthService(
             IUserRepository userRepository,
             IRefreshTokenRepository refreshTokenRepository,
-            TokenService tokenService)
+            TokenService tokenService,
+            IConfiguration config,
+            IEmailService emailService,
+            IForgotPasswordTokenRepository forgotRepo)
         {
             _userRepository = userRepository;
             _refreshTokenRepository = refreshTokenRepository;
             _tokenService = tokenService;
+            _config = config;
+            _forgotRepo = forgotRepo;
+            _emailService = emailService;
         }
 
         public async Task<TokenResponse?> LoginAsync(LoginRequest request)
@@ -40,7 +57,7 @@ namespace Sever.Service
                 return null;
 
             // Xác thực password
-           if(request.Password != user.Password)
+            if (request.Password != user.Password)
             {
                 return null;
             }
@@ -114,7 +131,12 @@ namespace Sever.Service
         private string? GetUsernameFromExpiredToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_config["JWT:SecretKey"]!);
+            var secret = _config["JWT:Secretkey"];
+            if (string.IsNullOrEmpty(secret))
+            {
+                throw new Exception("JWT SecretKey is not configured!");
+            }
+            var key = Encoding.UTF8.GetBytes(secret);
 
             try
             {
@@ -134,6 +156,81 @@ namespace Sever.Service
                 return null;
             }
         }
-    }
+        public async Task<TokenResponse> AuthenticateWithGoogleAsync(string idToken)
+        {
+            var settings = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new[] { _config["GoogleKey:ClientID"] }
+            };
 
+            var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+            if (payload == null || string.IsNullOrEmpty(payload.Email))
+            {
+                throw new Exception("Invalid Google token");
+            }
+
+            var user = await _userRepository.GetByEmailAsync(payload.Email);
+            if (user == null)
+            {
+                throw new Exception("This email has not been registered yet.");
+            }
+
+            // Tạo access + refresh token
+            var accessToken = _tokenService.GenerateAccessToken(user.UserName);
+            var refreshToken = _tokenService.GenerateRefreshToken();
+
+            return new TokenResponse
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
+            };
+        }
+
+        public async Task<string> SendForgotPasswordEmailAsync(string usernameOrEmail, string resetUrlBase)
+        {
+            var user = await _userRepository.GetUserByUsernameAsync(usernameOrEmail);
+            if (user == null)
+            {
+                user = await _userRepository.GetUserByEmailAsync(usernameOrEmail);
+                if (user == null)
+                {
+                    return null;
+                }
+            }
+            var token = _tokenService.GenerateRefreshToken();
+            var resetToken = new ForgotPasswordToken
+            {
+                UserId = user.UserID,
+                Token = token,
+                ExpiryDate = DateTime.UtcNow.AddMinutes(5)
+            };
+
+            await _forgotRepo.CreateTokenAsync(resetToken);
+            await _forgotRepo.SaveChangesAsync();
+
+            var resetLink = $"{resetUrlBase}?token={Uri.EscapeDataString(token)}";
+            var subject = "Đặt lại mật khẩu";
+            var body = $"Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng truy cập vào đường link sau:\n{resetLink}\nLink này sẽ hết hạn sau 5 phút.";
+
+            await _emailService.SendEmailAsync(user.Email, subject, body);
+
+            return token;
+
+        }
+
+        public async Task<bool> ResetPasswordAsync(string token, string newPassword)
+        {
+            var record = await _forgotRepo.GetByTokenAsync(token);
+            if (record == null || record.ExpiryDate < DateTime.UtcNow)
+                return false;
+
+            record.User.Password = newPassword;
+
+            await _forgotRepo.DeleteAsync(record);
+            await _forgotRepo.SaveChangesAsync();
+
+            return true;
+
+        }
+    }
 }

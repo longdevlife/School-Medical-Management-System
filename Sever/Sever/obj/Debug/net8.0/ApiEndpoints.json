@@ -1,15 +1,47 @@
 [
   {
     "ContainingType": "Sever.Controllers.AuthController",
-    "Method": "Login",
-    "RelativePath": "api/Auth/login",
+    "Method": "ForgotPassword",
+    "RelativePath": "api/auth/forgot-password",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
         "Name": "request",
-        "Type": "Sever.DTO.LoginRequest",
+        "Type": "Sever.DTO.Authentication.ForgotPasswordRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AuthController",
+    "Method": "GoogleLogin",
+    "RelativePath": "api/auth/google-login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "google",
+        "Type": "Sever.DTO.Authentication.GoogleLoginDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AuthController",
+    "Method": "Login",
+    "RelativePath": "api/auth/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Sever.DTO.Authentication.LoginRequest",
         "IsRequired": true
       }
     ],
@@ -18,7 +50,7 @@
   {
     "ContainingType": "Sever.Controllers.AuthController",
     "Method": "Logout",
-    "RelativePath": "api/Auth/logout",
+    "RelativePath": "api/auth/logout",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -34,14 +66,30 @@
   {
     "ContainingType": "Sever.Controllers.AuthController",
     "Method": "Refresh",
-    "RelativePath": "api/Auth/refresh",
+    "RelativePath": "api/auth/refresh",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
         "Name": "tokenRequest",
-        "Type": "Sever.DTO.TokenResponse",
+        "Type": "Sever.DTO.Authentication.TokenResponse",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AuthController",
+    "Method": "ResetPassword",
+    "RelativePath": "api/auth/reset-password",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Sever.DTO.Authentication.ResetPasswordRequest",
         "IsRequired": true
       }
     ],

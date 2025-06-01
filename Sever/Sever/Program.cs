@@ -1,5 +1,11 @@
+using Google;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Sever.Context;
 using Sever.Repository;
@@ -47,7 +53,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 builder.Services.AddAuthorization();
 
-#region
+#region CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CROS", policy =>
@@ -59,6 +65,25 @@ builder.Services.AddCors(options =>
     });
 });
 #endregion
+
+#region google login
+builder.Services.AddAuthentication(option =>
+{
+    option.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    option.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    option.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+}).AddCookie().AddGoogle(GoogleDefaults.AuthenticationScheme, option =>
+{
+    option.ClientId = builder.Configuration.GetSection("GoogleKey:ClientID").Value;
+    option.ClientSecret = builder.Configuration.GetSection("GoogleKey:ClientSecret").Value;
+    option.CallbackPath = "/signin-google";
+});
+#endregion
+
+builder.Services.AddTransient<IEmailService, EmailSevice>();
+builder.Services.AddScoped<IForgotPasswordTokenRepository, ForgotPasswordTokenRepository>();
+
+
 
 var app = builder.Build();
 

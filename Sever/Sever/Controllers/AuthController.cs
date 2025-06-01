@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Sever.DTO;
+using Sever.DTO.Authentication;
 using Sever.Service;
 
 namespace Sever.Controllers
@@ -44,6 +44,35 @@ namespace Sever.Controllers
             var success = await _authService.LogoutAsync(refreshToken);
             if (!success) return NotFound(new { message = "Refresh token not found" });
             return Ok(new { message = "Logged out successfully" });
+        }
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto google)
+        {
+            var jwt = await _authService.AuthenticateWithGoogleAsync(google.IdToken);
+            return Ok(new { token = jwt });
+        }
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        {
+            var baseUrl = $"{Request.Scheme}://{Request.Host}/reset-password";
+            var result = await _authService.SendForgotPasswordEmailAsync(request.UsernameOrEmail, baseUrl);
+            if (result == null)
+            {
+                return NotFound(new { message = "Người dùng hoặc email không tồn tại hoặc chưa được đăng kí" });
+            }
+            return Ok(new { 
+                message = "Email đã được gửi",
+                result = result.ToString()
+            });
+
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            var result = await _authService.ResetPasswordAsync(request.Token, request.NewPassword);
+            if (!result) return BadRequest(new { message = "Token không hợp lệ hoặc đã hết hạn" });
+            return Ok(new { message = "Đổi mật khẩu thành công" });
         }
     }
 }

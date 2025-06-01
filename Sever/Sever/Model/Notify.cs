@@ -1,4 +1,6 @@
-﻿namespace Sever.Model
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Sever.Model
 {
     public class Notify
     {

@@ -29,6 +29,7 @@ namespace Sever.Context
         public DbSet<VaccinationRecord> VaccinationRecord { get; set; }
         public DbSet<Vaccine> Vaccine { get; set; }
         public DbSet<RefreshToken> RefreshToken { get; set; } = null!;
+        public DbSet<ForgotPasswordToken> ForgotPasswordToken { get; set; } = null!;
 
         #endregion
 

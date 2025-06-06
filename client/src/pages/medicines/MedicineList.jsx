@@ -86,7 +86,7 @@ function MedicineList() {
     {
       title: "Thao tác",
       key: "action",
-      render: (_, record) => (
+      render: () => (
         <Space size="middle">
           <Button type="link">Chi tiết</Button>
           <Button type="link">Sửa</Button>
@@ -97,14 +97,8 @@ function MedicineList() {
       ),
     },
   ];
-
   const handleAdd = () => {
     form.resetFields();
-    setIsModalVisible(true);
-  };
-
-  const handleEdit = (record) => {
-    form.setFieldsValue(record);
     setIsModalVisible(true);
   };
 

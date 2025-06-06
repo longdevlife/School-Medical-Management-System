@@ -10,15 +10,19 @@ import viVN from "antd/lib/locale/vi_VN";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NurseManagerLayout from "./components/Layout/nursemanager/NurseManagerLayout";
 import NurseDashboard from "./pages/nurses/NurseDashboard";
-import StudentList from "./pages/students/StudentList";
-import MedicineList from "./pages/medicines/MedicineList";
-import AccountList from "./pages/accounts/AccountList";
-import Settings from "./pages/settings/Settings";
-import Login from "./pages/Login";
-
+import HomePage from "./pages/home/HomePage";
+import HealthProfileView from "./pages/profiles/HealthProfileView";
+import MedicationSubmission from "./pages/medications/MedicationSubmission";
+import MedicineEquipmentManagement from "./pages/medicines/MedicineEquipmentManagement";
+import NewsManagement from "./pages/news/NewsManagement";
 import VaccinationManagement from "./pages/events/VaccinationManagement";
 import HealthCheckManagement from "./pages/events/HealthCheckManagement";
 import AccidentManagement from "./pages/events/AccidentManagement";
+import Reports from "./pages/reports/Reports";
+import AdvancedAnalytics from "./pages/analytics/AdvancedAnalytics";
+import AccountList from "./pages/accounts/AccountList";
+import Settings from "./pages/settings/Settings";
+import Login from "./pages/Login";
 
 import "./App.css";
 
@@ -27,7 +31,7 @@ function App() {
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: "#47c8f8",
+          colorPrimary: "#0F6CBD",
           borderRadius: 6,
         },
       }}
@@ -47,17 +51,28 @@ function App() {
             }
           >
             <Route index element={<NurseDashboard />} />
-            <Route path="students" element={<StudentList />} />
-            <Route path="medicines" element={<MedicineList />} />
+            <Route path="home" element={<HomePage />} />
+            <Route path="profile-view" element={<HealthProfileView />} />
             <Route
-              path="events/vaccination"
+              path="medication-submission"
+              element={<MedicationSubmission />}
+            />
+            <Route
+              path="medicine-equipment"
+              element={<MedicineEquipmentManagement />}
+            />
+            <Route
+              path="medical-events/vaccination"
               element={<VaccinationManagement />}
             />
             <Route
-              path="events/healthcheck"
+              path="medical-events/health-checkup"
               element={<HealthCheckManagement />}
             />
-            <Route path="events/accident" element={<AccidentManagement />} />
+            <Route
+              path="medical-events/accidents"
+              element={<AccidentManagement />}
+            />
             <Route path="settings" element={<Settings />} />
           </Route>
 
@@ -71,18 +86,11 @@ function App() {
             }
           >
             <Route index element={<NurseDashboard />} />
-            <Route path="students" element={<StudentList />} />
-            <Route path="medicines" element={<MedicineList />} />
-            <Route path="accounts" element={<AccountList />} />
-            <Route
-              path="events/vaccination"
-              element={<VaccinationManagement />}
-            />
-            <Route
-              path="events/healthcheck"
-              element={<HealthCheckManagement />}
-            />
-            <Route path="events/accident" element={<AccidentManagement />} />
+            <Route path="home" element={<HomePage />} />
+            <Route path="profile-view" element={<HealthProfileView />} />
+            <Route path="news-management" element={<NewsManagement />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
             <Route path="settings" element={<Settings />} />
           </Route>
 

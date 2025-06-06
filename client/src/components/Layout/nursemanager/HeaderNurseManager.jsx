@@ -7,9 +7,10 @@ import {
   UserOutlined,
   LogoutOutlined,
   SettingOutlined,
-  SearchOutlined
+  SearchOutlined,
 } from "@ant-design/icons";
 import { useNavigate, Link } from "react-router-dom";
+import authService from "../../../services/authService";
 import styles from "./NurseManagerLayout.module.css";
 
 const { Header } = Layout;
@@ -17,6 +18,22 @@ const { Search } = Input;
 
 function HeaderNurseManager({ collapsed, setCollapsed }) {
   const navigate = useNavigate();
+  const currentUser = authService.getCurrentUser();
+  const userRole = currentUser ? currentUser.role : "USER";
+
+  // Lấy tên hiển thị cho vai trò
+  const getRoleDisplayName = (role) => {
+    switch (role) {
+      case "NURSE":
+        return "Y tá";
+      case "MANAGER":
+        return "Quản lý";
+      case "PARENT":
+        return "Phụ huynh";
+      default:
+        return "Người dùng";
+    }
+  };
 
   const userMenuItems = [
     {
@@ -38,7 +55,6 @@ function HeaderNurseManager({ collapsed, setCollapsed }) {
       label: "Đăng xuất",
     },
   ];
-
   const handleUserMenuClick = ({ key }) => {
     switch (key) {
       case "profile":
@@ -55,8 +71,20 @@ function HeaderNurseManager({ collapsed, setCollapsed }) {
     }
   };
 
+  // Xác định đường dẫn home dựa trên role
+  const getHomeRoute = () => {
+    if (userRole === "NURSE") {
+      return "/nurses/home";
+    } else if (userRole === "MANAGER") {
+      return "/manager/home";
+    } else if (userRole === "PARENT") {
+      return "/parent/home";
+    }
+    return "/";
+  };
+
   const onSearch = (value) => {
-    console.log('Search:', value);
+    console.log("Search:", value);
   };
 
   return (
@@ -77,14 +105,18 @@ function HeaderNurseManager({ collapsed, setCollapsed }) {
           style={{ width: 200 }}
           className={styles.searchBar}
         />
-      </div>
-
+      </div>{" "}
       <nav className={styles.mainNav}>
-        <Link to="/" className={styles.navLink}>Trang chủ</Link>
-        <Link to="/news" className={styles.navLink}>Tin tức</Link>
-        <Link to="/about" className={styles.navLink}>Giới thiệu</Link>
+        <Link to={getHomeRoute()} className={styles.navLink}>
+          Trang chủ
+        </Link>
+        <Link to="/news" className={styles.navLink}>
+          Tin tức
+        </Link>
+        <Link to="/about" className={styles.navLink}>
+          Giới thiệu
+        </Link>
       </nav>
-
       <div className={styles.headerRight}>
         <Space size="large">
           <Button
@@ -102,7 +134,9 @@ function HeaderNurseManager({ collapsed, setCollapsed }) {
           >
             <Space className={styles.userInfo}>
               <Avatar icon={<UserOutlined />} />
-              <span className={styles.userName}>Phụ huynh</span>
+              <span className={styles.userName}>
+                {getRoleDisplayName(userRole)}
+              </span>
             </Space>
           </Dropdown>
         </Space>

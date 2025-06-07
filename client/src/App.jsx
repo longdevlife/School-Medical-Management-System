@@ -1,22 +1,29 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import MainLayout from "./components/Layout/MainLayout";
-import LoginRegister from "./pages/auth/LoginRegister";
-import StudentList from "./pages/students/StudentList";
-import MedicineList from "./pages/medicines/MedicineList";
-import AccountList from "./pages/accounts/AccountList";
-import Settings from "./pages/settings/Settings";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Layout } from "antd";
+import ParentLayout from "./components/Layout/ParentLayout";
+import StudentProfile from "./pages/studentProfile/StudentProfile";
+import ParentProfile from "./pages/parent/ParentProfile";
+import MedicalEvent from "./pages/eventMedical/MedicalEvent";
+import Vaccine from "./pages/vaccinations/Vaccine";
+import VaccineDetail from "./pages/vaccinations/VaccineDetail";
+import HealthCheckup from "./pages/healthRecord/HealthCheckup";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginRegister />} />
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="students" element={<StudentList />} />
-          <Route path="medicines" element={<MedicineList />} />
-          <Route path="accounts" element={<AccountList />} />
-          <Route path="settings" element={<Settings />} />
+
+        <Route path="/" element={<Navigate to="/parent/profile" replace />} />
+        
+        <Route path="/parent" element={<ParentLayout />}>
+          <Route index element={<ParentProfile />} />
+          <Route path="profile-student" element={<StudentProfile />} />
+          <Route path="profile" element={<ParentProfile />} />
+          <Route path="events" element={<MedicalEvent />} />
+          <Route path="vaccinations" element={<Vaccine />} />
+          <Route path="vaccinations/:id" element={<VaccineDetail />} />
+          <Route path="health-result" element={<HealthCheckup />} />
         </Route>
       </Routes>
     </BrowserRouter>

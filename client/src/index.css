@@ -1,0 +1,408 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.container-custom {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.section-title {
+  @apply text-3xl font-bold text-center text-primary mb-4;
+}
+
+.card {
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-card border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-lg;
+}
+
+.btn {
+  @apply px-4 py-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-primary {
+  @apply bg-primary text-white hover:bg-primary/90 focus:ring-primary;
+}
+
+.btn-secondary {
+  @apply bg-secondary text-white hover:bg-secondary/90 focus:ring-secondary;
+}
+
+.btn-success {
+  @apply bg-success text-white hover:bg-success/90 focus:ring-success;
+}
+
+.btn-warning {
+  @apply bg-warning text-black hover:bg-warning/90 focus:ring-warning;
+}
+
+.btn-danger {
+  @apply bg-danger text-white hover:bg-danger/90 focus:ring-danger;
+}
+
+.btn-outline {
+  @apply border-2 border-primary text-primary hover:bg-primary hover:text-white focus:ring-primary bg-white dark:bg-gray-800 transition-all duration-200;
+}
+
+.btn-sm {
+  @apply px-3 py-1.5 text-sm;
+}
+
+.input-custom {
+  @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100;
+}
+
+.event-item-hover {
+  @apply transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50;
+}
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+}
+
+html {
+  background: #f6faff !important;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #f9f9f9;
+  color: #213547;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+button:hover {
+  border-color: #0F6CBD;
+  color: #0F6CBD;
+}
+button:focus,
+button:focus-visible {
+  outline: 2px solid #0F6CBD;
+  outline-offset: 2px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #0F6CBD;
+  }
+  button {
+    background-color: #f9f9f9;
+    color: #213547;
+  }
+  button:hover {
+    background-color: #ffffff;
+    border-color: #0F6CBD;
+    color: #0F6CBD;
+  }
+}
+
+.trigger {
+  padding: 0 24px;
+  font-size: 18px;
+  line-height: 64px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.trigger:hover {
+  color: #0f6cbd;
+}
+
+.logo {
+  height: 32px;
+  margin: 16px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.site-layout .site-layout-background {
+  background: #fff;
+}
+
+.ant-layout {
+  min-height: 100vh;
+}
+
+.ant-layout-sider {
+  box-shadow: 2px 0 6px rgba(0, 21, 41, 0.35);
+}
+
+.ant-layout-header {
+  background: #fff;
+  padding: 0;
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+}
+
+.ant-layout-content {
+  margin: 24px 16px;
+  padding: 24px;
+  background: #fff;
+  min-height: 280px;
+}
+
+.ant-card {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.ant-table-wrapper {
+  background: #fff;
+  padding: 24px;
+  border-radius: 2px;
+}
+
+.ant-form-item-label > label {
+  font-weight: 500;
+}
+
+.ant-btn-primary {
+  background: #0f6cbd;
+}
+
+.ant-btn-primary:hover {
+  background: #2980d1;
+}
+
+/* Button link styling */
+.ant-btn-link {
+  color: #0F6CBD;
+}
+
+.ant-btn-link:hover,
+.ant-btn-link:focus {
+  color: #2980d1;
+}
+
+/* Danger button styling */
+.ant-btn-dangerous {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.ant-btn-dangerous:hover {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.ant-modal-content {
+  border-radius: 8px;
+}
+
+.ant-modal-header {
+  border-radius: 8px 8px 0 0;
+}
+
+.ant-input-affix-wrapper {
+  border-radius: 6px;
+}
+
+.ant-select-selector {
+  border-radius: 6px !important;
+}
+
+.ant-picker {
+  border-radius: 6px;
+}
+
+.ant-switch {
+  border-radius: 100px;
+}
+
+.ant-divider {
+  margin: 24px 0;
+}
+
+.ant-statistic-title {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.ant-statistic-content {
+  font-size: 24px;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 500;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: #f5f5f5;
+}
+
+.ant-pagination-item {
+  border-radius: 4px;
+}
+
+.ant-pagination-prev .ant-pagination-item-link,
+.ant-pagination-next .ant-pagination-item-link {
+  border-radius: 4px;
+}
+
+.ant-menu-item:hover {
+  background-color: rgba(15, 108, 189, 0.1) !important;
+}
+
+.ant-dropdown-menu {
+  border-radius: 8px;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12),
+    0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+}
+
+.ant-dropdown-menu-item:hover {
+  background-color: rgba(15, 108, 189, 0.1);
+}
+
+.ant-message {
+  z-index: 1010;
+}
+
+.ant-message-notice-content {
+  border-radius: 8px;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12),
+    0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Custom Ant Design Tab Styling */
+.ant-tabs-tab {
+  color: #6b7280 !important;
+}
+
+.ant-tabs-tab:hover {
+  color: #0f6cbd !important;
+}
+
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #0f6cbd !important;
+  font-weight: 600 !important;
+}
+
+.ant-tabs-ink-bar {
+  background: #0f6cbd !important;
+}
+
+.ant-tabs-tab-btn:focus,
+.ant-tabs-tab-remove:focus,
+.ant-tabs-tab-btn:active,
+.ant-tabs-tab-remove:active {
+  color: #0f6cbd !important;
+}
+
+/* Update menu colors to match primary theme */
+.ant-menu-item-selected {
+  background-color: #0f6cbd !important;
+}
+
+.ant-menu-item:hover {
+  background-color: rgba(15, 108, 189, 0.1) !important;
+}
+
+.ant-dropdown-menu-item:hover {
+  background-color: rgba(15, 108, 189, 0.1);
+}
+
+/* Custom Tag colors */
+.ant-tag-blue {
+  background: rgba(15, 108, 189, 0.1);
+  border-color: #0F6CBD;
+  color: #0F6CBD;
+}
+
+.ant-tag-green {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: #22c55e;
+  color: #16a34a;
+}
+
+.ant-tag-orange {
+  background: rgba(251, 146, 60, 0.1);
+  border-color: #fb923c;
+  color: #ea580c;
+}
+
+.ant-tag-red {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #dc2626;
+}
+
+/* Better button transitions and effects */
+.ant-btn {
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.ant-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ant-btn:active {
+  transform: translateY(0);
+}
+
+/* Custom button styles for filter buttons */
+.filter-button {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.filter-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}

@@ -4,6 +4,7 @@ namespace Sever.Model
 {
     public class Notify
     {
+        public int NotifyID { get; set; }
         public string FormID {  get; set; }
         public Form Form { get; set; }
         public string UserID { get; set; }

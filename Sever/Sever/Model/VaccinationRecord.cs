@@ -6,7 +6,7 @@ namespace Sever.Model
     public class VaccinationRecord
     {
         [Key]
-        public string RecordID { get; set; }
+        public int RecordID { get; set; }
         public int Dose { get; set; }
         public DateTime DateTime { get; set; }
         public string? Notes { get ; set; }
@@ -16,7 +16,7 @@ namespace Sever.Model
         public string VaccinatorID { get; set; }
         [ForeignKey("VaccinatorID")]
         public User Vaccinator { get; set; }
-        public string VaccineID {  get; set; }
+        public int VaccineID {  get; set; }
         [ForeignKey("VaccineID")]
         public Vaccine Vaccine { get; set; }
     }

@@ -11,7 +11,6 @@ namespace Sever.Context
 
         #region Entity Sets
         public DbSet<Appointment> Appointment { get; set; }
-        public DbSet<ConfigSystem> ConfigSystem { get; set; }
         public DbSet<EventType> EventType { get; set; }
         public DbSet<Files> Files { get; set; }
         public DbSet<Form> Form { get; set; }
@@ -116,7 +115,6 @@ namespace Sever.Context
                 .HasIndex(m => m.UserName).IsUnique();
             #endregion
 
-
             #region Medical Event Detail
             modelBuilder.Entity<MedicalEventDetail>()
                  .HasKey(m => new { m.MedicalEventID, m.StudentID });
@@ -133,6 +131,12 @@ namespace Sever.Context
                 .HasForeignKey(m => m.StudentID)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            #endregion
+
+            #region Role
+            modelBuilder.Entity<Role>()
+                .Property(r => r.RoleID)
+                .ValueGeneratedNever();
             #endregion
         }
 

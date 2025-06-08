@@ -11,6 +11,7 @@ using Sever.Context;
 using Sever.Repository;
 using Sever.Service;
 using System.Text;
+using OfficeOpenXml;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,44 +22,55 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-#region Token Scope
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<TokenService>();
-#endregion
+
+
+
+
 
 builder.Services.AddDbContext<DataContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-#region JWT
+#region Authrization and Authentication
 var secretkey = builder.Configuration["JWT:SecretKey"];
 var secretKeyBytes = Encoding.UTF8.GetBytes(secretkey);
 
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(option => option.TokenValidationParameters = new TokenValidationParameters
+builder.Services.AddAuthentication(options =>
 {
-    ValidateIssuer = false,
-    ValidateAudience = false,
-    ValidateLifetime = true,
-
-    ValidateIssuerSigningKey = true,
-    IssuerSigningKey = new SymmetricSecurityKey(secretKeyBytes),
-
-    ClockSkew = TimeSpan.Zero
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(secretKeyBytes),
+        ClockSkew = TimeSpan.Zero
+    };
+})
+.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+.AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+{
+    options.ClientId = builder.Configuration["GoogleKey:ClientID"];
+    options.ClientSecret = builder.Configuration["GoogleKey:ClientSecret"];
+    options.CallbackPath = "/signin-google";
 });
-#endregion
 
 builder.Services.AddAuthorization();
+#endregion
 
 #region CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CROS", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5000")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -66,28 +78,27 @@ builder.Services.AddCors(options =>
 });
 #endregion
 
-#region google login
-builder.Services.AddAuthentication(option =>
-{
-    option.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    option.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    option.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-}).AddCookie().AddGoogle(GoogleDefaults.AuthenticationScheme, option =>
-{
-    option.ClientId = builder.Configuration.GetSection("GoogleKey:ClientID").Value;
-    option.ClientSecret = builder.Configuration.GetSection("GoogleKey:ClientSecret").Value;
-    option.CallbackPath = "/signin-google";
-});
+#region Repository Scope
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IForgotPasswordTokenRepository, ForgotPasswordTokenRepository>();
+builder.Services.AddScoped<IFilesRepository, FilesRepository>();
 #endregion
 
+#region Service Scope
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IEmailService, EmailSevice>();
-builder.Services.AddScoped<IForgotPasswordTokenRepository, ForgotPasswordTokenRepository>();
+builder.Services.AddScoped<IFilesService, FilesSevice>();
+builder.Services.AddScoped<IUserService, UserService>();
+#endregion
+
+
+
 
 
 
 var app = builder.Build();
-
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

@@ -10,11 +10,12 @@ namespace Sever.Model
         [Required]
         public string UserName { get; set; }
         [Required]
-        public string Password { get; set; }
+        public string PasswordHash { get; set; }
         public string? Name { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
-        public string RoleID { get; set; }
+        public Boolean IsActive { get; set; } = true;
+        public int RoleID { get; set; }
         [ForeignKey("RoleID")]
         public Role Role { get; set; }
         public List<StudentProfile> StudentProfile { get; set; }

@@ -353,3 +353,9 @@ D:\FPTU\Semester_5\SWP391\Project\git\Sever\Sever\bin\Debug\net8.0\Microsoft.Asp
 D:\FPTU\Semester_5\SWP391\Project\git\Sever\Sever\bin\Debug\net8.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
 D:\FPTU\Semester_5\SWP391\Project\git\Sever\Sever\bin\Debug\net8.0\Microsoft.Extensions.Identity.Core.dll
 D:\FPTU\Semester_5\SWP391\Project\git\Sever\Sever\bin\Debug\net8.0\Microsoft.Extensions.Identity.Stores.dll
+D:\FPTU\Semester_5\SWP391\Project\git\Sever\Sever\bin\Debug\net8.0\CloudinaryDotNet.dll
+D:\FPTU\Semester_5\SWP391\Project\git\Sever\Sever\bin\Debug\net8.0\EPPlus.dll
+D:\FPTU\Semester_5\SWP391\Project\git\Sever\Sever\bin\Debug\net8.0\EPPlus.Interfaces.dll
+D:\FPTU\Semester_5\SWP391\Project\git\Sever\Sever\bin\Debug\net8.0\Microsoft.Extensions.Configuration.FileExtensions.dll
+D:\FPTU\Semester_5\SWP391\Project\git\Sever\Sever\bin\Debug\net8.0\Microsoft.Extensions.Configuration.Json.dll
+D:\FPTU\Semester_5\SWP391\Project\git\Sever\Sever\bin\Debug\net8.0\Microsoft.IO.RecyclableMemoryStream.dll

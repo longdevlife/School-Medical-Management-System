@@ -6,7 +6,7 @@ namespace Sever.Model
     public class Medicine
     {
         [Key]
-        public string MedicineID {  get; set; }
+        public int MedicineID {  get; set; }
         public string MedicineName { get; set; }
         public string Quantity { get; set; }
         public string Dosage { get; set; }

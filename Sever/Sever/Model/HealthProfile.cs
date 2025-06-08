@@ -6,7 +6,7 @@ namespace Sever.Model
     public class HealthProfile
     {
         [Key]
-        public string HealthProfileID { get; set; }
+        public int HealthProfileID { get; set; }
         public string? AllergyHistory { get; set; }
         public string? ChronicDiseases { get; set; }
         public byte? PastSurgeries { get; set; }

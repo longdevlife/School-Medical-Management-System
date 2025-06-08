@@ -1,6 +1,8 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using OfficeOpenXml;
 using Sever.DTO.File;
+using Sever.DTO.User;
 using Sever.Model;
 using Sever.Repository;
 using static System.Net.Mime.MediaTypeNames;
@@ -10,6 +12,7 @@ namespace Sever.Service
     public interface IFilesService
     {
         Task<ImageResponse> UploadImageAsync(IFormFile file);
+        List<CreateUserRequest> GetUsersFromExcel(Stream file);
     }
     public class FilesSevice : IFilesService
     {
@@ -61,6 +64,44 @@ namespace Sever.Service
                 Id = image.FileID,
                 Url = image.FileLink,
                 UploadedAt = image.UploadDate
+            };
+        }
+
+        public  List<CreateUserRequest> GetUsersFromExcel(Stream file)
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            var users = new List<CreateUserRequest>();
+
+            using var package = new ExcelPackage(file);
+            var worksheet = package.Workbook.Worksheets[0];
+            var rowCount = worksheet.Dimension.Rows;
+
+            for (int row = 2; row <= rowCount; row++) 
+            {
+                var user = new CreateUserRequest
+                {
+                    UserID = worksheet.Cells[row, 1].Text,
+                    UserName = worksheet.Cells[row, 2].Text,
+                    Password = worksheet.Cells[row, 3].Text,
+                    Name = worksheet.Cells[row, 4].Text,
+                    Email = worksheet.Cells[row, 5].Text,
+                    RoleID = RoleIdByRoleName(worksheet.Cells[row, 6].Text.Trim())
+                };
+                users.Add(user);
+            }
+
+            return users;
+        }
+        public int RoleIdByRoleName(string roleName)
+        {
+            return roleName switch
+            {
+                "Admin" => 4,
+                "Teacher" => 3,
+                "Parent" => 2,
+                "Student" => 1,
+                _ => throw new ArgumentException("Invalid role name")
             };
         }
     }

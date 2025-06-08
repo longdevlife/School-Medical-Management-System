@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Sever.DTO.Authentication;
 using Sever.Model;
 using Sever.Repository;
+using Sever.Utilities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
@@ -17,9 +18,11 @@ namespace Sever.Service
     public interface IAuthService
     {
         Task<TokenResponse?> LoginAsync(LoginRequest request);
+        Task<User?> GetUserFromExpiredToken(string token);
         Task<TokenResponse?> RefreshTokenAsync(string accessToken, string refreshToken);
         Task<bool> LogoutAsync(string refreshToken);
         Task<TokenResponse> AuthenticateWithGoogleAsync(string idToken);
+
         Task<string> SendForgotPasswordEmailAsync(string usernameOrEmail, string resetUrlBase);
         Task<bool> ResetPasswordAsync(string token, string newPassword);
     }
@@ -29,14 +32,14 @@ namespace Sever.Service
         private readonly IConfiguration _config;
         private readonly IUserRepository _userRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
-        private readonly TokenService _tokenService;
+        private readonly ITokenService _tokenService;
         private readonly IForgotPasswordTokenRepository _forgotRepo;
         private readonly IEmailService _emailService;
 
         public AuthService(
             IUserRepository userRepository,
             IRefreshTokenRepository refreshTokenRepository,
-            TokenService tokenService,
+            ITokenService tokenService,
             IConfiguration config,
             IEmailService emailService,
             IForgotPasswordTokenRepository forgotRepo)
@@ -57,19 +60,22 @@ namespace Sever.Service
                 return null;
 
             // Xác thực password
-            if (request.Password != user.Password)
+            var hasher = new PasswordHasher<User>();
+            var result = hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+
+            if (result != PasswordVerificationResult.Success)
             {
                 return null;
             }
 
-            var accessToken = _tokenService.GenerateAccessToken(user.UserName);
+            var accessToken = _tokenService.GenerateAccessToken(user.UserName, user.RoleID);
             var refreshTokenString = _tokenService.GenerateRefreshToken();
 
             var refreshToken = new RefreshToken
             {
                 UserId = user.UserID,
                 Token = refreshTokenString,
-                ExpiryDate = DateTime.UtcNow.AddDays(7)
+                ExpiryDate = DateTime.UtcNow.AddMinutes(ConfigSystem.TokenTimeOut)
             };
 
             await _refreshTokenRepository.AddAsync(refreshToken);
@@ -95,12 +101,12 @@ namespace Sever.Service
 
         public async Task<TokenResponse?> RefreshTokenAsync(string accessToken, string refreshToken)
         {
-            var username = GetUsernameFromExpiredToken(accessToken);
-            if (username == null)
+            var user = await GetUserFromExpiredToken(accessToken);
+            if (user == null)
                 return null;
 
             var storedRefreshToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken);
-            if (storedRefreshToken == null || storedRefreshToken.User.UserName != username || storedRefreshToken.ExpiryDate < DateTime.UtcNow)
+            if (storedRefreshToken == null || storedRefreshToken.User.UserName != user.UserName || storedRefreshToken.ExpiryDate < DateTime.UtcNow)
                 return null;
 
             // Xóa refresh token cũ
@@ -108,14 +114,14 @@ namespace Sever.Service
             await _refreshTokenRepository.SaveChangesAsync();
 
             // Tạo token mới
-            var newAccessToken = _tokenService.GenerateAccessToken(username);
+            var newAccessToken = _tokenService.GenerateAccessToken(user.UserName, user.RoleID);
             var newRefreshTokenString = _tokenService.GenerateRefreshToken();
 
             var newRefreshToken = new RefreshToken
             {
                 UserId = storedRefreshToken.UserId,
                 Token = newRefreshTokenString,
-                ExpiryDate = DateTime.UtcNow.AddDays(7)
+                ExpiryDate = DateTime.UtcNow.AddMinutes(ConfigSystem.TokenTimeOut)
             };
 
             await _refreshTokenRepository.AddAsync(newRefreshToken);
@@ -128,7 +134,7 @@ namespace Sever.Service
             };
         }
 
-        private string? GetUsernameFromExpiredToken(string token)
+        public async Task<User?> GetUserFromExpiredToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var secret = _config["JWT:Secretkey"];
@@ -149,7 +155,12 @@ namespace Sever.Service
                     IssuerSigningKey = new SymmetricSecurityKey(key)
                 }, out SecurityToken validatedToken);
 
-                return principal.Identity?.Name;
+                string username = principal.Identity?.Name;
+                if (string.IsNullOrEmpty(username))
+                    return null;
+
+                var user = await _userRepository.GetUserByUsernameAsync(username);
+                return user;
             }
             catch
             {
@@ -169,14 +180,14 @@ namespace Sever.Service
                 throw new Exception("Invalid Google token");
             }
 
-            var user = await _userRepository.GetByEmailAsync(payload.Email);
+            var user = await _userRepository.GetUserByEmailAsync(payload.Email);
             if (user == null)
             {
                 throw new Exception("This email has not been registered yet.");
             }
 
             // Tạo access + refresh token
-            var accessToken = _tokenService.GenerateAccessToken(user.UserName);
+            var accessToken = _tokenService.GenerateAccessToken(user.UserName, user.RoleID);
             var refreshToken = _tokenService.GenerateRefreshToken();
 
             return new TokenResponse
@@ -202,7 +213,7 @@ namespace Sever.Service
             {
                 UserId = user.UserID,
                 Token = token,
-                ExpiryDate = DateTime.UtcNow.AddMinutes(5)
+                ExpiryDate = DateTime.UtcNow.AddMinutes(ConfigSystem.ForgotPasswordTokenTimeOut)
             };
 
             await _forgotRepo.CreateTokenAsync(resetToken);
@@ -224,7 +235,10 @@ namespace Sever.Service
             if (record == null || record.ExpiryDate < DateTime.UtcNow)
                 return false;
 
-            record.User.Password = newPassword;
+            var hasher = new PasswordHasher<User>();
+
+            record.User.PasswordHash = hasher.HashPassword(record.User, newPassword);
+
 
             await _forgotRepo.DeleteAsync(record);
             await _forgotRepo.SaveChangesAsync();

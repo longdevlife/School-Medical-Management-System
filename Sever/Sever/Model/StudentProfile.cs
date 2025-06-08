@@ -19,7 +19,7 @@ namespace Sever.Model
         public User Parent { get; set; }
         public List<HealthProfile> HealthProfiles { get; set; } 
         public List<VaccinationRecord> VaccinationRecord { get; set; }
-        //public List<HealthCheckUp> HealthCheckUp { get; set; }
+        public List<HealthCheckUp> HealthCheckUp { get; set; }
         public List<MedicalEventDetail> MedicalEventDetail { get; set; }
 
     }

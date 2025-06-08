@@ -49,7 +49,8 @@ namespace Sever.Controllers
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto google)
         {
             var jwt = await _authService.AuthenticateWithGoogleAsync(google.IdToken);
-            return Ok(new { token = jwt });
+            return Ok(new { token = jwt 
+            });
         }
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
@@ -60,7 +61,8 @@ namespace Sever.Controllers
             {
                 return NotFound(new { message = "Người dùng hoặc email không tồn tại hoặc chưa được đăng kí" });
             }
-            return Ok(new { 
+            return Ok(new
+            {
                 message = "Email đã được gửi",
                 result = result.ToString()
             });

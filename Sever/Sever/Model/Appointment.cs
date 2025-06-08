@@ -4,13 +4,13 @@ namespace Sever.Model
 {
     public class Appointment
     {
-        public string AppointmentID { get; set; }
+        public int AppointmentID { get; set; }
         public DateTime DateTime { get; set; }
         public string Location { get; set; }
         public string Reason { get; set; }
         public string Status { get; set; }
         public string? Notes { get; set; }
-        public string HealthCheckUpID { get; set; }
+        public int HealthCheckUpID { get; set; }
         [ForeignKey("HealthCheckUpID")]
         public HealthCheckUp HealthCheckUp { get; set; }
     }

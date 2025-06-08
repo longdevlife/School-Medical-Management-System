@@ -7,11 +7,12 @@ namespace Sever.Repository
 {
     public interface IUserRepository
     {
-        Task<User?> GetUserByUsernameAsync(string username);
-        Task<User?> GetUserByEmailAsync(string username);
-        Task<User?> GetByEmailAsync(string email);
-        Task<User> CreateAsync(User user);
 
+        Task<User> CreateAsync(User user);
+        Task<User?> GetUserByUsernameAsync(string username);
+        Task<bool> UpdateUserAsync(User user);
+        Task<bool> DeleteAccountByUserAsync(User user);
+        Task<User?> GetUserByEmailAsync(string email);
     }
 
     public class UserRepository : IUserRepository
@@ -26,19 +27,32 @@ namespace Sever.Repository
             return user;
         }
 
-        public async Task<User?> GetByEmailAsync(string email)
-        {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        }
-
         public async Task<User?> GetUserByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.IsActive == true);
         }
 
         public async Task<User?> GetUserByUsernameAsync(string username)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            return await _context.Users.FirstOrDefaultAsync(u => u.UserName == username && u.IsActive == true);
+        }
+
+        public async Task<bool> UpdateUserAsync(User user)
+        {
+            _context.Users.Update(user);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+        public async Task<bool> DeleteAccountByUserAsync(User user)
+        {
+            if(user.RoleID == 4)
+            {
+                return false;
+            }
+            user.IsActive = false;
+            _context.Users.Update(user);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
         }
     }
 }

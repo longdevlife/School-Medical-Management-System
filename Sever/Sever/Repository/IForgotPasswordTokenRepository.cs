@@ -21,7 +21,7 @@ namespace Sever.Repository
         }
         public async Task CreateTokenAsync(ForgotPasswordToken token)
         {
-            await _context.AddAsync(token);
+            await _context.ForgotPasswordToken.AddAsync(token);
         }
 
         public async Task<ForgotPasswordToken?> GetByTokenAsync(string token)
@@ -33,7 +33,7 @@ namespace Sever.Repository
 
         public async Task DeleteAsync(ForgotPasswordToken token)
         {
-             _context.Remove(token);
+             _context.ForgotPasswordToken.Remove(token);
         }
 
         public async Task SaveChangesAsync()

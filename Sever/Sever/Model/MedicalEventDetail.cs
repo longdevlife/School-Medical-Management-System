@@ -4,7 +4,7 @@ namespace Sever.Model
 {
     public class MedicalEventDetail
     {
-        public string MedicalEventID { get; set; }
+        public int MedicalEventID { get; set; }
         [ForeignKey("MedicalEventID")]
         public MedicalEvent MedicalEvent { get; set; }
         public string StudentID { get; set; }

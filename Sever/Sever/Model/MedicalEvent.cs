@@ -9,7 +9,8 @@ namespace Sever.Model
         public int MedicalEventID {  get; set; }
         public DateTime EventDateTime { get; set; }
         public string Description { get; set; }
-        public string ActionTaken { get; set; }
+        public string? ActionTaken { get; set; }
+        public string? MedicineUsed { get; set; }
         public string? Notes { get; set; }
         public string EventTypeID { get; set; }
         [ForeignKey("EventTypeID")]

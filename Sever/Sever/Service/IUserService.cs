@@ -65,5 +65,10 @@ namespace Sever.Service
             var result = await _userRepository.DeleteAccountByUserAsync(user);
             return result;
         }
-    }
+        public async Task<User?> GetUserByEmailAsync(IFormFile img)
+        {
+            IFilesService filesService = new FilesService(img);
+            Stream fileStream = img.OpenReadStream();
+            string filePath = filesService.UploadImageAsync(fileStream).Result;
+        }
 }

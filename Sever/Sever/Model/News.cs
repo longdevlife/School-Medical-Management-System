@@ -6,7 +6,7 @@ namespace Sever.Model
     public class News
     {
         [Key]
-        public string NewsID { get; set; }
+        public int NewsID { get; set; }
         public string Title { get; set; }
         public DateTime DateTime { get; set; }
         public string Summary { get; set; }

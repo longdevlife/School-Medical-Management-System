@@ -98,9 +98,9 @@ namespace Sever.Service
             return roleName switch
             {
                 "Admin" => 4,
-                "Teacher" => 3,
-                "Parent" => 2,
-                "Student" => 1,
+                "Manager" => 3,
+                "SchoolNurse" => 2,
+                "Parent" => 1,
                 _ => throw new ArgumentException("Invalid role name")
             };
         }

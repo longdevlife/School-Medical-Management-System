@@ -1,4 +1,4 @@
-using Google;
+﻿using Google;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -91,11 +91,9 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IEmailService, EmailSevice>();
 builder.Services.AddScoped<IFilesService, FilesSevice>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IMedicineService, MedicineService>();
+
 #endregion
-
-
-
-
 
 
 var app = builder.Build();

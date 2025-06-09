@@ -29,6 +29,8 @@ namespace Sever.Context
         public DbSet<Vaccine> Vaccine { get; set; }
         public DbSet<RefreshToken> RefreshToken { get; set; } = null!;
         public DbSet<ForgotPasswordToken> ForgotPasswordToken { get; set; } = null!;
+        public DbSet<MedicineHistory> MedicineHistory { get; set; }
+
 
         #endregion
 
@@ -84,6 +86,8 @@ namespace Sever.Context
 
             #region Medicine
             modelBuilder.Entity<Medicine>()
+                .HasKey(m => m.MedicineID);
+            modelBuilder.Entity<Medicine>()
                 .HasOne(m => m.Parent)
                 .WithMany(u => u.Medicine)
                 .HasForeignKey(m => m.ParentID)
@@ -137,6 +141,13 @@ namespace Sever.Context
             modelBuilder.Entity<Role>()
                 .Property(r => r.RoleID)
                 .ValueGeneratedNever();
+            #endregion
+
+            #region Files
+            modelBuilder.Entity<Files>()
+                .HasOne(f => f.Medicine)
+                .WithMany(m => m.Files)
+                .HasForeignKey("MedicineID");
             #endregion
         }
 

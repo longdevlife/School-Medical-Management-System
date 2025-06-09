@@ -21,5 +21,9 @@ namespace Sever.Model
         public string? SchoolID { get; set; }
         [ForeignKey("SchoolID")]
         public SchoolInfo SchoolInfo { get; set; }
+        public string MedicineID { get; set; }
+        [ForeignKey("MedicineID")]
+        public Medicine Medicine { get; set; }
+
     }
 }

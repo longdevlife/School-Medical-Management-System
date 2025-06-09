@@ -97,6 +97,10 @@ namespace Sever.Migrations
                     b.Property<int?>("MedicalEventID")
                         .HasColumnType("int");
 
+                    b.Property<string>("MedicineID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int?>("NewsID")
                         .HasColumnType("int");
 
@@ -109,6 +113,8 @@ namespace Sever.Migrations
                     b.HasKey("FileID");
 
                     b.HasIndex("MedicalEventID");
+
+                    b.HasIndex("MedicineID");
 
                     b.HasIndex("NewsID");
 
@@ -347,11 +353,8 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.Medicine", b =>
                 {
-                    b.Property<int>("MedicineID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MedicineID"));
+                    b.Property<string>("MedicineID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Dosage")
                         .IsRequired()
@@ -366,7 +369,12 @@ namespace Sever.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Notes")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NurseID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ParentID")
                         .IsRequired()
@@ -380,11 +388,55 @@ namespace Sever.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("MedicineID");
+
+                    b.HasIndex("NurseID");
 
                     b.HasIndex("ParentID");
 
                     b.ToTable("Medicine");
+                });
+
+            modelBuilder.Entity("Sever.Model.MedicineHistory", b =>
+                {
+                    b.Property<int>("HistoryID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HistoryID"));
+
+                    b.Property<string>("ChangeDescription")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MedicineID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NewStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PreviousStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("HistoryID");
+
+                    b.HasIndex("MedicineID");
+
+                    b.ToTable("MedicineHistory");
                 });
 
             modelBuilder.Entity("Sever.Model.News", b =>
@@ -722,6 +774,12 @@ namespace Sever.Migrations
                         .WithMany("File")
                         .HasForeignKey("MedicalEventID");
 
+                    b.HasOne("Sever.Model.Medicine", "Medicine")
+                        .WithMany("Files")
+                        .HasForeignKey("MedicineID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Sever.Model.News", "News")
                         .WithMany("File")
                         .HasForeignKey("NewsID");
@@ -731,6 +789,8 @@ namespace Sever.Migrations
                         .HasForeignKey("SchoolID");
 
                     b.Navigation("MedicalEvent");
+
+                    b.Navigation("Medicine");
 
                     b.Navigation("News");
 
@@ -826,13 +886,32 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.Medicine", b =>
                 {
+                    b.HasOne("Sever.Model.User", "Nurse")
+                        .WithMany()
+                        .HasForeignKey("NurseID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Sever.Model.User", "Parent")
                         .WithMany("Medicine")
                         .HasForeignKey("ParentID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Nurse");
+
                     b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("Sever.Model.MedicineHistory", b =>
+                {
+                    b.HasOne("Sever.Model.Medicine", "Medicine")
+                        .WithMany()
+                        .HasForeignKey("MedicineID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Medicine");
                 });
 
             modelBuilder.Entity("Sever.Model.News", b =>
@@ -967,6 +1046,11 @@ namespace Sever.Migrations
                     b.Navigation("File");
 
                     b.Navigation("MedicalEventDetail");
+                });
+
+            modelBuilder.Entity("Sever.Model.Medicine", b =>
+                {
+                    b.Navigation("Files");
                 });
 
             modelBuilder.Entity("Sever.Model.News", b =>

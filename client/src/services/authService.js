@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import api from "./api";
+import axiosClient from "../api/axiosClient";
 
 const authService = {
   // eslint-disable-next-line no-unused-vars

@@ -28,6 +28,7 @@ namespace Sever.Context
         public DbSet<User> Users { get; set; }
         public DbSet<VaccinationRecord> VaccinationRecord { get; set; }
         public DbSet<Vaccine> Vaccine { get; set; }
+        public DbSet<RefreshToken> RefreshToken { get; set; } = null!;
 
         #endregion
 
@@ -54,23 +55,16 @@ namespace Sever.Context
                 .HasColumnType("date");
             #endregion
 
-            #region Appointment
-            modelBuilder.Entity<Appointment>()
-                .HasOne(a => a.MedicalSpecilist)
-                .WithMany(u => u.MedicalAppointments)
-                .HasForeignKey(a => a.MedicalSpecilistID)
+            #region Health Check Up
+            modelBuilder.Entity<HealthCheckUp>()
+                .HasOne(h => h.Checker)
+                .WithMany(u => u.NurseHealthCheckUp)
+                .HasForeignKey(h => h.CheckerID)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Appointment>()
-                .HasOne(a => a.Parent)
-                .WithMany(u => u.ParentAppointments)
-                .HasForeignKey(a => a.ParentID)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Appointment>()
-                .HasOne(a => a.StudentProfile)
-                .WithMany(s => s.Appointment) 
-                .HasForeignKey(a => a.StudentID)
+            modelBuilder.Entity<HealthCheckUp>()
+                .HasOne(h => h.Parent)
+                .WithMany(u => u.ParentHealthCheckUp)
+                .HasForeignKey(h => h.ParentID)
                 .OnDelete(DeleteBehavior.Restrict);
             #endregion
 
@@ -80,12 +74,6 @@ namespace Sever.Context
                 .WithMany(u => u.MedicalEvent)
                 .HasForeignKey(m => m.NurseID)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<MedicalEvent>()
-                .HasOne(m => m.StudentProfile)
-                .WithMany(s => s.MedicalEvent)
-                .HasForeignKey(m => m.StudentID)
-                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<MedicalEvent>()
                 .HasOne(m => m.EventType)
@@ -100,12 +88,6 @@ namespace Sever.Context
                 .WithMany(u => u.Medicine)
                 .HasForeignKey(m => m.ParentID)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Medicine>()
-                .HasOne(m => m.StudentProfile)
-                .WithMany(s => s.Medicine)
-                .HasForeignKey(m => m.StudentID)
-                .OnDelete(DeleteBehavior.Cascade);
             #endregion
 
             #region VaccinationRecord
@@ -128,9 +110,28 @@ namespace Sever.Context
                 .OnDelete(DeleteBehavior.Restrict);
             #endregion
 
-            #region
+            #region User
             modelBuilder.Entity<User>()
                 .HasIndex(m => m.UserName).IsUnique();
+            #endregion
+
+
+            #region Medical Event Detail
+            modelBuilder.Entity<MedicalEventDetail>()
+                 .HasKey(m => new { m.MedicalEventID, m.StudentID });
+
+            modelBuilder.Entity<MedicalEventDetail>()
+                .HasOne(m => m.MedicalEvent)
+                .WithMany(e => e.MedicalEventDetail)
+                .HasForeignKey(m => m.MedicalEventID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MedicalEventDetail>()
+                .HasOne(m => m.StudentProfile)
+                .WithMany(s => s.MedicalEventDetail)
+                .HasForeignKey(m => m.StudentID)
+                .OnDelete(DeleteBehavior.Restrict);
+
             #endregion
         }
 

@@ -17,10 +17,7 @@ namespace Sever.Model
         public string NurseID { get; set; }
         [ForeignKey("NurseID")]
         public User Nurse { get; set; }
-        public string StudentID { get; set; }
-        [ForeignKey("StudentID")]
-        public StudentProfile StudentProfile { get; set; }
-
+        public List<MedicalEventDetail> MedicalEventDetail { get; set; }
         public List<Files> File {  get; set; }
 
     }

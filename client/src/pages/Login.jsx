@@ -304,6 +304,11 @@ const Login = () => {
                     Quên mật khẩu?
                   </a>
                 </div>
+                <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
+                  Bằng cách nhấp vào tiếp tục, bạn đồng ý với{" "}
+                  <a href="#">Điều khoản dịch vụ</a> and{" "}
+                  <a href="#">Chính sách quyền riêng tư</a>.
+                </div>
               </Form>
             </div>
           </div>{" "}

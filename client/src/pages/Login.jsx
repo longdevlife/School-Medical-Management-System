@@ -140,8 +140,7 @@ const Login = () => {
               }}
             ></div>
           ))}
-        </div>
-        {/* Chấm nhỏ rung rinh - Thêm theo yêu cầu */}
+        </div>{" "}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {[...Array(20)].map((_, i) => (
             <div
@@ -153,6 +152,43 @@ const Login = () => {
                 animationDelay: `${Math.random() * 3}s`,
                 animationDuration: `${2 + Math.random() * 3}s`,
                 transform: `scale(${0.5 + Math.random() * 0.5})`,
+              }}
+            ></div>
+          ))}
+        </div>
+        {/* Đốm sáng lấp lánh */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={`light-spot-${i}`}
+              className="absolute bg-gradient-to-r from-white/30 via-white/50 to-white/20 rounded-full blur-sm animate-pulse"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                width: `${4 + Math.random() * 8}px`,
+                height: `${4 + Math.random() * 8}px`,
+                animationDelay: `${Math.random() * 4}s`,
+                animationDuration: `${3 + Math.random() * 2}s`,
+              }}
+            ></div>
+          ))}
+        </div>
+        {/* Đốm sáng lớn hơn với hiệu ứng glow */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={`glow-spot-${i}`}
+              className="absolute bg-white/20 rounded-full blur-md animate-bounce-slow"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                width: `${8 + Math.random() * 16}px`,
+                height: `${8 + Math.random() * 16}px`,
+                animationDelay: `${Math.random() * 5}s`,
+                animationDuration: `${4 + Math.random() * 3}s`,
+                boxShadow: `0 0 ${
+                  4 + Math.random() * 8
+                }px rgba(255, 255, 255, 0.3)`,
               }}
             ></div>
           ))}

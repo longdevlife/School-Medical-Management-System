@@ -43,6 +43,10 @@ const Login = () => {
         case "MANAGER":
           navigate("/manager");
           break;
+        case "ADMIN":
+          navigate("/admin");
+          break;
+
         default:
           message.error("Vai trò không hợp lệ");
           break;
@@ -144,10 +148,10 @@ const Login = () => {
         <div
           className="absolute bottom-1/3 left-1/5 w-24 h-24 bg-white/5 backdrop-blur-sm rounded-full animate-floatBubble"
           style={{ animationDelay: "3s" }}
-        ></div>
+        ></div>{" "}
         {/* Animated particles - Hiệu ứng hạt bay */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(12)].map((_, i) => (
+          {[...Array(6)].map((_, i) => (
             <div
               key={i}
               className="absolute w-2 h-2 bg-white/30 rounded-full animate-float"
@@ -163,7 +167,7 @@ const Login = () => {
           ))}
         </div>
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(20)].map((_, i) => (
+          {[...Array(8)].map((_, i) => (
             <div
               key={`sparkle-${i}`}
               className="absolute w-1 h-1 bg-white/40 rounded-full animate-pulse"
@@ -179,7 +183,7 @@ const Login = () => {
         </div>
         {/* Đốm sáng lấp lánh */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(8)].map((_, i) => (
+          {[...Array(4)].map((_, i) => (
             <div
               key={`light-spot-${i}`}
               className="absolute bg-gradient-to-r from-white/30 via-white/50 to-white/20 rounded-full blur-sm animate-pulse"
@@ -196,7 +200,7 @@ const Login = () => {
         </div>
         {/* Đốm sáng lớn hơn với hiệu ứng glow */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(5)].map((_, i) => (
+          {[...Array(3)].map((_, i) => (
             <div
               key={`glow-spot-${i}`}
               className="absolute bg-white/20 rounded-full blur-md animate-bounce-slow"
@@ -267,7 +271,7 @@ const Login = () => {
                     autoComplete="off"
                     className="rounded-xl border-2 border-gray-200 focus:border-blue-500 hover:border-blue-300 transition-all duration-200 h-14 shadow-sm hover:shadow-md focus:shadow-lg"
                   />
-                </Form.Item>
+                </Form.Item>{" "}
                 <Form.Item
                   name="password"
                   rules={[
@@ -275,7 +279,6 @@ const Login = () => {
                   ]}
                   className="mb-8"
                 >
-                  {" "}
                   <Input.Password
                     prefix={<LockOutlined className="text-gray-400" />}
                     placeholder="Mật khẩu"
@@ -306,7 +309,7 @@ const Login = () => {
                   <span className="px-4 text-gray-500 text-sm">hoặc</span>
                   <div className="flex-1 border-t border-gray-200"></div>
                 </div>
-                {/* Google Login Button */}
+                {/* Google Login Button */}{" "}
                 <Form.Item>
                   <Button
                     type="default"
@@ -317,7 +320,7 @@ const Login = () => {
                   >
                     <FaGoogle className="text-red-500" />
                     Đăng nhập bằng Gmail
-                  </Button>{" "}
+                  </Button>
                 </Form.Item>
                 <div className="text-center space-y-4">
                   <a

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Layout } from "antd";
 import { Outlet } from "react-router-dom";
-import HeaderAdmin from "./HeaderAdmin";
 import SidebarAdmin from "./SidebarAdmin";
+import HeaderAdmin from "./HeaderAdmin";
 import Footer from "./Footer";
 import styles from "./AdminLayout.module.css";
 
@@ -25,10 +25,10 @@ function AdminLayout() {
             <Outlet />
           </div>
         </Content>
-        <Footer /> 
+        <Footer />
       </Layout>
     </Layout>
   );
 }
 
-export default AdminLayout;
+export default React.memo(AdminLayout);

@@ -6,7 +6,7 @@ import {
   UserOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
-import styles from "./AdminLayout.module.css";
+import "./SidebarStyles.css"; // Import CSS toàn cục
 
 const { Sider } = Layout;
 
@@ -39,12 +39,12 @@ function SidebarAdmin({ collapsed, setCollapsed }) {
 
   const handleMouseEnter = () => {
     clearTimeout(hoverTimeout.current);
-    hoverTimeout.current = setTimeout(() => setCollapsed(false), 100); 
+    hoverTimeout.current = setTimeout(() => setCollapsed(false), 100);
   };
 
   const handleMouseLeave = () => {
     clearTimeout(hoverTimeout.current);
-    hoverTimeout.current = setTimeout(() => setCollapsed(true), 300); 
+    hoverTimeout.current = setTimeout(() => setCollapsed(true), 300);
   };
 
   return (
@@ -53,13 +53,16 @@ function SidebarAdmin({ collapsed, setCollapsed }) {
       collapsible
       collapsed={collapsed}
       collapsedWidth={80}
-      className={styles.sider}
       theme="dark"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      
     >
-      <div className={styles.logo}>
-        <img src="https://img.lovepik.com/free-png/20210922/lovepik-icon-of-vector-hospital-png-image_401050686_wh1200.png" />
+      <div className="sidebar-logo">
+        <img
+          src="https://img.lovepik.com/free-png/20210922/lovepik-icon-of-vector-hospital-png-image_401050686_wh1200.png"
+          alt="Logo"
+        />
       </div>
       <Menu
         theme="dark"
@@ -68,7 +71,7 @@ function SidebarAdmin({ collapsed, setCollapsed }) {
         selectedKeys={[location.pathname]}
         items={menuItems}
         onClick={handleMenuClick}
-        className={styles.menu}
+        className="sidebar-menu"
       />
     </Sider>
   );

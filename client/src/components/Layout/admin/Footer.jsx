@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./AdminLayout.module.css"; // hoặc "./Footer.module.css"
-
+import { FaFacebook } from "react-icons/fa"; 
 export default function Footer() {
   return (
     <footer className={styles.footer}>
@@ -15,13 +15,7 @@ export default function Footer() {
         </div>
 
         <div className={styles.footerSection}>
-          <h4>Liên kết</h4>
-          <ul>
-            <li><a href="/about">Về chúng tôi</a></li>
-            <li><a href="/services">Dịch vụ</a></li>
-            <li><a href="/news">Tin tức</a></li>
-            <li><a href="/contact">Liên hệ</a></li>
-          </ul>
+         
         </div>
 
         <div className={styles.footerSection}>
@@ -34,15 +28,18 @@ export default function Footer() {
         </div>
 
         <div className={styles.footerSection}>
-          <h4>Chính sách</h4>
-          <ul>
-            <li><a href="/privacy">Chính sách bảo mật</a></li>
-            <li><a href="/terms">Điều khoản sử dụng</a></li>
-          </ul>
-          <div className={styles.socialIcons}>
-            <a href="https://facebook.com">Facebook</a> |{" "}
-            <a href="https://twitter.com">Twitter</a>
-          </div>
+         <h4>Kết nối với chúng tôi</h4>
+<div className={styles.socialIcons}>
+    <a
+    href="https://www.facebook.com/fptschools/?locale=vi_VN"
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{ display: "flex", alignItems: "center", gap: 8, color: "#4267B2" }}
+  >
+    <FaFacebook size={20} />
+    Facebook
+  </a>
+</div>
         </div>
       </div>
 

@@ -11,6 +11,11 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import styles from "./AdminLayout.module.css";
+import {
+  HomeOutlined,
+  FileTextOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 
 const { Header } = Layout;
 
@@ -67,13 +72,23 @@ function HeaderAdmin({ collapsed, setCollapsed }) {
         />
       </div>
 
-      <div className={styles.centerMenu}>
-        <Space size="middle">
-          <span className={styles.menuLink} onClick={() => handleNavigate("/")}>Trang chủ</span>
-          <span className={styles.menuLink} onClick={() => handleNavigate("/tin-tuc")}>Tin tức</span>
-          <span className={styles.menuLink} onClick={() => handleNavigate("/gioi-thieu")}>Giới thiệu</span>
-        </Space>
-      </div>
+    <div className={styles.centerMenu}>
+      <Space size="middle">
+        <span className={styles.menuLink} onClick={() => navigate("/")}>
+          <HomeOutlined style={{ marginRight: 6 }} />
+          Trang chủ
+        </span>
+        <span className={styles.menuLink} onClick={() => navigate("/tin-tuc")}>
+          <FileTextOutlined style={{ marginRight: 6 }} />
+          Tin tức
+        </span>
+        <span className={styles.menuLink} onClick={() => navigate("/gioi-thieu")}>
+          <InfoCircleOutlined style={{ marginRight: 6 }} />
+          Giới thiệu
+        </span>
+      </Space>
+    </div>
+
 
       <div className={styles.rightSection}>
         <Space>

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: "https://localhost:7040/api/", // HTTP port từ backend
+  baseURL: "https://localhost:7040/api/", // HTTPS port từ backend
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

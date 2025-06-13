@@ -1,63 +1,99 @@
-// eslint-disable-next-line no-unused-vars
-import axiosClient from "../api/axiosClient";
+import { authApi } from "../api/authApi";
+
+// Helper function to decode JWT token
+const decodeToken = (token) => {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload;
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return null;
+  }
+};
+
+// Helper function to map RoleID to role name
+const mapRoleIdToName = (roleId) => {
+  const roleMap = {
+    1: "NURSE",
+    2: "MANAGER", 
+    3: "PARENT",
+  };
+  return roleMap[roleId] || "USER";
+};
 
 const authService = {
-  // eslint-disable-next-line no-unused-vars
   login: async (username, password) => {
-    // --- START MOCK LOGIN LOGIC (REMOVE WHEN BACKEND API IS READY) ---
-    console.log(`Attempting mock login for user: ${username}`);
-    // Simulate a delay to mimic network request
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      console.log(`Attempting real API login for user: ${username}`);
 
-    let mockUser = null;
-    let mockToken = "fake-token-" + username; // Generate a dummy token
+      // Call real backend API
+      const response = await authApi.login({ username, password });
 
-    switch (username.toLowerCase()) {
-      case "nurse":
-        mockUser = { id: "nurse-123", username: "nurse", role: "NURSE" };
-        break;
-      case "manager":
-        mockUser = { id: "manager-456", username: "manager", role: "MANAGER" };
-        break;
-      case "parent":
-        mockUser = { id: "parent-789", username: "parent", role: "PARENT" };
-        break;
-      default: {
-        // Simulate login failure
-        const error = new Error("Invalid username or password");
-        error.response = {
-          status: 401,
-          data: { message: "Invalid credentials" },
-        };
-        throw error;
+      console.log("API Response:", response.data);
+
+      // Store token and decode user info from JWT
+      if (response.data.accessToken) {
+        localStorage.setItem("token", response.data.accessToken);
+
+        // Decode JWT token to get user info
+        const tokenPayload = decodeToken(response.data.accessToken);
+        console.log("Token payload:", tokenPayload);
+        
+        if (tokenPayload) {
+          // Find role claim (backend uses Microsoft claims)
+          const roleId = parseInt(
+            tokenPayload[
+              "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+            ] ||
+              tokenPayload.role ||
+              0
+          );
+
+          // Find username claim (backend uses XMLSoap claims)
+          const username_from_token =
+            tokenPayload[
+              "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+            ] ||
+            tokenPayload[
+              "http://schemas.microsoft.com/ws/2008/06/identity/claims/name"
+            ] ||
+            tokenPayload.name ||
+            username;
+
+          const user = {
+            username: username_from_token,
+            role: mapRoleIdToName(roleId),
+          };
+
+          console.log("RoleId:", roleId, "→ Role:", user.role);
+          localStorage.setItem("user", JSON.stringify(user));
+          console.log("Decoded user from token:", user);
+
+          // Return user info along with tokens for Login.jsx
+          return {
+            ...response.data,
+            user: user,
+          };
+        }
+      }
+
+      console.log(`Real API login successful for user: ${username}`);
+      return response.data;
+    } catch (error) {
+      console.error("Login API Error:", error);
+
+      // Handle API errors
+      if (error.response) {
+        // Server responded with error status
+        throw new Error(error.response.data.message || "Đăng nhập thất bại");
+      } else if (error.request) {
+        // Network error
+        throw new Error("Không thể kết nối đến server");
+      } else {
+        // Other error
+        throw new Error("Đã xảy ra lỗi không xác định");
       }
     }
-
-    // Simulate successful login response
-    const responseData = { token: mockToken, user: mockUser };
-
-    // Store mock token and user in localStorage
-    localStorage.setItem("token", mockToken);
-    localStorage.setItem("user", JSON.stringify(mockUser));
-
-    console.log(`Mock login successful for user: ${username}`);
-    return responseData; // Return mock response data
-    // --- END MOCK LOGIN LOGIC ---
-
-    /*
-    // --- ORIGINAL API CALL LOGIC (UNCOMMENT WHEN BACKEND API IS READY) ---
-    // try {
-    //   const response = await api.post('/auth/login', { username, password });
-    //   if (response.data.token) {
-    //     localStorage.setItem('token', response.data.token);
-    //     localStorage.setItem('user', JSON.stringify(response.data.user));
-    //   }
-    //   return response.data;
-    // } catch (error) {
-    //   throw error;
-    // }
-    // --- END ORIGINAL API CALL LOGIC ---
-    */
   },
 
   logout: () => {

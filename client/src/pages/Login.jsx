@@ -48,14 +48,14 @@ const Login = () => {
           break;
       }
     } catch (error) {
-      message.error(error.response?.data?.message || "Đăng nhập thất bại");
+      message.error(error.message || "Đăng nhập thất bại");
     } finally {
       setLoading(false);
     }
   };
   return (
     <>
-      <style jsx>{`
+      <style>{`
         @keyframes gradientShift {
           0% {
             background-position: 0% 50%;
@@ -107,8 +107,29 @@ const Login = () => {
           background-size: 500% 500% !important;
           animation: rainbow 2s ease infinite !important;
         }
-      `}</style>
 
+        /* Override Chrome autofill ugly styles */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 30px white inset !important;
+          -webkit-text-fill-color: #374151 !important;
+          transition: background-color 5000s ease-in-out 0s !important;
+        }
+        
+        /* Custom autofill styling for our rounded inputs */
+        .ant-input:-webkit-autofill {
+          border-radius: 12px !important;
+          border: 2px solid #e5e7eb !important;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+        }
+        
+        .ant-input:-webkit-autofill:focus {
+          border-color: #3b82f6 !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        }
+      `}</style>
       <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 flex items-center justify-center p-4 relative overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 backdrop-blur-xl rounded-full animate-floatBubble"></div>
@@ -123,7 +144,7 @@ const Login = () => {
         <div
           className="absolute bottom-1/3 left-1/5 w-24 h-24 bg-white/5 backdrop-blur-sm rounded-full animate-floatBubble"
           style={{ animationDelay: "3s" }}
-        ></div>{" "}
+        ></div>
         {/* Animated particles - Hiệu ứng hạt bay */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {[...Array(12)].map((_, i) => (
@@ -141,7 +162,6 @@ const Login = () => {
             ></div>
           ))}
         </div>
-        {/* Chấm nhỏ rung rinh - Thêm theo yêu cầu */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {[...Array(20)].map((_, i) => (
             <div
@@ -153,6 +173,43 @@ const Login = () => {
                 animationDelay: `${Math.random() * 3}s`,
                 animationDuration: `${2 + Math.random() * 3}s`,
                 transform: `scale(${0.5 + Math.random() * 0.5})`,
+              }}
+            ></div>
+          ))}
+        </div>
+        {/* Đốm sáng lấp lánh */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={`light-spot-${i}`}
+              className="absolute bg-gradient-to-r from-white/30 via-white/50 to-white/20 rounded-full blur-sm animate-pulse"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                width: `${4 + Math.random() * 8}px`,
+                height: `${4 + Math.random() * 8}px`,
+                animationDelay: `${Math.random() * 4}s`,
+                animationDuration: `${3 + Math.random() * 2}s`,
+              }}
+            ></div>
+          ))}
+        </div>
+        {/* Đốm sáng lớn hơn với hiệu ứng glow */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={`glow-spot-${i}`}
+              className="absolute bg-white/20 rounded-full blur-md animate-bounce-slow"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                width: `${8 + Math.random() * 16}px`,
+                height: `${8 + Math.random() * 16}px`,
+                animationDelay: `${Math.random() * 5}s`,
+                animationDuration: `${4 + Math.random() * 3}s`,
+                boxShadow: `0 0 ${
+                  4 + Math.random() * 8
+                }px rgba(255, 255, 255, 0.3)`,
               }}
             ></div>
           ))}
@@ -187,7 +244,7 @@ const Login = () => {
                 </h1>
                 <p className="text-gray-600 text-base lg:text-lg">
                   Đăng nhập để truy cập website Y Tế Trường Học
-                </p>
+                </p>{" "}
               </div>
               <Form
                 name="login"
@@ -196,7 +253,6 @@ const Login = () => {
                 layout="vertical"
                 className="space-y-6"
               >
-                {" "}
                 <Form.Item
                   name="username"
                   rules={[
@@ -208,6 +264,7 @@ const Login = () => {
                     prefix={<UserOutlined className="text-gray-400" />}
                     placeholder="Tên đăng nhập"
                     size="large"
+                    autoComplete="off"
                     className="rounded-xl border-2 border-gray-200 focus:border-blue-500 hover:border-blue-300 transition-all duration-200 h-14 shadow-sm hover:shadow-md focus:shadow-lg"
                   />
                 </Form.Item>
@@ -218,13 +275,15 @@ const Login = () => {
                   ]}
                   className="mb-8"
                 >
+                  {" "}
                   <Input.Password
                     prefix={<LockOutlined className="text-gray-400" />}
                     placeholder="Mật khẩu"
                     size="large"
+                    autoComplete="off"
                     className="rounded-xl border-2 border-gray-200 focus:border-blue-500 hover:border-blue-300 transition-all duration-200 h-14 shadow-sm hover:shadow-md focus:shadow-lg"
                   />
-                </Form.Item>{" "}
+                </Form.Item>
                 <Form.Item>
                   <Button
                     type="primary"
@@ -258,8 +317,8 @@ const Login = () => {
                   >
                     <FaGoogle className="text-red-500" />
                     Đăng nhập bằng Gmail
-                  </Button>
-                </Form.Item>{" "}
+                  </Button>{" "}
+                </Form.Item>
                 <div className="text-center space-y-4">
                   <a
                     href="#"
@@ -268,9 +327,14 @@ const Login = () => {
                     Quên mật khẩu?
                   </a>
                 </div>
+                <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
+                  Bằng cách nhấp vào tiếp tục, bạn đồng ý với{" "}
+                  <a href="#">Điều khoản dịch vụ</a> and{" "}
+                  <a href="#">Chính sách quyền riêng tư</a>.
+                </div>{" "}
               </Form>
             </div>
-          </div>{" "}
+          </div>
           {/* Right side - Illustration */}
           <div className="w-full lg:w-1/2 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 p-8 lg:p-12 flex flex-col justify-center items-center text-white relative overflow-hidden order-1 lg:order-2 min-h-[300px] lg:min-h-auto">
             {/* Background decorative elements for right side */}

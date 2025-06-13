@@ -5,16 +5,16 @@ import axiosClient from "./axiosClient";
 export const authApi = {
   login: (credentials) => {
     // POST request với username/password
-    return axiosClient.post("/auth/login", credentials);
+    return axiosClient.post("/Auth/login", credentials);
   },
 
   refreshToken: (token) => {
     // POST request với token cũ để lấy token mới
-    return axiosClient.post("/auth/refresh", { refreshToken: token });
+    return axiosClient.post("/Auth/refresh", { refreshToken: token });
   },
 
   logout: () => {
     // POST request để logout trên server
-    return axiosClient.post("/auth/logout");
+    return axiosClient.post("/Auth/logout");
   },
 };

@@ -15,7 +15,7 @@ const decodeToken = (token) => {
 const mapRoleIdToName = (roleId) => {
   const roleMap = {
     1: "NURSE",
-    2: "MANAGER",
+    2: "MANAGER", 
     3: "PARENT",
   };
   return roleMap[roleId] || "USER";
@@ -38,6 +38,7 @@ const authService = {
         // Decode JWT token to get user info
         const tokenPayload = decodeToken(response.data.accessToken);
         console.log("Token payload:", tokenPayload);
+        
         if (tokenPayload) {
           // Find role claim (backend uses Microsoft claims)
           const roleId = parseInt(

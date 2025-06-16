@@ -6,7 +6,7 @@ import {
   UserOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
-import "./SidebarStyles.css"; // Import CSS toàn cục
+import "./SidebarStyles.css";
 
 const { Sider } = Layout;
 
@@ -54,9 +54,17 @@ function SidebarAdmin({ collapsed, setCollapsed }) {
       collapsed={collapsed}
       collapsedWidth={80}
       theme="dark"
+      className="sidebar"
+      style={{
+        position: "fixed",
+        left: 0,
+        top: 0,
+        bottom: 0,
+        height: "100vh",
+        zIndex: 1000,
+      }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      
     >
       <div className="sidebar-logo">
         <img
@@ -64,15 +72,18 @@ function SidebarAdmin({ collapsed, setCollapsed }) {
           alt="Logo"
         />
       </div>
-      <Menu
-        theme="dark"
-        mode="inline"
-        inlineCollapsed={collapsed}
-        selectedKeys={[location.pathname]}
-        items={menuItems}
-        onClick={handleMenuClick}
-        className="sidebar-menu"
-      />
+
+      <div className="sidebar-menu-wrapper">
+        <Menu
+          theme="dark"
+          mode="inline"
+          inlineCollapsed={collapsed}
+          selectedKeys={[location.pathname]}
+          items={menuItems}
+          onClick={handleMenuClick}
+          className="sidebar-menu"
+        />
+      </div>
     </Sider>
   );
 }

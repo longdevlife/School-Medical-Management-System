@@ -15,33 +15,28 @@ import Settings from "./pages/settings/Settings";
 import Home from "./pages/context/HomePages";
 import News from "./pages/context/News";
 import Information from "./pages/context/Information";
+import Login from "./pages/Login";
 
 function App() {
   return (
-    
-    
+    <ConfigProvider>
       <Router>
         <Routes>
-          {/* Admin layout luôn bao hết các route */}
-          <Route path="/" element={<AdminLayout />}>
-            {/* / → Trang chủ trong layout admin */}
-            <Route index element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
 
-            {/* Các trang context */}
+          {/* Admin layout */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Home />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="accounts" element={<AccountList />} />
+            <Route path="settings" element={<Settings />} />
             <Route path="tin-tuc" element={<News />} />
             <Route path="gioi-thieu" element={<Information />} />
-
-            {/* Trang admin khác */}
-            <Route path="admin/dashboard" element={<AdminDashboard />} />
-            <Route path="admin/accounts" element={<AccountList />} />
-            <Route path="admin/settings" element={<Settings />} />
           </Route>
-
-          {/* Fallback: nếu không khớp gì → quay về trang chủ */}
-          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
-    
+    </ConfigProvider>
   );
 }
 

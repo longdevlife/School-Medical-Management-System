@@ -1,118 +1,91 @@
-import React from 'react';
-import { Card, Form, Input, Button, Select, Switch, Divider, message } from 'antd';
-import { SaveOutlined } from '@ant-design/icons';
-
-const { Option } = Select;
+import React from "react";
+import { Card, Form, Input, Button, Switch, Select, Space } from "antd";
 
 function Settings() {
   const [form] = Form.useForm();
 
-  const handleSubmit = (values) => {
-    console.log('Form values:', values);
-    message.success('Cài đặt đã được lưu thành công!');
+  const onFinish = (values) => {
+    console.log("Form values:", values);
   };
 
   return (
     <div>
-      <h1>Cài đặt hệ thống</h1>
-
+      <h1>Cài đặt</h1>
       <Card>
         <Form
           form={form}
           layout="vertical"
-          onFinish={handleSubmit}
+          onFinish={onFinish}
           initialValues={{
-            schoolName: 'Trường Tiểu học ABC',
-            address: '123 Đường XYZ, Quận 1, TP.HCM',
-            phone: '02812345678',
-            email: 'contact@school.edu.vn',
-            language: 'vi',
-            theme: 'light',
             notifications: true,
-            autoBackup: true
+            language: "vi",
+            theme: "light",
           }}
         >
-          <h2>Thông tin trường học</h2>
           <Form.Item
-            name="schoolName"
             label="Tên trường"
-            rules={[{ required: true, message: 'Vui lòng nhập tên trường' }]}
+            name="schoolName"
+            rules={[{ required: true, message: "Vui lòng nhập tên trường" }]}
           >
             <Input />
           </Form.Item>
 
           <Form.Item
-            name="address"
             label="Địa chỉ"
-            rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
+            name="address"
+            rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
           >
             <Input />
           </Form.Item>
 
           <Form.Item
-            name="phone"
             label="Số điện thoại"
-            rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
+            name="phone"
+            rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
           >
             <Input />
           </Form.Item>
 
           <Form.Item
-            name="email"
             label="Email"
+            name="email"
             rules={[
-              { required: true, message: 'Vui lòng nhập email' },
-              { type: 'email', message: 'Email không hợp lệ' }
+              { required: true, message: "Vui lòng nhập email" },
+              { type: "email", message: "Email không hợp lệ" },
             ]}
           >
             <Input />
           </Form.Item>
 
-          <Divider />
-
-          <h2>Cài đặt hệ thống</h2>
           <Form.Item
-            name="language"
-            label="Ngôn ngữ"
-            rules={[{ required: true, message: 'Vui lòng chọn ngôn ngữ' }]}
-          >
-            <Select>
-              <Option value="vi">Tiếng Việt</Option>
-              <Option value="en">English</Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="theme"
-            label="Giao diện"
-            rules={[{ required: true, message: 'Vui lòng chọn giao diện' }]}
-          >
-            <Select>
-              <Option value="light">Sáng</Option>
-              <Option value="dark">Tối</Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="notifications"
             label="Thông báo"
+            name="notifications"
             valuePropName="checked"
           >
             <Switch />
           </Form.Item>
 
-          <Form.Item
-            name="autoBackup"
-            label="Tự động sao lưu"
-            valuePropName="checked"
-          >
-            <Switch />
+          <Form.Item label="Ngôn ngữ" name="language">
+            <Select>
+              <Select.Option value="vi">Tiếng Việt</Select.Option>
+              <Select.Option value="en">English</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item label="Giao diện" name="theme">
+            <Select>
+              <Select.Option value="light">Sáng</Select.Option>
+              <Select.Option value="dark">Tối</Select.Option>
+            </Select>
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" icon={<SaveOutlined />}>
-              Lưu cài đặt
-            </Button>
+            <Space>
+              <Button type="primary" htmlType="submit">
+                Lưu thay đổi
+              </Button>
+              <Button onClick={() => form.resetFields()}>Đặt lại</Button>
+            </Space>
           </Form.Item>
         </Form>
       </Card>
@@ -120,4 +93,4 @@ function Settings() {
   );
 }
 
-export default Settings; 
+export default Settings;

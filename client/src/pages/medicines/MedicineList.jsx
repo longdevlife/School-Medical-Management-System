@@ -1,82 +1,95 @@
-import React, { useState } from 'react';
-import { Table, Button, Modal, Form, Input, InputNumber, Select, Space, Card } from 'antd';
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import React, { useState } from "react";
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  Space,
+  Card,
+  Tag,
+} from "antd";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
 function MedicineList() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
 
   // Mock data - replace with actual API calls
   const medicines = [
     {
-      key: '1',
-      id: 'T001',
-      name: 'Paracetamol',
-      type: 'Thuốc hạ sốt',
+      key: "1",
+      id: "T001",
+      name: "Paracetamol",
+      type: "Thuốc hạ sốt",
       quantity: 100,
-      unit: 'Viên',
-      expiryDate: '2025-12-31',
-      status: 'Còn hàng'
+      unit: "Viên",
+      expiryDate: "2025-12-31",
+      status: "Còn hàng",
     },
     {
-      key: '2',
-      id: 'T002',
-      name: 'Vitamin C',
-      type: 'Vitamin',
+      key: "2",
+      id: "T002",
+      name: "Vitamin C",
+      type: "Vitamin",
       quantity: 50,
-      unit: 'Hộp',
-      expiryDate: '2025-06-30',
-      status: 'Còn hàng'
-    }
+      unit: "Hộp",
+      expiryDate: "2025-06-30",
+      status: "Còn hàng",
+    },
   ];
 
   const columns = [
     {
-      title: 'Mã thuốc',
-      dataIndex: 'id',
-      key: 'id',
+      title: "Mã thuốc",
+      dataIndex: "id",
+      key: "id",
     },
     {
-      title: 'Tên thuốc',
-      dataIndex: 'name',
-      key: 'name',
+      title: "Tên thuốc",
+      dataIndex: "name",
+      key: "name",
     },
     {
-      title: 'Loại thuốc',
-      dataIndex: 'type',
-      key: 'type',
+      title: "Loại thuốc",
+      dataIndex: "type",
+      key: "type",
     },
     {
-      title: 'Số lượng',
-      dataIndex: 'quantity',
-      key: 'quantity',
+      title: "Số lượng",
+      dataIndex: "quantity",
+      key: "quantity",
     },
     {
-      title: 'Đơn vị',
-      dataIndex: 'unit',
-      key: 'unit',
+      title: "Đơn vị",
+      dataIndex: "unit",
+      key: "unit",
     },
     {
-      title: 'Hạn sử dụng',
-      dataIndex: 'expiryDate',
-      key: 'expiryDate',
+      title: "Hạn sử dụng",
+      dataIndex: "expiryDate",
+      key: "expiryDate",
     },
     {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (
+        <Tag color={status === "Còn hàng" ? "green" : "red"}>{status}</Tag>
+      ),
     },
     {
-      title: 'Thao tác',
-      key: 'action',
-      render: (_, record) => (
+      title: "Thao tác",
+      key: "action",
+      render: () => (
         <Space size="middle">
-          <Button type="link" onClick={() => handleEdit(record)}>
-            Chỉnh sửa
-          </Button>
+          <Button type="link">Chi tiết</Button>
+          <Button type="link">Sửa</Button>
           <Button type="link" danger>
             Xóa
           </Button>
@@ -84,20 +97,14 @@ function MedicineList() {
       ),
     },
   ];
-
   const handleAdd = () => {
     form.resetFields();
     setIsModalVisible(true);
   };
 
-  const handleEdit = (record) => {
-    form.setFieldsValue(record);
-    setIsModalVisible(true);
-  };
-
   const handleModalOk = () => {
     form.validateFields().then((values) => {
-      console.log('Form values:', values);
+      console.log("Form values:", values);
       setIsModalVisible(false);
       form.resetFields();
     });
@@ -110,7 +117,13 @@ function MedicineList() {
   return (
     <div>
       <Card>
-        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+        <div
+          style={{
+            marginBottom: 16,
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
           <Input
             placeholder="Tìm kiếm thuốc..."
             prefix={<SearchOutlined />}
@@ -124,9 +137,10 @@ function MedicineList() {
 
         <Table
           columns={columns}
-          dataSource={medicines.filter(medicine =>
-            medicine.name.toLowerCase().includes(searchText.toLowerCase()) ||
-            medicine.id.toLowerCase().includes(searchText.toLowerCase())
+          dataSource={medicines.filter(
+            (medicine) =>
+              medicine.name.toLowerCase().includes(searchText.toLowerCase()) ||
+              medicine.id.toLowerCase().includes(searchText.toLowerCase())
           )}
         />
       </Card>
@@ -144,21 +158,21 @@ function MedicineList() {
           <Form.Item
             name="id"
             label="Mã thuốc"
-            rules={[{ required: true, message: 'Vui lòng nhập mã thuốc' }]}
+            rules={[{ required: true, message: "Vui lòng nhập mã thuốc" }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="name"
             label="Tên thuốc"
-            rules={[{ required: true, message: 'Vui lòng nhập tên thuốc' }]}
+            rules={[{ required: true, message: "Vui lòng nhập tên thuốc" }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="type"
             label="Loại thuốc"
-            rules={[{ required: true, message: 'Vui lòng chọn loại thuốc' }]}
+            rules={[{ required: true, message: "Vui lòng chọn loại thuốc" }]}
           >
             <Select>
               <Option value="Thuốc hạ sốt">Thuốc hạ sốt</Option>
@@ -170,14 +184,14 @@ function MedicineList() {
           <Form.Item
             name="quantity"
             label="Số lượng"
-            rules={[{ required: true, message: 'Vui lòng nhập số lượng' }]}
+            rules={[{ required: true, message: "Vui lòng nhập số lượng" }]}
           >
-            <InputNumber min={0} style={{ width: '100%' }} />
+            <InputNumber min={0} style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item
             name="unit"
             label="Đơn vị"
-            rules={[{ required: true, message: 'Vui lòng chọn đơn vị' }]}
+            rules={[{ required: true, message: "Vui lòng chọn đơn vị" }]}
           >
             <Select>
               <Option value="Viên">Viên</Option>
@@ -189,14 +203,14 @@ function MedicineList() {
           <Form.Item
             name="expiryDate"
             label="Hạn sử dụng"
-            rules={[{ required: true, message: 'Vui lòng nhập hạn sử dụng' }]}
+            rules={[{ required: true, message: "Vui lòng nhập hạn sử dụng" }]}
           >
             <Input type="date" />
           </Form.Item>
           <Form.Item
             name="status"
             label="Trạng thái"
-            rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
+            rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
           >
             <Select>
               <Option value="Còn hàng">Còn hàng</Option>
@@ -210,4 +224,4 @@ function MedicineList() {
   );
 }
 
-export default MedicineList; 
+export default MedicineList;

@@ -11,20 +11,28 @@ const { Content } = Layout;
 function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
 
+  const siderWidth = collapsed ? 80 : 200;
+
   return (
     <Layout className={styles.layout}>
       <SidebarAdmin collapsed={collapsed} setCollapsed={setCollapsed} />
+
       <Layout
-        className={`${styles.siteLayout} ${
-          collapsed ? styles.siteLayoutCollapsed : styles.siteLayoutExpanded
-        }`}
+        className={styles.siteLayout}
+        style={{
+          marginLeft: siderWidth,
+          minHeight: "100vh",
+          transition: "margin-left 0.3s ease",
+        }}
       >
         <HeaderAdmin collapsed={collapsed} setCollapsed={setCollapsed} />
+
         <Content className={styles.content}>
           <div className={styles.contentWrapper}>
             <Outlet />
           </div>
         </Content>
+
         <Footer />
       </Layout>
     </Layout>

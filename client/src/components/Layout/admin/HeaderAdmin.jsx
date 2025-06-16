@@ -8,14 +8,12 @@ import {
   LogoutOutlined,
   SettingOutlined,
   DashboardOutlined,
-} from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import styles from "./AdminLayout.module.css";
-import {
   HomeOutlined,
   FileTextOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import styles from "./AdminLayout.module.css";
 
 const { Header } = Layout;
 
@@ -50,15 +48,10 @@ function HeaderAdmin({ collapsed, setCollapsed }) {
 
   const handleUserMenuClick = ({ key }) => {
     if (key === "logout") {
-      navigate("/admin/dashboard");
+      navigate("/login");
     } else {
       navigate(`/admin/${key}`);
     }
-  };
-
-  // Điều hướng cho các liên kết ở giữa
-  const handleNavigate = (path) => {
-    navigate(path);
   };
 
   return (
@@ -72,23 +65,22 @@ function HeaderAdmin({ collapsed, setCollapsed }) {
         />
       </div>
 
-    <div className={styles.centerMenu}>
-      <Space size="middle">
-        <span className={styles.menuLink} onClick={() => navigate("/")}>
-          <HomeOutlined style={{ marginRight: 6 }} />
-          Trang chủ
-        </span>
-        <span className={styles.menuLink} onClick={() => navigate("/tin-tuc")}>
-          <FileTextOutlined style={{ marginRight: 6 }} />
-          Tin tức
-        </span>
-        <span className={styles.menuLink} onClick={() => navigate("/gioi-thieu")}>
-          <InfoCircleOutlined style={{ marginRight: 6 }} />
-          Giới thiệu
-        </span>
-      </Space>
-    </div>
-
+      <div className={styles.centerMenu}>
+        <Space size="middle">
+          <span className={styles.menuLink} onClick={() => navigate("/admin")}>
+            <HomeOutlined style={{ marginRight: 6 }} />
+            Trang chủ
+          </span>
+          <span className={styles.menuLink} onClick={() => navigate("/admin/tin-tuc")}>
+            <FileTextOutlined style={{ marginRight: 6 }} />
+            Tin tức
+          </span>
+          <span className={styles.menuLink} onClick={() => navigate("/admin/gioi-thieu")}>
+            <InfoCircleOutlined style={{ marginRight: 6 }} />
+            Giới thiệu
+          </span>
+        </Space>
+      </div>
 
       <div className={styles.rightSection}>
         <Space>

@@ -1,12 +1,15 @@
-import React from 'react';
+import React from "react";
 
 function Table({ data, columns }) {
   return (
-    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+    <table style={{ width: "100%", borderCollapse: "collapse" }}>
       <thead>
         <tr>
           {columns.map((column) => (
-            <th key={column.key} style={{ border: '1px solid #ccc', padding: '8px' }}>
+            <th
+              key={column.key}
+              style={{ border: "1px solid #ccc", padding: "8px" }}
+            >
               {column.title}
             </th>
           ))}
@@ -16,7 +19,10 @@ function Table({ data, columns }) {
         {data.map((row) => (
           <tr key={row.id}>
             {columns.map((column) => (
-              <td key={column.key} style={{ border: '1px solid #ccc', padding: '8px' }}>
+              <td
+                key={column.key}
+                style={{ border: "1px solid #ccc", padding: "8px" }}
+              >
                 {row[column.key]}
               </td>
             ))}
@@ -27,4 +33,4 @@ function Table({ data, columns }) {
   );
 }
 
-export default Table; 
+export default Table;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 function Modal({ isOpen, onClose, children }) {
   if (!isOpen) return null;
@@ -6,23 +6,23 @@ function Modal({ isOpen, onClose, children }) {
   return (
     <div
       style={{
-        position: 'fixed',
+        position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        background: "rgba(0, 0, 0, 0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <div
         style={{
-          background: 'white',
-          padding: '20px',
-          borderRadius: '8px',
-          width: '400px',
+          background: "white",
+          padding: "20px",
+          borderRadius: "8px",
+          width: "400px",
         }}
       >
         {children}
@@ -32,4 +32,4 @@ function Modal({ isOpen, onClose, children }) {
   );
 }
 
-export default Modal; 
+export default Modal;

@@ -1,90 +1,86 @@
-import React, { useState } from 'react';
-import { Table, Button, Modal, Form, Input, Select, Space, Card } from 'antd';
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import React, { useState } from "react";
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  Select,
+  Space,
+  Card,
+  Tag,
+} from "antd";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
 function AccountList() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
 
   // Mock data - replace with actual API calls
   const accounts = [
     {
-      key: '1',
-      id: 'U001',
-      username: 'nguyenvana',
-      fullName: 'Nguyễn Văn A',
-      role: 'parent',
-      email: 'nguyenvana@example.com',
-      phone: '0123456789',
-      status: 'Hoạt động'
+      key: "1",
+      id: "ACC001",
+      username: "admin",
+      fullName: "Nguyễn Văn A",
+      role: "Admin",
+      status: "Hoạt động",
     },
     {
-      key: '2',
-      id: 'U002',
-      username: 'tranthib',
-      fullName: 'Trần Thị B',
-      role: 'nurse',
-      email: 'tranthib@example.com',
-      phone: '0987654321',
-      status: 'Hoạt động'
-    }
+      key: "2",
+      id: "U002",
+      username: "tranthib",
+      fullName: "Trần Thị B",
+      role: "nurse",
+      email: "tranthib@example.com",
+      phone: "0987654321",
+      status: "Hoạt động",
+    },
   ];
 
   const columns = [
     {
-      title: 'Mã người dùng',
-      dataIndex: 'id',
-      key: 'id',
+      title: "Mã tài khoản",
+      dataIndex: "id",
+      key: "id",
     },
     {
-      title: 'Tên đăng nhập',
-      dataIndex: 'username',
-      key: 'username',
+      title: "Tên người dùng",
+      dataIndex: "username",
+      key: "username",
     },
     {
-      title: 'Họ và tên',
-      dataIndex: 'fullName',
-      key: 'fullName',
+      title: "Họ và tên",
+      dataIndex: "fullName",
+      key: "fullName",
     },
     {
-      title: 'Vai trò',
-      dataIndex: 'role',
-      key: 'role',
-      render: (role) => {
-        const roleMap = {
-          admin: 'Quản trị viên',
-          nurse: 'Y tá',
-          parent: 'Phụ huynh',
-          manager: 'Quản lý'
-        };
-        return roleMap[role] || role;
-      }
+      title: "Vai trò",
+      dataIndex: "role",
+      key: "role",
+      render: (role) => (
+        <Tag color={role === "Admin" ? "red" : "blue"}>{role}</Tag>
+      ),
     },
     {
-      title: 'Email',
-      dataIndex: 'email',
-      key: 'email',
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (
+        <Tag color={status === "Hoạt động" ? "green" : "red"}>{status}</Tag>
+      ),
     },
     {
-      title: 'Số điện thoại',
-      dataIndex: 'phone',
-      key: 'phone',
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-    },
-    {
-      title: 'Thao tác',
-      key: 'action',
-      render: (_, record) => (
+      title: "Thao tác",
+      key: "action",
+      render: (text, record) => (
         <Space size="middle">
+          <Button type="link">Chi tiết</Button>
           <Button type="link" onClick={() => handleEdit(record)}>
-            Chỉnh sửa
+            Sửa
           </Button>
           <Button type="link" danger>
             Xóa
@@ -106,7 +102,7 @@ function AccountList() {
 
   const handleModalOk = () => {
     form.validateFields().then((values) => {
-      console.log('Form values:', values);
+      console.log("Form values:", values);
       setIsModalVisible(false);
       form.resetFields();
     });
@@ -119,9 +115,15 @@ function AccountList() {
   return (
     <div>
       <Card>
-        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+        <div
+          style={{
+            marginBottom: 16,
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
           <Input
-            placeholder="Tìm kiếm tài khoản..."
+            placeholder="Tìm kiếm tài khoản"
             prefix={<SearchOutlined />}
             style={{ width: 300 }}
             onChange={(e) => handleSearch(e.target.value)}
@@ -133,9 +135,12 @@ function AccountList() {
 
         <Table
           columns={columns}
-          dataSource={accounts.filter(account =>
-            account.username.toLowerCase().includes(searchText.toLowerCase()) ||
-            account.fullName.toLowerCase().includes(searchText.toLowerCase())
+          dataSource={accounts.filter(
+            (account) =>
+              account.username
+                .toLowerCase()
+                .includes(searchText.toLowerCase()) ||
+              account.fullName.toLowerCase().includes(searchText.toLowerCase())
           )}
         />
       </Card>
@@ -153,28 +158,28 @@ function AccountList() {
           <Form.Item
             name="id"
             label="Mã người dùng"
-            rules={[{ required: true, message: 'Vui lòng nhập mã người dùng' }]}
+            rules={[{ required: true, message: "Vui lòng nhập mã người dùng" }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="username"
             label="Tên đăng nhập"
-            rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập' }]}
+            rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập" }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="fullName"
             label="Họ và tên"
-            rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
+            rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="role"
             label="Vai trò"
-            rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
+            rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
           >
             <Select>
               <Option value="admin">Quản trị viên</Option>
@@ -187,8 +192,8 @@ function AccountList() {
             name="email"
             label="Email"
             rules={[
-              { required: true, message: 'Vui lòng nhập email' },
-              { type: 'email', message: 'Email không hợp lệ' }
+              { required: true, message: "Vui lòng nhập email" },
+              { type: "email", message: "Email không hợp lệ" },
             ]}
           >
             <Input />
@@ -196,14 +201,14 @@ function AccountList() {
           <Form.Item
             name="phone"
             label="Số điện thoại"
-            rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
+            rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="status"
             label="Trạng thái"
-            rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
+            rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
           >
             <Select>
               <Option value="Hoạt động">Hoạt động</Option>
@@ -216,4 +221,4 @@ function AccountList() {
   );
 }
 
-export default AccountList; 
+export default AccountList;

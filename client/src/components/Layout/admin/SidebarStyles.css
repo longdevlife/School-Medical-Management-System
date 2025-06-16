@@ -1,11 +1,16 @@
 /* Logo styling */
 .sidebar-logo {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80px; /* bạn có thể điều chỉnh */
   padding: 16px 0;
 }
+
 .sidebar-logo img {
   height: 40px;
   transition: transform 0.3s ease;
+  display: block;
 }
 .sidebar-logo img:hover {
   transform: scale(1.1);
@@ -242,3 +247,57 @@ ul.ant-menu {
   background: rgba(255, 255, 255, 0.15) !important;
   color: #fff !important;
 }
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #47c8f8 0%, #1890ff 100%) !important;
+  width: 200px;
+}
+
+.sidebar-logo {
+  flex-shrink: 0;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 0;
+  background: inherit;
+}
+
+.sidebar-logo img {
+  height: 40px;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-logo img:hover {
+  transform: scale(1.1);
+}
+
+.sidebar-menu-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 16px;
+}
+
+/* Menu item styling (rút gọn cho ví dụ, có thể giữ lại bản đầy đủ bạn gửi nếu muốn) */
+.sidebar-menu .ant-menu-item {
+  transition: all 0.3s ease;
+  margin: 4px 8px;
+  border-radius: 8px;
+  height: 48px;
+  line-height: 48px;
+}
+
+.sidebar-menu .ant-menu-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(4px);
+  color: #fff;
+}
+
+.sidebar-menu .ant-menu-item-selected {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+}
+

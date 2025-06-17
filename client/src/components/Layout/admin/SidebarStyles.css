@@ -300,4 +300,10 @@ ul.ant-menu {
   font-weight: 600;
   border-radius: 8px;
 }
+.sidebar {
+  overflow-x: hidden; /* Ẩn thanh cuộn ngang */
+}
 
+.sidebar-menu-wrapper {
+  overflow-x: hidden; /* Ngăn cuộn ngang menu */
+}

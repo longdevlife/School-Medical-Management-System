@@ -1,71 +1,158 @@
 import React from "react";
-import { Card, List, Typography } from "antd";
+import { Typography, Row, Col, Card, Tag, Button, Input } from "antd";
+import { SearchOutlined, CalendarOutlined, UserOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
+import "./News.css";
 
-const data = [
-  {
-    title: "Đối tượng cần tiêm nhắc lại vaccine COVID-19",
-    description:
-      "Trước tình hình dịch bệnh có xu hướng gia tăng trở lại tại một số khu vực, Bộ Y tế nhấn mạnh người dân cần tiêm vắc xin mũi nhắc lại để bảo vệ sức khỏe cộng đồng.",
-    image: "https://cdn.pixabay.com/photo/2021/02/20/07/22/vaccine-6038423_960_720.jpg",
-    link: "https://baochinhphu.vn/doi-tuong-can-tiem-nhac-lai-vaccine-covid-19-102240124165123475.htm#:~:text=Theo%20%C4%91%C3%B3%2C%20quan%20%C4%91i%E1%BB%83m%20chung,sau%20m%C5%A9i%20ti%C3%AAm%20cu%E1%BB%91i%20c%C3%B9ng."
-  },
-  {
-    title: "Cảnh báo sốt xuất huyết gia tăng mạnh ở miền Nam",
-    description:
-      "Tình hình thời tiết nóng ẩm khiến số ca sốt xuất huyết tăng nhanh. Người dân cần loại bỏ các ổ muỗi, ngủ mùng và vệ sinh môi trường xung quanh.",
-    image: "https://cdn.pixabay.com/photo/2020/04/01/20/57/mosquito-4992751_960_720.jpg",
-    link: "https://moh.gov.vn/web/guest/-/canh-bao-sot-xuat-huyet-gia-tang-manh-o-mien-nam"
-  },
-  {
-    title: "Nguy cơ thiếu máu trầm trọng tại các bệnh viện",
-    description:
-      "Các trung tâm huyết học báo động thiếu máu trong mùa hè, kêu gọi cộng đồng tham gia hiến máu nhân đạo để cứu giúp bệnh nhân.",
-    image: "https://cdn.pixabay.com/photo/2016/06/27/20/35/donation-1481704_960_720.jpg",
-    link: "https://moh.gov.vn/web/guest/-/nguy-co-thieu-mau-tram-trong-tai-cac-benh-vien"
-  },
-];
+const { Title, Paragraph } = Typography;
+const { Search } = Input;
 
 const News = () => {
+  const newsItems = [
+    {
+      id: 1,
+      title: "Hướng dẫn phòng chống dịch COVID-19 trong trường học",
+      summary: "Các biện pháp phòng chống dịch COVID-19 cần được thực hiện nghiêm ngặt trong môi trường học đường...",
+      image: "https://img.freepik.com/free-vector/coronavirus-protection-concept-illustration_114360-7484.jpg",
+      date: "15/03/2024",
+      author: "BS. Nguyễn Văn A",
+      category: "Sức khỏe",
+      tags: ["COVID-19", "Phòng dịch", "Học đường"]
+    },
+    {
+      id: 2,
+      title: "Chương trình khám sức khỏe định kỳ cho học sinh",
+      summary: "Nhà trường tổ chức chương trình khám sức khỏe định kỳ cho toàn bộ học sinh vào tháng 4/2024...",
+      image: "https://img.freepik.com/free-vector/medical-check-up-concept-illustration_114360-7484.jpg",
+      date: "10/03/2024",
+      author: "ThS. Trần Thị B",
+      category: "Sự kiện",
+      tags: ["Khám sức khỏe", "Định kỳ", "Học sinh"]
+    },
+    {
+      id: 3,
+      title: "Tư vấn dinh dưỡng cho học sinh tiểu học",
+      summary: "Chương trình tư vấn dinh dưỡng giúp học sinh có chế độ ăn uống hợp lý và khoa học...",
+      image: "https://img.freepik.com/free-vector/nutrition-concept-illustration_114360-1003.jpg",
+      date: "05/03/2024",
+      author: "BS. Lê Văn C",
+      category: "Dinh dưỡng",
+      tags: ["Dinh dưỡng", "Tiểu học", "Tư vấn"]
+    },
+    {
+      id: 4,
+      title: "Hội thảo về sức khỏe tâm lý học đường",
+      summary: "Hội thảo cung cấp kiến thức và kỹ năng cho giáo viên trong việc hỗ trợ sức khỏe tâm lý học sinh...",
+      image: "https://img.freepik.com/free-vector/psychologist-concept-illustration_114360-8007.jpg",
+      date: "01/03/2024",
+      author: "TS. Phạm Thị D",
+      category: "Tâm lý",
+      tags: ["Tâm lý", "Học đường", "Hội thảo"]
+    }
+  ];
+
+  const categories = [
+    { name: "Tất cả", count: 12 },
+    { name: "Sức khỏe", count: 4 },
+    { name: "Sự kiện", count: 3 },
+    { name: "Dinh dưỡng", count: 2 },
+    { name: "Tâm lý", count: 3 }
+  ];
+
   return (
-    <Card
-      title="📰 Tin Tức Y Tế Mới Nhất"
-      style={{ margin: 24, background: "#fff", borderRadius: 8 }}
-      bordered={false}
-    >
-      <List
-        itemLayout="vertical"
-        size="large"
-        dataSource={data}
-        renderItem={(item) => (
-          <List.Item
-            key={item.title}
-            extra={
-              <img
-                width={200}
-                alt="ảnh y tế"
-                src={item.image}
-                style={{ borderRadius: 8 }}
-              />
-            }
-          >
-            <List.Item.Meta
-              title={
-                <a
-                  href={item.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: "#1890ff", fontWeight: "bold" }}
-                >
-                  {item.title}
-                </a>
-              }
-              description={<Typography.Text>{item.description}</Typography.Text>}
-            />
-          </List.Item>
-        )}
-      />
-    </Card>
+    <div className="news-container">
+      {/* Hero Section */}
+      <div className="news-hero">
+        <Title level={1}>Tin Tức Y Tế Học Đường</Title>
+        <Paragraph className="hero-description">
+          Cập nhật những thông tin mới nhất về sức khỏe, dinh dưỡng và các hoạt động y tế trong trường học
+        </Paragraph>
+        <Search
+          placeholder="Tìm kiếm tin tức..."
+          allowClear
+          enterButton={<SearchOutlined />}
+          size="large"
+          className="news-search"
+        />
+      </div>
+
+      <Row gutter={[24, 24]}>
+        {/* Main Content */}
+        <Col xs={24} lg={18}>
+          <Row gutter={[24, 24]}>
+            {newsItems.map((item) => (
+              <Col xs={24} md={12} key={item.id}>
+                <Link to={`/news/${item.id}`} className="news-link">
+                  <Card
+                    hoverable
+                    className="news-card"
+                    cover={
+                      <div className="news-image-container">
+                        <img alt={item.title} src={item.image} />
+                        <Tag color="blue" className="news-category">
+                          {item.category}
+                        </Tag>
+                      </div>
+                    }
+                  >
+                    <Title level={4} className="news-title">
+                      {item.title}
+                    </Title>
+                    <Paragraph className="news-summary">{item.summary}</Paragraph>
+                    <div className="news-meta">
+                      <span>
+                        <CalendarOutlined /> {item.date}
+                      </span>
+                      <span>
+                        <UserOutlined /> {item.author}
+                      </span>
+                    </div>
+                    <div className="news-tags">
+                      {item.tags.map((tag, index) => (
+                        <Tag key={index} color="default">
+                          {tag}
+                        </Tag>
+                      ))}
+                    </div>
+                  </Card>
+                </Link>
+              </Col>
+            ))}
+          </Row>
+        </Col>
+
+        {/* Sidebar */}
+        <Col xs={24} lg={6}>
+          <Card className="sidebar-card">
+            <Title level={4}>Danh Mục</Title>
+            <div className="category-list">
+              {categories.map((category, index) => (
+                <div key={index} className="category-item">
+                  <span>{category.name}</span>
+                  <span className="category-count">({category.count})</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Card className="sidebar-card">
+            <Title level={4}>Tin Tức Nổi Bật</Title>
+            <div className="featured-news">
+              {newsItems.slice(0, 3).map((item) => (
+                <Link to={`/news/${item.id}`} key={item.id} className="featured-news-item">
+                  <img src={item.image} alt={item.title} />
+                  <div className="featured-news-content">
+                    <Title level={5}>{item.title}</Title>
+                    <span className="featured-news-date">{item.date}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </Card>
+        </Col>
+      </Row>
+    </div>
   );
 };
 
-export default News;
+export default News; 

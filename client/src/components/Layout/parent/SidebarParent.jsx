@@ -103,20 +103,20 @@ function SidebarParent({ collapsed, setCollapsed }) {
             }}
         >
             {/* Vùng hiển thị logo bệnh viện */}
-            <div className="h-16 p-2 flex items-center justify-center border-b border-white/10">
-                <img
-                    src="https://img.lovepik.com/free-png/20210922/lovepik-icon-of-vector-hospital-png-image_401050686_wh1200.png"
-                    alt="Logo"
-                    style={{
-                        height: collapsed ? "40px" : "60px",
-                        width: collapsed ? "40px" : "auto",
-                        maxWidth: "100%",
-                        objectFit: "contain",
-                        margin: "0 auto",
-                        display: "block",
-                    }}
-                />
-            </div>
+                <div className="logoContainer flex justify-center items-center h-24">
+        <img
+          src="/SchoolMedical.gif"
+          alt="School Medical Logo"
+          style={{
+            height: collapsed ? "5500px" : "5500px",
+            width: collapsed ? "auto" : "auto",
+            maxWidth: "95%",
+            objectFit: "contain",
+            margin: "0 auto",
+            display: "block",
+          }}
+        />
+      </div>
             {/* Menu điều hướng chính */}
             <Menu
                 theme="dark"

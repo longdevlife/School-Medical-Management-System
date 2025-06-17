@@ -96,6 +96,7 @@ function App() {
           </Route>
 
           {/* Parent Routes */}
+          
 
           {/* Redirect root to login if not authenticated */}
           <Route path="/" element={<Navigate to="/login" replace />} />

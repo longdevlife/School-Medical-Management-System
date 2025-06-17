@@ -30,6 +30,8 @@ namespace Sever.Context
         public DbSet<RefreshToken> RefreshToken { get; set; } = null!;
         public DbSet<ForgotPasswordToken> ForgotPasswordToken { get; set; } = null!;
         public DbSet<MedicineHistory> MedicineHistory { get; set; }
+        public DbSet<MedicalEventDetail> MedicalEventDetail { get; set; }
+
 
 
         #endregion
@@ -148,7 +150,15 @@ namespace Sever.Context
                 .HasOne(f => f.Medicine)
                 .WithMany(m => m.Files)
                 .HasForeignKey("MedicineID");
+
+            modelBuilder.Entity<Files>()
+    .HasOne(f => f.MedicalEvent)
+    .WithMany(m => m.Files)
+    .HasForeignKey(f => f.MedicalEventID)
+    .OnDelete(DeleteBehavior.Restrict);
             #endregion
+
+
         }
 
     }

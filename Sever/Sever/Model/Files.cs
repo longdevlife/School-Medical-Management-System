@@ -6,13 +6,16 @@ namespace Sever.Model
     public class Files
     {
         [Key]
-        public int FileID { get; set; }
+        [Required]
+        public string FileID { get; set; }
+        [Required]
         public string FileName { get; set; }
+        [Required]
         public string FileType { get; set; }
         public byte[]? FileData { get; set; }
         public string? FileLink { get; set; }
-        public DateTime UploadDate { get; set; }
-        public int? MedicalEventID { get; set; }
+        public DateTime UploadDate { get; set; } = DateTime.UtcNow;
+        public string? MedicalEventID { get; set; }
         [ForeignKey("MedicalEventID")]
         public MedicalEvent MedicalEvent { get; set; }
         public int? NewsID { get; set; }
@@ -21,9 +24,8 @@ namespace Sever.Model
         public string? SchoolID { get; set; }
         [ForeignKey("SchoolID")]
         public SchoolInfo SchoolInfo { get; set; }
-        public string MedicineID { get; set; }
+        public string? MedicineID { get; set; }
         [ForeignKey("MedicineID")]
         public Medicine Medicine { get; set; }
-
     }
 }

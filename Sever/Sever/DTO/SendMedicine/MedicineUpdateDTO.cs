@@ -4,23 +4,18 @@ namespace Sever.DTO.SendMedicine
 {
     public class MedicineUpdateDTO
     {
-        public string MedicineName { get; set; }
 
-        [Required]
-        public string Quantity { get; set; }
+        public string? MedicineName { get; set; }
 
-        [Required]
-        public string Dosage { get; set; }
+        public string? Quantity { get; set; }
 
-        [Required]
-        public string Instructions { get; set; }
+        public string? Dosage { get; set; }
 
-        [Required]
-        public string SentDate { get; set; }
+        public string? Instructions { get; set; }
 
-        public string Notes { get; set; }
+        public DateTime? SentDate { get; set; } = DateTime.Now;
 
-        [Required]
-        public string Status { get; set; }
+        public string? Notes { get; set; }
+
     }
 }

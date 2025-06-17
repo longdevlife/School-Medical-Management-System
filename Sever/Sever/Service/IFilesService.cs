@@ -1,11 +1,12 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
+using Sever.Context;
 using Sever.DTO.File;
 using Sever.DTO.User;
 using Sever.Model;
 using Sever.Repository;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Sever.Service
 {
@@ -13,13 +14,17 @@ namespace Sever.Service
     {
         Task<ImageResponse> UploadImageAsync(IFormFile file);
         List<CreateUserRequest> GetUsersFromExcel(Stream file);
+        Task AddFileAsync(Files file);
+        Task<string?> GetLatestFileIdAsync();
+
     }
     public class FilesSevice : IFilesService
     {
         private readonly IFilesRepository _repository;
         private readonly Cloudinary _cloudinary;
+        private readonly DataContext _context;
 
-        public FilesSevice(IFilesRepository repository, IConfiguration config)
+        public FilesSevice(IFilesRepository repository, IConfiguration config, DataContext context)
         {
             _repository = repository;
             var account = new Account(
@@ -28,6 +33,8 @@ namespace Sever.Service
                 config["Cloudinary:ApiSecret"]
             );
             _cloudinary = new Cloudinary(account);
+            _context = context;
+
         }
 
         public async Task<ImageResponse> UploadImageAsync(IFormFile file)
@@ -47,9 +54,21 @@ namespace Sever.Service
 
             if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
                 throw new Exception("Image upload failed");
+            
+            var latestFileId = await _repository.GetLatestFileIdAsync();
+            string newFileId = "F001";
 
+            if (!string.IsNullOrEmpty(latestFileId) && latestFileId.StartsWith("F"))
+            {
+                var numberPart = latestFileId.Substring(1);
+                if (int.TryParse(numberPart, out int number))
+                {
+                    newFileId = $"F{(number + 1):D3}";
+                }
+            }
             var image = new Files
             {
+                FileID = newFileId,
                 FileName = file.FileName,
                 FileType = "Image",
                 FileLink = uploadResult.SecureUrl.AbsoluteUri,
@@ -104,5 +123,15 @@ namespace Sever.Service
                 _ => throw new ArgumentException("Invalid role name")
             };
         }
+        public async Task AddFileAsync(Files file)
+        {
+            await _context.Files.AddAsync(file);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<string?> GetLatestFileIdAsync()
+        {
+            return await _repository.GetLatestFileIdAsync();
+        }
+
     }
 }

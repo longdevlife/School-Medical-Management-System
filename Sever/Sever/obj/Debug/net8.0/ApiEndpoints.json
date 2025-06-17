@@ -170,9 +170,83 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "Sever.Controllers.MedicalEventController",
+    "Method": "CreateMedicalEvent",
+    "RelativePath": "api/medicalEvent",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Sever.DTO.MedicalEvent.MedicineEventRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.MedicalEventController",
+    "Method": "GetMedicalEvent",
+    "RelativePath": "api/medicalEvent/{medicalEventId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "medicalEventId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.MedicalEventController",
+    "Method": "UpdateMedicalEventStatus",
+    "RelativePath": "api/medicalEvent/{medicalEventId}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "medicalEventId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Sever.DTO.MedicalEvent.MedicalEventUpdateDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.MedicalEventController",
+    "Method": "UploadImage",
+    "RelativePath": "api/medicalEvent/{medicalEventId}/upload-image",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "medicalEventId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "file",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "Sever.Controllers.MedicineController",
     "Method": "CreateMedicine",
-    "RelativePath": "api/Medicine",
+    "RelativePath": "api/medicine",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -188,7 +262,7 @@
   {
     "ContainingType": "Sever.Controllers.MedicineController",
     "Method": "UpdateMedicine",
-    "RelativePath": "api/Medicine/{medicineId}",
+    "RelativePath": "api/medicine/{medicineId}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -209,7 +283,7 @@
   {
     "ContainingType": "Sever.Controllers.MedicineController",
     "Method": "GetMedicineHistory",
-    "RelativePath": "api/Medicine/{medicineId}/history",
+    "RelativePath": "api/medicine/{medicineId}/history",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -225,8 +299,8 @@
   {
     "ContainingType": "Sever.Controllers.MedicineController",
     "Method": "ChangeStatus",
-    "RelativePath": "api/Medicine/{medicineId}/status",
-    "HttpMethod": "PUT",
+    "RelativePath": "api/medicine/{medicineId}/status",
+    "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -236,8 +310,8 @@
         "IsRequired": true
       },
       {
-        "Name": "statusDto",
-        "Type": "Sever.Controllers.ChangeStatusDto",
+        "Name": "changeStatusDto",
+        "Type": "Sever.DTO.SendMedicine.ChangeStatusDTO",
         "IsRequired": true
       }
     ],
@@ -246,7 +320,7 @@
   {
     "ContainingType": "Sever.Controllers.MedicineController",
     "Method": "UploadMedicinePhoto",
-    "RelativePath": "api/Medicine/upload-photo",
+    "RelativePath": "api/medicine/upload-photo",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,

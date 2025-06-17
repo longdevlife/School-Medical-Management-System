@@ -1,4 +1,5 @@
-﻿using OfficeOpenXml;
+﻿using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using Sever.Context;
 using Sever.Model;
 using System;
@@ -13,6 +14,9 @@ namespace Sever.Repository
         Task<List<HealthCheckUp>> ReadHealthCheckUpExcelFile(string filePath);
         Task<List<VaccinationRecord>> ReadVaccineExcelFile(string filePath);
         Task SaveChangesAsync();
+        Task<string?> GetLatestFileIdAsync();
+
+
     }
     public class FilesRepository : IFilesRepository
     {
@@ -79,10 +83,17 @@ namespace Sever.Repository
 
             return await Task.FromResult(result);
         }
-
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+        }
+        public async Task<string?> GetLatestFileIdAsync()
+        {
+            // Lấy FileID mới nhất theo thứ tự giảm dần
+            return await _context.Files
+                .OrderByDescending(f => f.FileID)
+                .Select(f => f.FileID)
+                .FirstOrDefaultAsync();
         }
     }
 }

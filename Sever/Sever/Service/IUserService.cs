@@ -1,5 +1,5 @@
 ﻿using Sever.DTO.User;
-using Sever.Migrations;
+//using Sever.Migrations;
 using Sever.Model;
 using Sever.Repository;
 using System.Threading.Tasks;

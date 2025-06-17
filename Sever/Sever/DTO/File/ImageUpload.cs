@@ -3,6 +3,6 @@
     public class ImageUpload
     {
         public IFormFile File { get; set; }
-        public string MedicineID { get; set; }
+        public string? MedicineID { get; set; }
     }
 }

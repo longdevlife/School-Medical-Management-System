@@ -4,7 +4,6 @@ namespace Sever.DTO.SendMedicine
 {
     public class MedicineDTO
     {
-        public string MedicineID { get; set; }
 
         [Required]
         public string MedicineName { get; set; }
@@ -15,19 +14,12 @@ namespace Sever.DTO.SendMedicine
         [Required]
         public string Dosage { get; set; }
 
-        [Required]
         public string Instructions { get; set; }
 
-        [Required]
-        public string SentDate { get; set; }
+        public DateTime? SentDate { get; set; } = DateTime.Now;
 
         public string Notes { get; set; }
 
-        [Required]
-        public string ParentID { get; set; }
-        public string NurseID { get; set; }
-
-
-        public string Status { get; set; } = "Pending";
+        public string Status { get; set; } = "Chờ xử lý";
     }
 }

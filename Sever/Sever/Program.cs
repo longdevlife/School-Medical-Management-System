@@ -7,11 +7,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OfficeOpenXml;
 using Sever.Context;
 using Sever.Repository;
+using Sever.Repository.Interfaces;
 using Sever.Service;
 using System.Text;
-using OfficeOpenXml;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,7 +52,9 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(secretKeyBytes),
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero,
+
+
     };
 })
 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -83,6 +86,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IForgotPasswordTokenRepository, ForgotPasswordTokenRepository>();
 builder.Services.AddScoped<IFilesRepository, FilesRepository>();
+builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IMedicalEventRepository, MedicalEventRepository>();
 #endregion
 
 #region Service Scope
@@ -92,6 +98,9 @@ builder.Services.AddTransient<IEmailService, EmailSevice>();
 builder.Services.AddScoped<IFilesService, FilesSevice>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMedicineService, MedicineService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IMedicalEventService, MedicalEventService>();
+builder.Services.AddHttpContextAccessor();
 
 #endregion
 

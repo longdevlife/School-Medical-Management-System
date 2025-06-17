@@ -6,7 +6,7 @@ namespace Sever.Model
     public class MedicalEvent
     {
         [Key]
-        public int MedicalEventID {  get; set; }
+        public string MedicalEventID {  get; set; }
         public DateTime EventDateTime { get; set; }
         public string Description { get; set; }
         public string? ActionTaken { get; set; }

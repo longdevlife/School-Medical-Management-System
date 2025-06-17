@@ -11,8 +11,10 @@ namespace Sever.Service
 {
     public interface IFilesService
     {
-        Task<ImageResponse> UploadImageAsync(IFormFile file);
-        List<CreateUserRequest> GetUsersFromExcel(Stream file);
+        Task<ImageResponse> UploadSchoolLogoByAsync(IFormFile file, string id);
+        Task<ImageResponse> UploadMedicalEventImageByAsync(IFormFile file, string id);
+        Task<ImageResponse> UploadNewsImageByAsync(IFormFile file, string id);
+        Task<List<CreateUserRequest>> ReadUsersFromExcelAsync(IFormFile file);
     }
     public class FilesSevice : IFilesService
     {
@@ -30,7 +32,7 @@ namespace Sever.Service
             _cloudinary = new Cloudinary(account);
         }
 
-        public async Task<ImageResponse> UploadImageAsync(IFormFile file)
+        public async Task<ImageResponse> UploadSchoolLogoByAsync(IFormFile file, string id)
         {
             if (file == null || file.Length == 0)
                 throw new ArgumentException("File is empty");
@@ -40,7 +42,7 @@ namespace Sever.Service
             var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription(file.FileName, stream),
-                Folder = "your_folder_name"
+                Folder = "img"
             };
 
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
@@ -53,7 +55,8 @@ namespace Sever.Service
                 FileName = file.FileName,
                 FileType = "Image",
                 FileLink = uploadResult.SecureUrl.AbsoluteUri,
-                UploadDate = DateTime.UtcNow
+                UploadDate = DateTime.UtcNow,
+                SchoolID = id
             };
 
             await _repository.AddAsync(image);
@@ -67,28 +70,112 @@ namespace Sever.Service
             };
         }
 
-        public  List<CreateUserRequest> GetUsersFromExcel(Stream file)
+        public async Task<ImageResponse> UploadMedicalEventImageByAsync(IFormFile file, string id)
         {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            if (file == null || file.Length == 0)
+                throw new ArgumentException("File is empty");
+
+            using var stream = file.OpenReadStream();
+
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(file.FileName, stream),
+                Folder = "img"
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
+                throw new Exception("Image upload failed");
+
+            var image = new Files
+            {
+                FileName = file.FileName,
+                FileType = "Image",
+                FileLink = uploadResult.SecureUrl.AbsoluteUri,
+                UploadDate = DateTime.UtcNow,
+                MedicalEventID = id
+            };
+
+            await _repository.AddAsync(image);
+            await _repository.SaveChangesAsync();
+
+            return new ImageResponse
+            {
+                Id = image.FileID,
+                Url = image.FileLink,
+                UploadedAt = image.UploadDate
+            };
+        }
+
+        public async Task<ImageResponse> UploadNewsImageByAsync(IFormFile file, string id)
+        {
+            if (file == null || file.Length == 0)
+                throw new ArgumentException("File is empty");
+
+            using var stream = file.OpenReadStream();
+
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(file.FileName, stream),
+                Folder = "img"
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
+                throw new Exception("Image upload failed");
+
+            var image = new Files
+            {
+                FileName = file.FileName,
+                FileType = "Image",
+                FileLink = uploadResult.SecureUrl.AbsoluteUri,
+                UploadDate = DateTime.UtcNow,
+                NewsID = id
+            };
+
+            await _repository.AddAsync(image);
+            await _repository.SaveChangesAsync();
+
+            return new ImageResponse
+            {
+                Id = image.FileID,
+                Url = image.FileLink,
+                UploadedAt = image.UploadDate
+            };
+        }
+
+        public async Task<List<CreateUserRequest>> ReadUsersFromExcelAsync(IFormFile file)
+        {
+            ExcelPackage.License.SetNonCommercialPersonal("SchoolMedical");
 
             var users = new List<CreateUserRequest>();
 
-            using var package = new ExcelPackage(file);
+            using var stream = new MemoryStream();
+            await file.CopyToAsync(stream);
+            stream.Position = 0;
+
+            using var package = new ExcelPackage(stream);
             var worksheet = package.Workbook.Worksheets[0];
-            var rowCount = worksheet.Dimension.Rows;
+
+            int rowCount = worksheet.Dimension.Rows;
 
             for (int row = 2; row <= rowCount; row++) 
             {
                 var user = new CreateUserRequest
                 {
-                    UserID = worksheet.Cells[row, 1].Text,
-                    UserName = worksheet.Cells[row, 2].Text,
-                    Password = worksheet.Cells[row, 3].Text,
-                    Name = worksheet.Cells[row, 4].Text,
-                    Email = worksheet.Cells[row, 5].Text,
-                    RoleID = RoleIdByRoleName(worksheet.Cells[row, 6].Text.Trim())
+                    UserID = worksheet.Cells[row, 1].Text.Trim(),
+                    UserName = worksheet.Cells[row, 2].Text.Trim(),
+                    Password = worksheet.Cells[row, 3].Text.Trim(),
+                    Name = worksheet.Cells[row, 4].Text?.Trim(),
+                    Email = worksheet.Cells[row, 5].Text?.Trim(),
+                    Phone = worksheet.Cells[row, 6].Text?.Trim(),
+                    RoleID = int.Parse(worksheet.Cells[row, 7].Text.Trim())
                 };
-                users.Add(user);
+
+                if (!string.IsNullOrEmpty(user.UserID))
+                    users.Add(user);
             }
 
             return users;

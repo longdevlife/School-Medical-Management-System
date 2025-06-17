@@ -34,7 +34,6 @@ namespace Sever.Controllers
 
             if (tokenResponse == null)
                 return Unauthorized();
-
             return Ok(tokenResponse);
         }
 
@@ -49,7 +48,9 @@ namespace Sever.Controllers
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto google)
         {
             var jwt = await _authService.AuthenticateWithGoogleAsync(google.IdToken);
-            return Ok(new { token = jwt 
+            return Ok(new
+            {
+                token = jwt
             });
         }
         [HttpPost("forgot-password")]
@@ -76,5 +77,6 @@ namespace Sever.Controllers
             if (!result) return BadRequest(new { message = "Token không hợp lệ hoặc đã hết hạn" });
             return Ok(new { message = "Đổi mật khẩu thành công" });
         }
+        
     }
 }

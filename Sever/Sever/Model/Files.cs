@@ -12,10 +12,10 @@ namespace Sever.Model
         public byte[]? FileData { get; set; }
         public string? FileLink { get; set; }
         public DateTime UploadDate { get; set; }
-        public int? MedicalEventID { get; set; }
+        public string? MedicalEventID { get; set; }
         [ForeignKey("MedicalEventID")]
         public MedicalEvent MedicalEvent { get; set; }
-        public int? NewsID { get; set; }
+        public string? NewsID { get; set; }
         [ForeignKey("NewsID")]
         public News News { get; set; }
         public string? SchoolID { get; set; }

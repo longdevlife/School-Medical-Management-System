@@ -28,6 +28,9 @@ import HealthCheckManagement from "./pages/events/HealthCheckManagement";
 import AccidentManagement from "./pages/events/AccidentManagement";
 import Reports from "./pages/reports/Reports";
 import AdvancedAnalytics from "./pages/analytics/AdvancedAnalytics";
+
+import AccountList from "./pages/accounts/AccountList";
+import Settings from "./pages/settings/Settings";
 import Login from "./pages/Login";
 
 function App() {
@@ -80,7 +83,6 @@ function App() {
             />
             <Route path="settings" element={<Settings />} />
           </Route>
-
           {/* Manager Routes */}
           <Route
             path="/manager/*"
@@ -98,9 +100,9 @@ function App() {
             <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
             <Route path="settings" element={<Settings />} />
           </Route>
-
           {/* Redirect root to login if not authenticated */}
           <Route path="/" element={<Navigate to="/login" replace />} />
+
         </Routes>
       </Router>
     </ConfigProvider>

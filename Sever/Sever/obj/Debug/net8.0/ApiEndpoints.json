@@ -25,16 +25,16 @@
     "Parameters": [
       {
         "Name": "username",
-        "Type": "System.String",
-        "IsRequired": false
+        "Type": "Sever.DTO.User.DeleteUserRequest",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
-    "Method": "GetAdmin",
-    "RelativePath": "api/admin/get-admin",
+    "Method": "GetAdminInfo",
+    "RelativePath": "api/admin/get-admin-info",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -45,7 +45,7 @@
     "ContainingType": "Sever.Controllers.AdminController",
     "Method": "GetUsersFromFile",
     "RelativePath": "api/admin/get-users-from-file",
-    "HttpMethod": "GET",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -59,8 +59,65 @@
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
-    "Method": "UpdateAccount",
+    "Method": "UpdateAdminAccount",
     "RelativePath": "api/admin/update-admin-info",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userRequest",
+        "Type": "Sever.DTO.User.UpdateUserRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "UpdateSchoolInfo",
+    "RelativePath": "api/admin/update-school-info",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "SchoolID",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Logo",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      },
+      {
+        "Name": "Name",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Address",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Hotline",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Email",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "UpdateUserAccount",
+    "RelativePath": "api/admin/update-user-info",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -167,6 +224,58 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ManagerController",
+    "Method": "GetManagerInfo",
+    "RelativePath": "api/manager/get-manager-info",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ManagerController",
+    "Method": "SearchStudentProfile",
+    "RelativePath": "api/manager/search-student-profile",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "info",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ManagerController",
+    "Method": "UpdatemanagerAccount",
+    "RelativePath": "api/manager/update-manager-info",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userRequest",
+        "Type": "Sever.DTO.User.UpdateUserRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.SchoolController",
+    "Method": "GetSchoolInfo",
+    "RelativePath": "api/school/get-school-info",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

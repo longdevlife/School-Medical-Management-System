@@ -59,7 +59,6 @@ namespace Sever.Service
             if (user == null)
                 return null;
 
-            // Xác thực password
             var hasher = new PasswordHasher<User>();
             var result = hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
 
@@ -109,11 +108,9 @@ namespace Sever.Service
             if (storedRefreshToken == null || storedRefreshToken.User.UserName != user.UserName || storedRefreshToken.ExpiryDate < DateTime.UtcNow)
                 return null;
 
-            // Xóa refresh token cũ
             await _refreshTokenRepository.DeleteAsync(storedRefreshToken);
             await _refreshTokenRepository.SaveChangesAsync();
 
-            // Tạo token mới
             var newAccessToken = _tokenService.GenerateAccessToken(user.UserName, user.RoleID);
             var newRefreshTokenString = _tokenService.GenerateRefreshToken();
 

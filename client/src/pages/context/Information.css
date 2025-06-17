@@ -1,0 +1,131 @@
+.information-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Intro Section */
+.intro-section {
+  margin-bottom: 4rem;
+}
+
+.main-title {
+  text-align: center;
+  margin-bottom: 2rem !important;
+  color: #1890ff;
+}
+
+.intro-text {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #333;
+}
+
+.intro-image {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Departments Section */
+.departments-section {
+  margin-bottom: 4rem;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 2rem !important;
+  color: #1890ff;
+}
+
+.department-card {
+  height: 100%;
+  transition: transform 0.3s ease;
+}
+
+.department-card:hover {
+  transform: translateY(-5px);
+}
+
+.department-card .ant-card-cover img {
+  height: 200px;
+  object-fit: cover;
+}
+
+.department-icon {
+  font-size: 2rem;
+  color: #1890ff;
+  margin-bottom: 1rem;
+}
+
+/* Team Section */
+.team-section {
+  margin-bottom: 4rem;
+}
+
+.team-card {
+  text-align: center;
+  height: 100%;
+}
+
+.team-member-image {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.team-member-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Contact Section */
+.contact-section {
+  margin-bottom: 2rem;
+}
+
+.contact-card {
+  height: 100%;
+}
+
+.contact-card .ant-typography {
+  margin-bottom: 1.5rem;
+}
+
+.map-container {
+  height: 100%;
+  min-height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.map-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .information-container {
+    padding: 1rem;
+  }
+
+  .intro-section {
+    margin-bottom: 2rem;
+  }
+
+  .departments-section,
+  .team-section,
+  .contact-section {
+    margin-bottom: 2rem;
+  }
+
+  .team-member-image {
+    width: 120px;
+    height: 120px;
+  }
+} 

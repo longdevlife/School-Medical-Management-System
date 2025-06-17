@@ -6,7 +6,15 @@ import {
   Navigate,
 } from "react-router-dom";
 import { ConfigProvider } from "antd";
-import viVN from "antd/lib/locale/vi_VN";
+
+// Layout & Pages
+import AdminLayout from "./components/Layout/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AccountList from "./pages/accounts/AccountList";
+import Settings from "./pages/settings/Settings";
+import Home from "./pages/context/HomePages";
+import News from "./pages/context/News";
+import Information from "./pages/context/Information";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NurseManagerLayout from "./components/Layout/nursemanager/NurseManagerLayout";
 import NurseDashboard from "./pages/nurses/NurseDashboard";
@@ -24,23 +32,23 @@ import AccountList from "./pages/accounts/AccountList";
 import Settings from "./pages/settings/Settings";
 import Login from "./pages/Login";
 
-import "./App.css";
-
 function App() {
   return (
-    <ConfigProvider
-      theme={{
-        token: {
-          colorPrimary: "#0F6CBD",
-          borderRadius: 6,
-        },
-      }}
-      locale={viVN}
-    >
+    <ConfigProvider>
       <Router>
-        
         <Routes>
           <Route path="/login" element={<Login />} />
+          
+
+          {/* Admin layout */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Home />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="accounts" element={<AccountList />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="tin-tuc" element={<News />} />
+            <Route path="gioi-thieu" element={<Information />} />
+          </Route>
 
           {/* Nurse Routes */}
           <Route
@@ -76,7 +84,7 @@ function App() {
             />
             <Route path="settings" element={<Settings />} />
           </Route>
-
+            
           {/* Manager Routes */}
           <Route
             path="/manager/*"
@@ -94,12 +102,12 @@ function App() {
             <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
             <Route path="settings" element={<Settings />} />
           </Route>
-
-          {/* Parent Routes */}
           
-
+          
+            
           {/* Redirect root to login if not authenticated */}
           <Route path="/" element={<Navigate to="/login" replace />} />
+
         </Routes>
       </Router>
     </ConfigProvider>

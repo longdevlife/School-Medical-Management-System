@@ -1,6 +1,6 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import authService from '../services/authService';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import authService from "../services/authService";
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const isAuthenticated = authService.isAuthenticated();
@@ -12,13 +12,13 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
     // Redirect to appropriate dashboard based on role
     switch (userRole) {
-      case 'PARENT':
+      case "PARENT":
         return <Navigate to="/parent" replace />;
-      case 'NURSE':
+      case "NURSE":
         return <Navigate to="/nurses" replace />;
-      case 'MANAGER':
+      case "MANAGER":
         return <Navigate to="/manager" replace />;
-      case 'ADMIN':
+        case "ADMIN" :
         return <Navigate to="/admin" replace />;
       default:
         return <Navigate to="/login" replace />;
@@ -27,5 +27,4 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 
   return children;
 };
-
 export default ProtectedRoute;

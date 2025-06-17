@@ -94,21 +94,13 @@ function HeaderParent({collapsed, setCollapsed}){
     };
 
     return(
-        <Header className={styles.header}>
-            <div className={styles.headerLeft}>
+        <Header className={styles.header}>            <div className={styles.headerLeft}>
                 <Button 
                     type="text"
                     icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />} 
                     onClick={() => setCollapsed(!collapsed)}
                     className={styles.trigger}
                 />
-                <div className={styles.logoContainer}>
-                    <img
-                        src="https://img.lovepik.com/free-png/20210922/lovepik-icon-of-vector-hospital-png-image_401050686_wh1200.png"
-                        alt="Logo"
-                        className={styles.headerLogo}
-                    />
-                </div>
                 <Search
                     placeholder="Tìm kiếm..."
                     allowClear

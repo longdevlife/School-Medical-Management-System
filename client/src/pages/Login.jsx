@@ -151,7 +151,7 @@ const Login = () => {
         ></div>{" "}
         {/* Animated particles - Hiệu ứng hạt bay */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(6)].map((_, i) => (
+          {[...Array(12)].map((_, i) => (
             <div
               key={i}
               className="absolute w-2 h-2 bg-white/30 rounded-full animate-float"

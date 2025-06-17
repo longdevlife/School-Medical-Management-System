@@ -17,8 +17,7 @@ const mapRoleIdToName = (roleId) => {
     1: "NURSE",
     2: "MANAGER",
     3: "PARENT",
-    4: "ADMIN", // Assuming ADMIN is a valid role
-
+    4: "ADMIN",
   };
   return roleMap[roleId] || "USER";
 };

@@ -19,15 +19,7 @@ import "./App.css";
 
 function App() {
   return (
-   <ConfigProvider
-      theme={{
-        token: {
-          colorPrimary: "#0F6CBD",
-          borderRadius: 6,
-        },
-      }}
-      locale={viVN}
-    >
+   <ConfigProvider>
       <Router>
         <Routes>
         

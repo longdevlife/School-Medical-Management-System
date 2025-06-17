@@ -12,7 +12,7 @@ import Vaccine from "./pages/vaccinations/Vaccine";
 import VaccineDetail from "./pages/vaccinations/VaccineDetail";
 import HealthCheckup from "./pages/healthRecord/HealthCheckup";
 import Login from "./pages/Login";
-import '@ant-design/v5-patch-for-react-19';
+
 
 
 import "./App.css";

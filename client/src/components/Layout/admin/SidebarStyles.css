@@ -303,6 +303,9 @@ ul.ant-menu {
 .sidebar {
   overflow-x: hidden; /* Ẩn thanh cuộn ngang */
 }
+.sidebar {
+  overflow-y: hidden; /* Ẩn thanh cuộn ngang */
+}
 
 .sidebar-menu-wrapper {
   overflow-x: hidden; /* Ngăn cuộn ngang menu */

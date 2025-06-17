@@ -14,6 +14,7 @@ import HealthCheckup from "./pages/healthRecord/HealthCheckup";
 import Login from "./pages/Login";
 import '@ant-design/v5-patch-for-react-19';
 
+
 import "./App.css";
 
 function App() {
@@ -29,9 +30,12 @@ function App() {
     >
       <Router>
         <Routes>
+        
+        
         <Route path="/login" element={<Login/>}/>
         <Route path="/" element={<Navigate to="/login" replace />} />
         //Login success , redirect to home pages
+
         
         <Route
             path="/parent/*"

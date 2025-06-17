@@ -28,9 +28,6 @@ import HealthCheckManagement from "./pages/events/HealthCheckManagement";
 import AccidentManagement from "./pages/events/AccidentManagement";
 import Reports from "./pages/reports/Reports";
 import AdvancedAnalytics from "./pages/analytics/AdvancedAnalytics";
-
-import AccountList from "./pages/accounts/AccountList";
-import Settings from "./pages/settings/Settings";
 import Login from "./pages/Login";
 
 function App() {
@@ -102,7 +99,6 @@ function App() {
           </Route>
           {/* Redirect root to login if not authenticated */}
           <Route path="/" element={<Navigate to="/login" replace />} />
-
         </Routes>
       </Router>
     </ConfigProvider>

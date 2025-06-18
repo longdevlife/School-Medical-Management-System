@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Sever.DTO.SchoolInfo;
 using Sever.DTO.User;
 using Sever.Service;
 using System.Security.Claims;
@@ -15,14 +16,18 @@ namespace Sever.Controllers
     {
         private readonly IUserService _userService;
         private readonly IFilesService _filesService;
+        private readonly ISchoolInfoService _schoolInfoService;
         public AdminController(IUserService userService,
-                               IFilesService filesService)
+                               IFilesService filesService,
+                               ISchoolInfoService schoolInfoService)
         {
             _userService = userService;
             _filesService = filesService;
+            _schoolInfoService = schoolInfoService;
         }
-        [HttpGet("get-admin")]
-        public async Task<IActionResult> GetAdmin()
+
+        [HttpGet("get-admin-info")]
+        public async Task<IActionResult> GetManagerInfo()
         {
             string username = User.Identity?.Name;
 
@@ -38,7 +43,7 @@ namespace Sever.Controllers
                 return Ok(new
                 {
                     user,
-                    message = "Lấy thông tin admin thành công"
+                    message = "Lấy thông tin manager thành công"
                 });
             }
             catch
@@ -47,7 +52,31 @@ namespace Sever.Controllers
             }
         }
 
-
+        [HttpPut("update-admin-info")]
+        public async Task<IActionResult> UpdatemanagerAccount(UpdateUserRequest userRequest)
+        {
+            userRequest.UserName = User.Identity?.Name;
+            if (string.IsNullOrEmpty(userRequest.UserName))
+            {
+                return BadRequest(new { message = "Không tìm thấy thông tin người dùng" });
+            }
+            try
+            {
+                var result = await _userService.UpdateUserAsync(userRequest, userRequest.UserName);
+                if (result)
+                {
+                    return Ok(new { message = "Cập nhật tài khoản thành công" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Không tìm thấy tài khoản để cập nhật" });
+                }
+            }
+            catch
+            {
+                return BadRequest(new { message = "Cập nhật tài khoản thất bại" });
+            }
+        }
 
         [HttpPost("create-accounts")]
         public async Task<IActionResult> CreateAccounts(List<CreateUserRequest> users)
@@ -82,18 +111,16 @@ namespace Sever.Controllers
             }
         }
 
-
-        [HttpPut("update-admin-info")]
-        public async Task<IActionResult> UpdateAccount(UpdateUserRequest userRequest)
+        [HttpPut("update-user-info")]
+        public async Task<IActionResult> UpdateUserAccount(UpdateUserRequest userRequest)
         {
-            string username = User.Identity?.Name;
-            if (string.IsNullOrEmpty(username))
+            if (string.IsNullOrEmpty(userRequest.UserName))
             {
                 return BadRequest(new { message = "Không tìm thấy thông tin người dùng" });
             }
             try
             {
-                var result = await _userService.UpdateUserAsync(userRequest, username);
+                var result = await _userService.UpdateUserAsync(userRequest, userRequest.UserName);
                 if (result)
                 {
                     return Ok(new { message = "Cập nhật tài khoản thành công" });
@@ -109,9 +136,9 @@ namespace Sever.Controllers
             }
         }
         [HttpDelete("delete-user")]
-        public async Task<IActionResult> DeleteAccount(string username)
+        public async Task<IActionResult> DeleteAccount(DeleteUserRequest username)
         {
-            if (string.IsNullOrEmpty(username))
+            if (username == null)
             {
                 return BadRequest(new { message = "Tên người dùng không được để trống" });
             }
@@ -136,18 +163,35 @@ namespace Sever.Controllers
         public async Task<IActionResult> GetUsersFromFile(IFormFile file)
         {
             if (file == null || file.Length == 0)
+                return BadRequest("File không hợp lệ");
+
+            var users = await _filesService.ReadUsersFromExcelAsync(file);
+
+            return Ok(users);
+        }
+
+        [HttpPut("update-school-info")]
+        public async Task<IActionResult> UpdateSchoolInfo(SchoolInfoUpdate schoolInfoRequest)
+        {
+            if (schoolInfoRequest == null)
             {
-                return BadRequest(new { message = "Vui lòng gửi tệp." });
+                return BadRequest(new { message = "Thông tin trường học không được để trống" });
             }
             try
             {
-                var stream = file.OpenReadStream();
-                var users =  _filesService.GetUsersFromExcel(stream);
-                return Ok(users);
+                var result = await _schoolInfoService.UpdateSchoolInfoAsync(schoolInfoRequest);
+                if (result)
+                {
+                    return Ok(new { message = "Cập nhật thông tin trường học thành công" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Không tìm thấy thông tin trường học để cập nhật" });
+                }
             }
-            catch (Exception ex)
+            catch
             {
-                return BadRequest(new { message = "Lấy người dùng từ tệp thất bại", error = ex.Message });
+                return BadRequest(new { message = "Cập nhật thông tin trường học thất bại" });
             }
         }
     }

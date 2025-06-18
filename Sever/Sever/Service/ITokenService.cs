@@ -5,11 +5,12 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
+
 namespace Sever.Service
 {
     public interface ITokenService
     {
-        public string GenerateAccessToken(string username, int role);
+        public string GenerateAccessToken(string username, string role);
         public string GenerateRefreshToken();
     }
     public class TokenService : ITokenService
@@ -20,11 +21,11 @@ namespace Sever.Service
             _config = config;
         }
 
-        public string GenerateAccessToken(string username, int role)
+        public string GenerateAccessToken(string username, string role)
         {
             var claims = new[] {
                 new Claim(ClaimTypes.Name, username),
-                new Claim(ClaimTypes.Role, role.ToString()),
+                new Claim(ClaimTypes.Role, role)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SecretKey"]!));

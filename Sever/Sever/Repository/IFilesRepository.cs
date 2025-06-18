@@ -1,4 +1,5 @@
-﻿using OfficeOpenXml;
+﻿using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using Sever.Context;
 using Sever.Model;
 using System;
@@ -10,9 +11,15 @@ namespace Sever.Repository
     public interface IFilesRepository
     {
         Task<Files> AddAsync(Files image);
-        Task<List<HealthCheckUp>> ReadHealthCheckUpExcelFile(string filePath);
-        Task<List<VaccinationRecord>> ReadVaccineExcelFile(string filePath);
+        Task<List<Files>> GetLogoBySchoolIdAsync(string id);
+        Task<List<Files>> GetImageByMedicineIdAsync(string id);
+        Task<List<Files>> GetImageByMedicalEventIdAsync(string id);
+        Task<List<Files>> GetImageByNewsIdAsync(string id);
+        Task<bool> DeleteAsync(Files image);
         Task SaveChangesAsync();
+        //Task<string?> GetLatestFileIdAsync();
+
+
     }
     public class FilesRepository : IFilesRepository
     {
@@ -22,67 +29,53 @@ namespace Sever.Repository
             _context = context;
         }
 
-        public async Task<Files> AddAsync(Files image)
+        public async Task<Files> AddAsync(Files file)
         {
-            await _context.Files.AddAsync(image);
-            return image;
+            await _context.Files.AddAsync(file);
+            return file;
         }
-
-        [Obsolete]
-        public async Task<List<HealthCheckUp>> ReadHealthCheckUpExcelFile(string filePath)
+        
+        public async Task<bool> DeleteAsync(Files file)
         {
-            OfficeOpenXml.ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            file.IsActive = false;
+            _context.Files.Update(file);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
 
-            var result = new List<HealthCheckUp>();
-
-            using (var package = new ExcelPackage(new FileInfo(filePath)))
-            {
-                var worksheet = package.Workbook.Worksheets[0];
-                int rowCount = worksheet.Dimension.Rows;
-
-                for (int row = 2; row <= rowCount; row++)
-                {
-                    var healthCheckUp = new HealthCheckUp
-                    {
-                        
-                    };
-
-
-                    result.Add(healthCheckUp);
-                }
-            }
-
-            return await Task.FromResult(result);
-        }
-
-        [Obsolete]
-        public async Task<List<VaccinationRecord>> ReadVaccineExcelFile(string filePath)
-        {
-            OfficeOpenXml.ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
-
-            var result = new List<VaccinationRecord>();
-
-            using (var package = new ExcelPackage(new FileInfo(filePath)))
-            {
-                var worksheet = package.Workbook.Worksheets[0];
-                int rowCount = worksheet.Dimension.Rows;
-
-                for (int row = 2; row <= rowCount; row++)
-                {
-                    var vaccinationRecord = new VaccinationRecord
-                    {
-
-                    };
-                    result.Add(vaccinationRecord);
-                }
-            }
-
-            return await Task.FromResult(result);
         }
 
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
         }
+
+       public async Task<List<Files>> GetLogoBySchoolIdAsync(string id)
+        {
+            return await _context.Files.Where(f => f.SchoolID == id && f.IsActive == true).ToListAsync();
+        }
+
+        public async Task<List<Files>> GetImageByNewsIdAsync(string id)
+        {
+            return await _context.Files.Where(n => n.NewsID == id && n.IsActive == true).ToListAsync();
+        }
+
+        public async Task<List<Files>> GetImageByMedicalEventIdAsync(string id)
+        {
+            return await _context.Files.Where(m => m.MedicalEventID == id && m.IsActive == true).ToListAsync();
+        }
+
+        public async Task<List<Files>> GetImageByMedicineIdAsync(string id)
+        {
+            return await _context.Files.Where(m => m.MedicineID == id && m.IsActive == true).ToListAsync();
+        }
+
+        //public async Task<string?> GetLatestFileIdAsync()
+        //{
+        //    // Lấy FileID mới nhất theo thứ tự giảm dần
+        //    //return await _context.Files
+        //    //    .OrderByDescending(f => f.FileID)
+        //    //    .Select(f => f.FileID)
+        //    //    .FirstOrDefaultAsync();
+        //}
     }
 }

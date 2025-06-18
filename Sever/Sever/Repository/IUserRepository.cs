@@ -13,6 +13,7 @@ namespace Sever.Repository
         Task<bool> UpdateUserAsync(User user);
         Task<bool> DeleteAccountByUserAsync(User user);
         Task<User?> GetUserByEmailAsync(string email);
+        Task<string> GetCurrentUserID();
     }
 
     public class UserRepository : IUserRepository
@@ -45,7 +46,7 @@ namespace Sever.Repository
         }
         public async Task<bool> DeleteAccountByUserAsync(User user)
         {
-            if(user.RoleID == 4)
+            if(user.RoleID == "4")
             {
                 return false;
             }
@@ -53,6 +54,14 @@ namespace Sever.Repository
             _context.Users.Update(user);
             var result = await _context.SaveChangesAsync();
             return result > 0;
+        }
+        public async Task<string> GetCurrentUserID()
+        {
+            var user = await _context.Users
+                              .OrderByDescending(u => u.UserID)
+                              .FirstOrDefaultAsync();
+
+            return user?.UserID;
         }
     }
 }

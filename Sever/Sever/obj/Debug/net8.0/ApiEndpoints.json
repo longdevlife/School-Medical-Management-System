@@ -25,16 +25,16 @@
     "Parameters": [
       {
         "Name": "username",
-        "Type": "System.String",
-        "IsRequired": false
+        "Type": "Sever.DTO.User.DeleteUserRequest",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
-    "Method": "GetAdmin",
-    "RelativePath": "api/admin/get-admin",
+    "Method": "GetManagerInfo",
+    "RelativePath": "api/admin/get-admin-info",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -45,7 +45,7 @@
     "ContainingType": "Sever.Controllers.AdminController",
     "Method": "GetUsersFromFile",
     "RelativePath": "api/admin/get-users-from-file",
-    "HttpMethod": "GET",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -59,8 +59,65 @@
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
-    "Method": "UpdateAccount",
+    "Method": "UpdatemanagerAccount",
     "RelativePath": "api/admin/update-admin-info",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userRequest",
+        "Type": "Sever.DTO.User.UpdateUserRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "UpdateSchoolInfo",
+    "RelativePath": "api/admin/update-school-info",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "SchoolID",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Logo",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      },
+      {
+        "Name": "Name",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Address",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Hotline",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Email",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "UpdateUserAccount",
+    "RelativePath": "api/admin/update-user-info",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -167,6 +224,227 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ManagerController",
+    "Method": "GetManagerInfo",
+    "RelativePath": "api/manager/get-manager-info",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ManagerController",
+    "Method": "SearchStudentProfile",
+    "RelativePath": "api/manager/search-student-profile",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "info",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ManagerController",
+    "Method": "UpdatemanagerAccount",
+    "RelativePath": "api/manager/update-manager-info",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userRequest",
+        "Type": "Sever.DTO.User.UpdateUserRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.MedicalEventController",
+    "Method": "CreateMedicalEvent",
+    "RelativePath": "api/medicalEvent",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Sever.DTO.MedicalEvent.MedicineEventRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.MedicalEventController",
+    "Method": "GetMedicalEvent",
+    "RelativePath": "api/medicalEvent/{medicalEventId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "medicalEventId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.MedicalEventController",
+    "Method": "UpdateMedicalEventStatus",
+    "RelativePath": "api/medicalEvent/{medicalEventId}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "medicalEventId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Sever.DTO.MedicalEvent.MedicalEventUpdateDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.MedicalEventController",
+    "Method": "UploadImage",
+    "RelativePath": "api/medicalEvent/{medicalEventId}/upload-image",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "medicalEventId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "file",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.MedicineController",
+    "Method": "CreateMedicine",
+    "RelativePath": "api/medicine",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "medicineDto",
+        "Type": "Sever.DTO.SendMedicine.MedicineDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.MedicineController",
+    "Method": "UpdateMedicine",
+    "RelativePath": "api/medicine/{medicineId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "medicineId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "updateDto",
+        "Type": "Sever.DTO.SendMedicine.MedicineUpdateDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.MedicineController",
+    "Method": "GetMedicineHistory",
+    "RelativePath": "api/medicine/{medicineId}/history",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "medicineId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.MedicineController",
+    "Method": "ChangeStatus",
+    "RelativePath": "api/medicine/{medicineId}/status",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "medicineId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "changeStatusDto",
+        "Type": "Sever.DTO.SendMedicine.ChangeStatusDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.MedicineController",
+    "Method": "UploadMedicinePhoto",
+    "RelativePath": "api/medicine/upload-photo",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "File",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      },
+      {
+        "Name": "MedicineID",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.SchoolController",
+    "Method": "GetSchoolInfo",
+    "RelativePath": "api/school/get-school-info",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

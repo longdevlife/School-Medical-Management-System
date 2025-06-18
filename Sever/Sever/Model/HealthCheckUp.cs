@@ -6,7 +6,7 @@ namespace Sever.Model
     public class HealthCheckUp
     {
         [Key]
-        public int HealthCheckUpID { get; set; }
+        public string HealthCheckUpID { get; set; }
         public DateTime CheckDate { get; set; }
         public float Height { get; set; }
         public float Weight { get; set; }

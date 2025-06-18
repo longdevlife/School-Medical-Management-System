@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using OfficeOpenXml.ConditionalFormatting.Contracts;
 using Sever.DTO.User;
-using Sever.Migrations;
+//using Sever.Migrations;
 using Sever.Model;
 using Sever.Repository;
 using System.Threading.Tasks;

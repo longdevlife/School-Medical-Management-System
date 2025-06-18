@@ -1,11 +1,13 @@
-using Google;
+﻿using Google;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using OfficeOpenXml;
 using Sever.Context;
 using Sever.Repository;
+using Sever.Repository.Interfaces;
 using Sever.Service;
 using System.Text;
 
@@ -47,7 +49,9 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(secretKeyBytes),
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero,
+
+
     };
 })
 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -82,6 +86,9 @@ builder.Services.AddScoped<IFilesRepository, FilesRepository>();
 builder.Services.AddScoped<ISchoolInfoRepository, SchoolInfoRepository>();
 builder.Services.AddScoped<IStudentProfileRepository, StudentProfileRepository>();
 
+builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IMedicalEventRepository, MedicalEventRepository>();
 #endregion
 
 #region Service Scope
@@ -90,6 +97,11 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IEmailService, EmailSevice>();
 builder.Services.AddScoped<IFilesService, FilesSevice>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IMedicineService, MedicineService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IMedicalEventService, MedicalEventService>();
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<ISchoolInfoService, SchoolInfoService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 #endregion

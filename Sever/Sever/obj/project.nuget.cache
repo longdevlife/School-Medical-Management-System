@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "rJR4ff7PaLc=",
+  "dgSpecHash": "fyZVbgTFVl0=",
   "success": true,
-  "projectFilePath": "D:\\FPTU\\Semester_5\\SWP391\\Project\\git\\Sever\\Sever\\Sever.csproj",
+  "projectFilePath": "D:\\FPTU\\Semester_5\\SWP391\\Project\\Project\\Sever\\Sever\\Sever.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Truong\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\Truong\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

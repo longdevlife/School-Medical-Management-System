@@ -25,9 +25,58 @@ namespace Sever.Controllers
             _filesService = filesService;
             _schoolInfoService = schoolInfoService;
         }
-        
 
+        [HttpGet("get-admin-info")]
+        public async Task<IActionResult> GetManagerInfo()
+        {
+            string username = User.Identity?.Name;
 
+            if (string.IsNullOrEmpty(username))
+            {
+                return BadRequest(new { message = "Không tìm thấy thông tin người dùng" });
+            }
+
+            try
+            {
+                var user = await _userService.GetUserAsyc(username);
+
+                return Ok(new
+                {
+                    user,
+                    message = "Lấy thông tin manager thành công"
+                });
+            }
+            catch
+            {
+                return BadRequest(new { message = "Không tìm thấy thông tin người dùng" });
+            }
+        }
+
+        [HttpPut("update-admin-info")]
+        public async Task<IActionResult> UpdatemanagerAccount(UpdateUserRequest userRequest)
+        {
+            userRequest.UserName = User.Identity?.Name;
+            if (string.IsNullOrEmpty(userRequest.UserName))
+            {
+                return BadRequest(new { message = "Không tìm thấy thông tin người dùng" });
+            }
+            try
+            {
+                var result = await _userService.UpdateUserAsync(userRequest, userRequest.UserName);
+                if (result)
+                {
+                    return Ok(new { message = "Cập nhật tài khoản thành công" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Không tìm thấy tài khoản để cập nhật" });
+                }
+            }
+            catch
+            {
+                return BadRequest(new { message = "Cập nhật tài khoản thất bại" });
+            }
+        }
 
         [HttpPost("create-accounts")]
         public async Task<IActionResult> CreateAccounts(List<CreateUserRequest> users)

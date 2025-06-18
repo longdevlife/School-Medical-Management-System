@@ -21,16 +21,21 @@ namespace Sever.Service
         Task<ImageResponse> UploadNewsImageByAsync(IFormFile file, string id);
         Task<ImageResponse> UploadMedicineImageByAsync(IFormFile file, string id);
         Task<List<CreateUserRequest>> ReadUsersFromExcelAsync(IFormFile file);
+        Task<List<Files>> GetLogoBySchoolIdAsync(string id);
+        Task<List<Files>> GetImageByMedicineIdAsync(string id);
+        Task<List<Files>> GetImageByMedicalEventIdAsync(string id);
+        Task<List<Files>> GetImageByNewsIdAsync(string id);
+        Task<bool> DeleteFileByIdAsync(string id);
     }
     public class FilesSevice : IFilesService
     {
-        private readonly IFilesRepository _repository;
+        private readonly IFilesRepository _fileRepository;
         private readonly Cloudinary _cloudinary;
         private readonly DataContext _context;
         private readonly IUserRepository _userRepository;
         public FilesSevice(IFilesRepository repository, IConfiguration config, DataContext context, IUserRepository userRepository)
         {
-            _repository = repository;
+            _fileRepository = repository;
             var account = new Account(
                 config["Cloudinary:CloudName"],
                 config["Cloudinary:ApiKey"],
@@ -65,11 +70,12 @@ namespace Sever.Service
                 FileType = "Image",
                 FileLink = uploadResult.SecureUrl.AbsoluteUri,
                 UploadDate = DateTime.UtcNow,
+                IsActive = true,
                 SchoolID = id
             };
 
-            await _repository.AddAsync(image);
-            await _repository.SaveChangesAsync();
+            await _fileRepository.AddAsync(image);
+            await _fileRepository.SaveChangesAsync();
 
             return new ImageResponse
             {
@@ -102,11 +108,12 @@ namespace Sever.Service
                 FileType = "Image",
                 FileLink = uploadResult.SecureUrl.AbsoluteUri,
                 UploadDate = DateTime.UtcNow,
+                IsActive = true,
                 MedicalEventID = id
             };
 
-            await _repository.AddAsync(image);
-            await _repository.SaveChangesAsync();
+            await _fileRepository.AddAsync(image);
+            await _fileRepository.SaveChangesAsync();
 
             return new ImageResponse
             {
@@ -139,11 +146,12 @@ namespace Sever.Service
                 FileType = "Image",
                 FileLink = uploadResult.SecureUrl.AbsoluteUri,
                 UploadDate = DateTime.UtcNow,
+                IsActive = true,
                 NewsID = id
             };
 
-            await _repository.AddAsync(image);
-            await _repository.SaveChangesAsync();
+            await _fileRepository.AddAsync(image);
+            await _fileRepository.SaveChangesAsync();
 
             return new ImageResponse
             {
@@ -176,11 +184,12 @@ namespace Sever.Service
                 FileType = "Image",
                 FileLink = uploadResult.SecureUrl.AbsoluteUri,
                 UploadDate = DateTime.UtcNow,
+                IsActive = true,
                 MedicineID = id
             };
 
-            await _repository.AddAsync(image);
-            await _repository.SaveChangesAsync();
+            await _fileRepository.AddAsync(image);
+            await _fileRepository.SaveChangesAsync();
 
             return new ImageResponse
             {
@@ -191,7 +200,7 @@ namespace Sever.Service
 
         public async Task<List<CreateUserRequest>> ReadUsersFromExcelAsync(IFormFile file)
         {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            ExcelPackage.License.SetNonCommercialPersonal("SchoolMedicalManagement");
 
             var users = new List<CreateUserRequest>();
 
@@ -236,6 +245,52 @@ namespace Sever.Service
                 _ => throw new ArgumentException("Invalid role name")
             };
         }
+
+        public async Task<List<Files>> GetLogoBySchoolIdAsync(string id)
+        {
+            var list = await _fileRepository.GetLogoBySchoolIdAsync(id);
+            if (list == null || list.Count == 0)
+            {
+                throw new ArgumentException("Tải file từ repository thất bại");
+            }
+            return list;
+        }
+
+        public async Task<List<Files>> GetImageByMedicineIdAsync(string id)
+        {
+            var list = await _fileRepository.GetImageByMedicineIdAsync(id);
+            if (list == null || list.Count == 0)
+            {
+                throw new ArgumentException("Tải file từ repository thất bại");
+            }
+            return list;
+        }
+
+        public async Task<List<Files>> GetImageByMedicalEventIdAsync(string id)
+        {
+            var list = await _fileRepository.GetImageByMedicalEventIdAsync(id);
+            if (list == null || list.Count == 0)
+            {
+                throw new ArgumentException("Tải file từ repository thất bại");
+            }
+            return list;
+        }
+
+        public async Task<List<Files>> GetImageByNewsIdAsync(string id)
+        {
+            var list = await _fileRepository.GetImageByNewsIdAsync(id);
+            if (list == null || list.Count == 0)
+            {
+                throw new ArgumentException("Tải file từ repository thất bại");
+            }
+            return list;
+        }
+
+        public async Task<bool> DeleteFileAsync(Files file)
+        {
+            return await _fileRepository.DeleteAsync(file);
+        }
+
         //public async Task AddFileAsync(Files file)
         //{
         //    await _context.Files.AddAsync(file);

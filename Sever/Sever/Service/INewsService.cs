@@ -7,11 +7,11 @@ namespace Sever.Service
 {
     public interface INewsService
     {
-        Task<News> CreateNewsAsync(CreateNewsRequest newNews);
-        Task<bool> UpdateNewsAsync(News newNews);
+        Task<News> CreateNewsAsync(CreateNews newNews);
+        Task<bool> UpdateNewsAsync(UpdateNews newNews);
         Task<bool> DeleteNewsByIdAsync(string id);
-        Task<News> GetNewsByUserIdAsync(string id);
-        Task<List<News>> GetAllNewsAsync();
+        Task<List<News>> GetNewsByUserIdAsync(string id);
+        Task<List<GetNews>> GetAllNewsAsync();
     }
     public class NewsService : INewsService
 
@@ -24,7 +24,7 @@ namespace Sever.Service
             _newsRepository = newsRepository;
             _filesService = filesService;
         }
-        public Task<News> CreateNewsAsync(CreateNewsRequest newNews)
+        public Task<News> CreateNewsAsync(CreateNews newNews)
         {
             if (newNews == null) throw new ArgumentNullException("News Không đúng fomat vui lòng kiểm tra lại");
             var news = new News
@@ -34,7 +34,7 @@ namespace Sever.Service
 
             try
             {
-                var results =  _newsRepository.CreateNewsAsync(news);
+                var results = _newsRepository.CreateNewsAsync(news);
                 foreach (var item in newNews.Image)
                 {
                     _filesService.UploadNewsImageByAsync(item, news.NewsID);
@@ -54,20 +54,65 @@ namespace Sever.Service
             return result;
         }
 
-        public async Task<List<News>> GetAllNewsAsync()
+        public async Task<List<GetNews>> GetAllNewsAsync()
         {
             var results = await _newsRepository.GetAllNewsAsync();
-            return results;
+            if(results.Count <= 0)
+            {
+                throw new ArgumentException("không có tin tức nào để hiển thị");
+            }
+            List<GetNews> lisNews = new List<GetNews>();
+            foreach (var item in results)
+            {
+                var listImage = await _filesService.GetImageByNewsIdAsync(item.NewsID);
+                lisNews.Add(new GetNews()
+                {
+                    Title = item.Title,
+                    DateTime = item.DateTime,
+                    Summary = item.Summary,
+                    Body = item.Body,
+                    Image = listImage
+                });
+            }
+            return lisNews;
         }
 
-        public Task<News> GetNewsByUserIdAsync(string id)
+        public async Task<List<News>> GetNewsByUserIdAsync(string id)
         {
-            throw new NotImplementedException();
+            var listNews = await _newsRepository.GetNewsByUserIdAsync(id); ;
+            if (listNews == null) throw new ArgumentNullException("Không tìm thấy tin tức người dùng này đã đăng");
+            return listNews;
         }
 
-        public Task<bool> UpdateNewsAsync(News newNews)
+        public async Task<bool> UpdateNewsAsync(UpdateNews newNews)
         {
-            throw new NotImplementedException();
+            var news = await _newsRepository.GetNewsByIdAsync(newNews.NewsID);
+            news.Title = newNews.Title;
+            news.Summary = newNews.Summary;
+            news.Body = newNews.Body;
+            bool uploadImg = true;
+            var listImage = await _filesService.GetImageByNewsIdAsync(news.NewsID);
+            foreach (var item in listImage)
+            {
+                await _filesService.DeleteFileByIdAsync(news.NewsID);
+            }
+            foreach (var item in newNews.Image)
+            {
+                try
+                {
+                    await _filesService.UploadNewsImageByAsync(item, news.NewsID);
+                }
+                catch
+                {
+                    uploadImg = false;
+                    throw new ArgumentException("Lưu ảnh thất bại");
+                }
+            }
+            if (uploadImg || news != null)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

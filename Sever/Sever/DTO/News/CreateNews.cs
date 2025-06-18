@@ -1,6 +1,6 @@
 ﻿namespace Sever.DTO.News
 {
-    public class CreateNewsRequest
+    public class CreateNews
     {
         public string NewsID { get; set; }
         public string Title { get; set; }

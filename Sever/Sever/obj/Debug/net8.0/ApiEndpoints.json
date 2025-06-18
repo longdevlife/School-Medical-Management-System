@@ -33,6 +33,16 @@
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "GetManagerInfo",
+    "RelativePath": "api/admin/get-admin-info",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
     "Method": "GetUsersFromFile",
     "RelativePath": "api/admin/get-users-from-file",
     "HttpMethod": "POST",
@@ -43,6 +53,22 @@
         "Name": "file",
         "Type": "Microsoft.AspNetCore.Http.IFormFile",
         "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "UpdatemanagerAccount",
+    "RelativePath": "api/admin/update-admin-info",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userRequest",
+        "Type": "Sever.DTO.User.UpdateUserRequest",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []

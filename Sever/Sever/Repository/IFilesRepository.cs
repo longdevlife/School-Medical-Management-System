@@ -12,7 +12,7 @@ namespace Sever.Repository
     {
         Task<Files> AddAsync(Files image);
         Task SaveChangesAsync();
-        Task<string?> GetLatestFileIdAsync();
+        //Task<string?> GetLatestFileIdAsync();
 
 
     }
@@ -87,13 +87,13 @@ namespace Sever.Repository
         {
             await _context.SaveChangesAsync();
         }
-        public async Task<string?> GetLatestFileIdAsync()
-        {
-            // Lấy FileID mới nhất theo thứ tự giảm dần
-            return await _context.Files
-                .OrderByDescending(f => f.FileID)
-                .Select(f => f.FileID)
-                .FirstOrDefaultAsync();
-        }
+        //public async Task<string?> GetLatestFileIdAsync()
+        //{
+        //    // Lấy FileID mới nhất theo thứ tự giảm dần
+        //    //return await _context.Files
+        //    //    .OrderByDescending(f => f.FileID)
+        //    //    .Select(f => f.FileID)
+        //    //    .FirstOrDefaultAsync();
+        //}
     }
 }

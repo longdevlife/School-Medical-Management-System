@@ -7,7 +7,7 @@ namespace Sever.Model
     {
         [Key]
         [Required]
-        public string FileID { get; set; }
+        public int FileID { get; set; }
         [Required]
         public string FileName { get; set; }
         [Required]

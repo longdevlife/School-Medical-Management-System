@@ -12,14 +12,14 @@ namespace Sever.Service
 {
     public interface IFilesService
     {
-        Task<ImageResponse> UploadImageAsync(IFormFile file);
-        List<CreateUserRequest> GetUsersFromExcel(Stream file);
-        Task AddFileAsync(Files file);
-        Task<string?> GetLatestFileIdAsync();
+        //Task<ImageResponse> UploadImageAsync(IFormFile file);
+        //Task AddFileAsync(Files file);
+        //Task<string?> GetLatestFileIdAsync();
 
         Task<ImageResponse> UploadSchoolLogoByAsync(IFormFile file, string id);
         Task<ImageResponse> UploadMedicalEventImageByAsync(IFormFile file, string id);
         Task<ImageResponse> UploadNewsImageByAsync(IFormFile file, string id);
+        Task<ImageResponse> UploadMedicineImageByAsync(IFormFile file, string id);
         Task<List<CreateUserRequest>> ReadUsersFromExcelAsync(IFormFile file);
     }
     public class FilesSevice : IFilesService
@@ -27,8 +27,8 @@ namespace Sever.Service
         private readonly IFilesRepository _repository;
         private readonly Cloudinary _cloudinary;
         private readonly DataContext _context;
-
-        public FilesSevice(IFilesRepository repository, IConfiguration config, DataContext context)
+        private readonly IUserRepository _userRepository;
+        public FilesSevice(IFilesRepository repository, IConfiguration config, DataContext context, IUserRepository userRepository)
         {
             _repository = repository;
             var account = new Account(
@@ -38,7 +38,7 @@ namespace Sever.Service
             );
             _cloudinary = new Cloudinary(account);
             _context = context;
-
+            _userRepository = userRepository;
         }
 
         public async Task<ImageResponse> UploadSchoolLogoByAsync(IFormFile file, string id)
@@ -73,7 +73,6 @@ namespace Sever.Service
 
             return new ImageResponse
             {
-                Id = image.FileID,
                 Url = image.FileLink,
                 UploadedAt = image.UploadDate
             };
@@ -111,7 +110,6 @@ namespace Sever.Service
 
             return new ImageResponse
             {
-                Id = image.FileID,
                 Url = image.FileLink,
                 UploadedAt = image.UploadDate
             };
@@ -134,21 +132,9 @@ namespace Sever.Service
 
             if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
                 throw new Exception("Image upload failed");
-            
-            var latestFileId = await _repository.GetLatestFileIdAsync();
-            string newFileId = "F001";
 
-            if (!string.IsNullOrEmpty(latestFileId) && latestFileId.StartsWith("F"))
-            {
-                var numberPart = latestFileId.Substring(1);
-                if (int.TryParse(numberPart, out int number))
-                {
-                    newFileId = $"F{(number + 1):D3}";
-                }
-            }
             var image = new Files
             {
-                FileID = newFileId,
                 FileName = file.FileName,
                 FileType = "Image",
                 FileLink = uploadResult.SecureUrl.AbsoluteUri,
@@ -161,7 +147,43 @@ namespace Sever.Service
 
             return new ImageResponse
             {
-                Id = image.FileID,
+                Url = image.FileLink,
+                UploadedAt = image.UploadDate
+            };
+        }
+
+        public async Task<ImageResponse> UploadMedicineImageByAsync(IFormFile file, string id)
+        {
+            if (file == null || file.Length == 0)
+                throw new ArgumentException("File is empty");
+
+            using var stream = file.OpenReadStream();
+
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(file.FileName, stream),
+                Folder = "img"
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
+                throw new Exception("Image upload failed");
+
+            var image = new Files
+            {
+                FileName = file.FileName,
+                FileType = "Image",
+                FileLink = uploadResult.SecureUrl.AbsoluteUri,
+                UploadDate = DateTime.UtcNow,
+                MedicineID = id
+            };
+
+            await _repository.AddAsync(image);
+            await _repository.SaveChangesAsync();
+
+            return new ImageResponse
+            {
                 Url = image.FileLink,
                 UploadedAt = image.UploadDate
             };
@@ -169,7 +191,7 @@ namespace Sever.Service
 
         public async Task<List<CreateUserRequest>> ReadUsersFromExcelAsync(IFormFile file)
         {
-            ExcelPackage.License.SetNonCommercialPersonal("SchoolMedical");
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             var users = new List<CreateUserRequest>();
 
@@ -182,25 +204,27 @@ namespace Sever.Service
 
             int rowCount = worksheet.Dimension.Rows;
 
-            for (int row = 2; row <= rowCount; row++) 
+            for (int row = 2; row <= rowCount; row++)
             {
                 var user = new CreateUserRequest
                 {
-                    UserID = worksheet.Cells[row, 1].Text.Trim(),
-                    UserName = worksheet.Cells[row, 2].Text.Trim(),
-                    Password = worksheet.Cells[row, 3].Text.Trim(),
-                    Name = worksheet.Cells[row, 4].Text?.Trim(),
-                    Email = worksheet.Cells[row, 5].Text?.Trim(),
-                    Phone = worksheet.Cells[row, 6].Text?.Trim(),
-                    RoleID = int.Parse(worksheet.Cells[row, 7].Text.Trim())
+                    UserName = worksheet.Cells[row, 1].Text.Trim(),
+                    Password = worksheet.Cells[row, 2].Text.Trim(),
+                    Name = worksheet.Cells[row, 3].Text?.Trim(),
+                    Email = worksheet.Cells[row, 4].Text?.Trim(),
+                    Phone = worksheet.Cells[row, 5].Text?.Trim(),
+                    RoleID = worksheet.Cells[row, 6].Text.Trim()
                 };
 
-                if (!string.IsNullOrEmpty(user.UserID))
+                if (!string.IsNullOrEmpty(user.UserName) && !string.IsNullOrEmpty(user.Password))
+                {
                     users.Add(user);
+                }
             }
 
             return users;
         }
+
         public int RoleIdByRoleName(string roleName)
         {
             return roleName switch
@@ -212,15 +236,15 @@ namespace Sever.Service
                 _ => throw new ArgumentException("Invalid role name")
             };
         }
-        public async Task AddFileAsync(Files file)
-        {
-            await _context.Files.AddAsync(file);
-            await _context.SaveChangesAsync();
-        }
-        public async Task<string?> GetLatestFileIdAsync()
-        {
-            return await _repository.GetLatestFileIdAsync();
-        }
+        //public async Task AddFileAsync(Files file)
+        //{
+        //    await _context.Files.AddAsync(file);
+        //    await _context.SaveChangesAsync();
+        //}
+        //public async Task<string?> GetLatestFileIdAsync()
+        //{
+        //    return await _repository.GetLatestFileIdAsync();
+        //}
 
     }
 }

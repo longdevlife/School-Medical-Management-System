@@ -24,17 +24,15 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.Appointment", b =>
                 {
-                    b.Property<int>("AppointmentID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AppointmentID"));
+                    b.Property<string>("AppointmentID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("DateTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("HealthCheckUpID")
-                        .HasColumnType("int");
+                    b.Property<string>("HealthCheckUpID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Location")
                         .IsRequired()
@@ -74,8 +72,11 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.Files", b =>
                 {
-                    b.Property<string>("FileID")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("FileID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FileID"));
 
                     b.Property<byte[]>("FileData")
                         .HasColumnType("varbinary(max)");
@@ -94,14 +95,11 @@ namespace Sever.Migrations
                     b.Property<string>("MedicalEventID")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("MedicalEventID1")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("MedicineID")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int?>("NewsID")
-                        .HasColumnType("int");
+                    b.Property<string>("NewsID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("SchoolID")
                         .HasColumnType("nvarchar(450)");
@@ -112,8 +110,6 @@ namespace Sever.Migrations
                     b.HasKey("FileID");
 
                     b.HasIndex("MedicalEventID");
-
-                    b.HasIndex("MedicalEventID1");
 
                     b.HasIndex("MedicineID");
 
@@ -176,11 +172,8 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.HealthCheckUp", b =>
                 {
-                    b.Property<int>("HealthCheckUpID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HealthCheckUpID"));
+                    b.Property<string>("HealthCheckUpID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Ardiovascular")
                         .IsRequired()
@@ -251,11 +244,8 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.HealthProfile", b =>
                 {
-                    b.Property<int>("HealthProfileID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HealthProfileID"));
+                    b.Property<string>("HealthProfileID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AllergyHistory")
                         .HasColumnType("nvarchar(max)");
@@ -315,9 +305,6 @@ namespace Sever.Migrations
                     b.Property<string>("EventTypeID")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("MedicineUsed")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -396,8 +383,11 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.MedicineHistory", b =>
                 {
-                    b.Property<string>("HistoryID")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("HistoryID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HistoryID"));
 
                     b.Property<string>("ChangeDescription")
                         .HasColumnType("nvarchar(max)");
@@ -430,15 +420,8 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.News", b =>
                 {
-                    b.Property<int>("NewsID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NewsID"));
-
-                    b.Property<string>("Author")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("NewsID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Body")
                         .IsRequired()
@@ -447,8 +430,8 @@ namespace Sever.Migrations
                     b.Property<DateTime>("DateTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<byte>("Status")
-                        .HasColumnType("tinyint");
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Summary")
                         .IsRequired()
@@ -555,8 +538,8 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.Role", b =>
                 {
-                    b.Property<int>("RoleID")
-                        .HasColumnType("int");
+                    b.Property<string>("RoleID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RoleName")
                         .IsRequired()
@@ -661,8 +644,9 @@ namespace Sever.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoleID")
-                        .HasColumnType("int");
+                    b.Property<string>("RoleID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -680,11 +664,8 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.VaccinationRecord", b =>
                 {
-                    b.Property<int>("RecordID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RecordID"));
+                    b.Property<string>("RecordID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("DateTime")
                         .HasColumnType("datetime2");
@@ -759,12 +740,7 @@ namespace Sever.Migrations
                 {
                     b.HasOne("Sever.Model.MedicalEvent", "MedicalEvent")
                         .WithMany("Files")
-                        .HasForeignKey("MedicalEventID")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Sever.Model.MedicalEvent", null)
-                        .WithMany("File")
-                        .HasForeignKey("MedicalEventID1");
+                        .HasForeignKey("MedicalEventID");
 
                     b.HasOne("Sever.Model.Medicine", "Medicine")
                         .WithMany("Files")
@@ -1029,8 +1005,6 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.MedicalEvent", b =>
                 {
-                    b.Navigation("File");
-
                     b.Navigation("Files");
 
                     b.Navigation("MedicalEventDetail");

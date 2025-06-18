@@ -63,14 +63,14 @@ namespace Sever.Repository
             }
             return null;
         }
-        public async Task<News> GetNewsbyIdAsync(string id)
+        public async Task<News> GetNewsByIdAsync(string id)
         {
             var result = await _context.News.FirstOrDefaultAsync(n => n.NewsID == id);
             if (result == null)
                 return null;
             return result;
         }
-        public async Task<string> GetNewNewsID(string id)
+        public async Task<string> GetCurrentNewsID(string id)
         {
             var crurrentNews = await _context.News.OrderByDescending(n => n.NewsID).FirstOrDefaultAsync();
             if(crurrentNews == null)

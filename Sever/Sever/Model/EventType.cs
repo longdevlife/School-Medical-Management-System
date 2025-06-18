@@ -7,7 +7,6 @@ namespace Sever.Model
         [Key]
         public string EventTypeID {  get; set; }
         public string EventTypeName {  get; set; }
-
         public List<MedicalEvent> MedicalEvent { get; set; }
     }
 }

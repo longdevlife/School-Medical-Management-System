@@ -37,7 +37,7 @@ namespace Sever.Repository.Interfaces
             if (!studentIds.Any()) return new List<string>();
 
             var parentIds = await _context.Users
-                .Where(u => u.RoleID == 1 && u.StudentProfile.Any(sp => studentIds.Contains(sp.StudentID)))
+                .Where(u => u.RoleID == "1" && u.StudentProfile.Any(sp => studentIds.Contains(sp.StudentID)))
                 .Select(u => u.UserID)
                 .ToListAsync();
 
@@ -46,7 +46,7 @@ namespace Sever.Repository.Interfaces
 
         public async Task<bool> CheckParentExistsAsync(string parentID)
         {
-            return await _context.Users.AnyAsync(u => u.UserID == parentID && u.RoleID == 1);
+            return await _context.Users.AnyAsync(u => u.UserID == parentID && u.RoleID == "1");
         }
 
         public async Task CreateFormAsync(Form form)

@@ -33,16 +33,6 @@
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
-    "Method": "GetAdminInfo",
-    "RelativePath": "api/admin/get-admin-info",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.AdminController",
     "Method": "GetUsersFromFile",
     "RelativePath": "api/admin/get-users-from-file",
     "HttpMethod": "POST",
@@ -53,22 +43,6 @@
         "Name": "file",
         "Type": "Microsoft.AspNetCore.Http.IFormFile",
         "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.AdminController",
-    "Method": "UpdateAdminAccount",
-    "RelativePath": "api/admin/update-admin-info",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "userRequest",
-        "Type": "Sever.DTO.User.UpdateUserRequest",
-        "IsRequired": true
       }
     ],
     "ReturnTypes": []
@@ -227,6 +201,48 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "Sever.Controllers.ManagerController",
+    "Method": "GetManagerInfo",
+    "RelativePath": "api/manager/get-manager-info",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ManagerController",
+    "Method": "SearchStudentProfile",
+    "RelativePath": "api/manager/search-student-profile",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "info",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ManagerController",
+    "Method": "UpdatemanagerAccount",
+    "RelativePath": "api/manager/update-manager-info",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userRequest",
+        "Type": "Sever.DTO.User.UpdateUserRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "Sever.Controllers.MedicalEventController",
     "Method": "CreateMedicalEvent",
     "RelativePath": "api/medicalEvent",
@@ -274,48 +290,6 @@
       {
         "Name": "dto",
         "Type": "Sever.DTO.MedicalEvent.MedicalEventUpdateDTO",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.ManagerController",
-    "Method": "GetManagerInfo",
-    "RelativePath": "api/manager/get-manager-info",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.ManagerController",
-    "Method": "SearchStudentProfile",
-    "RelativePath": "api/manager/search-student-profile",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "info",
-        "Type": "System.String",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.ManagerController",
-    "Method": "UpdatemanagerAccount",
-    "RelativePath": "api/manager/update-manager-info",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "userRequest",
-        "Type": "Sever.DTO.User.UpdateUserRequest",
         "IsRequired": true
       }
     ],

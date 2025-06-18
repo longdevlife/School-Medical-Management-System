@@ -14,7 +14,6 @@ namespace Sever.Repository
         Task AddHistoryAsync(MedicineHistory history);
         Task<List<MedicineHistory>> GetMedicineHistoryAsync(string medicineId);
         Task<Medicine?> GetLatestMedicineAsync();
-        Task<string> GetLatestHistoryIdAsync();
 
     }
 
@@ -68,12 +67,6 @@ namespace Sever.Repository
                 .OrderByDescending(m => Convert.ToInt32(m.MedicineID.Substring(1)))
                 .FirstOrDefaultAsync();
         }
-        public async Task<string> GetLatestHistoryIdAsync()
-        {
-            return await _context.MedicineHistory
-                .OrderByDescending(h => h.HistoryID)
-                .Select(h => h.HistoryID)
-                .FirstOrDefaultAsync();
-        }
+        
     }
 }

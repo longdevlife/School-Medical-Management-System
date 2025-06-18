@@ -29,12 +29,12 @@ namespace Sever.Service
             if (newNews == null) throw new ArgumentNullException("News Không đúng fomat vui lòng kiểm tra lại");
             var news = new News
             {
-                NewsID = GenerateID.GenerateNextId(_newsRepository.)
+                NewsID = "NW222"
             };
 
             try
             {
-                var results = _newsRepository.CreateNewsAsync(news);
+                var results =  _newsRepository.CreateNewsAsync(news);
                 foreach (var item in newNews.Image)
                 {
                     _filesService.UploadNewsImageByAsync(item, news.NewsID);

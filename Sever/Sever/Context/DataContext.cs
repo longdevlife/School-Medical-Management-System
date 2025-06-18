@@ -146,16 +146,7 @@ namespace Sever.Context
             #endregion
 
             #region Files
-            modelBuilder.Entity<Files>()
-                .HasOne(f => f.Medicine)
-                .WithMany(m => m.Files)
-                .HasForeignKey("MedicineID");
 
-            modelBuilder.Entity<Files>()
-    .HasOne(f => f.MedicalEvent)
-    .WithMany(m => m.Files)
-    .HasForeignKey(f => f.MedicalEventID)
-    .OnDelete(DeleteBehavior.Restrict);
             #endregion
 
 

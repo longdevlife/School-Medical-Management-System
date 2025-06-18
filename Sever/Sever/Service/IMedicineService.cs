@@ -87,22 +87,11 @@ namespace Sever.Service
 
                 await _medicineRepository.CreateMedicineAsync(medicine);
                
-                var latestHistoryId = await _medicineRepository.GetLatestHistoryIdAsync();
-                string newHistoryId = "H001";
-
-                if (!string.IsNullOrEmpty(latestHistoryId) && latestHistoryId.StartsWith("H"))
-                {
-                    var numberPart = latestHistoryId.Substring(1);
-                    if (int.TryParse(numberPart, out int number))
-                    {
-                        newHistoryId = $"H{(number + 1):D3}";
-                    }
-                }
+          
 
 
                 var history = new MedicineHistory
                 {
-                    HistoryID = newHistoryId, // <--- gán HistoryID
                     MedicineID = medicine.MedicineID,
                     ModifiedBy = userId,
                     ChangeDescription = "Tạo đơn thuốc",
@@ -150,22 +139,12 @@ namespace Sever.Service
                 medicine.Notes = updateDto.Notes;
                 medicine.Status = "Đang xử lý";
 
-                var latestHistoryId = await _medicineRepository.GetLatestHistoryIdAsync();
-                string newHistoryId = "H001";
-
-                if (!string.IsNullOrEmpty(latestHistoryId) && latestHistoryId.StartsWith("H"))
-                {
-                    var numberPart = latestHistoryId.Substring(1);
-                    if (int.TryParse(numberPart, out int number))
-                    {
-                        newHistoryId = $"H{(number + 1):D3}";
-                    }
-                }
+            
 
 
                 var history = new MedicineHistory
                 {
-                    HistoryID = newHistoryId, // <--- gán HistoryID
+ 
                     MedicineID = medicineId,
                     ModifiedBy = modifiedBy,
                     ChangeDescription = $"Cập nhật chi tiết đơn thuốc.",
@@ -213,22 +192,11 @@ namespace Sever.Service
                 var previousStatus = medicine.Status;
                 medicine.Status = changeStatusDto.NewStatus;
 
-                var latestHistoryId = await _medicineRepository.GetLatestHistoryIdAsync();
-                string newHistoryId = "H001";
-
-                if (!string.IsNullOrEmpty(latestHistoryId) && latestHistoryId.StartsWith("H"))
-                {
-                    var numberPart = latestHistoryId.Substring(1);
-                    if (int.TryParse(numberPart, out int number))
-                    {
-                        newHistoryId = $"H{(number + 1):D3}";
-                    }
-                }
 
 
                 var history = new MedicineHistory
                 {
-                    HistoryID = newHistoryId, // <--- gán HistoryID
+
                     MedicineID = medicineId,
                     ModifiedBy = modifiedBy,
                     ChangeDescription = changeStatusDto.ChangeDescription,
@@ -260,7 +228,7 @@ namespace Sever.Service
                     throw new Exception("Không tìm thấy đơn thuốc.");
                 }
 
-                var imageResponse = await _filesService.UploadImageAsync(fileDto.File);
+                //var imageResponse = await _filesService.UploadImageAsync(fileDto.File);
 
                 //var file = new Files
                 //{
@@ -274,21 +242,11 @@ namespace Sever.Service
 
                 //await _filesService.AddFileAsync(file);
 
-                var latestHistoryId = await _medicineRepository.GetLatestHistoryIdAsync();
-                string newHistoryId = "H001";
-
-                if (!string.IsNullOrEmpty(latestHistoryId) && latestHistoryId.StartsWith("H"))
-                {
-                    var numberPart = latestHistoryId.Substring(1);
-                    if (int.TryParse(numberPart, out int number))
-                    {
-                        newHistoryId = $"H{(number + 1):D3}";
-                    }
-                }
+              
 
                 var history = new MedicineHistory
                 {
-                    HistoryID = newHistoryId, // <--- gán HistoryID
+    
                     MedicineID = fileDto.MedicineID,
                     ModifiedBy = uploadedBy,
                     ChangeDescription = $"Đã tải lên ảnh: {fileDto.File.FileName}",

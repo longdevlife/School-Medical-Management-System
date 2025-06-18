@@ -6,7 +6,7 @@ namespace Sever.Model
     public class VaccinationRecord
     {
         [Key]
-        public int RecordID { get; set; }
+        public string RecordID { get; set; }
         public int Dose { get; set; }
         public DateTime DateTime { get; set; }
         public string? Notes { get ; set; }

@@ -15,17 +15,15 @@ namespace Sever.Model
         [Required]
         public string Dosage { get; set; }
         public string? Instructions { get; set; }
-        public DateTime? SentDate { get; set; } = DateTime.Now;
+        public DateTime? SentDate { get; set; } 
         public string?  Notes { get; set; }
         public string? ParentID { get; set; }
         [ForeignKey("ParentID")]
         public User Parent { get; set; }
         public string? NurseID { get; set; }
-
         [ForeignKey("NurseID")]
         public User Nurse { get; set; }
-        public string Status { get; set; } = "Chờ xử lý"; // Default status
-        public ICollection<Files> Files { get; set; }
-
+        public string Status { get; set; }
+        public List<Files> Files { get; set; }
     }
 }

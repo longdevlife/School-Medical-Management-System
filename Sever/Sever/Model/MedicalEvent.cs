@@ -21,8 +21,6 @@ namespace Sever.Model
         [ForeignKey("NurseID")]
         public User Nurse { get; set; }
         public List<MedicalEventDetail> MedicalEventDetail { get; set; }
-        public List<Files> File {  get; set; }
-        public ICollection<Files> Files { get; set; }
-
+        public List<Files> Files {  get; set; }
     }
 }

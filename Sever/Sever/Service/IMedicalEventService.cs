@@ -139,8 +139,8 @@ namespace Sever.Service
                 if (medicalEvent == null)
                     throw new Exception("Medical event not found");
 
-                var imageResponse = await _filesService.UploadImageAsync(file);
-                await _medicalEventRepository.AddMedicalEventImage(medicalEventId, imageResponse.Id);
+                //var imageResponse = await _filesService.UploadImageAsync(file);
+                //await _medicalEventRepository.AddMedicalEventImage(medicalEventId, imageResponse.Id);
 
                 return await GetMedicalEvent(medicalEventId);
             }      

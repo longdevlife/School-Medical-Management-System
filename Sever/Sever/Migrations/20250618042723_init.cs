@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Sever.Migrations
 {
     /// <inheritdoc />
-    public partial class InitCreate : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -41,7 +41,7 @@ namespace Sever.Migrations
                 name: "Role",
                 columns: table => new
                 {
-                    RoleID = table.Column<int>(type: "int", nullable: false),
+                    RoleID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     RoleName = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -54,7 +54,7 @@ namespace Sever.Migrations
                 columns: table => new
                 {
                     SchoolID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Logo = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    Logo = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Hotline = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -76,7 +76,7 @@ namespace Sever.Migrations
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    RoleID = table.Column<int>(type: "int", nullable: false)
+                    RoleID = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -137,13 +137,12 @@ namespace Sever.Migrations
                 columns: table => new
                 {
                     MedicalEventID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    EventDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ActionTaken = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EventDateTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ActionTaken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     EventTypeID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    NurseID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    NurseID = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -197,14 +196,12 @@ namespace Sever.Migrations
                 name: "News",
                 columns: table => new
                 {
-                    NewsID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    NewsID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Summary = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Author = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Body = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<byte>(type: "tinyint", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false),
                     UserID = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
@@ -318,13 +315,14 @@ namespace Sever.Migrations
                 name: "MedicineHistory",
                 columns: table => new
                 {
-                    HistoryID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    MedicineID = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    HistoryID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     ModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ChangeDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     PreviousStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    NewStatus = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    NewStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MedicineID = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -341,17 +339,17 @@ namespace Sever.Migrations
                 name: "Files",
                 columns: table => new
                 {
-                    FileID = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FileID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FileType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FileData = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     FileLink = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UploadDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     MedicalEventID = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    NewsID = table.Column<int>(type: "int", nullable: true),
+                    NewsID = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     SchoolID = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    MedicineID = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    MedicalEventID1 = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    MedicineID = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -359,12 +357,6 @@ namespace Sever.Migrations
                     table.ForeignKey(
                         name: "FK_Files_MedicalEvent_MedicalEventID",
                         column: x => x.MedicalEventID,
-                        principalTable: "MedicalEvent",
-                        principalColumn: "MedicalEventID",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Files_MedicalEvent_MedicalEventID1",
-                        column: x => x.MedicalEventID1,
                         principalTable: "MedicalEvent",
                         principalColumn: "MedicalEventID");
                     table.ForeignKey(
@@ -388,8 +380,7 @@ namespace Sever.Migrations
                 name: "HealthCheckUp",
                 columns: table => new
                 {
-                    HealthCheckUpID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    HealthCheckUpID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CheckDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Height = table.Column<float>(type: "real", nullable: false),
                     Weight = table.Column<float>(type: "real", nullable: false),
@@ -434,8 +425,7 @@ namespace Sever.Migrations
                 name: "HealthProfile",
                 columns: table => new
                 {
-                    HealthProfileID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    HealthProfileID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     AllergyHistory = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ChronicDiseases = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PastSurgeries = table.Column<byte>(type: "tinyint", nullable: true),
@@ -487,8 +477,7 @@ namespace Sever.Migrations
                 name: "VaccinationRecord",
                 columns: table => new
                 {
-                    RecordID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RecordID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Dose = table.Column<int>(type: "int", nullable: false),
                     DateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -523,14 +512,13 @@ namespace Sever.Migrations
                 name: "Appointment",
                 columns: table => new
                 {
-                    AppointmentID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AppointmentID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     DateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Reason = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    HealthCheckUpID = table.Column<int>(type: "int", nullable: false)
+                    HealthCheckUpID = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -552,11 +540,6 @@ namespace Sever.Migrations
                 name: "IX_Files_MedicalEventID",
                 table: "Files",
                 column: "MedicalEventID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Files_MedicalEventID1",
-                table: "Files",
-                column: "MedicalEventID1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Files_MedicineID",

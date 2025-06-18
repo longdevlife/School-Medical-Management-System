@@ -4,6 +4,7 @@ using Sever.DTO.User;
 //using Sever.Migrations;
 using Sever.Model;
 using Sever.Repository;
+using Sever.Utilities;
 using System.Threading.Tasks;
 
 namespace Sever.Service
@@ -35,10 +36,11 @@ namespace Sever.Service
         public async Task<User> CreateUserAsyc(CreateUserRequest userRequest)
         {
             var passwordHasher = new PasswordHasher<User>();
+            var currentUserID = _userRepository.GetCurrentUserID().ToString();
             var user = new User
             {
+                UserID = GenerateID.GenerateNextId(currentUserID, "U", 4),
                 UserName = userRequest.UserName,
-                UserID = userRequest.UserID,
                 PasswordHash = userRequest.Password,
                 RoleID = userRequest.RoleID
             };

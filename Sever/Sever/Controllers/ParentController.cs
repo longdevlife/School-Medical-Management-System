@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sever.DTO.File;
+using Sever.DTO.Medicine;
 using Sever.DTO.SendMedicine;
 using Sever.Service;
 
@@ -29,10 +30,10 @@ namespace Sever.Controllers
         }
 
         [HttpPut("medicine/update/{id}")]
-        public async Task<IActionResult> UpdateMedicine(string id, [FromBody] MedicineUpdateDTO dto)
+        public async Task<IActionResult> UpdateMedicine(string id, [FromBody] MedicineStatusUpdate dto)
         {
             var userId = User.Identity?.Name;
-            var result = await _medicineService.UpdateMedicineByParentAsync(id, dto, userId);
+            var result = await _medicineService.UpdateMedicineByNurseAsync(id, dto);
             return Ok(result);
         }
 

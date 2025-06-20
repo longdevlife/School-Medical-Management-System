@@ -131,7 +131,7 @@ namespace Sever.Service
                 var listImage = await _filesService.GetImageByMedicalEventIdAsync(medicalEvents.MedicalEventID);
                 foreach (var item in listImage)
                 {
-                    await _filesService.DeleteFileByIdAsync(medicalEvents.MedicalEventID);
+                    await _filesService.DeleteFileAsync(medicalEvents.MedicalEventID);
                 }
                 foreach (var item in dto.Image)
                 {
@@ -153,6 +153,6 @@ namespace Sever.Service
                 return false;
             }
         }
-        // nên làm filter hoặc search cho nurse theo medical event
+
     }
 }

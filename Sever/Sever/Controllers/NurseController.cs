@@ -37,27 +37,11 @@ namespace Sever.Controllers
         public async Task<IActionResult> UpdateMedicine(string id, [FromBody] MedicineStatusUpdate dto)
         {
             var userId = User.Identity?.Name;
-            var result = await _medicineService.UpdateMedicineByNurseAsync(id, dto, userId);
+            var result = await _medicineService.UpdateMedicineByNurseAsync(id, dto);
             return Ok(result);
         }
 
-        [HttpPost("medicine/upload-image")]
-        public async Task<IActionResult> UploadMedicineImage([FromForm] ImageUpload dto)
-        {
-            var userId = User.Identity?.Name;
-            await _medicineService.AddMedicinePhotoAsync(dto, userId);
-            return Ok(new { message = "Tải ảnh đơn thuốc thành công." });
-        }
-
-        //[HttpGet("medicine/history/{medicineId}")]
-        //public async Task<IActionResult> GetMedicineHistory(string medicineId)
-        //{
-        //    var userId = User.Identity?.Name;
-        //    var role = User.FindFirst("role")?.Value;
-
-        //    var histories = await _medicineService.GetMedicineHistoryAsync(medicineId, userId, role);
-        //    return Ok(histories);
-        //}
+       
 
         [HttpPost("event/create")]
         public async Task<IActionResult> CreateMedicalEvent([FromForm] CreateMedicalEvent request)
@@ -67,16 +51,7 @@ namespace Sever.Controllers
             return Ok(result);
         }
 
-        //[HttpGet("event/{id}")]
-        //public async Task<IActionResult> GetMedicalEvent(string id)
-        //{
-        //    var userId = User.Identity?.Name;
-        //    var result = await _medicalEventService.GetMedicalEvent(id);
-        //    if (result == null)
-        //        return NotFound("Không tìm thấy sự kiện y tế.");
-        //    return Ok(result);
-        //}
-
+  
 
         [HttpPut("event/update")]
         public async Task<IActionResult> UpdateMedicalEvent([FromForm] MedicalEventUpdateDTO dto)

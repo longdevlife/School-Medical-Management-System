@@ -257,20 +257,15 @@ namespace Sever.Service
             return list;
         }
 
-        //public async Task<bool> DeleteFileAsync(Files file)
-        //{
-        //    return await _fileRepository.DeleteAsync(file);
-        //}
+        public async Task<bool> DeleteFileAsync(string linkImage)
+        {
+            return await _fileRepository.DeleteAsync(linkImage);
+        }
 
         public async Task AddFileAsync(Files file)
         {
             await _context.Files.AddAsync(file);
             await _context.SaveChangesAsync();
-        }
-
-        public Task<bool> DeleteFileByIdAsync(string id)
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -134,7 +134,7 @@ namespace Sever.Service
                 var listImage = await _filesService.GetImageByMedicalEventIdAsync(medicine.MedicineID);
                 foreach (var item in listImage)
                 {
-                    await _filesService.DeleteFileByIdAsync(medicine.MedicineID);
+                    await _filesService.DeleteFileAsync(medicine.MedicineID);
                 }
                 foreach (var item in updateDto.Image)
                 {
@@ -182,7 +182,7 @@ namespace Sever.Service
                 var listImage = await _filesService.GetImageByMedicineIdAsync(medicine.MedicineID);
                 foreach (var item in listImage)
                 {
-                    await _filesService.DeleteFileByIdAsync(medicine.MedicineID);
+                    await _filesService.DeleteFileAsync(medicine.MedicineID);
                 }
                 foreach (var item in updateDto.Image)
                 {

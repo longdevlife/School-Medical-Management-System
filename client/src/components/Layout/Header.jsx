@@ -13,11 +13,11 @@ import {
   InfoCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import styles from "./AdminLayout.module.css";
+import styles from "./admin/AdminLayout.module.css";
 
 const { Header } = Layout;
 
-function HeaderAdmin({ collapsed, setCollapsed }) {
+function AppHeader({ collapsed, setCollapsed }) {
   const navigate = useNavigate();
 
   const userMenuItems = [
@@ -101,4 +101,4 @@ function HeaderAdmin({ collapsed, setCollapsed }) {
   );
 }
 
-export default HeaderAdmin;
+export default AppHeader;

@@ -1,5 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CloudinaryDotNet.Actions;
+using Microsoft.EntityFrameworkCore;
 using Sever.DTO.File;
+using Sever.DTO.MedicalEvent;
+using Sever.DTO.Medicine;
 using Sever.DTO.SendMedicine;
 using Sever.Model;
 using Sever.Repository;
@@ -9,265 +12,219 @@ namespace Sever.Service
 {
     public interface IMedicineService
     {
-        Task<Medicine> CreateMedicineAsync(MedicineDTO medicineDto, string createdBy);
-        Task<Medicine> UpdateMedicineAsync(string medicineId, MedicineUpdateDTO updateDto, string modifiedBy);
-        Task<Medicine> ChangeStatusAsync(string medicineId,ChangeStatusDTO changeStatusDto, string modifiedBy);
-        Task AddMedicinePhotoAsync(ImageUpload fileDto, string uploadedBy);
-        Task<List<MedicineHistory>> GetMedicineHistoryAsync(string medicineId);
-    }
-    public class MedicineService : IMedicineService
-    {
-        private readonly IMedicineRepository _medicineRepository;
-        private readonly IFilesService _filesService;
-        private readonly INotificationService _notificationService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public MedicineService(
-            IMedicineRepository medicineRepository,
-            IFilesService filesService,
-            INotificationService notificationService,
-            IHttpContextAccessor httpContextAccessor)
+        Task<Medicine> CreateMedicineByParentAsync(CreateMedicine dto, string userId);
+        Task<Medicine> CreateMedicineByNurseAsync(CreateMedicine dto, string userId);
+        Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string medicineId);
+        Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto);
+        Task<List<MedicineResponse>> GetMedicinesByStudent(string studentId);
+        public class MedicineService : IMedicineService
         {
-            _medicineRepository = medicineRepository;
-            _filesService = filesService;
-            _notificationService = notificationService;
-            _httpContextAccessor = httpContextAccessor;
+            private readonly IMedicineRepository _medicineRepository;
+            private readonly IFilesService _filesService;
+            private readonly INotificationService _notificationService;
 
-        }
-
-        public async Task<Medicine> CreateMedicineAsync(MedicineDTO medicineDto, string createdBy)
-        {
-            try
+            public MedicineService(
+                IMedicineRepository medicineRepository,
+                IFilesService filesService,
+                INotificationService notificationService,
+                IHttpContextAccessor httpContextAccessor)
             {
-                if (medicineDto == null)
-                    throw new ArgumentNullException(nameof(medicineDto), "Thông tin đơn thuốc không được để trống.");
+                _medicineRepository = medicineRepository;
+                _filesService = filesService;
+                _notificationService = notificationService;
 
-                // Lấy Role từ JWT Token
-                var userId = _httpContextAccessor.HttpContext.User.Identity?.Name;
-                var roleClaim = _httpContextAccessor.HttpContext.User
-                    .FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+            }
 
-                if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(roleClaim))
-                    throw new Exception("Không thể xác định người dùng hoặc vai trò.");
-
-                string role = roleClaim;
-
-
-                // Tạo mã đơn thuốc mới theo format Mxxx
-                string newMedicineId = "M001";
-                var latestMedicine = await _medicineRepository.GetLatestMedicineAsync();
-                if (latestMedicine != null && latestMedicine.MedicineID.StartsWith("M"))
-                {
-                    var numberPart = latestMedicine.MedicineID.Substring(1);
-                    if (int.TryParse(numberPart, out int currentIndex))
-                    {
-                        newMedicineId = $"M{(currentIndex + 1):D3}";
-                    }
-                }
+            public async Task<Medicine> CreateMedicineByParentAsync(CreateMedicine dto, string userId)
+            {
+                string newId = await _medicineRepository.GetCurrentMedicineID();
 
                 var medicine = new Medicine
                 {
-                    MedicineID = newMedicineId,
-                    MedicineName = medicineDto.MedicineName,
-                    Quantity = medicineDto.Quantity,
-                    Dosage = medicineDto.Dosage,
-                    Instructions = medicineDto.Instructions,
-                    SentDate = medicineDto.SentDate,
-                    Notes = medicineDto.Notes,
-                    //Status = role == "Nurse" ? "Đã xác nhận" : "Chờ xử lý"
-                    Status = role == "Nurse" 
-                    ? (medicineDto.Status == "Chờ xử lý" || medicineDto.Status == "Đã xác nhận"
-                    ? medicineDto.Status : "Chờ xử lý")
-                    : "Chờ xử lý"
+                    MedicineID = newId,
+                    MedicineName = dto.MedicineName,
+                    Quantity = dto.Quantity,
+                    Dosage = dto.Dosage,
+                    Instructions = dto.Instructions,
+                    SentDate = DateTime.UtcNow.AddHours(7),
+                    Notes = dto.Notes,
+                    Status = "Chờ xử lý",
+                    ParentID = userId
+
                 };
-                if (role == "Nurse")
-                    medicine.NurseID = userId;
-                else if (role == "Parent")
-                    medicine.ParentID = userId;
 
                 await _medicineRepository.CreateMedicineAsync(medicine);
-               
-          
 
-
-                var history = new MedicineHistory
+                if (dto.Image != null && dto.Image.Any())
                 {
-                    MedicineID = medicine.MedicineID,
-                    ModifiedBy = userId,
-                    ChangeDescription = "Tạo đơn thuốc",
-                    ModifiedAt = DateTime.UtcNow.AddHours(7),
-                    PreviousStatus = "N/A",
-                    NewStatus = medicine.Status
-                };
-
-                await _medicineRepository.AddHistoryAsync(history);
-
-                if (role == "Nurse")
-                {
-                    await _notificationService.MedicineNotification(
-                        medicine,
-                        "Đơn thuốc được tạo bởi y tá. Vui lòng kiểm tra và xác nhận."
-                    );
+                    foreach (var item in dto.Image)
+                    {
+                        await _filesService.UploadMedicineImageByAsync(item, medicine.MedicineID);
+                    }
                 }
-
+                await _notificationService.MedicineNotificationForParent(medicine);
                 return medicine;
             }
-            catch (Exception ex)
-            {
-                throw new Exception("Lỗi khi tạo đơn thuốc.", ex);
-            }
-        }
 
-        public async Task<Medicine> UpdateMedicineAsync(string medicineId, MedicineUpdateDTO updateDto, string modifiedBy)
-        {
-            try
+            public async Task<Medicine> CreateMedicineByNurseAsync(CreateMedicine dto, string userId)
+            {
+                string newId = await _medicineRepository.GetCurrentMedicineID();
+
+                var medicine = new Medicine
+                {
+                    MedicineID = newId,
+                    MedicineName = dto.MedicineName,
+                    Quantity = dto.Quantity,
+                    Dosage = dto.Dosage,
+                    Instructions = dto.Instructions,
+                    SentDate = DateTime.UtcNow.AddHours(7),
+                    Notes = dto.Notes,
+                    Status = (dto.Status == "Chờ xử lý" || dto.Status == "Đã xác nhận") ? dto.Status : "Chờ xử lý",
+                    NurseID = userId
+                };
+
+                await _medicineRepository.CreateMedicineAsync(medicine);
+                if (dto.Image != null && dto.Image.Any())
+                {
+                    foreach (var item in dto.Image)
+                    {
+                        await _filesService.UploadMedicineImageByAsync(item, medicine.MedicineID);
+                    }
+                }
+                await _notificationService.MedicineNotificationForNurse(medicine, "Đơn thuốc được tạo bởi y tá. Vui lòng kiểm tra.");
+                return medicine;
+            }
+
+            public async Task<Medicine> UpdateMedicineByParentAsync(string medicineId, MedicineUpdateDTO updateDto, string modifiedBy)
             {
                 var medicine = await _medicineRepository.GetMedicineByIdAsync(medicineId);
                 if (medicine == null)
-                {
                     throw new Exception("Không tìm thấy đơn thuốc.");
-                }
-
 
                 var previousStatus = medicine.Status;
-
                 medicine.MedicineName = updateDto.MedicineName;
                 medicine.Quantity = updateDto.Quantity;
                 medicine.Dosage = updateDto.Dosage;
                 medicine.Instructions = updateDto.Instructions;
                 medicine.SentDate = updateDto.SentDate;
                 medicine.Notes = updateDto.Notes;
-                medicine.Status = "Đang xử lý";
-
-            
-
-
-                var history = new MedicineHistory
-                {
- 
-                    MedicineID = medicineId,
-                    ModifiedBy = modifiedBy,
-                    ChangeDescription = $"Cập nhật chi tiết đơn thuốc.",
-                    ModifiedAt = DateTime.UtcNow.AddHours(7),
-                    PreviousStatus = previousStatus,
-                    NewStatus = medicine.Status
-                };
-                await _medicineRepository.AddHistoryAsync(history);
 
                 await _medicineRepository.UpdateMedicineAsync(medicine);
 
-                await _notificationService.MedicineNotification(medicine, "Đơn thuốc đã được cập nhật. Vui lòng kiểm tra và xác nhận.");
-
                 return medicine;
             }
-            catch (Exception ex)
-            {
-                throw new Exception("Lỗi khi cập nhật đơn thuốc.", ex);
-            }
-        }
 
-        public async Task<Medicine> ChangeStatusAsync(string medicineId, ChangeStatusDTO changeStatusDto, string modifiedBy)
-        {
-            try
+            public async Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string medicineId)
+            {
+                var medicine = await _medicineRepository.GetMedicineByIdAsync(medicineId);
+                if (medicine == null)
+                {
+                    throw new Exception("Không tìm thấy đơn thuốc.");
+
+                }
+                var previousStatus = medicine.Status;
+                medicine.MedicineName = updateDto.MedicineName;
+                medicine.Quantity = updateDto.Quantity;
+                medicine.Dosage = updateDto.Dosage;
+                medicine.Instructions = updateDto.Instructions;
+                medicine.SentDate = updateDto.SentDate;
+                medicine.Notes = updateDto.Notes;
+                medicine.NurseID = updateDto.NurseID;
+                bool uploadImg = true;
+                var listImage = await _filesService.GetImageByMedicalEventIdAsync(medicine.MedicineID);
+                foreach (var item in listImage)
+                {
+                    await _filesService.DeleteFileByIdAsync(medicine.MedicineID);
+                }
+                foreach (var item in updateDto.Image)
+                {
+                    try
+                    {
+                        await _filesService.UploadMedicineImageByAsync(item, medicine.MedicineID);
+                    }
+                    catch
+                    {
+                        uploadImg = false;
+                        throw new ArgumentException("Lưu ảnh thất bại");
+                    }
+                }
+                if (uploadImg || medicine != null)
+                {
+                    //await _notificationService.MedicineNotificationForNurse(medicine);
+                    return true;
+                }
+                return false;
+            }
+
+            public async Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto)
             {
                 var medicine = await _medicineRepository.GetMedicineByIdAsync(medicineId);
                 if (medicine == null)
                 {
                     throw new Exception("Không tìm thấy đơn thuốc.");
                 }
-
-                // Kiểm tra trạng thái hợp lệ
-                var validStatuses = new List<string> {"Chờ xử lý", "Đã xác nhận", "Đang thực hiện", "Từ chối" };
-                if (!validStatuses.Contains(changeStatusDto.NewStatus))
-                {
-                    throw new ArgumentException("Trạng thái không hợp lệ.");
-                }
-
-                // Kiểm tra quyền (chỉ y tá được thay đổi trạng thái)
-                if (modifiedBy == medicine.ParentID)
-                {
-                    throw new UnauthorizedAccessException("Phụ huynh không có quyền thay đổi trạng thái đơn thuốc.");
-                }
-
                 var previousStatus = medicine.Status;
-                medicine.Status = changeStatusDto.NewStatus;
+                medicine.MedicineName = updateDto.MedicineName;
+                medicine.Quantity = updateDto.Quantity;
+                medicine.Dosage = updateDto.Dosage;
+                medicine.Instructions = updateDto.Instructions;
+                medicine.SentDate = updateDto.SentDate;
+                medicine.Notes = updateDto.Notes;
+                medicine.ParentID = updateDto.ParentID;
 
+                var validStatuses = new List<string> { "Chờ xác nhận", "Đã xác nhận", "Đang thực hiện", "Đã hoàn thành", "Từ chối" };
+                if (!validStatuses.Contains(updateDto.Status))
+                    throw new Exception("Trạng thái không hợp lệ.");
 
+                medicine.Status = updateDto.Status;
 
-                var history = new MedicineHistory
+                bool uploadImg = true;
+                var listImage = await _filesService.GetImageByMedicineIdAsync(medicine.MedicineID);
+                foreach (var item in listImage)
                 {
-
-                    MedicineID = medicineId,
-                    ModifiedBy = modifiedBy,
-                    ChangeDescription = changeStatusDto.ChangeDescription,
-                    ModifiedAt = DateTime.UtcNow.AddHours(7),
-                    PreviousStatus = previousStatus,
-                    NewStatus = changeStatusDto.NewStatus
-                };
-
-                await _medicineRepository.AddHistoryAsync(history);
-                await _medicineRepository.UpdateMedicineAsync(medicine);
-
-                await _notificationService.MedicineNotification(medicine, $"Trạng thái đơn thuốc đã được cập nhật thành '{changeStatusDto.NewStatus}'.");
-
-                return medicine;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Lỗi khi thay đổi trạng thái đơn thuốc.", ex);
-            }
-        }
-
-        public async Task AddMedicinePhotoAsync(ImageUpload fileDto, string uploadedBy)
-        {
-            try
-            {
-                var medicine = await _medicineRepository.GetMedicineByIdAsync(fileDto.MedicineID);
-                if (medicine == null)
-                {
-                    throw new Exception("Không tìm thấy đơn thuốc.");
+                    await _filesService.DeleteFileByIdAsync(medicine.MedicineID);
                 }
-
-                //var imageResponse = await _filesService.UploadImageAsync(fileDto.File);
-
-                //var file = new Files
-                //{
-                //    FileID = imageResponse.Id,
-                //    FileName = fileDto.File.FileName,
-                //    FileType = "Image",
-                //    FileLink = imageResponse.Url,
-                //    UploadDate = imageResponse.UploadedAt,
-                //    MedicineID = fileDto.MedicineID
-                //};
-
-                //await _filesService.AddFileAsync(file);
-
-              
-
-                var history = new MedicineHistory
+                foreach (var item in updateDto.Image)
                 {
-    
-                    MedicineID = fileDto.MedicineID,
-                    ModifiedBy = uploadedBy,
-                    ChangeDescription = $"Đã tải lên ảnh: {fileDto.File.FileName}",
-                    ModifiedAt = DateTime.UtcNow.AddHours(7),
-                    PreviousStatus = medicine.Status,
-                    NewStatus = medicine.Status
-                };
-                await _medicineRepository.AddHistoryAsync(history);
-
-                //await _notificationService.MedicineNotification(medicine, $"Ảnh mới được tải lên cho đơn thuốc: {fileDto.File.FileName}");
-
+                    try
+                    {
+                        await _filesService.UploadMedicineImageByAsync(item, medicine.MedicineID);
+                    }
+                    catch
+                    {
+                        uploadImg = false;
+                        throw new ArgumentException("Lưu ảnh thất bại");
+                    }
+                }
+                if (uploadImg || medicine != null)
+                {
+                    await _notificationService.MedicineNotificationForParent(medicine, $"Đơn thuốc đã được cập nhật với trạng thái '{medicine.Status}'.");
+                    return true;
+                }
+                return false;
             }
-            catch (Exception ex)
+            public async Task<List<MedicineResponse>> GetMedicinesByStudent(string studentId)
             {
-                throw new Exception("Lỗi khi tải lên ảnh đơn thuốc.", ex);
+                var medicine = await _medicineRepository.GetMedicineByParentIdAsync(studentId);
+                List<MedicineResponse> response = new List<MedicineResponse>();
+                foreach (var e in medicine)
+                {
+                   response.Add(new MedicineResponse
+                    {
+                       MedicineID = e.MedicineID,
+                       SentDate = e.SentDate,
+                       MedicineName = e.MedicineName,
+                       Quantity = e.Quantity,
+                       Dosage = e.Dosage,
+                       Instructions = e.Instructions,
+                       Notes = e.Notes,
+                       NurseID = e.NurseID,
+                       StudentID = e.StudentID,
+                       Status = e.Status
+                   });
+                }
+                return response;
             }
-        }
-
-        public async Task<List<MedicineHistory>> GetMedicineHistoryAsync(string medicineId)
-        {
-            return await _medicineRepository.GetMedicineHistoryAsync(medicineId);
         }
     }
 }

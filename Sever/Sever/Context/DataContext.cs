@@ -11,9 +11,7 @@ namespace Sever.Context
 
         #region Entity Sets
         public DbSet<Appointment> Appointment { get; set; }
-        public DbSet<EventType> EventType { get; set; }
         public DbSet<Files> Files { get; set; }
-        public DbSet<Form> Form { get; set; }
         public DbSet<HealthCheckUp> HealthCheckUp { get; set; }
         public DbSet<HealthProfile> HealthProfile { get; set; }
         public DbSet<MedicalEvent> MedicalEvent { get; set; }
@@ -29,9 +27,7 @@ namespace Sever.Context
         public DbSet<Vaccine> Vaccine { get; set; }
         public DbSet<RefreshToken> RefreshToken { get; set; } = null!;
         public DbSet<ForgotPasswordToken> ForgotPasswordToken { get; set; } = null!;
-        public DbSet<MedicineHistory> MedicineHistory { get; set; }
         public DbSet<MedicalEventDetail> MedicalEventDetail { get; set; }
-
 
 
         #endregion
@@ -42,17 +38,12 @@ namespace Sever.Context
 
             #region Notify
             modelBuilder.Entity<Notify>()
-                .HasKey(n => new { n.UserID, n.FormID });
+                .HasKey(n => new { n.UserID});
 
             modelBuilder.Entity<Notify>()
                 .HasOne(n => n.User)
                 .WithMany(u => u.Notify)
                 .HasForeignKey(n => n.UserID)
-                .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<Notify>()
-                .HasOne(n => n.Form)
-                .WithMany(f => f.Notify)
-                .HasForeignKey(n => n.FormID)
                 .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Notify>()
                 .Property(n => n.DateTime)
@@ -79,11 +70,11 @@ namespace Sever.Context
                 .HasForeignKey(m => m.NurseID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<MedicalEvent>()
-                .HasOne(m => m.EventType)
-                .WithMany(e => e.MedicalEvent)
-                .HasForeignKey(m => m.EventTypeID)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<MedicalEvent>()
+            //    .HasOne(m => m.EventType)
+            //    .WithMany(e => e.MedicalEvent)
+            //    .HasForeignKey(m => m.EventTypeID)
+            //    .OnDelete(DeleteBehavior.Restrict);
             #endregion
 
             #region Medicine

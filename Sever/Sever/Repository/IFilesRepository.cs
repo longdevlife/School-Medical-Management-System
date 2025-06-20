@@ -17,7 +17,6 @@ namespace Sever.Repository
         Task<List<Files>> GetImageByNewsIdAsync(string id);
         Task<bool> DeleteAsync(Files image);
         Task SaveChangesAsync();
-        //Task<string?> GetLatestFileIdAsync();
 
 
     }
@@ -69,13 +68,5 @@ namespace Sever.Repository
             return await _context.Files.Where(m => m.MedicineID == id && m.IsActive == true).ToListAsync();
         }
 
-        //public async Task<string?> GetLatestFileIdAsync()
-        //{
-        //    // Lấy FileID mới nhất theo thứ tự giảm dần
-        //    //return await _context.Files
-        //    //    .OrderByDescending(f => f.FileID)
-        //    //    .Select(f => f.FileID)
-        //    //    .FirstOrDefaultAsync();
-        //}
     }
 }

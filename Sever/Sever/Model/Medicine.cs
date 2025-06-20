@@ -6,7 +6,6 @@ namespace Sever.Model
     public class Medicine
     {
         [Key]
-        [Required]
         public string MedicineID {  get; set; }
         [Required]
         public string MedicineName { get; set; }
@@ -25,5 +24,8 @@ namespace Sever.Model
         public User Nurse { get; set; }
         public string Status { get; set; }
         public List<Files> Files { get; set; }
+        public string StudentID { get; set; }
+        [ForeignKey("StudentID")]
+        public StudentProfile StudentProfile { get; set; }
     }
 }

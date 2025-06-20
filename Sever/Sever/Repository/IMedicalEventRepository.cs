@@ -2,6 +2,7 @@
 using Sever.Context;
 using Sever.DTO.MedicalEvent;
 using Sever.Model;
+using Sever.Utilities;
 
 namespace Sever.Repository.Interfaces
 {
@@ -10,9 +11,10 @@ namespace Sever.Repository.Interfaces
         Task<MedicalEvent> CreateMedicalEvent(MedicalEvent medicalEvent);
         Task CreateMedicalEventDetails(IEnumerable<MedicalEventDetail> details);
         Task<MedicalEvent> GetMedicalEventById(string medicalEventId);
+        Task<List<MedicalEvent>> GetMedicalEventsByParentIdAsync(string studentId);
         Task UpdateMedicalEvent(MedicalEvent medicalEvent);
-        Task AddMedicalEventImage(string medicalEventId, string fileId);
-        Task<MedicalEvent> GetLatestMedicalEventAsync();
+        Task<string> GetCurrentMedicialEventID();
+
     }
 
     public class MedicalEventRepository : IMedicalEventRepository
@@ -41,31 +43,42 @@ namespace Sever.Repository.Interfaces
         {
             return await _context.MedicalEvent
                 .Include(m => m.MedicalEventDetail)
-                .Include(m => m.Files) // Lấy cả file đính kèm (nếu có)
+                .Include(m => m.File)
                 .FirstOrDefaultAsync(m => m.MedicalEventID == medicalEventId);
-        }
 
+        }
+        public async Task<List<MedicalEvent>> GetMedicalEventsByParentIdAsync(string studentId)
+        {
+            var studentIds = await _context.StudentProfile
+                .Select(sp => sp.StudentID)
+                .ToListAsync();
+
+            if (!studentIds.Any()) return new List<MedicalEvent>();
+
+            var medicalEvents = await _context.MedicalEvent
+                .Include(e => e.MedicalEventDetail)
+                .Include(e => e.File)
+                .Where(e => e.MedicalEventDetail.Any(d => studentIds.Contains(d.StudentID)))
+                .ToListAsync();
+            
+            return medicalEvents;
+        }
         public async Task UpdateMedicalEvent(MedicalEvent medicalEvent)
         {
             _context.MedicalEvent.Update(medicalEvent);
             await _context.SaveChangesAsync();
         }
-        public async Task AddMedicalEventImage(string medicalEventId, string fileId)
+
+        public async Task<string> GetCurrentMedicialEventID()
         {
-            var file = await _context.Files.FindAsync(fileId);
-            if (file == null)
-                throw new Exception("Image file not found");
+            var crurrentMedicine = await _context.MedicalEvent.OrderByDescending(n => n.MedicalEventID).FirstOrDefaultAsync();
+            if (crurrentMedicine == null)
+            {
+                return "ME0001";
+            }
+            string result = GenerateID.GenerateNextId(crurrentMedicine.MedicalEventID, "ME", 4);
+            return result;
 
-            file.MedicalEventID = medicalEventId; // Gán quan hệ ngược
-
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task<MedicalEvent> GetLatestMedicalEventAsync()
-        {
-            return await _context.MedicalEvent
-                .OrderByDescending(m => m.MedicalEventID)
-                .FirstOrDefaultAsync();
         }
     }
 }

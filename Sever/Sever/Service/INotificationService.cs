@@ -10,7 +10,8 @@ namespace Sever.Service
     public interface INotificationService
     {
         Task MedicalEventNotification(MedicalEvent medicalEvent, string customMessage = null);
-        Task MedicineNotification(Medicine medicine, string customMessage = null);
+        Task MedicineNotificationForParent(Medicine medicine, string customMessage = null);
+        Task MedicineNotificationForNurse(Medicine medicine, string customMessage = null);
 
     }
     public class NotificationService : INotificationService
@@ -28,60 +29,38 @@ namespace Sever.Service
         {
             try
             {
-                const string formId = "F003";
-                var form = await _notificationRepository.GetFormByIdAsync(formId);
-                if (form == null)
+                if (string.IsNullOrEmpty(medicalEvent.ParentID))
                 {
-                    form = new Form
-                    {
-                        FormID = formId,
-                        FormName = "SỰ KIỆN Y TẾ",
-                        Description = "Thông tin sự kiện y tế",
-                        Link = "link-lien-quan"
-                    };
-                    await _notificationRepository.CreateFormAsync(form);
+                    return;
                 }
+                var parentExists = await _notificationRepository.CheckParentExistsAsync(medicalEvent.ParentID);
+                if (!parentExists) return;
 
-                var notify = new Notify
+                string notifyId = await _notificationRepository.GetCurrentNotifyID();
+
+                var notification = new Notify
                 {
-                    NotifyID = await _notificationRepository.GenerateNotifyIDAsync(),
-                    FormID = form.FormID,
-                    UserID = medicalEvent.NurseID,
-                    NotifyName = "Sự kiện y tế mới",
-                    Title = "TẠO SỰ KIỆN Y TẾ",
-                    Description = customMessage ?? $"Sự kiện y tế {medicalEvent.Description} đã được ghi nhận.",
-                    DateTime = DateTime.UtcNow.AddHours(7)
+                    NotifyID = notifyId,
+                    UserID = medicalEvent.ParentID,
+                    NotifyName = "Cập nhật thông tin sự kiện y tế",
+                    DateTime = DateTime.UtcNow.AddHours(7),
+                    Title = "CẬP NHẬT SỰ KIỆN Y TẾ",
+                    Description = customMessage ?? $"Sự kiện y tế {medicalEvent.EventType} đã được cập nhật. Vui lòng kiểm tra chi tiết."
                 };
-                await _notificationRepository.AddNotificationAsync(notify);
 
-                var parentIds = await _notificationRepository.GetParentIdsByMedicalEventAsync(medicalEvent.MedicalEventID);
-
-                foreach (var parentId in parentIds)
-                {
-                    var parentNotify = new Notify
-                    {
-                        NotifyID = await _notificationRepository.GenerateNotifyIDAsync(),
-                        FormID = form.FormID,
-                        UserID = parentId,
-                        NotifyName = "Cập nhật sự kiện y tế",
-                        Title = "CẬP NHẬT SỰ KIỆN Y TẾ",
-                        Description = customMessage ?? $"Sự kiện y tế mới được ghi nhận vào {medicalEvent.EventDateTime:dd/MM/yyyy HH:mm}.",
-                        DateTime = DateTime.UtcNow.AddHours(7)
-                    };
-
-                    await _notificationRepository.AddNotificationAsync(parentNotify);
-                }
+                await _notificationRepository.AddNotificationAsync(notification);
             }
             catch (Exception ex)
             {
-                throw new Exception("Lỗi khi gửi thông báo sự kiện y tế.", ex);
+                throw new Exception("Lỗi khi gửi thông báo đơn thuốc.", ex);
             }
         }
-        public async Task MedicineNotification(Medicine medicine, string customMessage = null)
+
+       
+        public async Task MedicineNotificationForParent(Medicine medicine, string customMessage = null)
         {
             try
             {
-
                 if (string.IsNullOrEmpty(medicine.ParentID))
                 {
                     return;
@@ -89,11 +68,44 @@ namespace Sever.Service
                 var parentExists = await _notificationRepository.CheckParentExistsAsync(medicine.ParentID);
                 if (!parentExists) return;
 
+                string notifyId = await _notificationRepository.GetCurrentNotifyID();
+
                 var notification = new Notify
                 {
-                    //FormID = "ĐƠN THUỐC",
+                    NotifyID = notifyId,
                     UserID = medicine.ParentID,
-                    NotifyName = "Cập nhật thông tin đơn thuốc",
+                    NotifyName = "Cập nhật thông tin đơn thuốc từ phụ huynh",
+                    DateTime = DateTime.UtcNow.AddHours(7),
+                    Title = "CẬP NHẬT ĐƠN THUỐC",
+                    Description = customMessage ?? $"Đơn thuốc {medicine.MedicineName} đã được cập nhật. Vui lòng kiểm tra chi tiết."
+                };
+
+                await _notificationRepository.AddNotificationAsync(notification);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi gửi thông báo đơn thuốc.", ex);
+            }
+        }
+
+        public async Task MedicineNotificationForNurse(Medicine medicine, string customMessage = null)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(medicine.NurseID))
+                {
+                    return;
+                }
+                var parentExists = await _notificationRepository.CheckNurseExistsAsync(medicine.NurseID);
+                if (!parentExists) return;
+
+                string notifyId = await _notificationRepository.GetCurrentNotifyID();
+
+                var notification = new Notify
+                {
+                    NotifyID = notifyId,
+                    UserID = medicine.NurseID,
+                    NotifyName = "Cập nhật thông tin đơn thuốc từ y tá",
                     DateTime = DateTime.UtcNow.AddHours(7),
                     Title = "CẬP NHẬT ĐƠN THUỐC",
                     Description = customMessage ?? $"Đơn thuốc {medicine.MedicineName} đã được cập nhật. Vui lòng kiểm tra chi tiết."

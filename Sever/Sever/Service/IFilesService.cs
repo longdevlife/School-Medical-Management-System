@@ -12,10 +12,7 @@ namespace Sever.Service
 {
     public interface IFilesService
     {
-        //Task<ImageResponse> UploadImageAsync(IFormFile file);
-        //Task AddFileAsync(Files file);
-        //Task<string?> GetLatestFileIdAsync();
-
+        Task AddFileAsync(Files file);
         Task<ImageResponse> UploadSchoolLogoByAsync(IFormFile file, string id);
         Task<ImageResponse> UploadMedicalEventImageByAsync(IFormFile file, string id);
         Task<ImageResponse> UploadNewsImageByAsync(IFormFile file, string id);
@@ -26,6 +23,7 @@ namespace Sever.Service
         Task<List<Files>> GetImageByMedicalEventIdAsync(string id);
         Task<List<Files>> GetImageByNewsIdAsync(string id);
         Task<bool> DeleteFileByIdAsync(string id);
+
     }
     public class FilesSevice : IFilesService
     {
@@ -102,23 +100,10 @@ namespace Sever.Service
             if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
                 throw new Exception("Image upload failed");
 
-            var image = new Files
-            {
-                FileName = file.FileName,
-                FileType = "Image",
-                FileLink = uploadResult.SecureUrl.AbsoluteUri,
-                UploadDate = DateTime.UtcNow,
-                IsActive = true,
-                MedicalEventID = id
-            };
-
-            await _fileRepository.AddAsync(image);
-            await _fileRepository.SaveChangesAsync();
-
             return new ImageResponse
             {
-                Url = image.FileLink,
-                UploadedAt = image.UploadDate
+                Url = uploadResult.SecureUrl.AbsoluteUri,
+                UploadedAt = DateTime.UtcNow
             };
         }
 
@@ -160,7 +145,7 @@ namespace Sever.Service
             };
         }
 
-        public async Task<ImageResponse> UploadMedicineImageByAsync(IFormFile file, string id)
+       public async Task<ImageResponse> UploadMedicineImageByAsync(IFormFile file, string id)
         {
             if (file == null || file.Length == 0)
                 throw new ArgumentException("File is empty");
@@ -178,23 +163,10 @@ namespace Sever.Service
             if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
                 throw new Exception("Image upload failed");
 
-            var image = new Files
-            {
-                FileName = file.FileName,
-                FileType = "Image",
-                FileLink = uploadResult.SecureUrl.AbsoluteUri,
-                UploadDate = DateTime.UtcNow,
-                IsActive = true,
-                MedicineID = id
-            };
-
-            await _fileRepository.AddAsync(image);
-            await _fileRepository.SaveChangesAsync();
-
             return new ImageResponse
             {
-                Url = image.FileLink,
-                UploadedAt = image.UploadDate
+                Url = uploadResult.SecureUrl.AbsoluteUri,
+                UploadedAt = DateTime.UtcNow
             };
         }
 
@@ -286,20 +258,20 @@ namespace Sever.Service
             return list;
         }
 
-        public async Task<bool> DeleteFileAsync(Files file)
+        //public async Task<bool> DeleteFileAsync(Files file)
+        //{
+        //    return await _fileRepository.DeleteAsync(file);
+        //}
+
+        public async Task AddFileAsync(Files file)
         {
-            return await _fileRepository.DeleteAsync(file);
+            await _context.Files.AddAsync(file);
+            await _context.SaveChangesAsync();
         }
 
-        //public async Task AddFileAsync(Files file)
-        //{
-        //    await _context.Files.AddAsync(file);
-        //    await _context.SaveChangesAsync();
-        //}
-        //public async Task<string?> GetLatestFileIdAsync()
-        //{
-        //    return await _repository.GetLatestFileIdAsync();
-        //}
-
+        public Task<bool> DeleteFileByIdAsync(string id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

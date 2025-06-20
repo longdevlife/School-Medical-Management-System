@@ -94,7 +94,7 @@ namespace Sever.Service
             var listImage = await _filesService.GetImageByNewsIdAsync(news.NewsID);
             foreach (var item in listImage)
             {
-                await _filesService.DeleteFileByIdAsync(news.NewsID);
+                await _filesService.DeleteFileAsync(item.FileLink);
             }
             foreach (var item in newNews.Image)
             {

@@ -25,7 +25,7 @@ namespace Sever.Service
         Task<List<Files>> GetImageByMedicineIdAsync(string id);
         Task<List<Files>> GetImageByMedicalEventIdAsync(string id);
         Task<List<Files>> GetImageByNewsIdAsync(string id);
-        Task<bool> DeleteFileByIdAsync(string id);
+        Task<bool> DeleteFileAsync(string id);
     }
     public class FilesSevice : IFilesService
     {
@@ -286,10 +286,11 @@ namespace Sever.Service
             return list;
         }
 
-        public async Task<bool> DeleteFileAsync(Files file)
+        public async Task<bool> DeleteFileAsync(string linkFile)
         {
-            return await _fileRepository.DeleteAsync(file);
+            return await _fileRepository.DeleteAsync(linkFile);
         }
+
 
         //public async Task AddFileAsync(Files file)
         //{

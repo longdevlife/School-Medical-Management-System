@@ -15,7 +15,7 @@ namespace Sever.Repository
         Task<List<Files>> GetImageByMedicineIdAsync(string id);
         Task<List<Files>> GetImageByMedicalEventIdAsync(string id);
         Task<List<Files>> GetImageByNewsIdAsync(string id);
-        Task<bool> DeleteAsync(Files image);
+        Task<bool> DeleteAsync(string imageLink);
         Task SaveChangesAsync();
         //Task<string?> GetLatestFileIdAsync();
 
@@ -35,8 +35,9 @@ namespace Sever.Repository
             return file;
         }
         
-        public async Task<bool> DeleteAsync(Files file)
+        public async Task<bool> DeleteAsync(string imageLink)
         {
+            var file = _context.Files.FirstOrDefault(f => f.FileLink == imageLink);
             file.IsActive = false;
             _context.Files.Update(file);
             var result = await _context.SaveChangesAsync();

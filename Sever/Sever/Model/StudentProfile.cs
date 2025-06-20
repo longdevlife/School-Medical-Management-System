@@ -8,6 +8,7 @@ namespace Sever.Model
         [Key]
         public string StudentID { get; set; }
         public string StudentName { get; set; }
+        public string StudentAvata { get; set; }
         public string RelationName { get; set; }
         public string Nationality { get; set; }
         public string Ethnicity { get; set; }

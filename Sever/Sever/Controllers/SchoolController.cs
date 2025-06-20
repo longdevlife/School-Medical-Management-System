@@ -10,10 +10,12 @@ namespace Sever.Controllers
     [ApiController]
     public class SchoolController : ControllerBase
     {
-        private ISchoolInfoService _schoolInfoService;
-        public SchoolController(ISchoolInfoService schoolInfoService)
+        private readonly ISchoolInfoService _schoolInfoService;
+        private readonly IFilesService _filesService;
+        public SchoolController(ISchoolInfoService schoolInfoService, IFilesService filesService)
         {
             _schoolInfoService = schoolInfoService;
+            _filesService = filesService;
         }
         [HttpGet("get-school-info")]
         public async Task<IActionResult> GetSchoolInfo()
@@ -25,5 +27,6 @@ namespace Sever.Controllers
             }
             return Ok(schoolInfo);
         }
+
     }
 }

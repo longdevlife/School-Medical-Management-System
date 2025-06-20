@@ -13,7 +13,7 @@ namespace Sever.Model
         [Required]
         public string FileType { get; set; }
         public byte[]? FileData { get; set; }
-        public string? FileLink { get; set; }
+        public string FileLink { get; set; }
         public DateTime UploadDate { get; set; }
         public bool IsActive { get; set; }
         public string? MedicalEventID { get; set; }

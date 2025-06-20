@@ -448,6 +448,22 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "Sever.Controllers.SchoolController",
+    "Method": "upload",
+    "RelativePath": "api/school/img",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "img",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "Sever.Controllers.ValuesController",
     "Method": "CheckToken",
     "RelativePath": "api/Values/check-token",

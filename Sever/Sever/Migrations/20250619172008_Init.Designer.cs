@@ -12,15 +12,15 @@ using Sever.Context;
 namespace Sever.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250618042723_init")]
-    partial class init
+    [Migration("20250619172008_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.5")
+                .HasAnnotation("ProductVersion", "9.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -59,20 +59,6 @@ namespace Sever.Migrations
                     b.ToTable("Appointment");
                 });
 
-            modelBuilder.Entity("Sever.Model.EventType", b =>
-                {
-                    b.Property<string>("EventTypeID")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("EventTypeName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("EventTypeID");
-
-                    b.ToTable("EventType");
-                });
-
             modelBuilder.Entity("Sever.Model.Files", b =>
                 {
                     b.Property<int>("FileID")
@@ -94,6 +80,9 @@ namespace Sever.Migrations
                     b.Property<string>("FileType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("MedicalEventID")
                         .HasColumnType("nvarchar(450)");
@@ -150,27 +139,6 @@ namespace Sever.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ForgotPasswordToken");
-                });
-
-            modelBuilder.Entity("Sever.Model.Form", b =>
-                {
-                    b.Property<string>("FormID")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FormName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Link")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("FormID");
-
-                    b.ToTable("Form");
                 });
 
             modelBuilder.Entity("Sever.Model.HealthCheckUp", b =>
@@ -297,17 +265,18 @@ namespace Sever.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ActionTaken")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("EventDateTime")
+                    b.Property<DateTime>("EventDateTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("EventTypeID")
+                    b.Property<string>("EventType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -315,11 +284,14 @@ namespace Sever.Migrations
                     b.Property<string>("NurseID")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("ParentID")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("MedicalEventID");
 
-                    b.HasIndex("EventTypeID");
-
                     b.HasIndex("NurseID");
+
+                    b.HasIndex("ParentID");
 
                     b.ToTable("MedicalEvent");
                 });
@@ -384,43 +356,6 @@ namespace Sever.Migrations
                     b.ToTable("Medicine");
                 });
 
-            modelBuilder.Entity("Sever.Model.MedicineHistory", b =>
-                {
-                    b.Property<int>("HistoryID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HistoryID"));
-
-                    b.Property<string>("ChangeDescription")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MedicineID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NewStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PreviousStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("HistoryID");
-
-                    b.HasIndex("MedicineID");
-
-                    b.ToTable("MedicineHistory");
-                });
-
             modelBuilder.Entity("Sever.Model.News", b =>
                 {
                     b.Property<string>("NewsID")
@@ -460,9 +395,6 @@ namespace Sever.Migrations
                     b.Property<string>("UserID")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("FormID")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime>("DateTime")
                         .HasColumnType("date");
 
@@ -479,9 +411,7 @@ namespace Sever.Migrations
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("UserID", "FormID");
-
-                    b.HasIndex("FormID");
+                    b.HasKey("UserID");
 
                     b.ToTable("Notify");
                 });
@@ -742,7 +672,7 @@ namespace Sever.Migrations
             modelBuilder.Entity("Sever.Model.Files", b =>
                 {
                     b.HasOne("Sever.Model.MedicalEvent", "MedicalEvent")
-                        .WithMany("Files")
+                        .WithMany("File")
                         .HasForeignKey("MedicalEventID");
 
                     b.HasOne("Sever.Model.Medicine", "Medicine")
@@ -817,20 +747,18 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.MedicalEvent", b =>
                 {
-                    b.HasOne("Sever.Model.EventType", "EventType")
-                        .WithMany("MedicalEvent")
-                        .HasForeignKey("EventTypeID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Sever.Model.User", "Nurse")
                         .WithMany("MedicalEvent")
                         .HasForeignKey("NurseID")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("EventType");
+                    b.HasOne("Sever.Model.User", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentID");
 
                     b.Navigation("Nurse");
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("Sever.Model.MedicalEventDetail", b =>
@@ -868,17 +796,6 @@ namespace Sever.Migrations
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("Sever.Model.MedicineHistory", b =>
-                {
-                    b.HasOne("Sever.Model.Medicine", "Medicine")
-                        .WithMany()
-                        .HasForeignKey("MedicineID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Medicine");
-                });
-
             modelBuilder.Entity("Sever.Model.News", b =>
                 {
                     b.HasOne("Sever.Model.User", "User")
@@ -892,19 +809,11 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.Notify", b =>
                 {
-                    b.HasOne("Sever.Model.Form", "Form")
-                        .WithMany("Notify")
-                        .HasForeignKey("FormID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Sever.Model.User", "User")
                         .WithMany("Notify")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Form");
 
                     b.Navigation("User");
                 });
@@ -991,16 +900,6 @@ namespace Sever.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Sever.Model.EventType", b =>
-                {
-                    b.Navigation("MedicalEvent");
-                });
-
-            modelBuilder.Entity("Sever.Model.Form", b =>
-                {
-                    b.Navigation("Notify");
-                });
-
             modelBuilder.Entity("Sever.Model.HealthCheckUp", b =>
                 {
                     b.Navigation("Appointment");
@@ -1008,7 +907,7 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.MedicalEvent", b =>
                 {
-                    b.Navigation("Files");
+                    b.Navigation("File");
 
                     b.Navigation("MedicalEventDetail");
                 });

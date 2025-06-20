@@ -10,6 +10,8 @@ using Sever.Repository;
 using Sever.Repository.Interfaces;
 using Sever.Service;
 using System.Text;
+using static Sever.Service.IMedicalEventService;
+using static Sever.Service.IMedicineService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -85,7 +87,6 @@ builder.Services.AddScoped<IForgotPasswordTokenRepository, ForgotPasswordTokenRe
 builder.Services.AddScoped<IFilesRepository, FilesRepository>();
 builder.Services.AddScoped<ISchoolInfoRepository, SchoolInfoRepository>();
 builder.Services.AddScoped<IStudentProfileRepository, StudentProfileRepository>();
-
 builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IMedicalEventRepository, MedicalEventRepository>();

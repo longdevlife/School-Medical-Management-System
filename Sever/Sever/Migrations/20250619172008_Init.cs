@@ -6,37 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Sever.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "EventType",
-                columns: table => new
-                {
-                    EventTypeID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    EventTypeName = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EventType", x => x.EventTypeID);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Form",
-                columns: table => new
-                {
-                    FormID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FormName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Link = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Form", x => x.FormID);
-                });
-
             migrationBuilder.CreateTable(
                 name: "Role",
                 columns: table => new
@@ -137,28 +111,28 @@ namespace Sever.Migrations
                 columns: table => new
                 {
                     MedicalEventID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    EventDateTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EventDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ActionTaken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ActionTaken = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    EventTypeID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    NurseID = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    EventType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NurseID = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ParentID = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MedicalEvent", x => x.MedicalEventID);
-                    table.ForeignKey(
-                        name: "FK_MedicalEvent_EventType_EventTypeID",
-                        column: x => x.EventTypeID,
-                        principalTable: "EventType",
-                        principalColumn: "EventTypeID",
-                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_MedicalEvent_Users_NurseID",
                         column: x => x.NurseID,
                         principalTable: "Users",
                         principalColumn: "UserID",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MedicalEvent_Users_ParentID",
+                        column: x => x.ParentID,
+                        principalTable: "Users",
+                        principalColumn: "UserID");
                 });
 
             migrationBuilder.CreateTable(
@@ -219,7 +193,6 @@ namespace Sever.Migrations
                 name: "Notify",
                 columns: table => new
                 {
-                    FormID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     UserID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     NotifyID = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     NotifyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -229,13 +202,7 @@ namespace Sever.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Notify", x => new { x.UserID, x.FormID });
-                    table.ForeignKey(
-                        name: "FK_Notify_Form_FormID",
-                        column: x => x.FormID,
-                        principalTable: "Form",
-                        principalColumn: "FormID",
-                        onDelete: ReferentialAction.Restrict);
+                    table.PrimaryKey("PK_Notify", x => x.UserID);
                     table.ForeignKey(
                         name: "FK_Notify_Users_UserID",
                         column: x => x.UserID,
@@ -312,30 +279,6 @@ namespace Sever.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "MedicineHistory",
-                columns: table => new
-                {
-                    HistoryID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ChangeDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    PreviousStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    NewStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MedicineID = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_MedicineHistory", x => x.HistoryID);
-                    table.ForeignKey(
-                        name: "FK_MedicineHistory_Medicine_MedicineID",
-                        column: x => x.MedicineID,
-                        principalTable: "Medicine",
-                        principalColumn: "MedicineID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Files",
                 columns: table => new
                 {
@@ -346,6 +289,7 @@ namespace Sever.Migrations
                     FileData = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     FileLink = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UploadDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     MedicalEventID = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     NewsID = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     SchoolID = table.Column<string>(type: "nvarchar(450)", nullable: true),
@@ -582,14 +526,14 @@ namespace Sever.Migrations
                 column: "StudentID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MedicalEvent_EventTypeID",
-                table: "MedicalEvent",
-                column: "EventTypeID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_MedicalEvent_NurseID",
                 table: "MedicalEvent",
                 column: "NurseID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MedicalEvent_ParentID",
+                table: "MedicalEvent",
+                column: "ParentID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MedicalEventDetail_StudentID",
@@ -607,19 +551,9 @@ namespace Sever.Migrations
                 column: "ParentID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MedicineHistory_MedicineID",
-                table: "MedicineHistory",
-                column: "MedicineID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_News_UserID",
                 table: "News",
                 column: "UserID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notify_FormID",
-                table: "Notify",
-                column: "FormID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PolicyAndTerm_SchoolID",
@@ -687,9 +621,6 @@ namespace Sever.Migrations
                 name: "MedicalEventDetail");
 
             migrationBuilder.DropTable(
-                name: "MedicineHistory");
-
-            migrationBuilder.DropTable(
                 name: "Notify");
 
             migrationBuilder.DropTable(
@@ -705,16 +636,13 @@ namespace Sever.Migrations
                 name: "HealthCheckUp");
 
             migrationBuilder.DropTable(
+                name: "Medicine");
+
+            migrationBuilder.DropTable(
                 name: "News");
 
             migrationBuilder.DropTable(
                 name: "MedicalEvent");
-
-            migrationBuilder.DropTable(
-                name: "Medicine");
-
-            migrationBuilder.DropTable(
-                name: "Form");
 
             migrationBuilder.DropTable(
                 name: "SchoolInfo");
@@ -724,9 +652,6 @@ namespace Sever.Migrations
 
             migrationBuilder.DropTable(
                 name: "StudentProfile");
-
-            migrationBuilder.DropTable(
-                name: "EventType");
 
             migrationBuilder.DropTable(
                 name: "Users");

@@ -511,127 +511,72 @@
         }
       }
     },
-    "/api/medicalEvent": {
+    "/api/nurse/medicine/create": {
       "post": {
         "tags": [
-          "MedicalEvent"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicineEventRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicineEventRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicineEventRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/medicalEvent/{medicalEventId}": {
-      "get": {
-        "tags": [
-          "MedicalEvent"
-        ],
-        "parameters": [
-          {
-            "name": "medicalEventId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
-      "patch": {
-        "tags": [
-          "MedicalEvent"
-        ],
-        "parameters": [
-          {
-            "name": "medicalEventId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicalEventUpdateDTO"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicalEventUpdateDTO"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicalEventUpdateDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/medicalEvent/{medicalEventId}/upload-image": {
-      "post": {
-        "tags": [
-          "MedicalEvent"
-        ],
-        "parameters": [
-          {
-            "name": "medicalEventId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
+          "Nurse"
         ],
         "requestBody": {
           "content": {
             "multipart/form-data": {
               "schema": {
+                "required": [
+                  "Dosage",
+                  "MedicineName",
+                  "Quantity"
+                ],
                 "type": "object",
                 "properties": {
-                  "file": {
+                  "MedicineName": {
+                    "type": "string"
+                  },
+                  "Quantity": {
+                    "type": "string"
+                  },
+                  "Dosage": {
+                    "type": "string"
+                  },
+                  "Instructions": {
+                    "type": "string"
+                  },
+                  "SentDate": {
                     "type": "string",
-                    "format": "binary"
+                    "format": "date-time"
+                  },
+                  "Notes": {
+                    "type": "string"
+                  },
+                  "Status": {
+                    "type": "string"
+                  },
+                  "StudentID": {
+                    "type": "string"
                   }
                 }
               },
               "encoding": {
-                "file": {
+                "MedicineName": {
+                  "style": "form"
+                },
+                "Quantity": {
+                  "style": "form"
+                },
+                "Dosage": {
+                  "style": "form"
+                },
+                "Instructions": {
+                  "style": "form"
+                },
+                "SentDate": {
+                  "style": "form"
+                },
+                "Notes": {
+                  "style": "form"
+                },
+                "Status": {
+                  "style": "form"
+                },
+                "StudentID": {
                   "style": "form"
                 }
               }
@@ -645,45 +590,14 @@
         }
       }
     },
-    "/api/medicine": {
-      "post": {
-        "tags": [
-          "Medicine"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicineDTO"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicineDTO"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicineDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/medicine/{medicineId}": {
+    "/api/nurse/medicine/update/{id}": {
       "put": {
         "tags": [
-          "Medicine"
+          "Nurse"
         ],
         "parameters": [
           {
-            "name": "medicineId",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
@@ -695,17 +609,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MedicineUpdateDTO"
+                "$ref": "#/components/schemas/StatusUpdateDTO"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/MedicineUpdateDTO"
+                "$ref": "#/components/schemas/StatusUpdateDTO"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/MedicineUpdateDTO"
+                "$ref": "#/components/schemas/StatusUpdateDTO"
               }
             }
           }
@@ -717,51 +631,10 @@
         }
       }
     },
-    "/api/medicine/{medicineId}/status": {
-      "patch": {
-        "tags": [
-          "Medicine"
-        ],
-        "parameters": [
-          {
-            "name": "medicineId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChangeStatusDTO"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChangeStatusDTO"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChangeStatusDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/medicine/upload-photo": {
+    "/api/nurse/medicine/upload-image": {
       "post": {
         "tags": [
-          "Medicine"
+          "Nurse"
         ],
         "requestBody": {
           "content": {
@@ -775,6 +648,12 @@
                   },
                   "MedicineID": {
                     "type": "string"
+                  },
+                  "MedicalEventID": {
+                    "type": "string"
+                  },
+                  "StudentID": {
+                    "type": "string"
                   }
                 }
               },
@@ -783,6 +662,12 @@
                   "style": "form"
                 },
                 "MedicineID": {
+                  "style": "form"
+                },
+                "MedicalEventID": {
+                  "style": "form"
+                },
+                "StudentID": {
                   "style": "form"
                 }
               }
@@ -796,20 +681,249 @@
         }
       }
     },
-    "/api/medicine/{medicineId}/history": {
+    "/api/nurse/event/create": {
+      "post": {
+        "tags": [
+          "Nurse"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Description": {
+                    "type": "string"
+                  },
+                  "ActionTaken": {
+                    "type": "string"
+                  },
+                  "Notes": {
+                    "type": "string"
+                  },
+                  "EventType": {
+                    "type": "string"
+                  },
+                  "StudentID": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "Image": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  },
+                  "ParentID": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "Description": {
+                  "style": "form"
+                },
+                "ActionTaken": {
+                  "style": "form"
+                },
+                "Notes": {
+                  "style": "form"
+                },
+                "EventType": {
+                  "style": "form"
+                },
+                "StudentID": {
+                  "style": "form"
+                },
+                "Image": {
+                  "style": "form"
+                },
+                "ParentID": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/event/{id}": {
       "get": {
         "tags": [
-          "Medicine"
+          "Nurse"
         ],
         "parameters": [
           {
-            "name": "medicineId",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/event/update": {
+      "put": {
+        "tags": [
+          "Nurse"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "MedicalEventID": {
+                    "type": "string"
+                  },
+                  "Description": {
+                    "type": "string"
+                  },
+                  "ActionTaken": {
+                    "type": "string"
+                  },
+                  "Notes": {
+                    "type": "string"
+                  },
+                  "EventType": {
+                    "type": "string"
+                  },
+                  "ParentID": {
+                    "type": "string"
+                  },
+                  "Image": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              },
+              "encoding": {
+                "MedicalEventID": {
+                  "style": "form"
+                },
+                "Description": {
+                  "style": "form"
+                },
+                "ActionTaken": {
+                  "style": "form"
+                },
+                "Notes": {
+                  "style": "form"
+                },
+                "EventType": {
+                  "style": "form"
+                },
+                "ParentID": {
+                  "style": "form"
+                },
+                "Image": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/parent/medicine/create": {
+      "post": {
+        "tags": [
+          "Parent"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MedicineDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MedicineDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MedicineDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/parent/medicine/update/{id}": {
+      "put": {
+        "tags": [
+          "Parent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MedicineUpdateDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MedicineUpdateDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MedicineUpdateDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/parent/medical-event/history": {
+      "get": {
+        "tags": [
+          "Parent"
         ],
         "responses": {
           "200": {
@@ -916,24 +1030,6 @@
   },
   "components": {
     "schemas": {
-      "ChangeStatusDTO": {
-        "required": [
-          "changeDescription",
-          "newStatus"
-        ],
-        "type": "object",
-        "properties": {
-          "newStatus": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "changeDescription": {
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
       "CreateUserRequest": {
         "type": "object",
         "properties": {
@@ -1008,20 +1104,6 @@
         },
         "additionalProperties": false
       },
-      "MedicalEventUpdateDTO": {
-        "type": "object",
-        "properties": {
-          "updateNotes": {
-            "type": "string",
-            "nullable": true
-          },
-          "newActionTaken": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "MedicineDTO": {
         "required": [
           "dosage",
@@ -1058,43 +1140,9 @@
           "status": {
             "type": "string",
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "MedicineEventRequest": {
-        "required": [
-          "actionTaken",
-          "eventTypeID"
-        ],
-        "type": "object",
-        "properties": {
-          "eventDateTime": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "actionTaken": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          },
-          "eventTypeID": {
-            "minLength": 1,
-            "type": "string"
           },
           "studentID": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "type": "string",
             "nullable": true
           }
         },
@@ -1127,6 +1175,15 @@
           "notes": {
             "type": "string",
             "nullable": true
+          },
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "nullable": true
+          },
+          "studentID": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -1139,6 +1196,50 @@
             "nullable": true
           },
           "newPassword": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StatusUpdateDTO": {
+        "type": "object",
+        "properties": {
+          "medicineName": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "string",
+            "nullable": true
+          },
+          "dosage": {
+            "type": "string",
+            "nullable": true
+          },
+          "instructions": {
+            "type": "string",
+            "nullable": true
+          },
+          "sentDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "studentID": {
             "type": "string",
             "nullable": true
           }

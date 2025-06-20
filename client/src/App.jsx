@@ -15,6 +15,19 @@ import Settings from "./pages/settings/Settings";
 import Home from "./pages/context/HomePages";
 import News from "./pages/context/News";
 import Information from "./pages/context/Information";
+import ProtectedRoute from "./components/ProtectedRoute";
+import NurseManagerLayout from "./components/Layout/nursemanager/NurseManagerLayout";
+import NurseDashboard from "./pages/nurses/NurseDashboard";
+import HomePage from "./pages/home/HomePage";
+import HealthProfileView from "./pages/profiles/HealthProfileView";
+import MedicationSubmission from "./pages/medications/MedicationSubmission";
+import MedicineEquipmentManagement from "./pages/medicines/MedicineEquipmentManagement";
+import NewsManagement from "./pages/news/NewsManagement";
+import VaccinationManagement from "./pages/events/VaccinationManagement";
+import HealthCheckManagement from "./pages/events/HealthCheckManagement";
+import AccidentManagement from "./pages/events/AccidentManagement";
+import Reports from "./pages/reports/Reports";
+import AdvancedAnalytics from "./pages/analytics/AdvancedAnalytics";
 import Login from "./pages/Login";
 
 function App() {
@@ -23,8 +36,6 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Navigate to="/login" replace />} />
-
           {/* Admin layout */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Home />} />
@@ -34,6 +45,60 @@ function App() {
             <Route path="tin-tuc" element={<News />} />
             <Route path="gioi-thieu" element={<Information />} />
           </Route>
+
+          {/* Nurse Routes */}
+          <Route
+            path="/nurses/*"
+            element={
+              <ProtectedRoute allowedRoles={["NURSE"]}>
+                <NurseManagerLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<NurseDashboard />} />
+            <Route path="home" element={<HomePage />} />
+            <Route path="profile-view" element={<HealthProfileView />} />
+            <Route
+              path="medication-submission"
+              element={<MedicationSubmission />}
+            />
+            <Route
+              path="medicine-equipment"
+              element={<MedicineEquipmentManagement />}
+            />
+            <Route
+              path="medical-events/vaccination"
+              element={<VaccinationManagement />}
+            />
+            <Route
+              path="medical-events/health-checkup"
+              element={<HealthCheckManagement />}
+            />
+            <Route
+              path="medical-events/accidents"
+              element={<AccidentManagement />}
+            />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+          {/* Manager Routes */}
+          <Route
+            path="/manager/*"
+            element={
+              <ProtectedRoute allowedRoles={["MANAGER"]}>
+                <NurseManagerLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<NurseDashboard />} />
+            <Route path="home" element={<HomePage />} />
+            <Route path="profile-view" element={<HealthProfileView />} />
+            <Route path="news-management" element={<NewsManagement />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+          {/* Redirect root to login if not authenticated */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </ConfigProvider>

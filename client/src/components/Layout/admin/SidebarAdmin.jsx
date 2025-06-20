@@ -66,10 +66,18 @@ function SidebarAdmin({ collapsed, setCollapsed }) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="sidebar-logo">
+       <div className="logoContainer flex justify-center items-center h-24">
         <img
-          src="https://img.lovepik.com/free-png/20210922/lovepik-icon-of-vector-hospital-png-image_401050686_wh1200.png"
-          alt="Logo"
+          src="/SchoolMedical.gif"
+          alt="School Medical Logo"
+          style={{
+            height: collapsed ? "5500px" : "5500px",
+            width: collapsed ? "auto" : "auto",
+            maxWidth: "95%",
+            objectFit: "contain",
+            margin: "0 auto",
+            display: "block",
+          }}
         />
       </div>
 

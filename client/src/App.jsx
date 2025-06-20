@@ -16,6 +16,7 @@ import Home from "./pages/context/HomePages";
 import News from "./pages/context/News";
 import Information from "./pages/context/Information";
 import ProtectedRoute from "./components/ProtectedRoute";
+{/*NURSE LAYOUT */}
 import NurseManagerLayout from "./components/Layout/nursemanager/NurseManagerLayout";
 import NurseDashboard from "./pages/nurses/NurseDashboard";
 import HomePage from "./pages/home/HomePage";
@@ -28,6 +29,15 @@ import HealthCheckManagement from "./pages/events/HealthCheckManagement";
 import AccidentManagement from "./pages/events/AccidentManagement";
 import Reports from "./pages/reports/Reports";
 import AdvancedAnalytics from "./pages/analytics/AdvancedAnalytics";
+{/*Parent Layout*/}
+import ParentLayout from "./components/Layout/parent/ParentLayout";
+import StudentProfile from "./pages/studentProfile/StudentProfile";
+import ParentProfile from "./pages/parent/ParentProfile";
+import MedicalEvent from "./pages/eventMedical/MedicalEvent";
+import Vaccine from "./pages/vaccinations/Vaccine";
+import VaccineDetail from "./pages/vaccinations/VaccineDetail";
+import HealthCheckup from "./pages/healthRecord/HealthCheckup";
+
 import Login from "./pages/Login";
 
 function App() {
@@ -97,6 +107,24 @@ function App() {
             <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
             <Route path="settings" element={<Settings />} />
           </Route>
+          {/*Parent Route*/}
+           <Route
+            path="/parent/*"
+            element={
+              <ProtectedRoute allowedRoles={["PARENT"]}>
+                <ParentLayout />
+              </ProtectedRoute>
+            }
+          >
+          <Route index element={<ParentProfile />} />
+          <Route path="profile-student" element={<StudentProfile />} />
+          <Route path="profile" element={<ParentProfile />} />
+          <Route path="events" element={<MedicalEvent />} />
+          <Route path="vaccinations" element={<Vaccine />} />
+          <Route path="vaccinations/:id" element={<VaccineDetail />} />
+          <Route path="health-result" element={<HealthCheckup />} />
+        </Route>
+
           {/* Redirect root to login if not authenticated */}
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>

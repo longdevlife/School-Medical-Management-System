@@ -11,8 +11,7 @@ namespace Sever.Service
     {
         Task MedicalEventNotification(MedicalEvent medicalEvent, string customMessage = null);
         Task MedicineNotificationForParent(Medicine medicine, string customMessage = null);
-        Task MedicineNotificationForNurse(Medicine medicine, string customMessage = null);
-
+        Task MedicineNotificationForAllNurses(Medicine medicine, string customMessage = null);
     }
     public class NotificationService : INotificationService
     {
@@ -29,55 +28,69 @@ namespace Sever.Service
         {
             try
             {
-                if (string.IsNullOrEmpty(medicalEvent.ParentID))
+                if (medicalEvent.MedicalEventDetail == null || !medicalEvent.MedicalEventDetail.Any())
                 {
-                    return;
+                    throw new Exception("Không có học sinh nào trong sự kiện y tế để gửi thông báo.");
                 }
-                var parentExists = await _notificationRepository.CheckParentExistsAsync(medicalEvent.ParentID);
-                if (!parentExists) return;
 
-                string notifyId = await _notificationRepository.GetCurrentNotifyID();
+                var studentIds = medicalEvent.MedicalEventDetail.Select(d => d.StudentID).Distinct().ToList();
 
-                var notification = new Notify
+                foreach (var studentId in studentIds)
                 {
-                    NotifyID = notifyId,
-                    UserID = medicalEvent.ParentID,
-                    NotifyName = "Cập nhật thông tin sự kiện y tế",
-                    DateTime = DateTime.UtcNow.AddHours(7),
-                    Title = "CẬP NHẬT SỰ KIỆN Y TẾ",
-                    Description = customMessage ?? $"Sự kiện y tế {medicalEvent.EventType} đã được cập nhật. Vui lòng kiểm tra chi tiết."
-                };
+                    var parentId = await _notificationRepository.GetParentIdByStudentIdAsync(studentId);
+                    if (string.IsNullOrEmpty(parentId)) continue;
 
-                await _notificationRepository.AddNotificationAsync(notification);
+                    var parentExists = await _notificationRepository.CheckParentExistsAsync(parentId);
+                    if (!parentExists) continue;
+
+                    string notifyId = await _notificationRepository.GetCurrentNotifyID();
+
+                    var notification = new Notify
+                    {
+                        NotifyID = notifyId,
+                        UserID = parentId,
+                        NotifyName = "Cập nhật thông tin sự kiện y tế",
+                        DateTime = DateTime.UtcNow.AddHours(7),
+                        Title = "CẬP NHẬT SỰ KIỆN Y TẾ",
+                        Description = customMessage ?? $"Sự kiện y tế {medicalEvent.EventType} đã được cập nhật. Vui lòng kiểm tra chi tiết."
+                    };
+
+                    await _notificationRepository.AddNotificationAsync(notification);
+                }
             }
             catch (Exception ex)
             {
-                throw new Exception("Lỗi khi gửi thông báo đơn thuốc.", ex);
+                throw new Exception("Lỗi khi gửi thông báo sự kiện y tế.", ex);
             }
         }
 
-       
+
+
         public async Task MedicineNotificationForParent(Medicine medicine, string customMessage = null)
         {
             try
             {
-                if (string.IsNullOrEmpty(medicine.ParentID))
+                var parentId = await _notificationRepository.GetParentIdByStudentIdAsync(medicine.StudentID);
+                if (string.IsNullOrEmpty(parentId))
+                {
+                    return; 
+                }
+                var parentExists = await _notificationRepository.CheckParentExistsAsync(parentId);
+                if (!parentExists)
                 {
                     return;
-                }
-                var parentExists = await _notificationRepository.CheckParentExistsAsync(medicine.ParentID);
-                if (!parentExists) return;
-
+                } 
+                    
                 string notifyId = await _notificationRepository.GetCurrentNotifyID();
 
                 var notification = new Notify
                 {
                     NotifyID = notifyId,
-                    UserID = medicine.ParentID,
-                    NotifyName = "Cập nhật thông tin đơn thuốc từ phụ huynh",
+                    UserID = parentId,
+                    NotifyName = "Cập nhật thông tin đơn thuốc từ y tá",
                     DateTime = DateTime.UtcNow.AddHours(7),
                     Title = "CẬP NHẬT ĐƠN THUỐC",
-                    Description = customMessage ?? $"Đơn thuốc {medicine.MedicineName} đã được cập nhật. Vui lòng kiểm tra chi tiết."
+                    Description = customMessage ?? $"Đơn thuốc {medicine.MedicineName} đã được cập nhật. Vui lòng kiểm tra chi tiết.",
                 };
 
                 await _notificationRepository.AddNotificationAsync(notification);
@@ -88,35 +101,35 @@ namespace Sever.Service
             }
         }
 
-        public async Task MedicineNotificationForNurse(Medicine medicine, string customMessage = null)
+        public async Task MedicineNotificationForAllNurses(Medicine medicine, string customMessage = null)
         {
             try
             {
-                if (string.IsNullOrEmpty(medicine.NurseID))
-                {
+                var allNurseIDs = await _notificationRepository.GetAllNurseIDsAsync();
+                if (allNurseIDs == null || !allNurseIDs.Any())
                     return;
-                }
-                var parentExists = await _notificationRepository.CheckNurseExistsAsync(medicine.NurseID);
-                if (!parentExists) return;
 
-                string notifyId = await _notificationRepository.GetCurrentNotifyID();
-
-                var notification = new Notify
+                foreach (var nurseID in allNurseIDs)
                 {
-                    NotifyID = notifyId,
-                    UserID = medicine.NurseID,
-                    NotifyName = "Cập nhật thông tin đơn thuốc từ y tá",
-                    DateTime = DateTime.UtcNow.AddHours(7),
-                    Title = "CẬP NHẬT ĐƠN THUỐC",
-                    Description = customMessage ?? $"Đơn thuốc {medicine.MedicineName} đã được cập nhật. Vui lòng kiểm tra chi tiết.",
-                    User = null 
-                };
+                    string notifyId = await _notificationRepository.GetCurrentNotifyID();
 
-                await _notificationRepository.AddNotificationAsync(notification);
+                    var notification = new Notify
+                    {
+
+                        NotifyID = notifyId,
+                        UserID = nurseID,
+                        NotifyName = "Cập nhật thông tin đơn thuốc từ phụ huynh",
+                        DateTime = DateTime.UtcNow.AddHours(7),
+                        Title = "CẬP NHẬT ĐƠN THUỐC",
+                        Description = customMessage ?? $"Đơn thuốc \"{medicine.MedicineName}\" vừa được tạo. Vui lòng kiểm tra.",
+                    };
+
+                    await _notificationRepository.AddNotificationAsync(notification);
+                }
             }
             catch (Exception ex)
             {
-                throw new Exception("Lỗi khi gửi thông báo đơn thuốc.", ex);
+                throw new Exception("Lỗi khi gửi thông báo đơn thuốc đến các y tá.", ex);
             }
         }
     }

@@ -21,7 +21,7 @@ namespace Sever.Controllers
         }
 
         [HttpPost("medicine/create")]
-        public async Task<IActionResult> CreateMedicine([FromBody] CreateMedicine dto)
+        public async Task<IActionResult> CreateMedicine([FromForm] CreateMedicine dto)
         {
             var userId = User.Identity?.Name;
             var result = await _medicineService.CreateMedicineByParentAsync(dto, userId);
@@ -29,21 +29,30 @@ namespace Sever.Controllers
         }
 
         [HttpPut("medicine/update/{id}")]
-        public async Task<IActionResult> UpdateMedicine(string id, [FromBody] MedicineUpdateDTO dto, string userId)
+        public async Task<IActionResult> UpdateMedicine(string id, [FromForm] MedicineUpdateDTO dto)
         {
-            var userIds = User.Identity?.Name;
+            var userId = User.Identity?.Name;
             var result = await _medicineService.UpdateMedicinByParentAsync(dto, id, userId);
             return Ok(result);
         }
 
-        [HttpGet("medical-event/history")]
-        public async Task<IActionResult> GetMedicalEventHistory()
+        [HttpGet("medicine/getByStudentId/{studentId}")]
+        public async Task<IActionResult> GetMedicinesByStudentID(string studentId)
         {
-            var parentId = User.Identity?.Name;
-            if (string.IsNullOrEmpty(parentId))
-                return Unauthorized("Không xác định được người dùng.");
+            if (string.IsNullOrEmpty(studentId))
+                return BadRequest("Thiếu studentId.");
 
-            var result = await _medicalEventService.GetMedicalEventsByParent(parentId);
+            var result = await _medicineService.GetMedicinesByStudent(studentId);
+            return Ok(result);
+        }
+
+        [HttpGet("event/getByStudentId/{studentId}")]
+        public async Task<IActionResult> GetMedicalEventsByStudentID(string studentId)
+        {
+            if (string.IsNullOrEmpty(studentId))
+                return BadRequest("Thiếu studentId.");
+
+            var result = await _medicalEventService.GetMedicalEventsByStudentID(studentId);
             return Ok(result);
         }
     }

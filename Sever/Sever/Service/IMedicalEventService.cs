@@ -11,8 +11,8 @@ namespace Sever.Service
     {
         Task<MedicalEventResponse> CreateMedicalEvent(CreateMedicalEvent dto, string userId);
         Task<MedicalEventResponse> GetMedicalEvent(string MedicalEventID);
-        Task<bool> UpdateMedicalEvent(MedicalEventUpdateDTO dto);
-        Task<List<MedicalEventResponse>> GetMedicalEventsByParent(string studentId);
+        Task<bool> UpdateMedicalEvent(MedicalEventUpdateDTO dto, string medicalEventId, string userId);
+        Task<List<MedicalEventResponse>> GetMedicalEventsByStudentID(string studentId);
 
         public class MedicalEventService : IMedicalEventService
         {
@@ -43,7 +43,6 @@ namespace Sever.Service
                         Notes = dto.Notes,
                         EventType = dto.EventType,
                         NurseID = userId,
-                        ParentID = dto.ParentID,
                     };
 
                     await _medicalEventRepository.CreateMedicalEvent(medicalEvent);
@@ -64,7 +63,7 @@ namespace Sever.Service
                         }
                     }
 
-                    await _notificationService.MedicalEventNotification(medicalEvent);
+                    await _notificationService.MedicalEventNotification(medicalEvent, "Sự kiện y tế được tạo bởi y tá. Vui lòng kiểm tra.");
 
                     return await GetMedicalEvent(medicalEvent.MedicalEventID);
                 }
@@ -93,7 +92,7 @@ namespace Sever.Service
                     StudentID = medicalEvent.MedicalEventDetail.Select(d => d.StudentID).ToList(),
                 };
             }
-            public async Task<List<MedicalEventResponse>> GetMedicalEventsByParent(string studentId)
+            public async Task<List<MedicalEventResponse>> GetMedicalEventsByStudentID(string studentId)
             {
                 var medicalEvents = await _medicalEventRepository.GetMedicalEventsByParentIdAsync(studentId);
                 List<MedicalEventResponse> response = new List<MedicalEventResponse>();
@@ -114,46 +113,53 @@ namespace Sever.Service
                 return response;
             }
 
-            public async Task<bool> UpdateMedicalEvent(MedicalEventUpdateDTO dto)
+            public async Task<bool> UpdateMedicalEvent(MedicalEventUpdateDTO dto, string medicalEventId, string userId)
             {
-                var medicalEvents = await _medicalEventRepository.GetMedicalEventById(dto.MedicalEventID);
+                var medicalEvents = await _medicalEventRepository.GetMedicalEventById(medicalEventId);
                 if (medicalEvents == null)
                 {
                     throw new Exception("không tìm thấy sự kiện y tế.");
 
                 }
                 medicalEvents.Notes += $"\nUpdate {DateTime.UtcNow.AddHours(7)}: {dto.Notes}";
-                medicalEvents.ActionTaken += $"\n{dto.ActionTaken}";
-                medicalEvents.Description = dto.Description;
-                medicalEvents.EventType = dto.EventType;
-                medicalEvents.ParentID = dto.ParentID;
-                bool uploadImg = true;
-                var listImage = await _filesService.GetImageByMedicalEventIdAsync(medicalEvents.MedicalEventID);
-                foreach (var item in listImage)
+                if (!string.IsNullOrWhiteSpace(dto.ActionTaken))
                 {
-                    await _filesService.DeleteFileAsync(item.FileLink);
+                    medicalEvents.ActionTaken += $"\n{dto.ActionTaken}";
                 }
-                foreach (var item in dto.Image)
+                if (!string.IsNullOrWhiteSpace(dto.Description))
                 {
-                    try
+                    medicalEvents.Description = dto.Description;
+                }
+
+                if (!string.IsNullOrWhiteSpace(dto.EventType))
+                {
+                    medicalEvents.EventType = dto.EventType;
+                }
+                await _medicalEventRepository.UpdateMedicalEvent(medicalEvents);
+
+
+                if (dto.Image != null && dto.Image.Any())
+                {
+                    var listImage = await _filesService.GetImageByMedicalEventIdAsync(medicalEvents.MedicalEventID);
+                    foreach (var item in listImage)
                     {
-                        await _filesService.UploadMedicalEventImageByAsync(item, medicalEvents.MedicalEventID);
+                        await _filesService.DeleteFileAsync(item.FileLink);
                     }
-                    catch
+                    foreach (var item in dto.Image)
                     {
-                        uploadImg = false;
-                        throw new ArgumentException("Lưu ảnh thất bại");
+                        try
+                        {
+                            await _filesService.UploadMedicalEventImageByAsync(item, medicalEvents.MedicalEventID);
+                        }
+                        catch
+                        {
+                            throw new ArgumentException("Lưu ảnh thất bại");
+                        }
                     }
                 }
-                if (uploadImg || medicalEvents != null)
-                {
-                    await _notificationService.MedicalEventNotification(medicalEvents);
-                    await _medicalEventRepository.UpdateMedicalEvent(medicalEvents);
-                    return true;
-                }
-                return false;
+                    await _notificationService.MedicalEventNotification(medicalEvents, $"Sự kiện y tế đã được cập nhật.");
+                return true;
             }
         }
-        // nên làm filter hoặc search cho nurse theo medical event
     }
 }

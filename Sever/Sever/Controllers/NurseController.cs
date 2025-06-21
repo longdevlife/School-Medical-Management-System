@@ -50,22 +50,13 @@ namespace Sever.Controllers
             return Ok(result);
         }
 
-        //[HttpGet("event/{id}")]
-        //public async Task<IActionResult> GetMedicalEvent(string id)
-        //{
-        //    var userId = User.Identity?.Name;
-        //    var result = await _medicalEventService.GetMedicalEvent(id);
-        //    if (result == null)
-        //        return NotFound("Không tìm thấy sự kiện y tế.");
-        //    return Ok(result);
-        //}
 
-
-        [HttpPut("event/update")]
-        public async Task<IActionResult> UpdateMedicalEvent([FromForm] MedicalEventUpdateDTO dto)
+        [HttpPut("event/update/{id}")]
+        public async Task<IActionResult> UpdateMedicalEvent([FromForm] MedicalEventUpdateDTO dto, string id)
         {
-            await _medicalEventService.UpdateMedicalEvent(dto);
-            return NoContent();
+            var userId = User.Identity?.Name;
+            var result = await _medicalEventService.UpdateMedicalEvent(dto, id, userId);
+            return Ok(result);
         }
     }
 }

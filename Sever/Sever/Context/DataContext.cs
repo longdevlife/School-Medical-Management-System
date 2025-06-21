@@ -38,7 +38,7 @@ namespace Sever.Context
 
             #region Notify
             modelBuilder.Entity<Notify>()
-                .HasKey(n => new { n.UserID});
+                .HasKey(n => new { n.NotifyID});
 
             modelBuilder.Entity<Notify>()
                 .HasOne(n => n.User)

@@ -11,8 +11,7 @@ namespace Sever.Repository
         Task UpdateMedicineAsync(Medicine medicine);
         Task<string> GetCurrentMedicineID();
         Task<Medicine> GetMedicineByIdAsync(string medicineId);
-        Task<List<Medicine>> GetMedicineByParentIdAsync(string studentId);
-        //Task<List<Medicine>> GetMedicineByNurseIdAsync(string nurseId);
+        Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId);
 
     }
 
@@ -47,14 +46,7 @@ namespace Sever.Repository
             return result;
         }
 
-        //public async Task<List<Medicine>> GetMedicineByNurseIdAsync(string nurseId)
-        //{
-        //    return await _context.Medicine
-        //        .Where(n => n.NurseID == nurseId)
-        //        .ToListAsync();
-        //}
-
-        public async Task<List<Medicine>> GetMedicineByParentIdAsync(string studentId)
+        public async Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId)
         {
             return await _context.Medicine
                 .Where(n =>  n.StudentID == studentId )

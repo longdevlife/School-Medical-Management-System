@@ -7,6 +7,7 @@ using Sever.DTO.File;
 using Sever.DTO.User;
 using Sever.Model;
 using Sever.Repository;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Sever.Service
 {
@@ -99,6 +100,17 @@ namespace Sever.Service
             if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
                 throw new Exception("Image upload failed");
 
+            var image = new Files
+            {
+                FileName = file.FileName,
+                FileType = "Image",
+                FileLink = uploadResult.SecureUrl.AbsoluteUri,
+                UploadDate = DateTime.UtcNow,
+                IsActive = true,
+                MedicalEventID = id
+            };
+            await _fileRepository.AddAsync(image);
+            await _fileRepository.SaveChangesAsync();
             return new ImageResponse
             {
                 Url = uploadResult.SecureUrl.AbsoluteUri,
@@ -161,6 +173,20 @@ namespace Sever.Service
 
             if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
                 throw new Exception("Image upload failed");
+         
+
+            var image = new Files
+            {
+                FileName = file.FileName,
+                FileType = "Image",
+                FileLink = uploadResult.SecureUrl.AbsoluteUri,
+                UploadDate = DateTime.UtcNow,
+                IsActive = true,
+                MedicineID = id
+            };
+
+            await _fileRepository.AddAsync(image);
+            await _fileRepository.SaveChangesAsync();
 
             return new ImageResponse
             {

@@ -10,6 +10,7 @@ using Sever.Repository;
 using Sever.Repository.Interfaces;
 using Sever.Service;
 using System.Text;
+using static Sever.Repository.Interfaces.INotificationRepository;
 using static Sever.Service.IMedicalEventService;
 using static Sever.Service.IMedicineService;
 

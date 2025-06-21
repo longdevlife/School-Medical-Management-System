@@ -42,9 +42,10 @@ function App() {
     <ConfigProvider>
       <Router>
         <Routes>
-          
+          {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/home" element={<HomePage />} />
+          
           {/* Admin layout */}
           <Route path="/admin" element={<AdminLayout />}>
             

@@ -345,11 +345,17 @@ namespace Sever.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("StudentID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("MedicineID");
 
                     b.HasIndex("NurseID");
 
                     b.HasIndex("ParentID");
+
+                    b.HasIndex("StudentID");
 
                     b.ToTable("Medicine");
                 });
@@ -793,9 +799,17 @@ namespace Sever.Migrations
                         .HasForeignKey("ParentID")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Sever.Model.StudentProfile", "StudentProfile")
+                        .WithMany()
+                        .HasForeignKey("StudentID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Nurse");
 
                     b.Navigation("Parent");
+
+                    b.Navigation("StudentProfile");
                 });
 
             modelBuilder.Entity("Sever.Model.News", b =>

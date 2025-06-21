@@ -22,7 +22,7 @@ namespace Sever.Service
         Task<List<Files>> GetImageByMedicineIdAsync(string id);
         Task<List<Files>> GetImageByMedicalEventIdAsync(string id);
         Task<List<Files>> GetImageByNewsIdAsync(string id);
-        Task<bool> DeleteFileAsync(string id);
+        Task<bool> DeleteFileAsync(string imageLink);
     }
     public class FilesSevice : IFilesService
     {
@@ -257,10 +257,10 @@ namespace Sever.Service
             return list;
         }
 
-        //public async Task<bool> DeleteFileAsync(Files file)
-        //{
-        //    return await _fileRepository.DeleteAsync(file);
-        //}
+        public async Task<bool> DeleteFileAsync(string imageLink)
+        {
+            return await _fileRepository.DeleteAsync(imageLink);
+        }
 
         public async Task AddFileAsync(Files file)
         {
@@ -268,9 +268,9 @@ namespace Sever.Service
             await _context.SaveChangesAsync();
         }
 
-        public Task<bool> DeleteFileByIdAsync(string id)
-        {
-            throw new NotImplementedException();
-        }
+        //public Task<bool> DeleteFileByIdAsync(string id)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }

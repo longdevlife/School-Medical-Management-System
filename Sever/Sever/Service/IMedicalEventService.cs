@@ -131,7 +131,7 @@ namespace Sever.Service
                 var listImage = await _filesService.GetImageByMedicalEventIdAsync(medicalEvents.MedicalEventID);
                 foreach (var item in listImage)
                 {
-                    await _filesService.DeleteFileByIdAsync(medicalEvents.MedicalEventID);
+                    await _filesService.DeleteFileAsync(item.FileLink);
                 }
                 foreach (var item in dto.Image)
                 {
@@ -148,6 +148,7 @@ namespace Sever.Service
                 if (uploadImg || medicalEvents != null)
                 {
                     await _notificationService.MedicalEventNotification(medicalEvents);
+                    await _medicalEventRepository.UpdateMedicalEvent(medicalEvents);
                     return true;
                 }
                 return false;

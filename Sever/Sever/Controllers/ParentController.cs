@@ -32,7 +32,7 @@ namespace Sever.Controllers
         public async Task<IActionResult> UpdateMedicine(string id, [FromBody] MedicineUpdateDTO dto)
         {
             var userId = User.Identity?.Name;
-            var result = await _medicineService.UpdateMedicineByParentAsync(id, dto, userId);
+            var result = await _medicineService.UpdateMedicinByParentAsync(dto, id);
             return Ok(result);
         }
 

@@ -31,14 +31,27 @@ namespace Sever.Repository.Interfaces
 
         public async Task<string> GetCurrentNotifyID()
         {
-            var crurrentNews = await _context.Notify.OrderByDescending(n => n.NotifyID).FirstOrDefaultAsync();
-            if (crurrentNews == null)
+            var lastNotify = await _context.Notify
+                .OrderByDescending(n => n.NotifyID)
+                .FirstOrDefaultAsync();
+
+            string newId;
+            if (lastNotify == null)
             {
-                return "No0001";
+                newId = "No0001";
             }
-            string result = GenerateID.GenerateNextId(crurrentNews.NotifyID, "No", 4);
-            return result;
+            else
+            {
+                newId = GenerateID.GenerateNextId(lastNotify.NotifyID, "No", 4);
+            }
+            while (await _context.Notify.AnyAsync(n => n.NotifyID == newId))
+            {
+                newId = GenerateID.GenerateNextId(newId, "No", 4);
+            }
+
+            return newId;
         }
+
 
         //public async Task<List<string>> GetParentIDMedicineAsync(string medicinetID)
         //{

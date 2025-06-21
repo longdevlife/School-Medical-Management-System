@@ -79,11 +79,10 @@ namespace Sever.Service
                     Instructions = dto.Instructions,
                     SentDate = DateTime.UtcNow.AddHours(7),
                     Notes = dto.Notes,
+                    StudentID = dto.StudentID,
                     Status = (dto.Status == "Chờ xử lý" || dto.Status == "Đã xác nhận") ? dto.Status : "Chờ xử lý",
                     NurseID = userId
                 };
-
-                await _medicineRepository.CreateMedicineAsync(medicine);
                 if (dto.Image != null && dto.Image.Any())
                 {
                     foreach (var item in dto.Image)
@@ -91,26 +90,8 @@ namespace Sever.Service
                         await _filesService.UploadMedicineImageByAsync(item, medicine.MedicineID);
                     }
                 }
+                await _medicineRepository.CreateMedicineAsync(medicine);
                 await _notificationService.MedicineNotificationForNurse(medicine, "Đơn thuốc được tạo bởi y tá. Vui lòng kiểm tra.");
-                return medicine;
-            }
-
-            public async Task<Medicine> UpdateMedicineByParentAsync(string medicineId, MedicineUpdateDTO updateDto, string modifiedBy)
-            {
-                var medicine = await _medicineRepository.GetMedicineByIdAsync(medicineId);
-                if (medicine == null)
-                    throw new Exception("Không tìm thấy đơn thuốc.");
-
-                var previousStatus = medicine.Status;
-                medicine.MedicineName = updateDto.MedicineName;
-                medicine.Quantity = updateDto.Quantity;
-                medicine.Dosage = updateDto.Dosage;
-                medicine.Instructions = updateDto.Instructions;
-                medicine.SentDate = updateDto.SentDate;
-                medicine.Notes = updateDto.Notes;
-
-                await _medicineRepository.UpdateMedicineAsync(medicine);
-
                 return medicine;
             }
 
@@ -134,7 +115,7 @@ namespace Sever.Service
                 var listImage = await _filesService.GetImageByMedicalEventIdAsync(medicine.MedicineID);
                 foreach (var item in listImage)
                 {
-                    await _filesService.DeleteFileByIdAsync(medicine.MedicineID);
+                    await _filesService.DeleteFileAsync(item.FileLink);
                 }
                 foreach (var item in updateDto.Image)
                 {
@@ -150,6 +131,7 @@ namespace Sever.Service
                 }
                 if (uploadImg || medicine != null)
                 {
+                    await _medicineRepository.UpdateMedicineAsync(medicine);
                     //await _notificationService.MedicineNotificationForNurse(medicine);
                     return true;
                 }
@@ -182,7 +164,7 @@ namespace Sever.Service
                 var listImage = await _filesService.GetImageByMedicineIdAsync(medicine.MedicineID);
                 foreach (var item in listImage)
                 {
-                    await _filesService.DeleteFileByIdAsync(medicine.MedicineID);
+                    await _filesService.DeleteFileAsync(item.FileLink);
                 }
                 foreach (var item in updateDto.Image)
                 {
@@ -198,6 +180,7 @@ namespace Sever.Service
                 }
                 if (uploadImg || medicine != null)
                 {
+                    await _medicineRepository.UpdateMedicineAsync(medicine);
                     await _notificationService.MedicineNotificationForParent(medicine, $"Đơn thuốc đã được cập nhật với trạng thái '{medicine.Status}'.");
                     return true;
                 }

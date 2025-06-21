@@ -551,6 +551,13 @@
                   },
                   "StudentID": {
                     "type": "string"
+                  },
+                  "Image": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
                   }
                 }
               },
@@ -577,6 +584,9 @@
                   "style": "form"
                 },
                 "StudentID": {
+                  "style": "form"
+                },
+                "Image": {
                   "style": "form"
                 }
               }
@@ -609,67 +619,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/StatusUpdateDTO"
+                "$ref": "#/components/schemas/MedicineStatusUpdate"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/StatusUpdateDTO"
+                "$ref": "#/components/schemas/MedicineStatusUpdate"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/StatusUpdateDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/nurse/medicine/upload-image": {
-      "post": {
-        "tags": [
-          "Nurse"
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "File": {
-                    "type": "string",
-                    "format": "binary"
-                  },
-                  "MedicineID": {
-                    "type": "string"
-                  },
-                  "MedicalEventID": {
-                    "type": "string"
-                  },
-                  "StudentID": {
-                    "type": "string"
-                  }
-                }
-              },
-              "encoding": {
-                "File": {
-                  "style": "form"
-                },
-                "MedicineID": {
-                  "style": "form"
-                },
-                "MedicalEventID": {
-                  "style": "form"
-                },
-                "StudentID": {
-                  "style": "form"
-                }
+                "$ref": "#/components/schemas/MedicineStatusUpdate"
               }
             }
           }
@@ -748,28 +708,6 @@
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/nurse/event/{id}": {
-      "get": {
-        "tags": [
-          "Nurse"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -857,17 +795,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MedicineDTO"
+                "$ref": "#/components/schemas/CreateMedicine"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/MedicineDTO"
+                "$ref": "#/components/schemas/CreateMedicine"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/MedicineDTO"
+                "$ref": "#/components/schemas/CreateMedicine"
               }
             }
           }
@@ -944,38 +882,6 @@
         }
       }
     },
-    "/api/school/img": {
-      "post": {
-        "tags": [
-          "School"
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "img": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
-              },
-              "encoding": {
-                "img": {
-                  "style": "form"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/Values/check-token": {
       "get": {
         "tags": [
@@ -1030,6 +936,58 @@
   },
   "components": {
     "schemas": {
+      "CreateMedicine": {
+        "required": [
+          "dosage",
+          "medicineName",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "medicineName": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "quantity": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "dosage": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "instructions": {
+            "type": "string",
+            "nullable": true
+          },
+          "sentDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "studentID": {
+            "type": "string",
+            "nullable": true
+          },
+          "image": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateUserRequest": {
         "type": "object",
         "properties": {
@@ -1104,25 +1062,20 @@
         },
         "additionalProperties": false
       },
-      "MedicineDTO": {
-        "required": [
-          "dosage",
-          "medicineName",
-          "quantity"
-        ],
+      "MedicineStatusUpdate": {
         "type": "object",
         "properties": {
           "medicineName": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "quantity": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "dosage": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "instructions": {
             "type": "string",
@@ -1137,11 +1090,23 @@
             "type": "string",
             "nullable": true
           },
+          "image": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "nullable": true
+          },
           "status": {
             "type": "string",
             "nullable": true
           },
           "studentID": {
+            "type": "string",
+            "nullable": true
+          },
+          "parentID": {
             "type": "string",
             "nullable": true
           }
@@ -1176,12 +1141,19 @@
             "type": "string",
             "nullable": true
           },
-          "file": {
-            "type": "string",
-            "format": "binary",
+          "image": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
             "nullable": true
           },
           "studentID": {
+            "type": "string",
+            "nullable": true
+          },
+          "nurseID": {
             "type": "string",
             "nullable": true
           }
@@ -1196,50 +1168,6 @@
             "nullable": true
           },
           "newPassword": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "StatusUpdateDTO": {
-        "type": "object",
-        "properties": {
-          "medicineName": {
-            "type": "string",
-            "nullable": true
-          },
-          "quantity": {
-            "type": "string",
-            "nullable": true
-          },
-          "dosage": {
-            "type": "string",
-            "nullable": true
-          },
-          "instructions": {
-            "type": "string",
-            "nullable": true
-          },
-          "sentDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          },
-          "file": {
-            "type": "string",
-            "format": "binary",
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "studentID": {
             "type": "string",
             "nullable": true
           }

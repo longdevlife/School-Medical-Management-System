@@ -108,7 +108,8 @@ namespace Sever.Service
                     NotifyName = "Cập nhật thông tin đơn thuốc từ y tá",
                     DateTime = DateTime.UtcNow.AddHours(7),
                     Title = "CẬP NHẬT ĐƠN THUỐC",
-                    Description = customMessage ?? $"Đơn thuốc {medicine.MedicineName} đã được cập nhật. Vui lòng kiểm tra chi tiết."
+                    Description = customMessage ?? $"Đơn thuốc {medicine.MedicineName} đã được cập nhật. Vui lòng kiểm tra chi tiết.",
+                    User = null 
                 };
 
                 await _notificationRepository.AddNotificationAsync(notification);

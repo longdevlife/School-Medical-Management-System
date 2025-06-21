@@ -10,6 +10,7 @@ namespace Sever.Model
         public int Dose { get; set; }
         public DateTime DateTime { get; set; }
         public string? Notes { get ; set; }
+        public string Status { get; set; }
         public string StudentID { get; set; }
         [ForeignKey("StudentID")]
         public StudentProfile StudentProfile { get; set; }

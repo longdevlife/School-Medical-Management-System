@@ -34,10 +34,10 @@ namespace Sever.Controllers
         }
 
         [HttpPut("medicine/update/{id}")]
-        public async Task<IActionResult> UpdateMedicine(string id, [FromBody] MedicineStatusUpdate dto)
+        public async Task<IActionResult> UpdateMedicine(string id, [FromForm] MedicineStatusUpdate dto)
         {
             var userId = User.Identity?.Name;
-            var result = await _medicineService.UpdateMedicineByNurseAsync(id, dto);
+            var result = await _medicineService.UpdateMedicineByNurseAsync(id, dto, userId);
             return Ok(result);
         }
 

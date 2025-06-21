@@ -9,9 +9,9 @@
         public DateTime? SentDate { get; set; }
         public string? Notes { get; set; }
         public List<IFormFile> Image { get; set; }
-        public string Status { get; set; }  
+        public string? Status { get; set; }  
         public string  StudentID { get; set; }
-        public string ParentID { get; set; }
+        //public string? NurseID { get; set; }
 
     }
 }

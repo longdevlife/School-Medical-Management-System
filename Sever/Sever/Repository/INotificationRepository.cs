@@ -44,11 +44,6 @@ namespace Sever.Repository.Interfaces
             {
                 newId = GenerateID.GenerateNextId(lastNotify.NotifyID, "No", 4);
             }
-            while (await _context.Notify.AnyAsync(n => n.NotifyID == newId))
-            {
-                newId = GenerateID.GenerateNextId(newId, "No", 4);
-            }
-
             return newId;
         }
 

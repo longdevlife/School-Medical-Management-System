@@ -14,8 +14,8 @@ namespace Sever.Service
     {
         Task<Medicine> CreateMedicineByParentAsync(CreateMedicine dto, string userId);
         Task<Medicine> CreateMedicineByNurseAsync(CreateMedicine dto, string userId);
-        Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string medicineId);
-        Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto);
+        Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string medicineId, string userId);
+        Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto, string userId);
         Task<List<MedicineResponse>> GetMedicinesByStudent(string studentId);
         public class MedicineService : IMedicineService
         {
@@ -83,6 +83,7 @@ namespace Sever.Service
                     Status = (dto.Status == "Chờ xử lý" || dto.Status == "Đã xác nhận") ? dto.Status : "Chờ xử lý",
                     NurseID = userId
                 };
+                await _medicineRepository.CreateMedicineAsync(medicine);
                 if (dto.Image != null && dto.Image.Any())
                 {
                     foreach (var item in dto.Image)
@@ -90,12 +91,11 @@ namespace Sever.Service
                         await _filesService.UploadMedicineImageByAsync(item, medicine.MedicineID);
                     }
                 }
-                await _medicineRepository.CreateMedicineAsync(medicine);
                 await _notificationService.MedicineNotificationForNurse(medicine, "Đơn thuốc được tạo bởi y tá. Vui lòng kiểm tra.");
                 return medicine;
             }
 
-            public async Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string medicineId)
+            public async Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string medicineId, string userId)
             {
                 var medicine = await _medicineRepository.GetMedicineByIdAsync(medicineId);
                 if (medicine == null)
@@ -110,7 +110,7 @@ namespace Sever.Service
                 medicine.Instructions = updateDto.Instructions;
                 medicine.SentDate = updateDto.SentDate;
                 medicine.Notes = updateDto.Notes;
-                medicine.NurseID = updateDto.NurseID;
+                medicine.ParentID = userId;
                 bool uploadImg = true;
                 var listImage = await _filesService.GetImageByMedicalEventIdAsync(medicine.MedicineID);
                 foreach (var item in listImage)
@@ -138,7 +138,7 @@ namespace Sever.Service
                 return false;
             }
 
-            public async Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto)
+            public async Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto, string userId)
             {
                 var medicine = await _medicineRepository.GetMedicineByIdAsync(medicineId);
                 if (medicine == null)
@@ -152,14 +152,23 @@ namespace Sever.Service
                 medicine.Instructions = updateDto.Instructions;
                 medicine.SentDate = updateDto.SentDate;
                 medicine.Notes = updateDto.Notes;
-                medicine.ParentID = updateDto.ParentID;
+                medicine.NurseID = userId;
 
                 var validStatuses = new List<string> { "Chờ xác nhận", "Đã xác nhận", "Đang thực hiện", "Đã hoàn thành", "Từ chối" };
-                if (!validStatuses.Contains(updateDto.Status))
-                    throw new Exception("Trạng thái không hợp lệ.");
+                if (!string.IsNullOrWhiteSpace(updateDto.Status))
+                {
+                    if (!validStatuses.Contains(updateDto.Status))
+                        throw new Exception("Trạng thái không hợp lệ.");
 
-                medicine.Status = updateDto.Status;
-
+                    if (updateDto.Status != previousStatus)
+                    {
+                        medicine.Status = updateDto.Status;
+                    }
+                }
+                else
+                {
+                    medicine.Status = previousStatus;
+                }
                 bool uploadImg = true;
                 var listImage = await _filesService.GetImageByMedicineIdAsync(medicine.MedicineID);
                 foreach (var item in listImage)

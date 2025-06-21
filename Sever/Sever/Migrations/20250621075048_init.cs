@@ -29,6 +29,7 @@ namespace Sever.Migrations
                 {
                     SchoolID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Logo = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LogGift = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Hotline = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -162,16 +163,16 @@ namespace Sever.Migrations
                 name: "Notify",
                 columns: table => new
                 {
-                    NotifyID = table.Column<string>(type: "nvarchar(20)", nullable: false),
+                    UserID = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    NotifyID = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     NotifyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateTime = table.Column<DateTime>(type: "date", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserID = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Notify", x => x.NotifyID);
+                    table.PrimaryKey("PK_Notify", x => x.UserID);
                     table.ForeignKey(
                         name: "FK_Notify_Users_UserID",
                         column: x => x.UserID,
@@ -207,6 +208,7 @@ namespace Sever.Migrations
                 {
                     StudentID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     StudentName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Class = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StudentAvata = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RelationName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Nationality = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -266,6 +268,7 @@ namespace Sever.Migrations
                     Respiration = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Ardiovascular = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CheckerID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ParentID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     StudentID = table.Column<string>(type: "nvarchar(450)", nullable: false)
@@ -391,6 +394,7 @@ namespace Sever.Migrations
                     Dose = table.Column<int>(type: "int", nullable: false),
                     DateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StudentID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     VaccinatorID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     VaccineID = table.Column<int>(type: "int", nullable: false)

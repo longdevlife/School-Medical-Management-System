@@ -36,7 +36,7 @@ const HomePage = () => {
   React.useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      setIsHeaderSticky(scrollY > 50); 
+      setIsHeaderSticky(scrollY > 50);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -125,10 +125,10 @@ const HomePage = () => {
           } transition-all duration-300`}
         >
           {" "}
-          {/* Integrated Header + Hero Section */}
+          {/* Section 1 */}
           <div className="relative h-screen bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 flex flex-col overflow-hidden">
             {" "}
-            {/* Integrated Header - Remove spacing */}
+            {/* Integrated Header */}
             <div
               className={`relative z-30 w-full flex-shrink-0 transition-all duration-300 ${
                 isHeaderSticky ? "sticky-header" : ""
@@ -138,9 +138,7 @@ const HomePage = () => {
                 <AppHeader collapsed={collapsed} setCollapsed={setCollapsed} />
               </div>
             </div>
-            {/* Enhanced Decorative background elements */}
             <div className="absolute inset-0 overflow-hidden">
-              {/* Large decorative circles */}
               <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full opacity-40 animate-pulse"></div>
               <div className="absolute bottom-32 left-16 w-24 h-24 bg-gradient-to-br from-blue-200 to-blue-300 rounded-full opacity-30 animate-pulse delay-300"></div>
               <div className="absolute top-1/2 right-1/3 w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full opacity-50 animate-pulse delay-500"></div>

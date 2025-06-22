@@ -21,7 +21,7 @@ const { Header } = Layout;
 function AppHeader({ collapsed, setCollapsed }) {
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
-  
+
   // Get current user info
   const isAuthenticated = authService.isAuthenticated();
   const currentUser = authService.getCurrentUser();
@@ -57,7 +57,7 @@ function AppHeader({ collapsed, setCollapsed }) {
   const handleUserMenuClick = ({ key }) => {
     if (key === "logout") {
       authService.logout();
-      navigate("/login");
+      navigate("/home");
     } else if (key === "dashboard") {
       // Navigate to appropriate dashboard based on role
       switch (userRole) {
@@ -108,44 +108,49 @@ function AppHeader({ collapsed, setCollapsed }) {
             className="mr-4 text-gray-600 hover:text-blue-600"
           />
         )}
-        <div className="flex items-center cursor-pointer" 
-        onClick={() => {
-          if (isAuthenticated) {
-            // Navigate to appropriate dashboard based on role
-            switch (userRole) {
-              case "ADMIN":
-                navigate("/admin");
-                break;
-              case "MANAGER":
-                navigate("/manager");
-                break;
-              case "NURSE":
-                navigate("/nurses");
-                break;
-              case "PARENT":
-                navigate("/parent");
-                break;
-              default:
-                navigate("/home");
+        <div
+          className="flex items-center cursor-pointer"
+          onClick={() => {
+            if (isAuthenticated) {
+              // Navigate to appropriate dashboard based on role
+              switch (userRole) {
+                case "ADMIN":
+                  navigate("/admin");
+                  break;
+                case "MANAGER":
+                  navigate("/manager");
+                  break;
+                case "NURSE":
+                  navigate("/nurses");
+                  break;
+                case "PARENT":
+                  navigate("/parent");
+                  break;
+                default:
+                  navigate("/home");
+              }
+            } else {
+              navigate("/home");
             }
-          } else {
-            navigate("/home");
-          }
-        }}
-        style={{marginLeft: isAuthenticated ? '0px' : '160px'}}>
-          <img 
-            src="/favicon.svg" 
-            alt="School Logo" 
+          }}
+          style={{ marginLeft: isAuthenticated ? "0px" : "160px" }}
+        >
+          <img
+            src="/favicon.svg"
+            alt="School Logo"
             className="w-10 h-10 mr-3"
           />
           <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Y Tế Học Đường
           </span>
         </div>
-      </div>      {/* Center Section - Search + Navigation (only show for unauthenticated users) */}
+      </div>{" "}
+      {/* Center Section - Search + Navigation (only show for unauthenticated users) */}
       {!isAuthenticated && (
-        <div className="flex items-center space-x-8"
-        style={{marginRight:'106px'}}>
+        <div
+          className="flex items-center space-x-8"
+          style={{ marginRight: "106px" }}
+        >
           {/* Search Bar */}
           <div className="flex items-center">
             <div className="relative flex items-center">
@@ -156,10 +161,10 @@ function AppHeader({ collapsed, setCollapsed }) {
                 onPressEnter={() => handleSearch(searchValue)}
                 className="w-80 h-10 rounded-full border-gray-300 focus:border-blue-500 focus:outline-none"
                 style={{
-                  borderRadius: '25px',
-                  paddingLeft: '16px',
-                  paddingRight: '50px',
-                  border: '1px solid #d1d5db',
+                  borderRadius: "25px",
+                  paddingLeft: "16px",
+                  paddingRight: "50px",
+                  border: "1px solid #d1d5db",
                 }}
               />
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
@@ -169,13 +174,13 @@ function AppHeader({ collapsed, setCollapsed }) {
                   onClick={() => handleSearch(searchValue)}
                   className="bg-blue-500 hover:bg-blue-600 border-0 rounded-full w-8 h-8 flex items-center justify-center shadow-md"
                   style={{
-                    minWidth: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginRight: '-2px',
+                    minWidth: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginRight: "-2px",
                   }}
                 />
               </div>
@@ -186,32 +191,33 @@ function AppHeader({ collapsed, setCollapsed }) {
             <button
               onClick={() => navigate("/home")}
               className="flex items-center text-gray-700 hover:text-blue-600 transition-all duration-200 font-medium"
-              style={{marginLeft:'17px'}}
+              style={{ marginLeft: "17px" }}
             >
               <HomeOutlined className="mr-2" />
               Trang chủ
             </button>
-            
+
             <button
               onClick={() => navigate("/tin-tuc")}
               className="flex items-center text-gray-700 hover:text-blue-600 transition-all duration-200 font-medium"
-              style={{margin:'33px'}}
+              style={{ margin: "33px" }}
             >
               <FileTextOutlined className="mr-2" />
               Tin tức
             </button>
-            
+
             <button
               onClick={() => navigate("/gioi-thieu")}
               className="flex items-center text-gray-700 hover:text-blue-600 transition-all duration-200 font-medium"
-              style={{margin:'0px'}}
+              style={{ margin: "0px" }}
             >
               <InfoCircleOutlined className="mr-2" />
               Giới thiệu
             </button>
           </nav>
         </div>
-      )}{/* Right Section - Login/User */}
+      )}
+      {/* Right Section - Login/User */}
       <div className="flex items-center space-x-4">
         {/* Login Button or User Dropdown */}
         {isAuthenticated ? (
@@ -219,13 +225,10 @@ function AppHeader({ collapsed, setCollapsed }) {
             menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
             placement="bottomRight"
             arrow
-            trigger={['click']}
+            trigger={["click"]}
           >
             <div className="flex items-center space-x-2 cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-lg transition-all duration-200">
-              <Avatar 
-                icon={<UserOutlined />} 
-                className="bg-blue-500"
-              />
+              <Avatar icon={<UserOutlined />} className="bg-blue-500" />
               <span className="text-gray-700 font-medium">
                 {currentUser?.username || userRole}
               </span>
@@ -237,7 +240,7 @@ function AppHeader({ collapsed, setCollapsed }) {
             icon={<LoginOutlined />}
             onClick={() => navigate("/login")}
             className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-0 h-10 px-6 rounded-full font-medium shadow-md hover:shadow-lg transition-all duration-200"
-            style={{marginRight:'115px'}}
+            style={{ marginRight: "115px" }}
           >
             Đăng nhập
           </Button>

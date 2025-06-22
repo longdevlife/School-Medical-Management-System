@@ -36,7 +36,7 @@ const HomePage = () => {
   React.useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      setIsHeaderSticky(scrollY > 50); // Make sticky after scrolling 50px for better UX
+      setIsHeaderSticky(scrollY > 50); 
     };
 
     window.addEventListener("scroll", handleScroll);

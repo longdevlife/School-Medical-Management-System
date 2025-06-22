@@ -51,6 +51,69 @@ const HomePage = () => {
       animation: spin-slow 8s linear infinite;
     }
     
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes fadeInRight {
+      from {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+      50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.5); }
+    }
+    
+    .animate-fadeInUp {
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+    
+    .animate-fadeInLeft {
+      animation: fadeInLeft 0.8s ease-out forwards;
+    }
+    
+    .animate-fadeInRight {
+      animation: fadeInRight 0.8s ease-out forwards;
+    }
+    
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    .animate-glow {
+      animation: glow 2s ease-in-out infinite;
+    }
+    
     /* Remove any default spacing from header */
     .ant-layout-header {
       margin: 0 !important;
@@ -126,7 +189,7 @@ const HomePage = () => {
         >
           {" "}
           {/* Section 1 */}
-          <div className="relative h-screen bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 flex flex-col overflow-hidden">
+          <div className="relative h-screen bg-gradient-to-br from-blue-50 via-blue-100/50 to-blue-200/30 flex flex-col overflow-hidden">
             {" "}
             {/* Integrated Header */}
             <div
@@ -137,14 +200,26 @@ const HomePage = () => {
               <div className="w-full">
                 <AppHeader collapsed={collapsed} setCollapsed={setCollapsed} />
               </div>
-            </div>
+            </div>{" "}
             <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full opacity-40 animate-pulse"></div>
-              <div className="absolute bottom-32 left-16 w-24 h-24 bg-gradient-to-br from-blue-200 to-blue-300 rounded-full opacity-30 animate-pulse delay-300"></div>
-              <div className="absolute top-1/2 right-1/3 w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full opacity-50 animate-pulse delay-500"></div>
+              <div
+                className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full opacity-40 animate-pulse"
+                style={{ animationDelay: "2s" }}
+              ></div>
+              <div
+                className="absolute bottom-32 left-16 w-24 h-24 bg-gradient-to-br from-blue-200 to-blue-300 rounded-full opacity-30 animate-pulse"
+                style={{ animationDelay: "2.5s" }}
+              ></div>
+              <div
+                className="absolute top-1/2 right-1/3 w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full opacity-50 animate-pulse"
+                style={{ animationDelay: "3s" }}
+              ></div>
 
-              {/* Grid pattern overlay */}
-              <div className="absolute inset-0 opacity-5">
+              {/* Grid pattern overlay with fade-in */}
+              <div
+                className="absolute inset-0 opacity-5 animate-fadeInUp"
+                style={{ animationDelay: "0.5s" }}
+              >
                 <div
                   className="w-full h-full"
                   style={{
@@ -154,73 +229,94 @@ const HomePage = () => {
                 ></div>
               </div>
 
-              {/* Additional geometric shapes */}
-              <div className="absolute top-1/4 left-10 w-2 h-20 bg-gradient-to-b from-blue-300 to-transparent rounded-full opacity-30"></div>
-              <div className="absolute bottom-1/4 right-10 w-2 h-16 bg-gradient-to-t from-blue-400 to-transparent rounded-full opacity-25"></div>
+              {/* Additional geometric shapes with improved spacing */}
+              <div
+                className="absolute top-1/4 left-10 w-2 h-20 bg-gradient-to-b from-blue-300 to-transparent rounded-full opacity-30 animate-fadeInLeft"
+                style={{ animationDelay: "1.5s" }}
+              ></div>
+              <div
+                className="absolute bottom-1/4 right-10 w-2 h-16 bg-gradient-to-t from-blue-400 to-transparent rounded-full opacity-25 animate-fadeInRight"
+                style={{ animationDelay: "1.8s" }}
+              ></div>
 
-              {/* Floating geometric elements */}
+              {/* Floating geometric elements with enhanced animations */}
               <div className="absolute top-32 left-1/4 w-6 h-6 border-2 border-blue-300 rounded rotate-45 opacity-20 animate-spin-slow"></div>
-              <div className="absolute bottom-40 right-1/4 w-4 h-4 bg-blue-200 rotate-12 opacity-30"></div>
+              <div
+                className="absolute bottom-40 right-1/4 w-4 h-4 bg-blue-200 rotate-12 opacity-30 animate-float"
+                style={{ animationDelay: "2.2s" }}
+              ></div>
             </div>{" "}
-            {/* Hero Content - Reduce top spacing */}
-            <div className="flex-1 w-full relative z-10 flex items-center -mt-4">
-              <Row gutter={0} align="middle" className="w-full h-full">
+            <div className="flex-1 w-full relative z-10 flex items-center">
+              <Row gutter={[48, 32]} align="middle" className="w-full h-full">
                 {/* Left Content */}
                 <Col xs={24} lg={12} className="h-full">
-                  <div className="h-full flex items-center justify-center px-12">
-                    <div className="space-y-8 max-w-xl">
-                      <div className="mb-4">
-                        <span className="text-blue-500 text-lg font-semibold bg-blue-50 px-4 py-2 rounded-full">
+                  <div className="h-full flex items-center justify-center px-8 lg:px-16">
+                    <div className="space-y-8 max-w-xl animate-fadeInLeft">
+                      <div className="mb-6">
+                        <span className="text-blue-500 text-lg font-semibold bg-blue-200/80 px-6 py-3 rounded-full backdrop-blur-sm shadow-lg animate-fadeInUp border border-blue-300/30">
                           Y tế học đường chuyên nghiệp
                         </span>
                       </div>
-                      <h1 className="text-6xl lg:text-5xl font-bold text-gray-900 leading-tight">
+                      <h1
+                        className="text-5xl xl:text-6xl font-bold text-gray-900 leading-tight animate-fadeInUp"
+                        style={{ animationDelay: "0.2s" }}
+                      >
                         Chăm sóc y tế học đường{" "}
                         <span className="text-blue-600 relative">
                           chuẩn bị cho tương lai
                         </span>{" "}
                         của con bạn.
                       </h1>
-                      <p className="text-xl text-gray-600 leading-relaxed">
+                      <p
+                        className="text-xl text-gray-600 leading-relaxed animate-fadeInUp"
+                        style={{ animationDelay: "0.4s" }}
+                      >
                         Bắt đầu, theo dõi, hoặc nâng cao sức khỏe con bạn với
                         hơn 50 dịch vụ y tế chuyên nghiệp, chứng chỉ sức khỏe,
                         và chương trình từ các bệnh viện và phòng khám hàng đầu.
                       </p>
-                      <Button
-                        type="primary"
-                        size="large"
-                        className="h-14 px-8 text-lg font-medium rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-lg transform hover:scale-105 transition-all duration-300"
+                      <div
+                        className="pt-4 animate-fadeInUp"
+                        style={{ animationDelay: "0.6s" }}
                       >
-                        Khám phá dịch vụ
-                      </Button>
+                        <Button
+                          type="primary"
+                          size="large"
+                          className="h-16 px-10 text-lg font-medium rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-0 shadow-xl transform hover:scale-105 transition-all duration-300 animate-glow"
+                        >
+                          Khám phá dịch vụ
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Col>{" "}
                 {/* Right Content with Doctor */}
                 <Col xs={24} lg={12} className="h-full">
-                  <div className="relative h-full flex items-center justify-center px-12">
-                    {/* Enhanced Background circles */}
+                  <div className="relative h-full flex items-center justify-center px-8 lg:px-16">
+                    {/* Enhanced Background circles with better spacing */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-80 h-80 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full opacity-15 animate-pulse"></div>
                       <div className="absolute w-96 h-96 bg-blue-500 rounded-full opacity-10"></div>
                     </div>
-                    {/* Doctor Image */}
-                    <div className="relative z-10 transform hover:scale-105 transition-transform duration-500">
+                    {/* Doctor Image with improved animation */}
+                    <div className="relative z-10 transform hover:scale-105 transition-transform duration-700 animate-fadeInRight animate-float">
                       <img
                         src="/anhBacsi.png"
                         alt="Bác sĩ chuyên nghiệp"
-                        className="w-full max-w-md mx-auto object-contain drop-shadow-lg"
+                        className="w-full max-w-max mx-auto object-contain drop-shadow-2xl"
                       />
                     </div>
-                    {/* Enhanced Floating Cards */}
-                    {/* Students Count Card */}
-                    <div className="absolute top-16 left-6 bg-white rounded-2xl shadow-2xl p-5 z-20 transform hover:scale-105 transition-all duration-300 border border-blue-50">
+                    {/* Students Count Card with improved spacing and animation */}
+                    <div
+                      className="absolute top-12 left-4 lg:top-20 lg:left-8 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-6 z-20 transform hover:scale-105 transition-all duration-500 border border-blue-100/50 animate-fadeInUp"
+                      style={{ animationDelay: "0.8s" }}
+                    >
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                          <UserOutlined className="text-white text-xl" />
+                        <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                          <UserOutlined className="text-white text-2xl" />
                         </div>
                         <div>
-                          <div className="text-2xl font-bold text-gray-900 mb-1">
+                          <div className="text-3xl font-bold text-gray-900 mb-1">
                             5000+
                           </div>
                           <div className="text-gray-600 text-sm font-medium">
@@ -229,12 +325,15 @@ const HomePage = () => {
                         </div>
                       </div>
                     </div>
-                    {/* Quality Assurance Card */}
-                    <div className="absolute bottom-16 right-6 bg-white rounded-2xl shadow-2xl p-5 z-20 transform hover:scale-105 transition-all duration-300 border border-blue-50">
-                      <div className="space-y-3">
+                    {/* Quality Assurance Card with improved spacing and animation */}
+                    <div
+                      className="absolute bottom-12 right-4 lg:bottom-20 lg:right-8 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-6 z-20 transform hover:scale-105 transition-all duration-500 border border-blue-100/50 animate-fadeInUp"
+                      style={{ animationDelay: "1s" }}
+                    >
+                      <div className="space-y-4">
                         <div className="flex items-center space-x-3">
-                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs font-bold">
+                          <div className="w-7 h-7 bg-green-500 rounded-full flex items-center justify-center shadow-md">
+                            <span className="text-white text-sm font-bold">
                               ✓
                             </span>
                           </div>
@@ -243,8 +342,8 @@ const HomePage = () => {
                           </span>
                         </div>
                         <div className="flex items-center space-x-3">
-                          <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs font-bold">
+                          <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center shadow-md">
+                            <span className="text-white text-sm font-bold">
                               ✓
                             </span>
                           </div>
@@ -254,20 +353,29 @@ const HomePage = () => {
                         </div>
                       </div>
                     </div>
-                    {/* Enhanced Decorative Elements */}
-                    <div className="absolute bottom-12 left-12 grid grid-cols-4 gap-2 opacity-60">
+                    {/* Enhanced Decorative Elements with better spacing */}
+                    <div className="absolute bottom-16 left-8 lg:bottom-24 lg:left-16 grid grid-cols-4 gap-3 opacity-60">
                       {[...Array(12)].map((_, i) => (
                         <div
                           key={i}
-                          className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"
-                          style={{ animationDelay: `${i * 100}ms` }}
+                          className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"
+                          style={{ animationDelay: `${i * 150}ms` }}
                         ></div>
                       ))}
                     </div>
-                    {/* Enhanced Floating elements */}
-                    <div className="absolute top-24 right-16 w-4 h-4 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full animate-bounce"></div>
-                    <div className="absolute bottom-24 left-16 w-3 h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full animate-bounce delay-300"></div>
-                    <div className="absolute top-1/2 right-4 w-2 h-2 bg-blue-300 rounded-full animate-ping delay-500"></div>
+                    {/* Enhanced Floating elements with improved animation timing */}
+                    <div
+                      className="absolute top-20 right-12 lg:top-32 lg:right-20 w-5 h-5 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full animate-bounce"
+                      style={{ animationDelay: "1.2s" }}
+                    ></div>
+                    <div
+                      className="absolute bottom-20 left-12 lg:bottom-32 lg:left-20 w-4 h-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full animate-bounce"
+                      style={{ animationDelay: "1.5s" }}
+                    ></div>
+                    <div
+                      className="absolute top-1/2 right-6 w-3 h-3 bg-blue-300 rounded-full animate-ping"
+                      style={{ animationDelay: "1.8s" }}
+                    ></div>
                   </div>
                 </Col>
               </Row>

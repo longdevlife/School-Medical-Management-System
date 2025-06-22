@@ -7,28 +7,132 @@ import {
   FileTextOutlined,
   InfoCircleOutlined,
   LoginOutlined,
+  LogoutOutlined,
+  SettingOutlined,
+  DashboardOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import authService from "../../services/authService";
 
 const { Header } = Layout;
 
-function AppHeader() {
+function AppHeader({ collapsed, setCollapsed }) {
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
-
+  
+  // Get current user info
+  const isAuthenticated = authService.isAuthenticated();
+  const currentUser = authService.getCurrentUser();
+  const userRole = currentUser ? currentUser.role : null;
 
   const handleSearch = (value) => {
     console.log("Searching for:", value);
-   
+    // TODO: Implement search functionality
   };
 
+  // User dropdown menu items
+  const userMenuItems = [
+    {
+      key: "dashboard",
+      icon: <DashboardOutlined />,
+      label: "Dashboard",
+    },
+    {
+      key: "settings",
+      icon: <SettingOutlined />,
+      label: "Cài đặt",
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "logout",
+      icon: <LogoutOutlined />,
+      label: "Đăng xuất",
+    },
+  ];
+
+  const handleUserMenuClick = ({ key }) => {
+    if (key === "logout") {
+      authService.logout();
+      navigate("/login");
+    } else if (key === "dashboard") {
+      // Navigate to appropriate dashboard based on role
+      switch (userRole) {
+        case "ADMIN":
+          navigate("/admin");
+          break;
+        case "MANAGER":
+          navigate("/manager");
+          break;
+        case "NURSE":
+          navigate("/nurses");
+          break;
+        case "PARENT":
+          navigate("/parent");
+          break;
+        default:
+          navigate("/login");
+      }
+    } else if (key === "settings") {
+      // Navigate to settings based on role
+      switch (userRole) {
+        case "ADMIN":
+          navigate("/admin/settings");
+          break;
+        case "MANAGER":
+          navigate("/manager/settings");
+          break;
+        case "NURSE":
+          navigate("/nurses/settings");
+          break;
+        case "PARENT":
+          navigate("/parent/setting");
+          break;
+        default:
+          navigate("/login");
+      }
+    }
+  };
   return (
     <Header className="bg-white shadow-md border-b border-gray-200 px-6 h-16 flex items-center justify-between sticky top-0 z-50">
-      {/* Left Section - Logo */}
+      {/* Left Section - Collapse toggle (only for authenticated users) + Logo */}
       <div className="flex items-center">
+        {isAuthenticated && setCollapsed && (
+          <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed(!collapsed)}
+            className="mr-4 text-gray-600 hover:text-blue-600"
+          />
+        )}
         <div className="flex items-center cursor-pointer" 
-        onClick={() => navigate("/home")}
-        style={{marginLeft:'160px'}}>
+        onClick={() => {
+          if (isAuthenticated) {
+            // Navigate to appropriate dashboard based on role
+            switch (userRole) {
+              case "ADMIN":
+                navigate("/admin");
+                break;
+              case "MANAGER":
+                navigate("/manager");
+                break;
+              case "NURSE":
+                navigate("/nurses");
+                break;
+              case "PARENT":
+                navigate("/parent");
+                break;
+              default:
+                navigate("/home");
+            }
+          } else {
+            navigate("/home");
+          }
+        }}
+        style={{marginLeft: isAuthenticated ? '0px' : '160px'}}>
           <img 
             src="/favicon.svg" 
             alt="School Logo" 
@@ -38,83 +142,79 @@ function AppHeader() {
             Y Tế Học Đường
           </span>
         </div>
-      </div>
-
-      {/* Center Section - Search + Navigation */}
-      <div className="flex items-center space-x-8"
-      style={{marginRight:'106px'}}>
-        {/* Search Bar */}
-<div className="flex items-center">
-  <div className="relative flex items-center">
-    <Input
-      placeholder="Tìm kiếm tại đây"
-      value={searchValue}
-      onChange={(e) => setSearchValue(e.target.value)}
-      onPressEnter={() => handleSearch(searchValue)}
-      className="w-80 h-10 rounded-full border-gray-300 focus:border-blue-500 focus:outline-none"
-      style={{
-        borderRadius: '25px',
-        paddingLeft: '16px',
-        paddingRight: '50px',
-        border: '1px solid #d1d5db',
-      }}
-    />
-    <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-      <Button
-        type="primary"
-        icon={<SearchOutlined />}
-        onClick={() => handleSearch(searchValue)}
-        className="bg-blue-500 hover:bg-blue-600 border-0 rounded-full w-8 h-8 flex items-center justify-center shadow-md"
-        style={{
-          minWidth: '32px',
-          height: '32px',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginRight: '-2px',
-        }}
-      />
-    </div>
-  </div>
-</div>
-        {/* Navigation Menu */}
-        <nav className="flex items-center space-x-6">
-  <button
-    onClick={() => navigate("/home")}
-    className="flex items-center text-gray-700 hover:text-blue-600 transition-all duration-200 font-medium"
-    style={{marginLeft:'17px'}}
-  >
-    <HomeOutlined className="mr-2" />
-    Trang chủ
-  </button>
-  
-  <button
-    onClick={() => navigate("/tin-tuc")}
-    className="flex items-center text-gray-700 hover:text-blue-600 transition-all duration-200 font-medium"
-    style={{margin:'33px'}}
-  >
-    <FileTextOutlined className="mr-2" />
-    Tin tức
-  </button>
-  
-  <button
-    onClick={() => navigate("/gioi-thieu")}
-    className="flex items-center text-gray-700 hover:text-blue-600 transition-all duration-200 font-medium"
-    style={{margin:'0px'}}
-  >
-    <InfoCircleOutlined className="mr-2" />
-    Giới thiệu
-  </button>
-</nav>
-      </div>
-
-      {/* Right Section - Login/User */}
+      </div>      {/* Center Section - Search + Navigation (only show for unauthenticated users) */}
+      {!isAuthenticated && (
+        <div className="flex items-center space-x-8"
+        style={{marginRight:'106px'}}>
+          {/* Search Bar */}
+          <div className="flex items-center">
+            <div className="relative flex items-center">
+              <Input
+                placeholder="Tìm kiếm tại đây"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onPressEnter={() => handleSearch(searchValue)}
+                className="w-80 h-10 rounded-full border-gray-300 focus:border-blue-500 focus:outline-none"
+                style={{
+                  borderRadius: '25px',
+                  paddingLeft: '16px',
+                  paddingRight: '50px',
+                  border: '1px solid #d1d5db',
+                }}
+              />
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                <Button
+                  type="primary"
+                  icon={<SearchOutlined />}
+                  onClick={() => handleSearch(searchValue)}
+                  className="bg-blue-500 hover:bg-blue-600 border-0 rounded-full w-8 h-8 flex items-center justify-center shadow-md"
+                  style={{
+                    minWidth: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: '-2px',
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+          {/* Navigation Menu */}
+          <nav className="flex items-center space-x-6">
+            <button
+              onClick={() => navigate("/home")}
+              className="flex items-center text-gray-700 hover:text-blue-600 transition-all duration-200 font-medium"
+              style={{marginLeft:'17px'}}
+            >
+              <HomeOutlined className="mr-2" />
+              Trang chủ
+            </button>
+            
+            <button
+              onClick={() => navigate("/tin-tuc")}
+              className="flex items-center text-gray-700 hover:text-blue-600 transition-all duration-200 font-medium"
+              style={{margin:'33px'}}
+            >
+              <FileTextOutlined className="mr-2" />
+              Tin tức
+            </button>
+            
+            <button
+              onClick={() => navigate("/gioi-thieu")}
+              className="flex items-center text-gray-700 hover:text-blue-600 transition-all duration-200 font-medium"
+              style={{margin:'0px'}}
+            >
+              <InfoCircleOutlined className="mr-2" />
+              Giới thiệu
+            </button>
+          </nav>
+        </div>
+      )}{/* Right Section - Login/User */}
       <div className="flex items-center space-x-4">
-       
-
         {/* Login Button or User Dropdown */}
-        {false ? ( // Change this condition based on authentication state
+        {isAuthenticated ? (
           <Dropdown
             menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
             placement="bottomRight"
@@ -126,7 +226,9 @@ function AppHeader() {
                 icon={<UserOutlined />} 
                 className="bg-blue-500"
               />
-              <span className="text-gray-700 font-medium">Admin</span>
+              <span className="text-gray-700 font-medium">
+                {currentUser?.username || userRole}
+              </span>
             </div>
           </Dropdown>
         ) : (

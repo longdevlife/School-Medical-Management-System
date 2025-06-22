@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Layout } from "antd";
 import { Outlet } from "react-router-dom";
 import SidebarAdmin from "./SidebarAdmin";
-import HeaderAdmin from "./HeaderAdmin";
+import AppHeader from "../Header";
 import Footer from "./Footer";
 import styles from "./AdminLayout.module.css";
 
@@ -25,7 +25,7 @@ function AdminLayout() {
           transition: "margin-left 0.3s ease",
         }}
       >
-        <HeaderAdmin collapsed={collapsed} setCollapsed={setCollapsed} />
+        <AppHeader collapsed={collapsed} setCollapsed={setCollapsed} />
 
         <Content className={styles.content}>
           <div className={styles.contentWrapper}>

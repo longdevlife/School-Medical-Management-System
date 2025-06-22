@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Layout } from "antd";
 import { Outlet } from "react-router-dom";
-import HeaderParent from "./HeaderParent";
+import AppHeader from "../Header";
 import SidebarParent from "./SidebarParent";
 import styles from "./ParentLayout.module.css";
 
@@ -18,7 +18,7 @@ function ParentLayout() {
           collapsed ? styles.siteLayoutCollapsed : styles.siteLayoutExpanded
         }`}
       >
-        <HeaderParent collapsed={collapsed} setCollapsed={setCollapsed} />
+        <AppHeader collapsed={collapsed} setCollapsed={setCollapsed} />
         <Content className={styles.content}>
           <div className={styles.contentWrapper}>
             <Outlet />

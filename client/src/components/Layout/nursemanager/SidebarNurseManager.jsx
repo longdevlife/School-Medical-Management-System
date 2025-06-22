@@ -21,7 +21,7 @@ import "./SidebarStyles.css"; // Import đường dẫn CSS tùy chỉnh
 
 const { Sider } = Layout;
 
-function SidebarNurseManager({ collapsed, setCollapsed }) {
+function SidebarNurseManager({ collapsed,  }) {
   const navigate = useNavigate();
   const location = useLocation();
 

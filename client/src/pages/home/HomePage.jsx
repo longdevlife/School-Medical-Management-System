@@ -22,14 +22,13 @@ import {
   TwitterOutlined,
   InstagramOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+
 import AppHeader from "../../components/Layout/Header";
 
 const { Content, Footer } = Layout;
 const { Title, Paragraph } = Typography;
 
 const HomePage = () => {
-  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [isHeaderSticky, setIsHeaderSticky] = useState(false);
 

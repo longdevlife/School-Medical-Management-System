@@ -11,9 +11,9 @@ import {
 } from "antd";
 import {
   UserOutlined,
-  HeartOutlined,
+  CalendarOutlined,
   MedicineBoxOutlined,
-  SafetyOutlined,
+  HeartOutlined,
   PhoneOutlined,
   MailOutlined,
   EnvironmentOutlined,
@@ -161,20 +161,20 @@ const HomePage = () => {
 
   const services = [
     {
-      title: "Khám sức khỏe định kỳ",
+      title: "Chuyên gia kinh nghiệm",
       description:
-        "Theo dõi và đánh giá tình trạng sức khỏe học sinh thường xuyên",
+        "Chuyên gia với dày dặn kinh nghiệm trong lĩnh vực y tế học đường",
+      icon: <UserOutlined className="text-4xl text-blue-500" />,
+    },
+    {
+      title: "Lên lịch tư vấn sức khỏe",
+      description: "Dễ dàng lên lịch tư vấn sức khỏe cho trẻ",
+      icon: <CalendarOutlined className="text-4xl text-green-500" />,
+    },
+    {
+      title: "Chăm sóc sức khỏe toàn diện",
+      description: "Cung cấp dịch vụ chăm sóc sức khỏe toàn diện cho học sinh",
       icon: <HeartOutlined className="text-4xl text-blue-500" />,
-    },
-    {
-      title: "Chăm sóc y tế",
-      description: "Hỗ trợ y tế khẩn cấp và chăm sóc sức khỏe hàng ngày",
-      icon: <MedicineBoxOutlined className="text-4xl text-green-500" />,
-    },
-    {
-      title: "An toàn học đường",
-      description: "Đảm bảo môi trường học tập an toàn và lành mạnh",
-      icon: <SafetyOutlined className="text-4xl text-orange-500" />,
     },
   ];
   return (
@@ -182,9 +182,8 @@ const HomePage = () => {
       <style>{customStyles}</style>
       <Layout className="min-h-screen">
         <Content
-          className={`p-0 ${
-            isHeaderSticky ? "pt-16" : ""
-          } transition-all duration-300`}
+          className={`p-0 ${isHeaderSticky ? "pt-16" : ""
+            } transition-all duration-300`}
         >
           {" "}
           {/* Section 1 */}
@@ -192,9 +191,8 @@ const HomePage = () => {
             {" "}
             {/* Integrated Header */}
             <div
-              className={`relative z-30 w-full flex-shrink-0 transition-all duration-300 ${
-                isHeaderSticky ? "sticky-header" : ""
-              }`}
+              className={`relative z-30 w-full flex-shrink-0 transition-all duration-300 ${isHeaderSticky ? "sticky-header" : ""
+                }`}
             >
               <div className="w-full">
                 <AppHeader collapsed={collapsed} setCollapsed={setCollapsed} />
@@ -460,34 +458,153 @@ const HomePage = () => {
             </div>
           </div>
           {/* Services Section */}
-          <div className="py-20 bg-white">
-            <div className="max-w-6xl mx-auto px-6">
+          <div className="py-20 relative overflow-hidden" style={{ backgroundColor: "#EEF5FF" }}>
+            {/* Decorative elements from banner */}
+            <div className="absolute inset-0 overflow-hidden">
+              {/* Top right decorative circle */}
+              <div
+                className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full opacity-40 animate-pulse"
+                style={{ animationDelay: "2s" }}
+              ></div>
+
+              {/* Bottom left decorative circle */}
+              <div
+                className="absolute bottom-32 left-16 w-24 h-24 bg-gradient-to-br from-blue-200 to-blue-300 rounded-full opacity-30 animate-pulse"
+                style={{ animationDelay: "2.5s" }}
+              ></div>
+
+              {/* Middle right decorative circle */}
+              <div
+                className="absolute top-1/2 right-1/3 w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full opacity-50 animate-pulse"
+                style={{ animationDelay: "3s" }}
+              ></div>
+
+
+              {/* Floating geometric elements */}
+              <div className="absolute top-32 left-1/4 w-6 h-6 border-2 border-blue-300 rounded rotate-45 opacity-20 animate-spin-slow"></div>
+              <div
+                className="absolute bottom-40 right-1/4 w-4 h-4 bg-blue-200 rotate-12 opacity-30 animate-float"
+                style={{ animationDelay: "2.2s" }}
+              ></div>
+
+              {/* Additional decorative dots */}
+              <div
+                className="absolute top-40 left-20 w-3 h-3 bg-blue-300 rounded-full animate-ping"
+                style={{ animationDelay: "2.8s" }}
+              ></div>
+              <div
+                className="absolute bottom-60 right-32 w-3 h-3 bg-blue-400 rounded-full animate-ping"
+                style={{ animationDelay: "3.2s" }}
+              ></div>
+            </div>
+
+            <div className="max-w-6xl mx-auto px-6 relative z-10">
               <div className="text-center mb-16">
-                <h2 className="text-4xl font-bold text-blue-600 mb-4">
-                  Dịch Vụ Y Tế Học Đường
+                <h2 className="text-3xl font-bold text-blue-600 mb-4">
+                  Y tế chuyên sâu
                 </h2>
-                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                  Chúng tôi cung cấp các dịch vụ y tế chuyên nghiệp và toàn diện
-                  cho học sinh
+                <p className="text-4xl font-bold text-black max-w-2xl mx-auto">
+                  Tư vấn lịch khám phù hợp với trẻ
                 </p>
               </div>
-              <Row gutter={[24, 24]}>
-                {services.map((service, index) => (
-                  <Col xs={24} md={8} key={index}>
-                    <Card className="text-center h-full border-0 shadow-lg rounded-xl hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
-                      <div className="mb-6">{service.icon}</div>
-                      <h3 className="text-xl font-semibold mb-4 text-gray-800">
-                        {service.title}
-                      </h3>
-                      <p className="text-gray-600 leading-relaxed">
-                        {service.description}
-                      </p>
-                    </Card>
-                  </Col>
-                ))}
+              <Row gutter={[48, 48]} align="middle">
+                {/* Left Side - Doctor Image */}
+                <Col xs={24} lg={12}>
+                  <div className="relative flex items-center justify-center">
+                    {/* Background decorative circles */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-80 h-80 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full opacity-20 animate-pulse" style={{ animationDelay: "2s" }}></div>
+                      <div className="absolute w-64 h-64 bg-gradient-to-br from-blue-200 to-blue-300 rounded-full opacity-15 animate-pulse" style={{ animationDelay: "2.5s" }}></div>
+                    </div>
+
+                    {/* Doctor Image */}
+                    <div className="relative z-10 transform hover:scale-105 transition-transform duration-500">
+                      <img
+                        src="/doctor1.png"
+                        alt="Bác sĩ chuyên nghiệp"
+                        className="w-full max-w-sm mx-auto object-contain drop-shadow-2xl"
+                      />
+                    </div>
+
+                    {/* Floating service tags */}
+                    <div className="absolute top-12 left-8 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 z-20 animate-float">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm">👁</span>
+                        </div>
+                        <span className="text-gray-700 font-medium">Chăm sóc</span>
+                      </div>
+                    </div>
+
+                    <div className="absolute top-32 right-8 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 z-20 animate-float" style={{ animationDelay: '0.5s' }}>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center border-2 border-gray-200 shadow-sm">
+                          <span className="text-red-500 text-sm">❤</span>
+                        </div>
+                        <span className="text-gray-700 font-medium">Tim mạch</span>
+                      </div>
+                    </div>
+
+                    <div className="absolute bottom-15 right-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 z-20 animate-float" style={{ animationDelay: '0.75s' }}>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm">📅</span>
+                        </div>
+                        <span className="text-gray-700 font-medium">Lịch khám</span>
+                      </div>
+                    </div>
+
+                    <div className="absolute bottom-20 left-12 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 z-20 animate-float" style={{ animationDelay: '1s' }}>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm">🦷</span>
+                        </div>
+                        <span className="text-gray-700 font-medium">Nha khoa</span>
+                      </div>
+                    </div>
+
+                    <div className="absolute bottom-32 right-12 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 z-20 animate-float" style={{ animationDelay: '1.5s' }}>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm">🏥</span>
+                        </div>
+                        <span className="text-gray-700 font-medium">Y tế</span>
+                      </div>
+                    </div>
+                  </div>
+                </Col>
+
+                {/* Right Side - 3 Services vertically */}
+                <Col xs={24} lg={12}>
+                  <div className="space-y-6">
+                    {services.map((service, index) => (
+                      <Card
+                        key={index}
+                        className="border-0 shadow-lg rounded-xl hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                      >
+                        <div className="flex items-start space-x-6 p-6">
+                          <div className="flex-shrink-0">
+                            <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center">
+                              {service.icon}
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-xl font-semibold mb-3 text-blue-600">
+                              {service.title}
+                            </h3>
+                            <p className="text-gray-600 leading-relaxed">
+                              {service.description}
+                            </p>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </Col>
               </Row>
             </div>
           </div>
+
           {/* Health Package Section */}
           <div className="py-20 bg-gray-50">
             <div className="max-w-6xl mx-auto px-6">

@@ -7,7 +7,6 @@ import {
     MedicineBoxOutlined,
     BarChartOutlined,
     SendOutlined,
-    FileProtectOutlined,
     SettingOutlined,
     HeartOutlined
 } from '@ant-design/icons';
@@ -77,24 +76,14 @@ function SidebarParent({ collapsed, setCollapsed }) {
         navigate(key);
     };
 
-    const handleMouseEnter = () => {
-        if (collapsed) {
-            setCollapsed(false);
-        }
-    };
-
-    const handleMouseLeave = () => {
-        setCollapsed(true);
-    };
-
+   
     return (
         <Sider
             trigger={null}
             collapsible={true}
             collapsed={collapsed}
             collapsedWidth={80}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+           
             width={200}
             className="fixed h-screen left-0 top-0 bottom-0 z-10 transition-all duration-200"
             theme="dark"

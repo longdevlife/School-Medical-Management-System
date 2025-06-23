@@ -163,7 +163,7 @@ const HomePage = () => {
     {
       title: "Chuyên gia kinh nghiệm",
       description:
-        "Chuyên gia với dày dặn kinh nghiệm trong lĩnh vực y tế học đường",
+        "Chuyên gia với dày dạn kinh nghiệm trong lĩnh vực y tế học đường",
       icon: <UserOutlined className="text-4xl text-blue-500" />,
     },
     {
@@ -182,8 +182,9 @@ const HomePage = () => {
       <style>{customStyles}</style>
       <Layout className="min-h-screen">
         <Content
-          className={`p-0 ${isHeaderSticky ? "pt-16" : ""
-            } transition-all duration-300`}
+          className={`p-0 ${
+            isHeaderSticky ? "pt-16" : ""
+          } transition-all duration-300`}
         >
           {" "}
           {/* Section 1 */}
@@ -191,8 +192,9 @@ const HomePage = () => {
             {" "}
             {/* Integrated Header */}
             <div
-              className={`relative z-30 w-full flex-shrink-0 transition-all duration-300 ${isHeaderSticky ? "sticky-header" : ""
-                }`}
+              className={`relative z-30 w-full flex-shrink-0 transition-all duration-300 ${
+                isHeaderSticky ? "sticky-header" : ""
+              }`}
             >
               <div className="w-full">
                 <AppHeader collapsed={collapsed} setCollapsed={setCollapsed} />
@@ -378,87 +380,146 @@ const HomePage = () => {
               </Row>
             </div>
           </div>
-          {/* Statistics Section */}
-          <div className="py-20 bg-blue-50">
+          {/* Section 2 */}
+          <div className="py-20 bg-gray-50">
             <div className="max-w-6xl mx-auto px-6">
+              {/* Section Title */}
+              <div className="text-center mb-16">
+                <h2 className="text-3xl font-bold text-blue-600 mb-4">
+                  Thành tựu của chúng tôi
+                </h2>
+                <p className="text-2xl font-bold text-black max-w-2xl mx-auto">
+                  Những con số ấn tượng thể hiện cam kết và chất lượng dịch vụ
+                  chăm sóc sức khỏe học đường
+                </p>
+              </div>
+
               <Row gutter={[32, 32]} justify="center">
                 <Col xs={12} sm={6}>
-                  <Card className="text-center border-0 shadow-lg rounded-xl hover:shadow-xl transition-shadow">
-                    <Statistic
-                      title={
-                        <span className="text-gray-600 font-medium">
-                          Học sinh được chăm sóc
-                        </span>
-                      }
-                      value={5000}
-                      suffix="+"
-                      valueStyle={{
-                        color: "#1890ff",
-                        fontSize: "2rem",
-                        fontWeight: "bold",
-                      }}
-                    />
+                  <Card className="text-center border-0 shadow-lg rounded-xl hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-blue-50 to-blue-100 h-full flex flex-col">
+                    <div className="mb-4">
+                      <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-white text-2xl">👥</span>
+                      </div>
+                    </div>
+                    <div className="flex-1 flex flex-col justify-between">
+                      <Statistic
+                        title={
+                          <span className="text-blue-800 font-semibold text-lg">
+                            Học sinh được chăm sóc
+                          </span>
+                        }
+                        value={5000}
+                        suffix="+"
+                        valueStyle={{
+                          color: "#1e40af",
+                          fontSize: "2.5rem",
+                          fontWeight: "bold",
+                        }}
+                      />
+                      <p className="text-blue-600 text-sm mt-3 leading-relaxed">
+                        Học sinh trên toàn quốc đã được chăm sóc sức khỏe chuyên
+                        nghiệp
+                      </p>
+                    </div>
                   </Card>
                 </Col>
+
                 <Col xs={12} sm={6}>
-                  <Card className="text-center border-0 shadow-lg rounded-xl hover:shadow-xl transition-shadow">
-                    <Statistic
-                      title={
-                        <span className="text-gray-600 font-medium">
-                          Y tá chuyên nghiệp
-                        </span>
-                      }
-                      value={50}
-                      suffix="+"
-                      valueStyle={{
-                        color: "#52c41a",
-                        fontSize: "2rem",
-                        fontWeight: "bold",
-                      }}
-                    />
+                  <Card className="text-center border-0 shadow-lg rounded-xl hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-blue-50 to-blue-100 h-full flex flex-col">
+                    <div className="mb-4">
+                      <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-white text-2xl">👩‍⚕️</span>
+                      </div>
+                    </div>
+                    <div className="flex-1 flex flex-col justify-between">
+                      <Statistic
+                        title={
+                          <span className="text-blue-800 font-semibold text-lg">
+                            Y tá chuyên nghiệp
+                          </span>
+                        }
+                        value={50}
+                        suffix="+"
+                        valueStyle={{
+                          color: "#1e40af",
+                          fontSize: "2.5rem",
+                          fontWeight: "bold",
+                        }}
+                      />
+                      <p className="text-blue-600 text-sm mt-3 leading-relaxed">
+                        Đội ngũ y tá được đào tạo bài bản, có chứng chỉ hành
+                        nghề
+                      </p>
+                    </div>
                   </Card>
                 </Col>
+
                 <Col xs={12} sm={6}>
-                  <Card className="text-center border-0 shadow-lg rounded-xl hover:shadow-xl transition-shadow">
-                    <Statistic
-                      title={
-                        <span className="text-gray-600 font-medium">
-                          Trường học hợp tác
-                        </span>
-                      }
-                      value={100}
-                      suffix="+"
-                      valueStyle={{
-                        color: "#fa541c",
-                        fontSize: "2rem",
-                        fontWeight: "bold",
-                      }}
-                    />
+                  <Card className="text-center border-0 shadow-lg rounded-xl hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-blue-50 to-blue-100 h-full flex flex-col">
+                    <div className="mb-4">
+                      <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-white text-2xl">🏫</span>
+                      </div>
+                    </div>
+                    <div className="flex-1 flex flex-col justify-between">
+                      <Statistic
+                        title={
+                          <span className="text-blue-800 font-semibold text-lg">
+                            Trường học hợp tác
+                          </span>
+                        }
+                        value={100}
+                        suffix="+"
+                        valueStyle={{
+                          color: "#1e40af",
+                          fontSize: "2.5rem",
+                          fontWeight: "bold",
+                        }}
+                      />
+                      <p className="text-blue-600 text-sm mt-3 leading-relaxed">
+                        Trường học tin tưởng và sử dụng hệ thống quản lý y tế
+                      </p>
+                    </div>
                   </Card>
                 </Col>
+
                 <Col xs={12} sm={6}>
-                  <Card className="text-center border-0 shadow-lg rounded-xl hover:shadow-xl transition-shadow">
-                    <Statistic
-                      title={
-                        <span className="text-gray-600 font-medium">
-                          Năm kinh nghiệm
-                        </span>
-                      }
-                      value={15}
-                      suffix="+"
-                      valueStyle={{
-                        color: "#722ed1",
-                        fontSize: "2rem",
-                        fontWeight: "bold",
-                      }}
-                    />
+                  <Card className="text-center border-0 shadow-lg rounded-xl hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-blue-50 to-blue-100 h-full flex flex-col">
+                    <div className="mb-4">
+                      <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-white text-2xl">⭐</span>
+                      </div>
+                    </div>
+                    <div className="flex-1 flex flex-col justify-between">
+                      <Statistic
+                        title={
+                          <span className="text-blue-800 font-semibold text-lg">
+                            Năm kinh nghiệm
+                          </span>
+                        }
+                        value={15}
+                        suffix="+"
+                        valueStyle={{
+                          color: "#1e40af",
+                          fontSize: "2.5rem",
+                          fontWeight: "bold",
+                        }}
+                      />
+                      <p className="text-blue-600 text-sm mt-3 leading-relaxed">
+                        Kinh nghiệm trong lĩnh vực chăm sóc sức khỏe học đường
+                      </p>
+                    </div>
                   </Card>
                 </Col>
               </Row>
             </div>
           </div>
           {/* Services Section */}
-          <div className="py-20 relative overflow-hidden" style={{ backgroundColor: "#EEF5FF" }}>
+          <div
+            className="py-20 relative overflow-hidden"
+            style={{ backgroundColor: "#EEF5FF" }}
+          >
             {/* Decorative elements from banner */}
             <div className="absolute inset-0 overflow-hidden">
               {/* Top right decorative circle */}
@@ -478,7 +539,6 @@ const HomePage = () => {
                 className="absolute top-1/2 right-1/3 w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full opacity-50 animate-pulse"
                 style={{ animationDelay: "3s" }}
               ></div>
-
 
               {/* Floating geometric elements */}
               <div className="absolute top-32 left-1/4 w-6 h-6 border-2 border-blue-300 rounded rotate-45 opacity-20 animate-spin-slow"></div>
@@ -513,8 +573,14 @@ const HomePage = () => {
                   <div className="relative flex items-center justify-center">
                     {/* Background decorative circles */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-80 h-80 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full opacity-20 animate-pulse" style={{ animationDelay: "2s" }}></div>
-                      <div className="absolute w-64 h-64 bg-gradient-to-br from-blue-200 to-blue-300 rounded-full opacity-15 animate-pulse" style={{ animationDelay: "2.5s" }}></div>
+                      <div
+                        className="w-80 h-80 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full opacity-20 animate-pulse"
+                        style={{ animationDelay: "2s" }}
+                      ></div>
+                      <div
+                        className="absolute w-64 h-64 bg-gradient-to-br from-blue-200 to-blue-300 rounded-full opacity-15 animate-pulse"
+                        style={{ animationDelay: "2.5s" }}
+                      ></div>
                     </div>
 
                     {/* Doctor Image */}
@@ -532,38 +598,58 @@ const HomePage = () => {
                         <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                           <span className="text-white text-sm">👁</span>
                         </div>
-                        <span className="text-gray-700 font-medium">Chăm sóc</span>
+                        <span className="text-gray-700 font-medium">
+                          Chăm sóc
+                        </span>
                       </div>
                     </div>
 
-                    <div className="absolute top-32 right-8 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 z-20 animate-float" style={{ animationDelay: '0.5s' }}>
+                    <div
+                      className="absolute top-32 right-8 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 z-20 animate-float"
+                      style={{ animationDelay: "0.5s" }}
+                    >
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center border-2 border-gray-200 shadow-sm">
                           <span className="text-red-500 text-sm">❤</span>
                         </div>
-                        <span className="text-gray-700 font-medium">Tim mạch</span>
+                        <span className="text-gray-700 font-medium">
+                          Tim mạch
+                        </span>
                       </div>
                     </div>
 
-                    <div className="absolute bottom-15 right-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 z-20 animate-float" style={{ animationDelay: '0.75s' }}>
+                    <div
+                      className="absolute bottom-15 right-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 z-20 animate-float"
+                      style={{ animationDelay: "0.75s" }}
+                    >
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center">
                           <span className="text-white text-sm">📅</span>
                         </div>
-                        <span className="text-gray-700 font-medium">Lịch khám</span>
+                        <span className="text-gray-700 font-medium">
+                          Lịch khám
+                        </span>
                       </div>
                     </div>
 
-                    <div className="absolute bottom-20 left-12 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 z-20 animate-float" style={{ animationDelay: '1s' }}>
+                    <div
+                      className="absolute bottom-20 left-12 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 z-20 animate-float"
+                      style={{ animationDelay: "1s" }}
+                    >
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
                           <span className="text-white text-sm">🦷</span>
                         </div>
-                        <span className="text-gray-700 font-medium">Nha khoa</span>
+                        <span className="text-gray-700 font-medium">
+                          Nha khoa
+                        </span>
                       </div>
                     </div>
 
-                    <div className="absolute bottom-32 right-12 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 z-20 animate-float" style={{ animationDelay: '1.5s' }}>
+                    <div
+                      className="absolute bottom-32 right-12 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 z-20 animate-float"
+                      style={{ animationDelay: "1.5s" }}
+                    >
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                           <span className="text-white text-sm">🏥</span>
@@ -604,7 +690,6 @@ const HomePage = () => {
               </Row>
             </div>
           </div>
-
           {/* Health Package Section */}
           <div className="py-20 bg-gray-50">
             <div className="max-w-6xl mx-auto px-6">
@@ -631,7 +716,7 @@ const HomePage = () => {
                       <br />
                       Gói Y Tế Học Đường
                     </h2>
-                    <p className="text-lg text-gray-600 leading-relaxed">
+                    <p className="text-lg text-gray-600 leading-relaxed ">
                       Chúng tôi cung cấp các gói chăm sóc sức khỏe toàn diện cho
                       học sinh, bao gồm khám định kỳ, theo dõi phát triển và hỗ
                       trợ y tế khẩn cấp.

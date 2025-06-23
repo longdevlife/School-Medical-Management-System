@@ -15,6 +15,7 @@ namespace Sever.Service
         Task<User> CreateUserAsyc(CreateUserRequest userRequest);
         Task<bool> UpdateUserAsync(UpdateUserRequest userRequest, string userName);
         Task<bool> DeleteUserByUserNameAsync(DeleteUserRequest username);
+
     }
 
     public class UserService : IUserService

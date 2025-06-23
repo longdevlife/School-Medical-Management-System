@@ -14,31 +14,44 @@ namespace Sever.Service
 {
     public interface IMedicineService
     {
-        Task<Medicine> CreateMedicineByParentAsync(CreateMedicine dto, string userId);
-        Task<Medicine> CreateMedicineByNurseAsync(CreateMedicine dto, string userId);
-        Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string medicineId, string userId);
-        Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto, string userId);
-        Task<List<MedicineResponse>> GetMedicinesByStudent(string studentId);
+        Task<Medicine> CreateMedicineByParentAsync(CreateMedicine dto, string userName);
+        Task<Medicine> CreateMedicineByNurseAsync(CreateMedicine dto, string userName);
+        Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string medicineId, string userName);
+        Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto, string userName);
+
+
+
+        Task<List<MedicineResponse>> GetMedicinesByStudentAsync(string studentId);
+        Task<List<MedicineResponse>> GetMedicineByStudentForParentAsync(string studentId, string userName);
+
+        //Parent: create, update, getMedicineByParent, getMedicineByMedicineId, getMedicineByStudentID
+        //Nurse: create, update, getMedicineByStatus, getMedicineByStudentID, getMedicineByMedicineId
         public class MedicineService : IMedicineService
         {
             private readonly IMedicineRepository _medicineRepository;
             private readonly IFilesService _filesService;
             private readonly INotificationService _notificationService;
+            private readonly IUserService _userService;
 
             public MedicineService(
                 IMedicineRepository medicineRepository,
                 IFilesService filesService,
                 INotificationService notificationService,
-                IHttpContextAccessor httpContextAccessor)
+                IUserService userService)
             {
                 _medicineRepository = medicineRepository;
                 _filesService = filesService;
                 _notificationService = notificationService;
+                _userService = userService;
+
 
             }
 
-            public async Task<Medicine> CreateMedicineByParentAsync(CreateMedicine dto, string userId)
+            public async Task<Medicine> CreateMedicineByParentAsync(CreateMedicine dto, string userName)
             {
+                var parent = await _userService.GetUserAsyc(userName);
+                var userId = parent.UserID;
+
                 string newId = await _medicineRepository.GetCurrentMedicineID();
 
                 var medicine = new Medicine
@@ -69,8 +82,11 @@ namespace Sever.Service
                 return medicine;
             }
 
-            public async Task<Medicine> CreateMedicineByNurseAsync(CreateMedicine dto, string userId)
+            public async Task<Medicine> CreateMedicineByNurseAsync(CreateMedicine dto, string userName)
             {
+                var nurse = await _userService.GetUserAsyc(userName);
+                var userId = nurse.UserID;
+
                 string newId = await _medicineRepository.GetCurrentMedicineID();
 
                 var medicine = new Medicine
@@ -98,9 +114,16 @@ namespace Sever.Service
                 return medicine;
             }
 
-            public async Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string medicineId, string userId)
+            public async Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string medicineId, string userName)
             {
                 var medicine = await _medicineRepository.GetMedicineByIdAsync(medicineId);
+
+                var parent = await _userService.GetUserAsyc(userName);
+                var userId = parent.UserID;
+              
+                if (medicine.ParentID != userId || medicine.NurseID != null)
+                    throw new UnauthorizedAccessException("Bạn không có quyền chỉnh sửa đơn thuốc này.");
+
                 if (medicine == null)
                 {
                     throw new Exception("Không tìm thấy đơn thuốc.");
@@ -118,13 +141,11 @@ namespace Sever.Service
                 if (!string.IsNullOrWhiteSpace(updateDto.Instructions))
                     medicine.Instructions = updateDto.Instructions;
 
-                if (updateDto.SentDate != null)
-                    medicine.SentDate = updateDto.SentDate;
+                    medicine.SentDate =DateTime.UtcNow.AddHours(7);
 
                 if (!string.IsNullOrWhiteSpace(updateDto.Notes))
                     medicine.Notes = updateDto.Notes;
 
-                medicine.ParentID = userId;
 
                 if (updateDto.Image != null && updateDto.Image.Any())
                 {
@@ -152,14 +173,17 @@ namespace Sever.Service
 
                 await _medicineRepository.UpdateMedicineAsync(medicine);
 
-                await _notificationService.MedicineNotificationForAllNurses(medicine);
+                await _notificationService.MedicineNotificationForAllNurses(medicine, $"Đơn thuốc đã được cập nhật bởi phụ huynh '{medicine.ParentID}'.");
 
                 return true;
             }
 
 
-            public async Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto, string userId)
+            public async Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto, string userName)
             {
+                var nurse = await _userService.GetUserAsyc(userName);
+                var userId = nurse.UserID;
+
                 var medicine = await _medicineRepository.GetMedicineByIdAsync(medicineId);
                 if (medicine == null)
                 {
@@ -180,8 +204,7 @@ namespace Sever.Service
                 if (!string.IsNullOrWhiteSpace(updateDto.Instructions))
                     medicine.Instructions = updateDto.Instructions;
 
-                if (updateDto.SentDate != null)
-                    medicine.SentDate = updateDto.SentDate;
+                    medicine.SentDate = DateTime.UtcNow.AddHours(7);
 
                 if (!string.IsNullOrWhiteSpace(updateDto.Notes))
                     medicine.Notes = updateDto.Notes;
@@ -227,12 +250,12 @@ namespace Sever.Service
                         }
                     }
                 }
-                await _notificationService.MedicineNotificationForParent(medicine, $"Đơn thuốc đã được cập nhật với trạng thái '{medicine.Status}'.");
+                await _notificationService.MedicineNotificationForParent(medicine, $"Đơn thuốc đã được cập nhật bởi y tá với trạng thái '{medicine.Status}'.");
 
                 return true;
             }
 
-            public async Task<List<MedicineResponse>> GetMedicinesByStudent(string studentId)
+            public async Task<List<MedicineResponse>> GetMedicinesByStudentAsync(string studentId)
             {
                 var medicine = await _medicineRepository.GetMedicineByStudentIdAsync(studentId);
                 List<MedicineResponse> response = new List<MedicineResponse>();
@@ -248,9 +271,49 @@ namespace Sever.Service
                        Instructions = e.Instructions,
                        Notes = e.Notes,
                        NurseID = e.NurseID,
+                       ParentID = e.ParentID,
                        StudentID = e.StudentID,
                        Status = e.Status
                    });
+                }
+                return response;
+            }
+
+            public async Task<List<MedicineResponse>> GetMedicineByStudentForParentAsync(string studentId, string userName)
+            {
+
+                var parent = await _userService.GetUserAsyc(userName);
+                var userId = parent.UserID;
+
+                var student = await _medicineRepository.IsStudentBelongToParentAsync(studentId, userId);
+
+                if (!student)
+                {
+                    return null; 
+                }
+                var medicine = await _medicineRepository.GetMedicineByStudentIdAsync(studentId);
+                List<MedicineResponse> response = new List<MedicineResponse>();
+
+                foreach (var e in medicine)
+                {
+                    if (e.StudentID == studentId)
+                    {
+
+                        response.Add(new MedicineResponse
+                        {
+                            MedicineID = e.MedicineID,
+                            SentDate = e.SentDate,
+                            MedicineName = e.MedicineName,
+                            Quantity = e.Quantity,
+                            Dosage = e.Dosage,
+                            Instructions = e.Instructions,
+                            Notes = e.Notes,
+                            NurseID = e.NurseID,
+                            ParentID = e.ParentID,
+                            StudentID = e.StudentID,
+                            Status = e.Status
+                        });
+                    }
                 }
                 return response;
             }

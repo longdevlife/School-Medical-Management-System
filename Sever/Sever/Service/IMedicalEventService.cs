@@ -1,6 +1,5 @@
 ﻿using Sever.DTO.File;
 using Sever.DTO.MedicalEvent;
-using Sever.DTO.News;
 using Sever.Model;
 using Sever.Repository.Interfaces;
 
@@ -9,30 +8,43 @@ namespace Sever.Service
 {
     public interface IMedicalEventService
     {
-        Task<MedicalEventResponse> CreateMedicalEvent(CreateMedicalEvent dto, string userId);
-        Task<MedicalEventResponse> GetMedicalEvent(string MedicalEventID);
-        Task<bool> UpdateMedicalEvent(MedicalEventUpdateDTO dto, string medicalEventId, string userId);
+        Task<MedicalEventResponse> CreateMedicalEvent(CreateMedicalEvent dto, string userName);
+        Task<bool> UpdateMedicalEvent(MedicalEventUpdateDTO dto, string medicalEventId, string userName);
+        
+        
         Task<List<MedicalEventResponse>> GetMedicalEventsByStudentID(string studentId);
+        Task<MedicalEventResponse> GetMedicalEvent(string MedicalEventID);
+        Task<List<MedicalEventResponse>> GetMedicalEventsByStudentIDP(string studentId, string userName);
+
+
+        //nurse: create, update, getByEventId, getByStudentId
+        //parent: getByStudentId, getByEventId
 
         public class MedicalEventService : IMedicalEventService
         {
             private readonly IMedicalEventRepository _medicalEventRepository;
             private readonly INotificationService _notificationService;
             private readonly IFilesService _filesService;
+            private readonly IUserService _userService;
 
             public MedicalEventService(
                 IMedicalEventRepository medicalEventRepository,
                 INotificationService notificationService,
-                IFilesService filesService)
+                IFilesService filesService,
+                IUserService userService)
             {
                 _medicalEventRepository = medicalEventRepository;
                 _notificationService = notificationService;
                 _filesService = filesService;
+                _userService = userService;
             }
-            public async Task<MedicalEventResponse> CreateMedicalEvent(CreateMedicalEvent dto, string userId)
+            public async Task<MedicalEventResponse> CreateMedicalEvent(CreateMedicalEvent dto, string userName)
             {
                 try
                 {
+                    var nurse = await _userService.GetUserAsyc(userName);
+                    var userId = nurse.UserID;
+
                     string newId = await _medicalEventRepository.GetCurrentMedicialEventID();
                     var medicalEvent = new MedicalEvent
                     {
@@ -73,48 +85,11 @@ namespace Sever.Service
                 }
             }
 
-            public async Task<MedicalEventResponse> GetMedicalEvent(string MedicalEventID)
+            public async Task<bool> UpdateMedicalEvent(MedicalEventUpdateDTO dto, string medicalEventId, string userName)
             {
-                var medicalEvent = await _medicalEventRepository.GetMedicalEventById(MedicalEventID);
+                var nurse = await _userService.GetUserAsyc(userName);
+                var userId = nurse.UserID;
 
-                if (medicalEvent == null)
-                    return null;
-
-                return new MedicalEventResponse
-                {
-                    MedicalEventID = medicalEvent.MedicalEventID,
-                    EventDateTime = medicalEvent.EventDateTime,
-                    Description = medicalEvent.Description,
-                    ActionTaken = medicalEvent.ActionTaken,
-                    Notes = medicalEvent.Notes,
-                    EventTypeID = medicalEvent.EventType,
-                    NurseID = medicalEvent.NurseID,
-                    StudentID = medicalEvent.MedicalEventDetail.Select(d => d.StudentID).ToList(),
-                };
-            }
-            public async Task<List<MedicalEventResponse>> GetMedicalEventsByStudentID(string studentId)
-            {
-                var medicalEvents = await _medicalEventRepository.GetMedicalEventsByParentIdAsync(studentId);
-                List<MedicalEventResponse> response = new List<MedicalEventResponse>();
-                foreach (var e in medicalEvents)
-                {
-                    response.Add(new MedicalEventResponse()
-                    {
-                        MedicalEventID = e.MedicalEventID,
-                        EventDateTime = e.EventDateTime,
-                        Description = e.Description,
-                        ActionTaken = e.ActionTaken,
-                        Notes = e.Notes,
-                        EventTypeID = e.EventType,
-                        NurseID = e.NurseID,
-                        StudentID = e.MedicalEventDetail.Select(d => d.StudentID).ToList(),
-                    });
-                }
-                return response;
-            }
-
-            public async Task<bool> UpdateMedicalEvent(MedicalEventUpdateDTO dto, string medicalEventId, string userId)
-            {
                 var medicalEvents = await _medicalEventRepository.GetMedicalEventById(medicalEventId);
                 if (medicalEvents == null)
                 {
@@ -159,6 +134,62 @@ namespace Sever.Service
                 }
                     await _notificationService.MedicalEventNotification(medicalEvents, $"Sự kiện y tế đã được cập nhật.");
                 return true;
+            }
+
+            public async Task<MedicalEventResponse> GetMedicalEvent(string MedicalEventID)
+            {
+                var medicalEvent = await _medicalEventRepository.GetMedicalEventById(MedicalEventID);
+
+                if (medicalEvent == null)
+                    return null;
+
+                return new MedicalEventResponse
+                {
+                    MedicalEventID = medicalEvent.MedicalEventID,
+                    EventDateTime = medicalEvent.EventDateTime,
+                    Description = medicalEvent.Description,
+                    ActionTaken = medicalEvent.ActionTaken,
+                    Notes = medicalEvent.Notes,
+                    EventTypeID = medicalEvent.EventType,
+                    NurseID = medicalEvent.NurseID,
+                    StudentID = medicalEvent.MedicalEventDetail.Select(d => d.StudentID).ToList(),
+                };
+            }
+            public async Task<List<MedicalEventResponse>> GetMedicalEventsByStudentIDP(string studentId, string userName)
+            {
+                var parent = await _userService.GetUserAsyc(userName);
+                var userId = parent.UserID;
+              
+                var student = await _medicalEventRepository.IsStudentBelongToParentAsync(studentId, userId);
+
+                if (!student)
+                {
+                    return null;
+                }
+
+                var medicalEvents = await _medicalEventRepository.GetMedicineByStudentIdAsync(studentId);
+
+                List<MedicalEventResponse> response = new List<MedicalEventResponse>();
+                foreach (var e in medicalEvents)
+                {
+                    response.Add(new MedicalEventResponse()
+                    {
+                        MedicalEventID = e.MedicalEventID,
+                        EventDateTime = e.EventDateTime,
+                        Description = e.Description,
+                        ActionTaken = e.ActionTaken,
+                        Notes = e.Notes,
+                        EventTypeID = e.EventType,
+                        NurseID = e.NurseID,
+                        StudentID = e.MedicalEventDetail.Select(d => d.StudentID).ToList(),
+                    });
+                }
+                return response;
+            }
+
+            public Task<List<MedicalEventResponse>> GetMedicalEventsByStudentID(string studentId)
+            {
+                throw new NotImplementedException();
             }
         }
     }

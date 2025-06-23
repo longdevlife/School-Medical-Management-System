@@ -23,7 +23,6 @@ namespace Sever.Model
         [ForeignKey("NurseID")]
         public User Nurse { get; set; }
         public string Status { get; set; }
-        //public List<Files> Files { get; set; }
         public string StudentID { get; set; }
         [ForeignKey("StudentID")]
         public StudentProfile StudentProfile { get; set; }

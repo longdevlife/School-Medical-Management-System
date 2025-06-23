@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Layout } from "antd";
 import { Outlet } from "react-router-dom";
-import HeaderNurseManager from "./HeaderNurseManager";
+import AppHeader from "../Header";
 import SidebarNurseManager from "./SidebarNurseManager";
 import styles from "./NurseManagerLayout.module.css";
 
@@ -18,7 +18,7 @@ function NurseManagerLayout() {
           collapsed ? styles.siteLayoutCollapsed : styles.siteLayoutExpanded
         }`}
       >
-        <HeaderNurseManager collapsed={collapsed} setCollapsed={setCollapsed} />
+        <AppHeader collapsed={collapsed} setCollapsed={setCollapsed} />
         <Content className={styles.content}>
           <div className={styles.contentWrapper}>
             <Outlet />

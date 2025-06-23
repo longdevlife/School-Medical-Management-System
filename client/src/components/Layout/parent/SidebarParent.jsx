@@ -7,7 +7,6 @@ import {
     MedicineBoxOutlined,
     BarChartOutlined,
     SendOutlined,
-    FileProtectOutlined,
     SettingOutlined,
     HeartOutlined
 } from '@ant-design/icons';
@@ -77,24 +76,14 @@ function SidebarParent({ collapsed, setCollapsed }) {
         navigate(key);
     };
 
-    const handleMouseEnter = () => {
-        if (collapsed) {
-            setCollapsed(false);
-        }
-    };
-
-    const handleMouseLeave = () => {
-        setCollapsed(true);
-    };
-
+   
     return (
         <Sider
             trigger={null}
             collapsible={true}
             collapsed={collapsed}
             collapsedWidth={80}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+           
             width={200}
             className="fixed h-screen left-0 top-0 bottom-0 z-10 transition-all duration-200"
             theme="dark"
@@ -102,8 +91,9 @@ function SidebarParent({ collapsed, setCollapsed }) {
                 background: "linear-gradient(135deg, #47c8f8 0%, #1890ff 100%)",
             }}
         >
-            {/* Vùng hiển thị logo bệnh viện */}
-                <div className="logoContainer flex justify-center items-center h-24">
+            
+{/* Vùng hiển thị logo bệnh viện */}
+        <div className="logoContainer flex justify-center items-center h-24">
         <img
           src="/SchoolMedical.gif"
           alt="School Medical Logo"
@@ -116,8 +106,8 @@ function SidebarParent({ collapsed, setCollapsed }) {
             display: "block",
           }}
         />
-      </div>
-            {/* Menu điều hướng chính */}
+        </div>
+         {/* Menu điều hướng chính */}
             <Menu
                 theme="dark"
                 mode="inline"

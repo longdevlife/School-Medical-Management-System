@@ -91,7 +91,8 @@ function SidebarParent({ collapsed, setCollapsed }) {
                 background: "linear-gradient(135deg, #47c8f8 0%, #1890ff 100%)",
             }}
         >
-            {/* Vùng hiển thị logo bệnh viện */}
+            
+{/* Vùng hiển thị logo bệnh viện */}
         <div className="logoContainer flex justify-center items-center h-24">
         <img
           src="/SchoolMedical.gif"
@@ -106,7 +107,7 @@ function SidebarParent({ collapsed, setCollapsed }) {
           }}
         />
         </div>
-            {/* Menu điều hướng chính */}
+         {/* Menu điều hướng chính */}
             <Menu
                 theme="dark"
                 mode="inline"

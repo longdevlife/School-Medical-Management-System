@@ -32,25 +32,8 @@ const Login = () => {
       );
       const userRole = response.user.role;
 
-      // Redirect based on role
-      switch (userRole) {
-        case "PARENT":
-          navigate("/parent");
-          break;
-        case "NURSE":
-          navigate("/nurses");
-          break;
-        case "MANAGER":
-          navigate("/manager");
-          break;
-        case "ADMIN":
-          navigate("/admin");
-          break;
-
-        default:
-          message.error("Vai trò không hợp lệ");
-          break;
-      }
+      // Redirect to home page after login
+      navigate("/home");
     } catch (error) {
       message.error(error.message || "Đăng nhập thất bại");
     } finally {

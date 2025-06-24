@@ -21,7 +21,7 @@ import "./SidebarStyles.css"; // Import đường dẫn CSS tùy chỉnh
 
 const { Sider } = Layout;
 
-function SidebarNurseManager({ collapsed, setCollapsed }) {
+function SidebarNurseManager({ collapsed,  }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -111,29 +111,12 @@ function SidebarNurseManager({ collapsed, setCollapsed }) {
     // Điều hướng sử dụng đường dẫn đầy đủ đã xây dựng
     navigate(key);
   };
-
-  // Xử lý sự kiện hover để mở rộng sidebar
-  const handleMouseEnter = () => {
-    // Chỉ mở rộng khi hover nếu đang thu gọn
-    if (collapsed) {
-      setCollapsed(false);
-    }
-  };
-
-  // Xử lý sự kiện rời chuột để thu gọn sidebar
-  const handleMouseLeave = () => {
-    // Thu gọn sidebar khi rời chuột khỏi vùng sidebar
-    // Có thể thêm logic phức tạp hơn để xử lý việc mở rộng có chủ ý
-    setCollapsed(true);
-  };
   return (
     <Sider
       trigger={null}
       collapsible={true}
       collapsed={collapsed}
       collapsedWidth={80}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
       width={200}
       className="fixed h-screen left-0 top-0 bottom-0 z-10 transition-all duration-200"
       theme="dark"

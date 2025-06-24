@@ -33,16 +33,6 @@
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
-    "Method": "GetManagerInfo",
-    "RelativePath": "api/admin/get-admin-info",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.AdminController",
     "Method": "GetUsersFromFile",
     "RelativePath": "api/admin/get-users-from-file",
     "HttpMethod": "POST",
@@ -53,22 +43,6 @@
         "Name": "file",
         "Type": "Microsoft.AspNetCore.Http.IFormFile",
         "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.AdminController",
-    "Method": "UpdatemanagerAccount",
-    "RelativePath": "api/admin/update-admin-info",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "userRequest",
-        "Type": "Sever.DTO.User.UpdateUserRequest",
-        "IsRequired": true
       }
     ],
     "ReturnTypes": []
@@ -228,8 +202,24 @@
   },
   {
     "ContainingType": "Sever.Controllers.ManagerController",
-    "Method": "GetManagerInfo",
-    "RelativePath": "api/manager/get-manager-info",
+    "Method": "CreateNews",
+    "RelativePath": "api/manager/create-news",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "newNews",
+        "Type": "Sever.DTO.News.CreateNews",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ManagerController",
+    "Method": "GetNewsByManager",
+    "RelativePath": "api/manager/get-news-by-manager",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -254,15 +244,15 @@
   },
   {
     "ContainingType": "Sever.Controllers.ManagerController",
-    "Method": "UpdatemanagerAccount",
-    "RelativePath": "api/manager/update-manager-info",
+    "Method": "UpdateNews",
+    "RelativePath": "api/manager/update-news",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "userRequest",
-        "Type": "Sever.DTO.User.UpdateUserRequest",
+        "Name": "updateNews",
+        "Type": "Sever.DTO.News.UpdateNews",
         "IsRequired": true
       }
     ],
@@ -634,12 +624,48 @@
   },
   {
     "ContainingType": "Sever.Controllers.SchoolController",
+    "Method": "GetAllNews",
+    "RelativePath": "api/school/get-all-news",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.SchoolController",
     "Method": "GetSchoolInfo",
     "RelativePath": "api/school/get-school-info",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.UserController",
+    "Method": "GetUserInfo",
+    "RelativePath": "api/user/get-user-info",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.UserController",
+    "Method": "UpdatemanagerAccount",
+    "RelativePath": "api/user/update-user-info",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userRequest",
+        "Type": "Sever.DTO.User.UpdateUserRequest",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {

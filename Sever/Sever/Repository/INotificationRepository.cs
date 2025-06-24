@@ -36,17 +36,22 @@ namespace Sever.Repository.Interfaces
                     .OrderByDescending(n => n.NotifyID)
                     .FirstOrDefaultAsync();
 
-                string newId;
-                if (lastNotify == null)
-                {
-                    newId = "No0001";
-                }
-                else
-                {
-                    newId = GenerateID.GenerateNextId(lastNotify.NotifyID, "No", 4);
-                }
-                return newId;
+            string newId;
+            if (lastNotify == null)
+            {
+                newId = "No0001";
             }
+            else
+            {
+                newId = GenerateID.GenerateNextId(lastNotify.NotifyID, "NT", 4);
+            }
+            while (await _context.Notify.AnyAsync(n => n.NotifyID == newId))
+            {
+                newId = GenerateID.GenerateNextId(newId, "NT", 4);
+            }
+
+            return newId;
+        }
 
 
             public async Task<string> GetParentIdByStudentIdAsync(string studentId)

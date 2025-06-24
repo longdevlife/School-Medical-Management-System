@@ -14,9 +14,9 @@ const decodeToken = (token) => {
 // Helper function to map RoleID to role name
 const mapRoleIdToName = (roleId) => {
   const roleMap = {
-    1: "NURSE",
-    2: "MANAGER",
-    3: "PARENT",
+    1: "PARENT",
+    2: "NURSE",
+    3: "MANAGER",
     4: "ADMIN",
   };
   return roleMap[roleId] || "USER";

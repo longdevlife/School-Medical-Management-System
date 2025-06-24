@@ -129,7 +129,7 @@ function App() {
             <Route path="health-result" element={<HealthCheckup />} />
           </Route>{" "}
           {/* Redirect root to home page */}
-          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </ConfigProvider>

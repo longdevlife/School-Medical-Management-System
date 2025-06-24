@@ -57,7 +57,7 @@ function AppHeader({ collapsed, setCollapsed }) {
   const handleUserMenuClick = ({ key }) => {
     if (key === "logout") {
       authService.logout();
-      navigate("/home");
+      navigate("/login");
     } else if (key === "dashboard") {
       // Navigate to appropriate dashboard based on role
       switch (userRole) {

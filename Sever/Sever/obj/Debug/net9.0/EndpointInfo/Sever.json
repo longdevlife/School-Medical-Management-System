@@ -1084,34 +1084,10 @@
         }
       }
     },
-    "/api/school/get-school-info": {
+    "/api/parent/event/getByStudentId": {
       "get": {
         "tags": [
           "School"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/school/get-all-news": {
-      "get": {
-        "tags": [
-          "School"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/user/get-user-info": {
-      "get": {
-        "tags": [
-          "User"
         ],
         "responses": {
           "200": {

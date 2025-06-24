@@ -12,8 +12,7 @@ namespace Sever.Repository
         Task<string> GetCurrentMedicineID();
         Task<Medicine> GetMedicineByIdAsync(string medicineId);
         Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId);
-        Task<bool> IsStudentBelongToParentAsync(string studentId, string parentId);
-
+        Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId);
         public class MedicineRepository : IMedicineRepository
         {
             private readonly DataContext _context;
@@ -75,11 +74,14 @@ namespace Sever.Repository
 
                 return newId;
             }
-            public async Task<bool> IsStudentBelongToParentAsync(string studentId, string parentId)
+
+            public async Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId)
             {
                 return await _context.StudentProfile
-                    .AnyAsync(s => s.StudentID == studentId && s.ParentID == parentId);
+                                     .Where(s => s.ParentID == parentId)
+                                     .ToListAsync();
             }
+
         }
     }
 }

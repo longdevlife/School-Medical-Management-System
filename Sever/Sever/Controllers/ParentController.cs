@@ -37,29 +37,28 @@ namespace Sever.Controllers
             return Ok(result);
         }
 
-        [HttpGet("medicine/getByStudentId/{studentId}")]
-        public async Task<IActionResult> GetMedicinesByStudentID(string studentId)
+        [HttpGet("medicine/getByStudentId")]
+        public async Task<IActionResult> GetMedicinesByStudentID()
         {
             var username = User.Identity?.Name;
-            var result = await _medicineService.GetMedicineByStudentForParentAsync(studentId, username);
+            var result = await _medicineService.GetMedicineByParentAsync(username);
+            if (result == null)
+                return Forbid();
+            return Ok(result);
+        }
+
+
+        [HttpGet("event/getByStudentId")]
+        public async Task<IActionResult> GetMedicalEventByStudentID()
+        {
+            var username = User.Identity?.Name;
+            var result = await _medicalEventService.GetMedicialEventByParentAsync(username);
 
             if (result == null)
                 return Forbid();
 
             return Ok(result);
-        }
+        } 
 
-
-        [HttpGet("event/getByStudentId/{studentId}")]
-        public async Task<IActionResult> GetMedicalEventByStudentID(string studentId)
-        {
-            var username = User.Identity?.Name;
-            var result = await _medicalEventService.GetMedicalEventsByStudentIDP(studentId, username);
-
-            if (result == null)
-                return Forbid();
-
-            return Ok(result);
-        }
     }
 }

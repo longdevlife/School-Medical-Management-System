@@ -33,16 +33,6 @@
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
-    "Method": "GetManagerInfo",
-    "RelativePath": "api/admin/get-admin-info",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.AdminController",
     "Method": "GetUsersFromFile",
     "RelativePath": "api/admin/get-users-from-file",
     "HttpMethod": "POST",
@@ -53,22 +43,6 @@
         "Name": "file",
         "Type": "Microsoft.AspNetCore.Http.IFormFile",
         "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.AdminController",
-    "Method": "UpdatemanagerAccount",
-    "RelativePath": "api/admin/update-admin-info",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "userRequest",
-        "Type": "Sever.DTO.User.UpdateUserRequest",
-        "IsRequired": true
       }
     ],
     "ReturnTypes": []
@@ -326,9 +300,17 @@
     "ReturnTypes": []
   },
   {
-        "Name": "ParentID",
+    "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetMedicalEventById",
+    "RelativePath": "api/nurse/event/getByEventId/{medicalEventId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "medicalEventId",
         "Type": "System.String",
-        "IsRequired": false
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
@@ -352,7 +334,7 @@
   {
     "ContainingType": "Sever.Controllers.NurseController",
     "Method": "UpdateMedicalEvent",
-    "RelativePath": "api/nurse/event/update",
+    "RelativePath": "api/nurse/event/update/{id}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -383,14 +365,14 @@
         "IsRequired": false
       },
       {
-        "Name": "ParentID",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
         "Name": "Image",
         "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
         "IsRequired": false
+      },
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
@@ -424,22 +406,17 @@
         "IsRequired": false
       },
       {
-        "Name": "SentDate",
-        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "IsRequired": false
-      },
-      {
         "Name": "Notes",
         "Type": "System.String",
         "IsRequired": false
       },
       {
-        "Name": "Status",
+        "Name": "StudentID",
         "Type": "System.String",
         "IsRequired": false
       },
       {
-        "Name": "StudentID",
+        "Name": "Status",
         "Type": "System.String",
         "IsRequired": false
       },
@@ -481,21 +458,62 @@
         "IsRequired": true
       },
       {
-        "Name": "dto",
-        "Type": "Sever.DTO.Medicine.MedicineStatusUpdate",
-        "IsRequired": true
+        "Name": "MedicineName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Quantity",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Dosage",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Instructions",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Notes",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Image",
+        "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "StudentID",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
   },
   {
     "ContainingType": "Sever.Controllers.ParentController",
-    "Method": "GetMedicalEventHistory",
-    "RelativePath": "api/parent/medical-event/history",
+    "Method": "GetMedicalEventByStudentID",
+    "RelativePath": "api/parent/event/getByStudentId/{studentId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "studentId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -507,8 +525,59 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "dto",
-        "Type": "Sever.DTO.SendMedicine.CreateMedicine",
+        "Name": "MedicineName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Quantity",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Dosage",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Instructions",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Notes",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "StudentID",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Image",
+        "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "GetMedicinesByStudentID",
+    "RelativePath": "api/parent/medicine/getByStudentId/{studentId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "studentId",
+        "Type": "System.String",
         "IsRequired": true
       }
     ],
@@ -528,9 +597,39 @@
         "IsRequired": true
       },
       {
-        "Name": "dto",
-        "Type": "Sever.DTO.SendMedicine.MedicineUpdateDTO",
-        "IsRequired": true
+        "Name": "MedicineName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Quantity",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Dosage",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Instructions",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Notes",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Image",
+        "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "StudentID",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

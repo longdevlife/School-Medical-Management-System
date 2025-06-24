@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+
 using Sever.Model;
 
 namespace Sever.Context

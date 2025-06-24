@@ -13,7 +13,6 @@ namespace Sever.Service
         Task MedicalEventNotification(MedicalEvent medicalEvent, string customMessage = null);
         Task MedicineNotificationForParent(Medicine medicine, string customMessage = null);
         Task MedicineNotificationForAllNurses(Medicine medicine, string customMessage = null);
-        Task MedicineNotificationForNurse(Medicine medicine, string customMessage = null);
         Task<bool> SendHealthCheckupNotificationAsync(StudentProfile student, DateTime date);
         Task<bool> UpdateHealthCheckUpNotifycationAsync(StudentProfile student);
     }

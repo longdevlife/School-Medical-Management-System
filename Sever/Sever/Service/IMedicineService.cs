@@ -22,7 +22,7 @@ namespace Sever.Service
 
 
         Task<List<MedicineResponse>> GetMedicinesByStudentAsync(string studentId);
-        Task<List<MedicineResponse>> GetMedicineByStudentForParentAsync(string studentId, string userName);
+        Task<List<MedicineResponse>> GetMedicineByParentAsync(string userName);
 
         //Parent: create, update, getMedicineByParent, getMedicineByMedicineId, getMedicineByStudentID
         //Nurse: create, update, getMedicineByStatus, getMedicineByStudentID, getMedicineByMedicineId
@@ -279,26 +279,23 @@ namespace Sever.Service
                 return response;
             }
 
-            public async Task<List<MedicineResponse>> GetMedicineByStudentForParentAsync(string studentId, string userName)
+            public async Task<List<MedicineResponse>> GetMedicineByParentAsync(string userName)
             {
-
                 var parent = await _userService.GetUserAsyc(userName);
+                if (parent == null) return null;
+
                 var userId = parent.UserID;
 
-                var student = await _medicineRepository.IsStudentBelongToParentAsync(studentId, userId);
+                var studentList = await _medicineRepository.GetStudentsByParentIdAsync(userId);
+                if (studentList == null || !studentList.Any()) return null;
 
-                if (!student)
-                {
-                    return null; 
-                }
-                var medicine = await _medicineRepository.GetMedicineByStudentIdAsync(studentId);
-                List<MedicineResponse> response = new List<MedicineResponse>();
+                var response = new List<MedicineResponse>();
 
-                foreach (var e in medicine)
+                foreach (var student in studentList)
                 {
-                    if (e.StudentID == studentId)
+                    var medicines = await _medicineRepository.GetMedicineByStudentIdAsync(student.StudentID);
+                    foreach (var e in medicines)
                     {
-
                         response.Add(new MedicineResponse
                         {
                             MedicineID = e.MedicineID,

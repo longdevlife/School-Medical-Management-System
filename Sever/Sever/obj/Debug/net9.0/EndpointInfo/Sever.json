@@ -1052,20 +1052,10 @@
         }
       }
     },
-    "/api/parent/medicine/getByStudentId/{studentId}": {
+    "/api/parent/medicine/getByStudentId": {
       "get": {
         "tags": [
           "Parent"
-        ],
-        "parameters": [
-          {
-            "name": "studentId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
         ],
         "responses": {
           "200": {
@@ -1074,20 +1064,10 @@
         }
       }
     },
-    "/api/parent/event/getByStudentId/{studentId}": {
+    "/api/parent/event/getByStudentId": {
       "get": {
         "tags": [
           "Parent"
-        ],
-        "parameters": [
-          {
-            "name": "studentId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
         ],
         "responses": {
           "200": {

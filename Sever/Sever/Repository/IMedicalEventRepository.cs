@@ -15,8 +15,8 @@ namespace Sever.Repository.Interfaces
         Task<List<MedicalEvent>> GetMedicalEventsByParentIdAsync(string studentId);
         Task UpdateMedicalEvent(MedicalEvent medicalEvent);
         Task<string> GetCurrentMedicialEventID();
-        Task<bool> IsStudentBelongToParentAsync(string studentId, string parentId);
-        Task<List<MedicalEvent>> GetMedicineByStudentIdAsync(string studentId);
+        Task<List<MedicalEvent>> GetMedicalEventByStudentIdAsync(string studentId);
+        Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId);
 
         public class MedicalEventRepository : IMedicalEventRepository
         {
@@ -81,18 +81,19 @@ namespace Sever.Repository.Interfaces
                 return result;
 
             }
-
-            public async Task<bool> IsStudentBelongToParentAsync(string studentId, string parentId)
-            {
-                return await _context.StudentProfile
-                    .AnyAsync(s => s.StudentID == studentId && s.ParentID == parentId);
-            }
-            public async Task<List<MedicalEvent>> GetMedicineByStudentIdAsync(string studentId)
+            public async  Task<List<MedicalEvent>> GetMedicalEventByStudentIdAsync(string studentId)
             {
                 return await _context.MedicalEvent
                     .Include(m => m.MedicalEventDetail)
                     .Where(m => m.MedicalEventDetail.Any(d => d.StudentID == studentId))
                     .ToListAsync();
+            }
+
+            public async Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId)
+            {
+                return await _context.StudentProfile
+                                     .Where(s => s.ParentID == parentId)
+                                     .ToListAsync();
             }
         }
     }

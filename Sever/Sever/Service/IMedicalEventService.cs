@@ -1,5 +1,6 @@
 ﻿using Sever.DTO.File;
 using Sever.DTO.MedicalEvent;
+using Sever.DTO.Medicine;
 using Sever.Model;
 using Sever.Repository.Interfaces;
 
@@ -14,8 +15,7 @@ namespace Sever.Service
         
         Task<List<MedicalEventResponse>> GetMedicalEventsByStudentID(string studentId);
         Task<MedicalEventResponse> GetMedicalEvent(string MedicalEventID);
-        Task<List<MedicalEventResponse>> GetMedicalEventsByStudentIDP(string studentId, string userName);
-
+        Task<List<MedicalEventResponse>> GetMedicialEventByParentAsync(string userName);
 
         //nurse: create, update, getByEventId, getByStudentId
         //parent: getByStudentId, getByEventId
@@ -155,34 +155,36 @@ namespace Sever.Service
                     StudentID = medicalEvent.MedicalEventDetail.Select(d => d.StudentID).ToList(),
                 };
             }
-            public async Task<List<MedicalEventResponse>> GetMedicalEventsByStudentIDP(string studentId, string userName)
+
+            public async Task<List<MedicalEventResponse>> GetMedicialEventByParentAsync(string userName)
             {
                 var parent = await _userService.GetUserAsyc(userName);
+                if (parent == null) return null;
+
                 var userId = parent.UserID;
-              
-                var student = await _medicalEventRepository.IsStudentBelongToParentAsync(studentId, userId);
 
-                if (!student)
+                var studentList = await _medicalEventRepository.GetStudentsByParentIdAsync(userId);
+                if (studentList == null || !studentList.Any()) return null;
+
+                var response = new List<MedicalEventResponse>();
+
+                foreach (var student in studentList)
                 {
-                    return null;
-                }
-
-                var medicalEvents = await _medicalEventRepository.GetMedicineByStudentIdAsync(studentId);
-
-                List<MedicalEventResponse> response = new List<MedicalEventResponse>();
-                foreach (var e in medicalEvents)
-                {
-                    response.Add(new MedicalEventResponse()
+                    var medicalEvent  = await _medicalEventRepository.GetMedicalEventByStudentIdAsync(student.StudentID);
+                    foreach (var e in medicalEvent)
                     {
-                        MedicalEventID = e.MedicalEventID,
-                        EventDateTime = e.EventDateTime,
-                        Description = e.Description,
-                        ActionTaken = e.ActionTaken,
-                        Notes = e.Notes,
-                        EventTypeID = e.EventType,
-                        NurseID = e.NurseID,
-                        StudentID = e.MedicalEventDetail.Select(d => d.StudentID).ToList(),
-                    });
+                        response.Add(new MedicalEventResponse
+                        {
+                            MedicalEventID = e.MedicalEventID,
+                            EventDateTime = e.EventDateTime,
+                            Description = e.Description,
+                            ActionTaken = e.ActionTaken,
+                            Notes = e.Notes,
+                            EventTypeID = e.EventType,
+                            NurseID = e.NurseID,
+                            StudentID = e.MedicalEventDetail.Select(d => d.StudentID).ToList(),
+                        });
+                    }
                 }
                 return response;
             }
@@ -191,6 +193,7 @@ namespace Sever.Service
             {
                 throw new NotImplementedException();
             }
+
         }
     }
 }

@@ -513,17 +513,11 @@
   {
     "ContainingType": "Sever.Controllers.ParentController",
     "Method": "GetMedicalEventByStudentID",
-    "RelativePath": "api/parent/event/getByStudentId/{studentId}",
+    "RelativePath": "api/parent/event/getByStudentId",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [
-      {
-        "Name": "studentId",
-        "Type": "System.String",
-        "IsRequired": true
-      }
-    ],
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
@@ -580,17 +574,11 @@
   {
     "ContainingType": "Sever.Controllers.ParentController",
     "Method": "GetMedicinesByStudentID",
-    "RelativePath": "api/parent/medicine/getByStudentId/{studentId}",
+    "RelativePath": "api/parent/medicine/getByStudentId",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [
-      {
-        "Name": "studentId",
-        "Type": "System.String",
-        "IsRequired": true
-      }
-    ],
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

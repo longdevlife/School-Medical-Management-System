@@ -5,49 +5,6 @@
     "version": "1.0"
   },
   "paths": {
-    "/api/admin/get-admin-info": {
-      "get": {
-        "tags": [
-          "Admin"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/admin/update-admin-info": {
-      "put": {
-        "tags": [
-          "Admin"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/admin/create-accounts": {
       "post": {
         "tags": [
@@ -570,17 +527,13 @@
                   "Instructions": {
                     "type": "string"
                   },
-                  "SentDate": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
                   "Notes": {
                     "type": "string"
                   },
-                  "Status": {
+                  "StudentID": {
                     "type": "string"
                   },
-                  "StudentID": {
+                  "Status": {
                     "type": "string"
                   },
                   "Image": {
@@ -605,16 +558,13 @@
                 "Instructions": {
                   "style": "form"
                 },
-                "SentDate": {
-                  "style": "form"
-                },
                 "Notes": {
                   "style": "form"
                 },
-                "Status": {
+                "StudentID": {
                   "style": "form"
                 },
-                "StudentID": {
+                "Status": {
                   "style": "form"
                 },
                 "Image": {
@@ -648,20 +598,64 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/MedicineStatusUpdate"
+                "type": "object",
+                "properties": {
+                  "MedicineName": {
+                    "type": "string"
+                  },
+                  "Quantity": {
+                    "type": "string"
+                  },
+                  "Dosage": {
+                    "type": "string"
+                  },
+                  "Instructions": {
+                    "type": "string"
+                  },
+                  "Notes": {
+                    "type": "string"
+                  },
+                  "Image": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
                     }
                   },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicineStatusUpdate"
+                  "Status": {
+                    "type": "string"
+                  },
+                  "StudentID": {
+                    "type": "string"
                   }
                 }
               },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicineStatusUpdate"
+              "encoding": {
+                "MedicineName": {
+                  "style": "form"
+                },
+                "Quantity": {
+                  "style": "form"
+                },
+                "Dosage": {
+                  "style": "form"
+                },
+                "Instructions": {
+                  "style": "form"
+                },
+                "Notes": {
+                  "style": "form"
+                },
+                "Image": {
+                  "style": "form"
+                },
+                "Status": {
+                  "style": "form"
+                },
+                "StudentID": {
+                  "style": "form"
                 }
               }
             }
@@ -731,9 +725,6 @@
                       "type": "string",
                       "format": "binary"
                     }
-                  },
-                  "ParentID": {
-                    "type": "string"
                   }
                 }
               },
@@ -755,9 +746,6 @@
                 },
                 "Image": {
                   "style": "form"
-                },
-                "ParentID": {
-                  "style": "form"
                 }
               }
             }
@@ -770,7 +758,7 @@
         }
       }
     },
-    "/api/nurse/event/update": {
+    "/api/nurse/event/update/{id}": {
       "put": {
         "tags": [
           "Nurse"
@@ -806,9 +794,6 @@
                   "EventType": {
                     "type": "string"
                   },
-                  "ParentID": {
-                    "type": "string"
-                  },
                   "Image": {
                     "type": "array",
                     "items": {
@@ -832,9 +817,6 @@
                   "style": "form"
                 },
                 "EventType": {
-                  "style": "form"
-                },
-                "ParentID": {
                   "style": "form"
                 },
                 "Image": {
@@ -902,21 +884,70 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/CreateMedicine"
-              }
+                "required": [
+                  "Dosage",
+                  "MedicineName",
+                  "Quantity"
+                ],
+                "type": "object",
+                "properties": {
+                  "MedicineName": {
+                    "type": "string"
                   },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateMedicine"
+                  "Quantity": {
+                    "type": "string"
+                  },
+                  "Dosage": {
+                    "type": "string"
+                  },
+                  "Instructions": {
+                    "type": "string"
+                  },
+                  "Notes": {
+                    "type": "string"
+                  },
+                  "StudentID": {
+                    "type": "string"
+                  },
+                  "Status": {
+                    "type": "string"
+                  },
+                  "Image": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
                     }
                   }
                 }
               },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateMedicine"
+              "encoding": {
+                "MedicineName": {
+                  "style": "form"
+                },
+                "Quantity": {
+                  "style": "form"
+                },
+                "Dosage": {
+                  "style": "form"
+                },
+                "Instructions": {
+                  "style": "form"
+                },
+                "Notes": {
+                  "style": "form"
+                },
+                "StudentID": {
+                  "style": "form"
+                },
+                "Status": {
+                  "style": "form"
+                },
+                "Image": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -945,19 +976,59 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/MedicineUpdateDTO"
+                "type": "object",
+                "properties": {
+                  "MedicineName": {
+                    "type": "string"
+                  },
+                  "Quantity": {
+                    "type": "string"
+                  },
+                  "Dosage": {
+                    "type": "string"
+                  },
+                  "Instructions": {
+                    "type": "string"
+                  },
+                  "Notes": {
+                    "type": "string"
+                  },
+                  "Image": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
                     }
                   },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicineUpdateDTO"
+                  "StudentID": {
+                    "type": "string"
+                  }
                 }
               },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicineUpdateDTO"
+              "encoding": {
+                "MedicineName": {
+                  "style": "form"
+                },
+                "Quantity": {
+                  "style": "form"
+                },
+                "Dosage": {
+                  "style": "form"
+                },
+                "Instructions": {
+                  "style": "form"
+                },
+                "Notes": {
+                  "style": "form"
+                },
+                "Image": {
+                  "style": "form"
+                },
+                "StudentID": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -984,7 +1055,43 @@
     "/api/parent/event/getByStudentId": {
       "get": {
         "tags": [
+          "Parent"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/school/get-school-info": {
+      "get": {
+        "tags": [
           "School"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/school/get-all-news": {
+      "get": {
+        "tags": [
+          "School"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/user/get-user-info": {
+      "get": {
+        "tags": [
+          "User"
         ],
         "responses": {
           "200": {
@@ -1078,58 +1185,6 @@
   },
   "components": {
     "schemas": {
-      "CreateMedicine": {
-        "required": [
-          "dosage",
-          "medicineName",
-          "quantity"
-        ],
-        "type": "object",
-        "properties": {
-          "medicineName": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "quantity": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "dosage": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "instructions": {
-            "type": "string",
-            "nullable": true
-          },
-          "sentDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "studentID": {
-            "type": "string",
-            "nullable": true
-          },
-          "image": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "binary"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "CreateNews": {
         "type": "object",
         "properties": {
@@ -1228,104 +1283,6 @@
             "nullable": true
           },
           "password": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "MedicineStatusUpdate": {
-        "type": "object",
-        "properties": {
-          "medicineName": {
-            "type": "string",
-            "nullable": true
-          },
-          "quantity": {
-            "type": "string",
-            "nullable": true
-          },
-          "dosage": {
-            "type": "string",
-            "nullable": true
-          },
-          "instructions": {
-            "type": "string",
-            "nullable": true
-          },
-          "sentDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          },
-          "image": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "binary"
-            },
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "studentID": {
-            "type": "string",
-            "nullable": true
-          },
-          "parentID": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "MedicineUpdateDTO": {
-        "type": "object",
-        "properties": {
-          "medicineName": {
-            "type": "string",
-            "nullable": true
-          },
-          "quantity": {
-            "type": "string",
-            "nullable": true
-          },
-          "dosage": {
-            "type": "string",
-            "nullable": true
-          },
-          "instructions": {
-            "type": "string",
-            "nullable": true
-          },
-          "sentDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          },
-          "image": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "binary"
-            },
-            "nullable": true
-          },
-          "studentID": {
-            "type": "string",
-            "nullable": true
-          },
-          "nurseID": {
             "type": "string",
             "nullable": true
           }

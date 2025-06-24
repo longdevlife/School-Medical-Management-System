@@ -102,5 +102,6 @@ namespace Sever.Repository
 
             return GenerateID.GenerateNextId(lastHealthCheckup.HealthCheckUpID, "HCU", 4);
         }
+        
     }
 }

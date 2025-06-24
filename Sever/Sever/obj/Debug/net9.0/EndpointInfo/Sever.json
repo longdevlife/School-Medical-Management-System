@@ -877,6 +877,219 @@
         }
       }
     },
+    "/api/nurse/create-health-check-up-by-class": {
+      "post": {
+        "tags": [
+          "Nurse"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHealthCheckUp"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHealthCheckUp"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHealthCheckUp"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/get-health-check-up-by-student": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/get-confirm-healcheck-up": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/get-denied-health-check-up": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/get-not-response-health-check-up": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/get-health-check-up-by-year": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "parameters": [
+          {
+            "name": "dateTime",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/update-health-check-up": {
+      "put": {
+        "tags": [
+          "Nurse"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHealthCheckUp"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHealthCheckUp"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHealthCheckUp"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/create-appointment": {
+      "post": {
+        "tags": [
+          "Nurse"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointment"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointment"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/update-appointment": {
+      "put": {
+        "tags": [
+          "Nurse"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/parent/medicine/create": {
       "post": {
         "tags": [
@@ -886,6 +1099,71 @@
           "content": {
             "multipart/form-data": {
               "schema": {
+                "required": [
+                  "Dosage",
+                  "MedicineName",
+                  "Quantity"
+                ],
+                "type": "object",
+                "properties": {
+                  "MedicineName": {
+                    "type": "string"
+                  },
+                  "Quantity": {
+                    "type": "string"
+                  },
+                  "Dosage": {
+                    "type": "string"
+                  },
+                  "Instructions": {
+                    "type": "string"
+                  },
+                  "Notes": {
+                    "type": "string"
+                  },
+                  "StudentID": {
+                    "type": "string"
+                  },
+                  "Status": {
+                    "type": "string"
+                  },
+                  "Image": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              },
+              "encoding": {
+                "MedicineName": {
+                  "style": "form"
+                },
+                "Quantity": {
+                  "style": "form"
+                },
+                "Dosage": {
+                  "style": "form"
+                },
+                "Instructions": {
+                  "style": "form"
+                },
+                "Notes": {
+                  "style": "form"
+                },
+                "StudentID": {
+                  "style": "form"
+                },
+                "Status": {
+                  "style": "form"
+                },
+                "Image": {
+                  "style": "form"
+                }
+              }
+            }
+          }
                 "required": [
                   "Dosage",
                   "MedicineName",
@@ -1064,6 +1342,236 @@
         }
       }
     },
+    "/api/parent/confirm-health-check-up": {
+      "put": {
+        "tags": [
+          "Parent"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/parent/denied-health-check-up": {
+      "put": {
+        "tags": [
+          "Parent"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/parent/confirm-appointment": {
+      "put": {
+        "tags": [
+          "Parent"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/parent/denied-appointment": {
+      "put": {
+        "tags": [
+          "Parent"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "MedicineName": {
+                    "type": "string"
+                  },
+                  "Quantity": {
+                    "type": "string"
+                  },
+                  "Dosage": {
+                    "type": "string"
+                  },
+                  "Instructions": {
+                    "type": "string"
+                  },
+                  "Notes": {
+                    "type": "string"
+                  },
+                  "Image": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  },
+                  "StudentID": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "MedicineName": {
+                  "style": "form"
+                },
+                "Quantity": {
+                  "style": "form"
+                },
+                "Dosage": {
+                  "style": "form"
+                },
+                "Instructions": {
+                  "style": "form"
+                },
+                "Notes": {
+                  "style": "form"
+                },
+                "Image": {
+                  "style": "form"
+                },
+                "StudentID": {
+                  "style": "form"
+                }
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/parent/get-health-check-up-by-parent": {
+      "get": {
+        "tags": [
+          "Parent"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/school/get-school-info": {
+      "get": {
+        "tags": [
+          "School"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/school/get-all-news": {
+      "get": {
+        "tags": [
+          "Parent"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/school/get-school-info": {
       "get": {
         "tags": [
@@ -1185,6 +1693,62 @@
   },
   "components": {
     "schemas": {
+      "CreateAppointment": {
+        "type": "object",
+        "properties": {
+          "appointmentID": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "healthCheckUpID": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateHealthCheckUp": {
+        "type": "object",
+        "properties": {
+          "studentID": {
+            "type": "string",
+            "nullable": true
+          },
+          "healthCheckUpID": {
+            "type": "string",
+            "nullable": true
+          },
+          "classID": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateCheckUp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateNews": {
         "type": "object",
         "properties": {
@@ -1293,6 +1857,10 @@
         "type": "object",
         "properties": {
           "token": {
+      "ResetPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
             "type": "string",
             "nullable": true
           },
@@ -1311,6 +1879,98 @@
             "nullable": true
           },
           "refreshToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateAppointment": {
+        "type": "object",
+        "properties": {
+          "appointmentID": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateHealthCheckUp": {
+        "type": "object",
+        "properties": {
+          "healthCheckId": {
+            "type": "string",
+            "nullable": true
+          },
+          "height": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "weight": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "bmi": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "visionLeft": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "visionRight": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "bloodPressure": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "dental": {
+            "type": "string",
+            "nullable": true
+          },
+          "skin": {
+            "type": "string",
+            "nullable": true
+          },
+          "hearing": {
+            "type": "string",
+            "nullable": true
+          },
+          "nurseID": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "respiration": {
+            "type": "string",
+            "nullable": true
+          },
+          "ardiovascular": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
             "type": "string",
             "nullable": true
           }

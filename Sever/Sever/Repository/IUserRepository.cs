@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sever.Context;
 using Sever.Model;
+using Sever.Utilities;
 using System;
 
 namespace Sever.Repository
@@ -13,7 +14,8 @@ namespace Sever.Repository
         Task<bool> UpdateUserAsync(User user);
         Task<bool> DeleteAccountByUserAsync(User user);
         Task<User?> GetUserByEmailAsync(string email);
-        Task<string> GetCurrentUserID();
+        Task<string> NextId();
+        Task<User> GetUserByStudentIDAsync(string studentID);
     }
 
     public class UserRepository : IUserRepository
@@ -55,13 +57,20 @@ namespace Sever.Repository
             var result = await _context.SaveChangesAsync();
             return result > 0;
         }
-        public async Task<string> GetCurrentUserID()
+        public async Task<string> NextId()
         {
-            var user = await _context.Users
-                              .OrderByDescending(u => u.UserID)
-                              .FirstOrDefaultAsync();
+            var currentUser = await _context.Users
+                .OrderByDescending(u => u.UserID)
+                .FirstOrDefaultAsync();
+            string nextID = GenerateID.GenerateNextId(currentUser?.UserID, "U", 4);
+            return nextID;
+        }
 
-            return user?.UserID;
+        public Task<User> GetUserByStudentIDAsync(string studentID)
+        {
+            return _context.Users
+                .Include(u => u.StudentProfile)
+                .FirstOrDefaultAsync(u => u.UserID == studentID);
         }
     }
 }

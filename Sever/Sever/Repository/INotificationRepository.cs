@@ -42,11 +42,11 @@ namespace Sever.Repository.Interfaces
             }
             else
             {
-                newId = GenerateID.GenerateNextId(lastNotify.NotifyID, "No", 4);
+                newId = GenerateID.GenerateNextId(lastNotify.NotifyID, "NT", 4);
             }
             while (await _context.Notify.AnyAsync(n => n.NotifyID == newId))
             {
-                newId = GenerateID.GenerateNextId(newId, "No", 4);
+                newId = GenerateID.GenerateNextId(newId, "NT", 4);
             }
 
             return newId;

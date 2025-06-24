@@ -7,6 +7,8 @@ namespace Sever.Repository
     public interface IStudentProfileRepository
     {
         Task<StudentProfile> SearchStudentProfile(string info);
+        Task<List<StudentProfile>> GetStudentProfileByParentId(string info);
+        Task<List<StudentProfile>> GetStudentProfilesByClassIdAsync(string classId);
     }
     public class StudentProfileRepository : IStudentProfileRepository
     {
@@ -29,6 +31,27 @@ namespace Sever.Repository
                 return result;
             }
         }
+
+        public async Task<List<StudentProfile>> GetStudentProfileByParentId(string id)
+        {
+            return await _context.StudentProfile
+                .Include(s => s.Parent)
+                .Where(s => s.Parent.UserID == id)
+                .ToListAsync();
+        }
+
+        public async Task<List<StudentProfile>> GetStudentProfilesByClassIdAsync(string classId)
+        {
+            if (string.IsNullOrEmpty(classId))
+            {
+                throw new ArgumentException("Class ID cannot be null or empty.", nameof(classId));
+            }
+            return await _context.StudentProfile
+                .Where(s => s.Class == classId)
+                .Include(s => s.Parent)
+                .ToListAsync();
+        }
+        
     }
 
 }

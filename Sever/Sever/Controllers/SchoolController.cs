@@ -12,10 +12,12 @@ namespace Sever.Controllers
     {
         private readonly ISchoolInfoService _schoolInfoService;
         private readonly IFilesService _filesService;
-        public SchoolController(ISchoolInfoService schoolInfoService, IFilesService filesService)
+        private readonly INewsService _newsService;
+        public SchoolController(ISchoolInfoService schoolInfoService, IFilesService filesService, INewsService newsService)
         {
             _schoolInfoService = schoolInfoService;
             _filesService = filesService;
+            _newsService = newsService;
         }
         [HttpGet("get-school-info")]
         public async Task<IActionResult> GetSchoolInfo()
@@ -28,5 +30,22 @@ namespace Sever.Controllers
             return Ok(schoolInfo);
         }
 
+        [HttpGet("get-all-news")]
+        public async Task<IActionResult> GetAllNews()
+        {
+            try
+            {
+                var news = await _newsService.GetAllNewsAsync();
+                if (news == null || news.Count == 0)
+                {
+                    return NotFound(new { message = "Không có tin tức nào để hiển thị" });
+                }
+                return Ok(news);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Lỗi khi lấy tất cả tin tức: {ex.Message}" });
+            }
+        }
     }
 }

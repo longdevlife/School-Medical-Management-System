@@ -20,9 +20,11 @@ namespace Sever.Service
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
+        private readonly IStudentProfileRepository _studentProfileRepository;
+        public UserService(IUserRepository userRepository, IStudentProfileRepository studentProfileRepository)
         {
             _userRepository = userRepository;
+            _studentProfileRepository = studentProfileRepository;
         }
         public async Task<User> GetUserAsyc(string username)
         {
@@ -36,10 +38,9 @@ namespace Sever.Service
         public async Task<User> CreateUserAsyc(CreateUserRequest userRequest)
         {
             var passwordHasher = new PasswordHasher<User>();
-            var currentUserID = _userRepository.GetCurrentUserID().ToString();
             var user = new User
             {
-                UserID = GenerateID.GenerateNextId(currentUserID, "U", 4),
+                UserID = await _userRepository.NextId(),
                 UserName = userRequest.UserName,
                 PasswordHash = userRequest.Password,
                 RoleID = userRequest.RoleID
@@ -54,7 +55,7 @@ namespace Sever.Service
             if (user == null)
                 return false;
             var passwordHasher = new PasswordHasher<User>();
-            if(!string.IsNullOrEmpty(userRequest.Password))
+            if (!string.IsNullOrEmpty(userRequest.Password))
             {
                 user.PasswordHash = passwordHasher.HashPassword(user, userRequest.Password);
             }
@@ -84,6 +85,6 @@ namespace Sever.Service
             var result = await _userRepository.DeleteAccountByUserAsync(user);
             return result;
         }
-
+        
     }
 }

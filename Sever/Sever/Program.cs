@@ -10,6 +10,10 @@ using Sever.Repository;
 using Sever.Repository.Interfaces;
 using Sever.Service;
 using System.Text;
+using System.Text.Json.Serialization;
+using static Sever.Repository.IMedicineRepository;
+using static Sever.Repository.Interfaces.IMedicalEventRepository;
+using static Sever.Repository.Interfaces.INotificationRepository;
 using static Sever.Service.IMedicalEventService;
 using static Sever.Service.IMedicineService;
 
@@ -105,6 +109,12 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<ISchoolInfoService, SchoolInfoService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(opt =>
+    {
+        opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 #endregion
 
 

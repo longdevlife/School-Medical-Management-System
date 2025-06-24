@@ -5,6 +5,49 @@
     "version": "1.0"
   },
   "paths": {
+    "/api/admin/get-admin-info": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/update-admin-info": {
+      "put": {
+        "tags": [
+          "Admin"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/admin/create-accounts": {
       "post": {
         "tags": [
@@ -608,20 +651,44 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/MedicineStatusUpdate"
-              }
-            },
+                    }
+                  },
             "text/json": {
               "schema": {
                 "$ref": "#/components/schemas/MedicineStatusUpdate"
-              }
-            },
+                  }
+                }
+              },
             "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/MedicineStatusUpdate"
+                }
               }
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/medicine/getByStudentId/{studentId}": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -708,6 +775,16 @@
         "tags": [
           "Nurse"
         ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "multipart/form-data": {
@@ -774,6 +851,50 @@
         }
       }
     },
+    "/api/nurse/event/getByEventId/{medicalEventId}": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "parameters": [
+          {
+            "name": "medicalEventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/event/getByStudentId/{studentId}": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/parent/medicine/create": {
       "post": {
         "tags": [
@@ -785,12 +906,14 @@
               "schema": {
                 "$ref": "#/components/schemas/CreateMedicine"
               }
-            },
+                  },
             "text/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateMedicine"
-              }
-            },
+                    }
+                  }
+                }
+              },
             "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateMedicine"
@@ -825,13 +948,13 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/MedicineUpdateDTO"
-              }
-            },
+                    }
+                  },
             "text/json": {
               "schema": {
                 "$ref": "#/components/schemas/MedicineUpdateDTO"
-              }
-            },
+                }
+              },
             "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/MedicineUpdateDTO"
@@ -855,8 +978,8 @@
           "200": {
             "description": "OK"
           }
-        }
-      }
+            }
+          }
     },
     "/api/school/get-school-info": {
       "get": {
@@ -879,8 +1002,8 @@
           "200": {
             "description": "OK"
           }
-        }
-      }
+            }
+          }
     },
     "/api/user/get-user-info": {
       "get": {

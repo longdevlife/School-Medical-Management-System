@@ -7,8 +7,7 @@
         public string? ActionTaken { get; set; }
         public string? Notes { get; set; }
         public string? EventType { get; set; }
-        public string? ParentID { get; set; }
-        public List<IFormFile> Image { get; set; }
+        public List<IFormFile>? Image { get; set; }
 
     }
 }

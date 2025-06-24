@@ -617,19 +617,72 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/MedicineStatusUpdate"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicineStatusUpdate"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicineStatusUpdate"
+                "type": "object",
+                "properties": {
+                  "MedicineName": {
+                    "type": "string"
+                  },
+                  "Quantity": {
+                    "type": "string"
+                  },
+                  "Dosage": {
+                    "type": "string"
+                  },
+                  "Instructions": {
+                    "type": "string"
+                  },
+                  "SentDate": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "Notes": {
+                    "type": "string"
+                  },
+                  "Image": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  },
+                  "Status": {
+                    "type": "string"
+                  },
+                  "StudentID": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "MedicineName": {
+                  "style": "form"
+                },
+                "Quantity": {
+                  "style": "form"
+                },
+                "Dosage": {
+                  "style": "form"
+                },
+                "Instructions": {
+                  "style": "form"
+                },
+                "SentDate": {
+                  "style": "form"
+                },
+                "Notes": {
+                  "style": "form"
+                },
+                "Image": {
+                  "style": "form"
+                },
+                "Status": {
+                  "style": "form"
+                },
+                "StudentID": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -827,6 +880,13 @@
             "name": "id",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -1056,57 +1116,6 @@
             "nullable": true
           },
           "password": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "MedicineStatusUpdate": {
-        "type": "object",
-        "properties": {
-          "medicineName": {
-            "type": "string",
-            "nullable": true
-          },
-          "quantity": {
-            "type": "string",
-            "nullable": true
-          },
-          "dosage": {
-            "type": "string",
-            "nullable": true
-          },
-          "instructions": {
-            "type": "string",
-            "nullable": true
-          },
-          "sentDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          },
-          "image": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "binary"
-            },
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "studentID": {
-            "type": "string",
-            "nullable": true
-          },
-          "parentID": {
             "type": "string",
             "nullable": true
           }

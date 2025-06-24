@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Sever.DTO.File;
 using Sever.DTO.SendMedicine;
 using Sever.Service;
+using System.Security.Claims;
 
 namespace Sever.Controllers
 {
@@ -21,29 +22,43 @@ namespace Sever.Controllers
         }
 
         [HttpPost("medicine/create")]
-        public async Task<IActionResult> CreateMedicine([FromBody] CreateMedicine dto)
+        public async Task<IActionResult> CreateMedicine([FromForm] CreateMedicine dto)
         {
-            var userId = User.Identity?.Name;
-            var result = await _medicineService.CreateMedicineByParentAsync(dto, userId);
+            var username = User.Identity?.Name;
+            var result = await _medicineService.CreateMedicineByParentAsync(dto, username);
             return Ok(result);
         }
 
         [HttpPut("medicine/update/{id}")]
-        public async Task<IActionResult> UpdateMedicine(string id, [FromBody] MedicineUpdateDTO dto)
+        public async Task<IActionResult> UpdateMedicine(string id, [FromForm] MedicineUpdateDTO dto)
         {
-            var userId = User.Identity?.Name;
-            var result = await _medicineService.UpdateMedicinByParentAsync(dto, id);
+            var username = User.Identity?.Name;
+            var result = await _medicineService.UpdateMedicinByParentAsync(dto, id, username);
             return Ok(result);
         }
 
-        [HttpGet("medical-event/history")]
-        public async Task<IActionResult> GetMedicalEventHistory()
+        [HttpGet("medicine/getByStudentId/{studentId}")]
+        public async Task<IActionResult> GetMedicinesByStudentID(string studentId)
         {
-            var parentId = User.Identity?.Name;
-            if (string.IsNullOrEmpty(parentId))
-                return Unauthorized("Không xác định được người dùng.");
+            var username = User.Identity?.Name;
+            var result = await _medicineService.GetMedicineByStudentForParentAsync(studentId, username);
 
-            var result = await _medicalEventService.GetMedicalEventsByParent(parentId);
+            if (result == null)
+                return Forbid();
+
+            return Ok(result);
+        }
+
+
+        [HttpGet("event/getByStudentId/{studentId}")]
+        public async Task<IActionResult> GetMedicalEventByStudentID(string studentId)
+        {
+            var username = User.Identity?.Name;
+            var result = await _medicalEventService.GetMedicalEventsByStudentIDP(studentId, username);
+
+            if (result == null)
+                return Forbid();
+
             return Ok(result);
         }
     }

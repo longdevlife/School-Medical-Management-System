@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Sever.DTO.Appointment;
 using Sever.DTO.File;
 using Sever.DTO.SendMedicine;
 using Sever.Service;
@@ -14,11 +15,18 @@ namespace Sever.Controllers
     {
         private readonly IMedicineService _medicineService;
         private readonly IMedicalEventService _medicalEventService;
+        private readonly IHealthCheckUpService _healthCheckUpService;
+        private readonly IAppointmentService _appointmentService;
 
-        public ParentController(IMedicineService medicineService, IMedicalEventService medicalEventService)
+        public ParentController(IMedicineService medicineService, 
+                IMedicalEventService medicalEventService, 
+                IHealthCheckUpService healthCheckUpService, 
+                IAppointmentService appointmentService)
         {
             _medicineService = medicineService;
             _medicalEventService = medicalEventService;
+            _healthCheckUpService = healthCheckUpService;
+            _appointmentService = appointmentService;
         }
 
         [HttpPost("medicine/create")]
@@ -52,13 +60,44 @@ namespace Sever.Controllers
         public async Task<IActionResult> GetMedicalEventByStudentID()
         {
             var username = User.Identity?.Name;
-            var result = await _medicalEventService.GetMedicialEventByParentAsync(username);
+            var result = await ;
 
             if (result == null)
                 return Forbid();
 
             return Ok(result);
-        } 
+        }
 
+        [HttpPut("confirm-health-check-up")]
+        public async Task<IActionResult> ConfirmHealthCheckUp([FromBody] UpdateAppointment dto)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("User not authenticated.");
+            }
+            var result = await _healthCheckUpService.ConfirmHealCheckup(dto.AppointmentID);
+            if (result)
+            {
+                return Ok("Health check-up xác nhận thành công.");
+            }
+            return BadRequest("Xác nhận health check-up thất bại");
+        }
+
+        [HttpPut("confirm-appointment")]
+        public async Task<IActionResult> ConfirmAppointment([FromBody] UpdateAppointment dto)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("User not authenticated.");
+            }
+            var result = await _appointmentService.ConfirmAppointMent(dto.AppointmentID);
+            if (result)
+            {
+                return Ok("Appointment confirmed successfully.");
+            }
+            return BadRequest("Failed to confirm appointment.");
+        }
     }
 }

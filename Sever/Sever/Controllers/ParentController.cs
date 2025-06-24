@@ -18,9 +18,9 @@ namespace Sever.Controllers
         private readonly IHealthCheckUpService _healthCheckUpService;
         private readonly IAppointmentService _appointmentService;
 
-        public ParentController(IMedicineService medicineService, 
-                IMedicalEventService medicalEventService, 
-                IHealthCheckUpService healthCheckUpService, 
+        public ParentController(IMedicineService medicineService,
+                IMedicalEventService medicalEventService,
+                IHealthCheckUpService healthCheckUpService,
                 IAppointmentService appointmentService)
         {
             _medicineService = medicineService;
@@ -60,7 +60,7 @@ namespace Sever.Controllers
         public async Task<IActionResult> GetMedicalEventByStudentID()
         {
             var username = User.Identity?.Name;
-            var result = await ;
+            var result = await _medicalEventService.GetMedicialEventByParentAsync(username);
 
             if (result == null)
                 return Forbid();
@@ -74,14 +74,30 @@ namespace Sever.Controllers
             var username = User.Identity?.Name;
             if (string.IsNullOrEmpty(username))
             {
-                return Unauthorized("User not authenticated.");
+                return Unauthorized("Người dùng chưa được cấp quyền.");
             }
             var result = await _healthCheckUpService.ConfirmHealCheckup(dto.AppointmentID);
             if (result)
             {
-                return Ok("Health check-up xác nhận thành công.");
+                return Ok("Xác nhận kiểm tra khám sức khỏe định kì thành công.");
             }
-            return BadRequest("Xác nhận health check-up thất bại");
+            return BadRequest("Xác nhận kiểm tra khám sức khỏe định kì thất bại");
+        }
+
+        [HttpPut("denied-health-check-up")]
+        public async Task<IActionResult> DeniedHealthCheckUp([FromBody] UpdateAppointment dto)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Người dùng chưa được cấp quyền.");
+            }
+            var result = await _healthCheckUpService.DeniedHealCheckup(dto.AppointmentID);
+            if (result)
+            {
+                return Ok("Từ chối kiểm tra khám sức khỏe định kì thành công.");
+            }
+            return BadRequest("Từ chối kiểm tra khám sức khỏe định kì thất bại");
         }
 
         [HttpPut("confirm-appointment")]
@@ -90,14 +106,39 @@ namespace Sever.Controllers
             var username = User.Identity?.Name;
             if (string.IsNullOrEmpty(username))
             {
-                return Unauthorized("User not authenticated.");
+                return Unauthorized("Người dùng chưa được cấp quyền.");
             }
             var result = await _appointmentService.ConfirmAppointMent(dto.AppointmentID);
             if (result)
             {
-                return Ok("Appointment confirmed successfully.");
+                return Ok("Đã xác nhận tham gia cuộc hẹn");
             }
-            return BadRequest("Failed to confirm appointment.");
+            return BadRequest("Thất bại trong việc xác nhận tham gia cuộc hẹn.");
+        }
+
+        [HttpPut("denied-appointment")]
+        public async Task<IActionResult> DeniedAppointment([FromBody] UpdateAppointment dto)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Người dùng chưa được cấp quyền.");
+            }
+            var result = await _appointmentService.DeniedAppointMent(dto.AppointmentID);
+            if (result)
+            {
+                return Ok("Đã từ chối tham gia cuộc hẹn");
+            }
+            return BadRequest("Thất bại trong việc từ chối tham gia cuộc hẹn.");
+        }
+
+        [HttpGet("get-health-check-up-by-parent")]
+        public async Task<IActionResult> GetHealthCheckupsByParentId([FromBody] string parentId)
+        {
+            if (string.IsNullOrEmpty(parentId))
+                return BadRequest("Thiếu parentId.");
+            var result = await _healthCheckUpService.GetHealthCheckupsByParentIdAsync(parentId);
+            return Ok(result);
         }
     }
 }

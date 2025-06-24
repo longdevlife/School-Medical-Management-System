@@ -8,10 +8,11 @@ namespace Sever.Service
     public interface IHealthCheckUpService
     {
         Task<HealthCheckUp> CreateHealthCheckupAsync(CreateHealthCheckUp healthCheckup);
-        Task<bool> CreateHealthCheckupByClassAsync(CreateHealthCheckUp newHealthCheckup, string classId, DateTime time);
+        Task<bool> CreateHealthCheckupByClassAsync(CreateHealthCheckUp newHealthCheckup);
         Task<bool> UpdateHealthCheckupAsync(UpdateHealthCheckUp healthCheckupUpdate);
         Task<bool> DeleteHealthCheckupAsync(string id);
         Task<HealthCheckUp> GetHealthCheckupByIdAsync(string id);
+        Task<List<HealthCheckUp>> GetHealthCheckupsByStudentIdAsync(string parentId);
         Task<List<HealthCheckUp>> GetAllHealthCheckupsAsync();
         Task<List<HealthCheckUp>> GetHealthCheckupsByParentIdAsync(string studentId);
         Task<List<HealthCheckUp>> GetHealthCheckupsByYearAsync(DateTime dateTime);
@@ -51,10 +52,10 @@ namespace Sever.Service
 
             return await _healthCheckupRepository.CreateHealthCheckupAsync(healthCheckup);
         }
-        public async Task<bool> CreateHealthCheckupByClassAsync(CreateHealthCheckUp newHealthCheckup, string classId, DateTime time)
+        public async Task<bool> CreateHealthCheckupByClassAsync(CreateHealthCheckUp newHealthCheckup)
         {
             if (newHealthCheckup == null) throw new ArgumentNullException("Health Check Up cannot be null");
-            var listStudent = await _studentRepository.GetStudentProfilesByClassIdAsync(classId);
+            var listStudent = await _studentRepository.GetStudentProfilesByClassIdAsync(newHealthCheckup.ClassID);
             if (listStudent == null || listStudent.Count == 0) throw new ArgumentException("No students found in the specified class.");
             try
             {
@@ -68,7 +69,7 @@ namespace Sever.Service
                         Status = "Chờ xác nhận"
                     };
                     await _healthCheckupRepository.CreateHealthCheckupAsync(healthCheckup);
-                    await _notificationService.SendHealthCheckupNotificationAsync(student, time);
+                    await _notificationService.SendHealthCheckupNotificationAsync(student, newHealthCheckup.DateCheckUp);
                 }
             }
             catch (Exception ex)
@@ -160,6 +161,16 @@ namespace Sever.Service
         {
             var healthCheckUp = await _healthCheckupRepository.GetHealthCheckupByIdAsync(id);
             return await _healthCheckupRepository.UpdateStatus(healthCheckUp, "Đã Từ Chối");
+        }
+
+        public Task<List<HealthCheckUp>> GetHealthCheckupsByStudentIdAsync(string parentId)
+        {
+            var healthCheckups = _healthCheckupRepository.GetHealthCheckupsByStudentIdAsync(parentId);
+            if (healthCheckups == null)
+            {
+                throw new KeyNotFoundException("Không tìm thấy hồ sơ sức khỏe cho học sinh này.");
+            }
+            return healthCheckups;
         }
     }
 }

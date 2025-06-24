@@ -19,9 +19,7 @@ using static Sever.Service.IMedicineService;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 
-builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -94,6 +92,11 @@ builder.Services.AddScoped<IStudentProfileRepository, StudentProfileRepository>(
 builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IMedicalEventRepository, MedicalEventRepository>();
+builder.Services.AddScoped<IHealthCheckupRepository, HealthCheckupRepository>();
+builder.Services.AddScoped<IHealthProfileRepository, HealthProfileRepository>();
+builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+
+
 #endregion
 
 #region Service Scope
@@ -105,10 +108,13 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMedicineService, MedicineService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IMedicalEventService, MedicalEventService>();
+builder.Services.AddScoped<IHealthCheckUpService, HealthCheckUpService>();
+builder.Services.AddScoped<IHealthProfileService, HealthProfileService>();
 builder.Services.AddHttpContextAccessor();
-
 builder.Services.AddScoped<ISchoolInfoService, SchoolInfoService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+
 
 builder.Services.AddControllers()
     .AddJsonOptions(opt =>

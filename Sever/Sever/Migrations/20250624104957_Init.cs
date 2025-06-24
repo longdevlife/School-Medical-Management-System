@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Sever.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -163,16 +163,16 @@ namespace Sever.Migrations
                 name: "Notify",
                 columns: table => new
                 {
-                    UserID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    NotifyID = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NotifyID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     NotifyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateTime = table.Column<DateTime>(type: "date", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserID = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Notify", x => x.UserID);
+                    table.PrimaryKey("PK_Notify", x => x.NotifyID);
                     table.ForeignKey(
                         name: "FK_Notify_Users_UserID",
                         column: x => x.UserID,
@@ -255,21 +255,21 @@ namespace Sever.Migrations
                 columns: table => new
                 {
                     HealthCheckUpID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CheckDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Height = table.Column<float>(type: "real", nullable: false),
-                    Weight = table.Column<float>(type: "real", nullable: false),
-                    BMI = table.Column<float>(type: "real", nullable: false),
-                    VisionLeft = table.Column<int>(type: "int", nullable: false),
-                    VisionRight = table.Column<int>(type: "int", nullable: false),
-                    BloodPressure = table.Column<float>(type: "real", nullable: false),
-                    Dental = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Skin = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Hearing = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Respiration = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Ardiovascular = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CheckDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Height = table.Column<float>(type: "real", nullable: true),
+                    Weight = table.Column<float>(type: "real", nullable: true),
+                    BMI = table.Column<float>(type: "real", nullable: true),
+                    VisionLeft = table.Column<int>(type: "int", nullable: true),
+                    VisionRight = table.Column<int>(type: "int", nullable: true),
+                    BloodPressure = table.Column<float>(type: "real", nullable: true),
+                    Dental = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Skin = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Hearing = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Respiration = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Ardiovascular = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CheckerID = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CheckerID = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     ParentID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     StudentID = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
@@ -570,6 +570,11 @@ namespace Sever.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_News_UserID",
                 table: "News",
+                column: "UserID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notify_UserID",
+                table: "Notify",
                 column: "UserID");
 
             migrationBuilder.CreateIndex(

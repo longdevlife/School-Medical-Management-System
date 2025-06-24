@@ -11,11 +11,9 @@ namespace Sever.Repository
 
     public class HealthProfileRepository : IHealthProfileRepository
     {
-        private readonly IHealthProfileRepository _healthProfileRepository;
         private readonly DataContext _context;
-        public HealthProfileRepository(IHealthProfileRepository healthProfileRepository, DataContext dataContext)
+        public HealthProfileRepository( DataContext dataContext)
         {
-            _healthProfileRepository = healthProfileRepository;
             _context = dataContext;
         }
 

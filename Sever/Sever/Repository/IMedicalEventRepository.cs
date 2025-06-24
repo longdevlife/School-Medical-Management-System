@@ -85,7 +85,8 @@ namespace Sever.Repository.Interfaces
             {
                 return await _context.MedicalEvent
                     .Include(m => m.MedicalEventDetail)
-                    .Where(m => m.MedicalEventDetail.Any(d => d.StudentID == studentId))
+                    .Where(m => m.MedicalEventDetail
+                    .Any(d => d.StudentID == studentId))
                     .ToListAsync();
             }
 

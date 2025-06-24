@@ -13,6 +13,7 @@ namespace Sever.Repository
         Task<Medicine> GetMedicineByIdAsync(string medicineId);
         Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId);
         Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId);
+        Task<List<Medicine>> GetMedicineByStudentIDAsync(string studentId);
         public class MedicineRepository : IMedicineRepository
         {
             private readonly DataContext _context;
@@ -82,6 +83,12 @@ namespace Sever.Repository
                                      .ToListAsync();
             }
 
+            public async Task<List<Medicine>> GetMedicineByStudentIDAsync(string studentId)
+            {
+                return await _context.Medicine
+                                     .Where(m => m.StudentID == studentId)
+                                     .ToListAsync();
+            }
         }
     }
 }

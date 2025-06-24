@@ -145,31 +145,27 @@ namespace Sever.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Ardiovascular")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<float>("BMI")
+                    b.Property<float?>("BMI")
                         .HasColumnType("real");
 
-                    b.Property<float>("BloodPressure")
+                    b.Property<float?>("BloodPressure")
                         .HasColumnType("real");
 
-                    b.Property<DateTime>("CheckDate")
+                    b.Property<DateTime?>("CheckDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CheckerID")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Dental")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Hearing")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<float>("Height")
+                    b.Property<float?>("Height")
                         .HasColumnType("real");
 
                     b.Property<string>("Notes")
@@ -180,11 +176,9 @@ namespace Sever.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Respiration")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Skin")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
@@ -195,13 +189,13 @@ namespace Sever.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("VisionLeft")
+                    b.Property<int?>("VisionLeft")
                         .HasColumnType("int");
 
-                    b.Property<int>("VisionRight")
+                    b.Property<int?>("VisionRight")
                         .HasColumnType("int");
 
-                    b.Property<float>("Weight")
+                    b.Property<float?>("Weight")
                         .HasColumnType("real");
 
                     b.HasKey("HealthCheckUpID");
@@ -738,8 +732,7 @@ namespace Sever.Migrations
                     b.HasOne("Sever.Model.User", "Checker")
                         .WithMany("NurseHealthCheckUp")
                         .HasForeignKey("CheckerID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Sever.Model.User", "Parent")
                         .WithMany("ParentHealthCheckUp")

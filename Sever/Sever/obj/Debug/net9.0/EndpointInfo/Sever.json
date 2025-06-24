@@ -884,7 +884,7 @@
         ],
         "requestBody": {
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateHealthCheckUp"
               }
@@ -1164,71 +1164,6 @@
               }
             }
           }
-                "required": [
-                  "Dosage",
-                  "MedicineName",
-                  "Quantity"
-                ],
-                "type": "object",
-                "properties": {
-                  "MedicineName": {
-                    "type": "string"
-                  },
-                  "Quantity": {
-                    "type": "string"
-                  },
-                  "Dosage": {
-                    "type": "string"
-                  },
-                  "Instructions": {
-                    "type": "string"
-                  },
-                  "Notes": {
-                    "type": "string"
-                  },
-                  "StudentID": {
-                    "type": "string"
-                  },
-                  "Status": {
-                    "type": "string"
-                  },
-                  "Image": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "binary"
-                    }
-                  }
-                }
-              },
-              "encoding": {
-                "MedicineName": {
-                  "style": "form"
-                },
-                "Quantity": {
-                  "style": "form"
-                },
-                "Dosage": {
-                  "style": "form"
-                },
-                "Instructions": {
-                  "style": "form"
-                },
-                "Notes": {
-                  "style": "form"
-                },
-                "StudentID": {
-                  "style": "form"
-                },
-                "Status": {
-                  "style": "form"
-                },
-                "Image": {
-                  "style": "form"
-                }
-              }
-            }
-          }
         },
         "responses": {
           "200": {
@@ -1237,20 +1172,10 @@
         }
       }
     },
-    "/api/parent/medicine/update/{id}": {
+    "/api/parent/medicine/update": {
       "put": {
         "tags": [
           "Parent"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
         ],
         "requestBody": {
           "content": {
@@ -1279,9 +1204,6 @@
                       "type": "string",
                       "format": "binary"
                     }
-                  },
-                  "StudentID": {
-                    "type": "string"
                   }
                 }
               },
@@ -1302,9 +1224,6 @@
                   "style": "form"
                 },
                 "Image": {
-                  "style": "form"
-                },
-                "StudentID": {
                   "style": "form"
                 }
               }
@@ -1442,59 +1361,8 @@
         ],
         "requestBody": {
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "MedicineName": {
-                    "type": "string"
-                  },
-                  "Quantity": {
-                    "type": "string"
-                  },
-                  "Dosage": {
-                    "type": "string"
-                  },
-                  "Instructions": {
-                    "type": "string"
-                  },
-                  "Notes": {
-                    "type": "string"
-                  },
-                  "Image": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "binary"
-                    }
-                  },
-                  "StudentID": {
-                    "type": "string"
-                  }
-                }
-              },
-              "encoding": {
-                "MedicineName": {
-                  "style": "form"
-                },
-                "Quantity": {
-                  "style": "form"
-                },
-                "Dosage": {
-                  "style": "form"
-                },
-                "Instructions": {
-                  "style": "form"
-                },
-                "Notes": {
-                  "style": "form"
-                },
-                "Image": {
-                  "style": "form"
-                },
-                "StudentID": {
-                  "style": "form"
-                }
                 "$ref": "#/components/schemas/UpdateAppointment"
               }
             },
@@ -1541,30 +1409,6 @@
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/school/get-school-info": {
-      "get": {
-        "tags": [
-          "School"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/school/get-all-news": {
-      "get": {
-        "tags": [
-          "Parent"
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1857,10 +1701,6 @@
         "type": "object",
         "properties": {
           "token": {
-      "ResetPasswordRequest": {
-        "type": "object",
-        "properties": {
-          "token": {
             "type": "string",
             "nullable": true
           },
@@ -1945,20 +1785,6 @@
             "nullable": true
           },
           "hearing": {
-            "type": "string",
-            "nullable": true
-          },
-          "nurseID": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ResetPasswordRequest": {
-        "type": "object",
-        "properties": {
-          "token": {
             "type": "string",
             "nullable": true
           },

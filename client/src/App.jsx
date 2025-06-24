@@ -48,10 +48,14 @@ function App() {
         <Routes>
           {" "}
           {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
           <Route path="/home" element={<HomePage />} />
+          <Route path="/gioi-thieu" element={<NewsManagement/>} />
+          <Route path="/tin-tuc" element={<NewsManagement/>} />
+          <Route path="/login" element={<Login />} />
+          
           {/* Admin layout */}
           <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="accounts" element={<AccountList />} />
             <Route path="settings" element={<Settings />} />

@@ -127,8 +127,9 @@ builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IMedicalEventRepository, MedicalEventRepository>();
 builder.Services.AddScoped<IHealthCheckupRepository, HealthCheckupRepository>();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
-builder.Services.AddScoped<IHealthProfileRepository, HealthProfileRepository>();
+builder.Services.AddScoped<IVaccinationRepository, VaccinationRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
+builder.Services.AddScoped<IHealthProfileRepository, HealthProfileRepository>();
 #endregion
 
 #region Service Scope
@@ -145,8 +146,8 @@ builder.Services.AddScoped<IHealthProfileService, HealthProfileService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ISchoolInfoService, SchoolInfoService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
-builder.Services.AddScoped<IHealthCheckUpService, HealthCheckUpService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IVaccinationService, VaccinationService>();
 builder.Services.AddScoped<INewsService, NewsService>();
 
 builder.Services.AddControllers()

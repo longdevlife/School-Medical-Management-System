@@ -10,9 +10,15 @@ namespace Sever.Repository
         Task<VaccinationRecord> CreateVaccinationAsync(VaccinationRecord vaccinations);
         Task<bool> UpdateVaccinationAsync(VaccinationRecord vaccinations);
         Task<bool> DeleteVaccinationAsync(string id);
-        Task<VaccinationRecord> GetVaccineByIdAsync(string id);
-
-
+        Task<VaccinationRecord> GetVaccineByNurseIdAsync(string id);
+        Task<VaccinationRecord> GetVaccineByRecordIdAsync(string id);
+        Task<string> GetCurrentVaccinationRecordID();
+        Task<List<VaccinationRecord>> GetAllVaccinationRecordsAsync();
+        Task<bool> UpdateStatus(VaccinationRecord vaccination, string status);
+        Task<List<VaccinationRecord>> GetVaccineDeniedAsync();
+        Task<List<VaccinationRecord>> GetVaccineConfirmdAsync();
+        Task<List<VaccinationRecord>> GetVaccineByStudentIdAsync(string studentId);
+        Task<List<VaccinationRecord>> GetVaccineNotResponseAsync();
 
     }
     public class VaccinationRepository : IVaccinationRepository
@@ -36,16 +42,22 @@ namespace Sever.Repository
         }
         public async Task<bool> DeleteVaccinationAsync(string id)
         {
-            var vaccinations = await GetVaccineByIdAsync(id);
+            var vaccinations = await GetVaccineByNurseIdAsync(id);
             if (vaccinations == null) return false;
             _context.VaccinationRecord.Remove(vaccinations);
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<VaccinationRecord> GetVaccineByIdAsync(string id)
+        public async Task<VaccinationRecord> GetVaccineByNurseIdAsync(string id)
         {
-            return await _context.VaccinationRecord.FirstOrDefaultAsync(h => h.VaccinatorID == id);
+            return await _context.VaccinationRecord.FirstOrDefaultAsync(h => h.NurseID == id);
         }
+
+        public async Task<VaccinationRecord> GetVaccineByRecordIdAsync(string id)
+        {
+            return await _context.VaccinationRecord.FirstOrDefaultAsync(h => h.RecordID == id);
+        }
+
 
         public async Task<string> GetCurrentVaccinationRecordID()
         {
@@ -69,6 +81,45 @@ namespace Sever.Repository
             }
 
             return newId;
+        }
+
+        public async Task<List<VaccinationRecord>> GetAllVaccinationRecordsAsync()
+        {
+            return await  _context.VaccinationRecord.ToListAsync();
+        }
+
+        public async Task<bool> UpdateStatus(VaccinationRecord vaccination, string status)
+        {
+            vaccination.Status = status;
+            _context.VaccinationRecord.Update(vaccination);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+
+        public async Task<List<VaccinationRecord>> GetVaccineDeniedAsync()
+        {
+            return await _context.VaccinationRecord
+                .Where(h => h.Status == " Đã từ chối")
+                .ToListAsync();
+        }
+
+        public async Task<List<VaccinationRecord>> GetVaccineConfirmdAsync()
+        {
+            return await _context.VaccinationRecord
+                .Where(h => h.Status == "Đã xác nhận")
+                .ToListAsync();
+        }
+        public async Task<List<VaccinationRecord>> GetVaccineByStudentIdAsync(string studentId)
+        {
+            return await _context.VaccinationRecord
+                .Where(v => v.StudentID == studentId)
+                .ToListAsync();
+        }
+        public async Task<List<VaccinationRecord>> GetVaccineNotResponseAsync()
+        {
+            return await _context.VaccinationRecord
+                .Where(h => h.Status == "Chờ xác nhận")
+                .ToListAsync();
         }
 
     }

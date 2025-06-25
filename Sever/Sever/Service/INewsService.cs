@@ -25,7 +25,7 @@ namespace Sever.Service
             _newsRepository = newsRepository;
             _filesService = filesService;
         }
-        public Task<News> CreateNewsAsync(CreateNews newNews, string userId)
+        public async Task<News> CreateNewsAsync(CreateNews newNews, string userId)
         {
             if (newNews == null) throw new ArgumentNullException("News Không đúng fomat vui lòng kiểm tra lại");
             var news = new News
@@ -43,9 +43,13 @@ namespace Sever.Service
                 var results = _newsRepository.CreateNewsAsync(news);
                 foreach (var item in newNews.Image)
                 {
-                    _filesService.UploadNewsImageByAsync(item, news.NewsID);
+                    var imgUp = _filesService.UploadNewsImageByAsync(item, news.NewsID);
+                    if (imgUp == null)
+                    {
+                        throw new ArgumentException("Lưu ảnh thất bại");
+                    }
                 }
-                return results;
+                return news;
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
 ﻿using Sever.DTO.HealthCheckUp;
+using Sever.DTO.Vaccination;
 using Sever.Model;
 using Sever.Repository;
 using Sever.Utilities;
@@ -76,6 +77,7 @@ namespace Sever.Service
             }
             return true;
         }
+
         public async Task<bool> UpdateHealthCheckupAsync(UpdateHealthCheckUp healthCheckupUpdate)
         {
             if (healthCheckupUpdate == null) throw new ArgumentNullException("Health Check Up không được để trống");
@@ -181,5 +183,6 @@ namespace Sever.Service
             }
             return healthCheckups;
         }
+
     }
 }

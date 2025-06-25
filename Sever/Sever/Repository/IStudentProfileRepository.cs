@@ -8,6 +8,7 @@ namespace Sever.Repository
     {
         Task<StudentProfile> SearchStudentProfile(string info);
         Task<List<StudentProfile>> GetStudentProfileByParentId(string info);
+        Task<StudentProfile> GetStudentProfileByStudentId(string info);
         Task<List<StudentProfile>> GetStudentProfilesByClassIdAsync(string classId);
     }
     public class StudentProfileRepository : IStudentProfileRepository
@@ -51,7 +52,14 @@ namespace Sever.Repository
                 .Include(s => s.Parent)
                 .ToListAsync();
         }
-        
+
+        public async Task<StudentProfile> GetStudentProfileByStudentId(string id)
+        {
+            return await _context.StudentProfile
+                .FirstOrDefaultAsync(s => s.StudentID == id);
+                
+        }
+
     }
 
 }

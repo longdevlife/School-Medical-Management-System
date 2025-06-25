@@ -22,8 +22,8 @@ namespace Sever.Controllers
             _newsService = newsService;
         }
 
-        [HttpGet("search-student-profile")]
-        public async Task<IActionResult> SearchStudentProfile([FromBody] string info)
+        [HttpGet("search-student-profile/{info}")]
+        public async Task<IActionResult> SearchStudentProfile(string info)
         {
             if (string.IsNullOrEmpty(info))
             {
@@ -55,7 +55,7 @@ namespace Sever.Controllers
             try
             {
                 var news = await _newsService.GetNewsByUserIdAsync(user.UserID);
-                if (news == null || news.Count == 0)
+                if (news == null)
                 {
                     return NotFound(new { message = "Không có tin tức nào để hiển thị" });
                 }
@@ -68,15 +68,17 @@ namespace Sever.Controllers
         }
 
         [HttpPost("create-news")]
-        public async Task<IActionResult> CreateNews([FromBody] CreateNews newNews)
+        public async Task<IActionResult> CreateNews(CreateNews newNews)
         {
+            string username = User.Identity?.Name;
             if (newNews == null)
             {
                 return BadRequest(new { message = "Thông tin tin tức không được để trống" });
             }
             try
             {
-                var news = await _newsService.CreateNewsAsync(newNews);
+                var user = await _userService.GetUserAsyc(username);
+                var news = await _newsService.CreateNewsAsync(newNews, user.UserID);
                 return CreatedAtAction(nameof(GetNewsByManager), new { id = news.NewsID }, news);
             }
             catch (Exception ex)
@@ -110,6 +112,6 @@ namespace Sever.Controllers
             }
         }
 
-        
+
     }
 }

@@ -957,6 +957,16 @@
   },
   {
     "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "GetStudentInfoByParent",
+    "RelativePath": "api/parent/get-student-info-by-parent",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
     "Method": "CreateMedicine",
     "RelativePath": "api/parent/medicine/create",
     "HttpMethod": "POST",

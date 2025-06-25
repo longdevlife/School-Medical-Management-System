@@ -20,18 +20,23 @@ namespace Sever.Controllers
         private readonly IHealthCheckUpService _healthCheckUpService;
         private readonly IAppointmentService _appointmentService;
         private readonly IVaccinationService _vaccinationService;
-
+        private readonly IStudentService _studentService;
+        private readonly IUserService _userService; 
         public ParentController(IMedicineService medicineService,
                 IMedicalEventService medicalEventService,
                 IHealthCheckUpService healthCheckUpService,
                 IAppointmentService appointmentService,
-                IVaccinationService vaccinationService)
+                IVaccinationService vaccinationService,
+                IStudentService studentService,
+                IUserService userService)
         {
             _medicineService = medicineService;
             _medicalEventService = medicalEventService;
             _healthCheckUpService = healthCheckUpService;
             _appointmentService = appointmentService;
             _vaccinationService = vaccinationService;
+            _studentService = studentService;
+            _userService = userService;
         }
 
         [HttpPost("medicine/create")]
@@ -145,7 +150,7 @@ namespace Sever.Controllers
             var result = await _healthCheckUpService.GetHealthCheckupsByParentIdAsync(parentId);
             return Ok(result);
         }
-       
+
         [HttpPut("vaccine/confirm")]
         public async Task<IActionResult> ConfirmVaccine([FromBody] VaccineReponse dto)
         {
@@ -177,7 +182,7 @@ namespace Sever.Controllers
             }
             return BadRequest("Từ chối tiêm chủng thất bại");
         }
-       
+
         [HttpGet("vaccine/getParentId")]
         public async Task<IActionResult> GetVaccineByParentId()
         {
@@ -186,6 +191,28 @@ namespace Sever.Controllers
                 return Unauthorized("Bạn cần đăng nhập.");
             var result = await _vaccinationService.GetVaccineByParentUsernameAsync(username);
             return Ok(result);
+        }
+        [HttpGet("get-student-info-by-parent")]
+        public async Task<IActionResult> GetStudentInfoByParent()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Người dùng chưa được cấp quyền.");
+            }
+            var parent = await _userService.GetUserAsyc(username);
+            if (parent ==null)
+            {
+                return BadRequest(new { message = "Không tìm thấy thông tin phụ huynh." });
+            }
+
+            var student = await _studentService.GetStudentProfilesByParentAsync(parent.UserID);
+            if (student == null)
+            {
+                return NotFound(new { message = "Không tìm thấy thông tin học sinh." });
+            }
+            return Ok(student);
+
         }
     }
 }

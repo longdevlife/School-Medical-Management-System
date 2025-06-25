@@ -1829,6 +1829,18 @@
         }
       }
     },
+    "/api/parent/get-student-info-by-parent": {
+      "get": {
+        "tags": [
+          "Parent"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/school/get-school-info": {
       "get": {
         "tags": [

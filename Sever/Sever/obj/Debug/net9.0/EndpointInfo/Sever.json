@@ -950,30 +950,6 @@
         }
       }
     },
-    "/api/nurse/get-confirm-healcheck-up": {
-      "get": {
-        "tags": [
-          "Nurse"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/nurse/get-denied-health-check-up": {
-      "get": {
-        "tags": [
-          "Nurse"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/nurse/get-not-response-health-check-up": {
       "get": {
         "tags": [

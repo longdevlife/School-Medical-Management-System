@@ -416,26 +416,6 @@
   },
   {
     "ContainingType": "Sever.Controllers.NurseController",
-    "Method": "GetConfirmHealthCheckUp",
-    "RelativePath": "api/nurse/get-confirm-healcheck-up",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.NurseController",
-    "Method": "GetDeniedHealthCheckUp",
-    "RelativePath": "api/nurse/get-denied-health-check-up",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.NurseController",
     "Method": "GetHealthCheckupsByStudentId",
     "RelativePath": "api/nurse/get-health-check-up-by-student/{studentId}",
     "HttpMethod": "GET",

@@ -691,6 +691,18 @@
         }
       }
     },
+    "/api/nurse/medicine/getAll": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/nurse/event/create": {
       "post": {
         "tags": [
@@ -1172,20 +1184,10 @@
         }
       }
     },
-    "/api/parent/medicine/update/{id}": {
+    "/api/parent/medicine/update": {
       "put": {
         "tags": [
           "Parent"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
         ],
         "requestBody": {
           "content": {
@@ -1214,9 +1216,6 @@
                       "type": "string",
                       "format": "binary"
                     }
-                  },
-                  "StudentID": {
-                    "type": "string"
                   }
                 }
               },
@@ -1237,9 +1236,6 @@
                   "style": "form"
                 },
                 "Image": {
-                  "style": "form"
-                },
-                "StudentID": {
                   "style": "form"
                 }
               }

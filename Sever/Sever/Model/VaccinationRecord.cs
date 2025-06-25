@@ -16,6 +16,12 @@ namespace Sever.Model
         public StudentProfile StudentProfile { get; set; }
         public string VaccinatorID { get; set; }
         [ForeignKey("VaccinatorID")]
+        public string ParentID { get; set; }
+        [ForeignKey("ParentID")]
+        public User Parent { get; set; }
+        //public string NurseID { get; set; }
+        //[ForeignKey("NurseID")]
+        //public User Nurse { get; set; }
         public User Vaccinator { get; set; }
         public int VaccineID {  get; set; }
         [ForeignKey("VaccineID")]

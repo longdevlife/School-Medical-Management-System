@@ -16,13 +16,15 @@ namespace Sever.Service
     {
         Task<Medicine> CreateMedicineByParentAsync(CreateMedicine dto, string userName);
         Task<Medicine> CreateMedicineByNurseAsync(CreateMedicine dto, string userName);
-        Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string medicineId, string userName);
+        Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string userName);
         Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto, string userName);
 
 
 
         Task<List<MedicineResponse>> GetMedicinesByStudentAsync(string studentId);
         Task<List<MedicineResponse>> GetMedicineByParentAsync(string userName);
+        Task<List<MedicineResponse>> GetAllMedicinesAsync();
+
 
         //Parent: create, update, getMedicineByParent, getMedicineByMedicineId, getMedicineByStudentID
         //Nurse: create, update, getMedicineByStatus, getMedicineByStudentID, getMedicineByMedicineId
@@ -114,20 +116,32 @@ namespace Sever.Service
                 return medicine;
             }
 
-            public async Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string medicineId, string userName)
+            public async Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string userName)
             {
-                var medicine = await _medicineRepository.GetMedicineByIdAsync(medicineId);
 
                 var parent = await _userService.GetUserAsyc(userName);
+                if (parent == null) throw new Exception("Không tìm thấy tài khoản phụ huynh.");
                 var userId = parent.UserID;
-              
-                if (medicine.ParentID != userId || medicine.NurseID != null)
-                    throw new UnauthorizedAccessException("Bạn không có quyền chỉnh sửa đơn thuốc này.");
 
-                if (medicine == null)
+                var studentList = await _medicineRepository.GetStudentsByParentIdAsync(userId);
+                if (studentList == null || !studentList.Any())
+                    throw new Exception("Phụ huynh không có học sinh nào liên kết.");
+                var studentIds = studentList.Select(s => s.StudentID).ToList();
+
+                var allMedicines = new List<Medicine>();
+
+                foreach (var studentId in studentIds)
                 {
-                    throw new Exception("Không tìm thấy đơn thuốc.");
+                    var medicines = await _medicineRepository.GetMedicineByStudentIdAsync(studentId);
+                    allMedicines.AddRange(
+                        medicines.Where(m => m.ParentID == userId && m.NurseID == null)
+                    );
                 }
+
+                if (!allMedicines.Any())
+                    throw new Exception("Không tìm thấy đơn thuốc hợp lệ để chỉnh sửa.");
+
+                var medicine = allMedicines.OrderByDescending(m => m.SentDate).First();
 
                 if (!string.IsNullOrWhiteSpace(updateDto.MedicineName))
                     medicine.MedicineName = updateDto.MedicineName;
@@ -141,42 +155,41 @@ namespace Sever.Service
                 if (!string.IsNullOrWhiteSpace(updateDto.Instructions))
                     medicine.Instructions = updateDto.Instructions;
 
-                    medicine.SentDate =DateTime.UtcNow.AddHours(7);
-
                 if (!string.IsNullOrWhiteSpace(updateDto.Notes))
                     medicine.Notes = updateDto.Notes;
 
+                medicine.SentDate = DateTime.UtcNow.AddHours(7);
 
                 if (updateDto.Image != null && updateDto.Image.Any())
                 {
-                    bool uploadImg = true;
-
-                    var listImage = await _filesService.GetImageByMedicineIdAsync(medicine.MedicineID);
-                    foreach (var item in listImage)
+                    var oldImages = await _filesService.GetImageByMedicineIdAsync(medicine.MedicineID);
+                    foreach (var img in oldImages)
                     {
-                        await _filesService.DeleteFileAsync(item.FileLink);
+                        await _filesService.DeleteFileAsync(img.FileLink);
                     }
 
-                    foreach (var item in updateDto.Image)
+                    foreach (var img in updateDto.Image)
                     {
                         try
                         {
-                            await _filesService.UploadMedicineImageByAsync(item, medicine.MedicineID);
+                            await _filesService.UploadMedicineImageByAsync(img, medicine.MedicineID);
                         }
                         catch
                         {
-                            uploadImg = false;
                             throw new ArgumentException("Lưu ảnh thất bại");
                         }
                     }
                 }
 
                 await _medicineRepository.UpdateMedicineAsync(medicine);
-
-                await _notificationService.MedicineNotificationForAllNurses(medicine, $"Đơn thuốc đã được cập nhật bởi phụ huynh '{medicine.ParentID}'.");
+                await _notificationService.MedicineNotificationForAllNurses(
+                    medicine,
+                    $"Phụ huynh '{medicine.ParentID}' đã cập nhật đơn thuốc cho học sinh '{medicine.StudentID}'."
+                );
 
                 return true;
             }
+
 
 
             public async Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto, string userName)
@@ -204,7 +217,7 @@ namespace Sever.Service
                 if (!string.IsNullOrWhiteSpace(updateDto.Instructions))
                     medicine.Instructions = updateDto.Instructions;
 
-                    medicine.SentDate = DateTime.UtcNow.AddHours(7);
+                medicine.SentDate = DateTime.UtcNow.AddHours(7);
 
                 if (!string.IsNullOrWhiteSpace(updateDto.Notes))
                     medicine.Notes = updateDto.Notes;
@@ -261,20 +274,20 @@ namespace Sever.Service
                 List<MedicineResponse> response = new List<MedicineResponse>();
                 foreach (var e in medicine)
                 {
-                   response.Add(new MedicineResponse
+                    response.Add(new MedicineResponse
                     {
-                       MedicineID = e.MedicineID,
-                       SentDate = e.SentDate,
-                       MedicineName = e.MedicineName,
-                       Quantity = e.Quantity,
-                       Dosage = e.Dosage,
-                       Instructions = e.Instructions,
-                       Notes = e.Notes,
-                       NurseID = e.NurseID,
-                       ParentID = e.ParentID,
-                       StudentID = e.StudentID,
-                       Status = e.Status
-                   });
+                        MedicineID = e.MedicineID,
+                        SentDate = e.SentDate,
+                        MedicineName = e.MedicineName,
+                        Quantity = e.Quantity,
+                        Dosage = e.Dosage,
+                        Instructions = e.Instructions,
+                        Notes = e.Notes,
+                        NurseID = e.NurseID,
+                        ParentID = e.ParentID,
+                        StudentID = e.StudentID,
+                        Status = e.Status
+                    });
                 }
                 return response;
             }
@@ -311,6 +324,30 @@ namespace Sever.Service
                             Status = e.Status
                         });
                     }
+                }
+                return response;
+            }
+
+            public async Task<List<MedicineResponse>> GetAllMedicinesAsync()
+            {
+                var medicines = await _medicineRepository.GetAllMedicinesAsync();
+                List<MedicineResponse> response = new List<MedicineResponse>();
+                foreach (var e in medicines)
+                {
+                    response.Add(new MedicineResponse
+                    {
+                        MedicineID = e.MedicineID,
+                        SentDate = e.SentDate,
+                        MedicineName = e.MedicineName,
+                        Quantity = e.Quantity,
+                        Dosage = e.Dosage,
+                        Instructions = e.Instructions,
+                        Notes = e.Notes,
+                        NurseID = e.NurseID,
+                        ParentID = e.ParentID,
+                        StudentID = e.StudentID,
+                        Status = e.Status
+                    });
                 }
                 return response;
             }

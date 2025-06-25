@@ -529,6 +529,16 @@
   },
   {
     "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetAllMedicines",
+    "RelativePath": "api/nurse/medicine/getAll",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
     "Method": "GetMedicinesByStudentID",
     "RelativePath": "api/nurse/medicine/getByStudentId/{studentId}",
     "HttpMethod": "GET",
@@ -785,16 +795,11 @@
   {
     "ContainingType": "Sever.Controllers.ParentController",
     "Method": "UpdateMedicine",
-    "RelativePath": "api/parent/medicine/update/{id}",
+    "RelativePath": "api/parent/medicine/update",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
     "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.String",
-        "IsRequired": true
-      },
       {
         "Name": "MedicineName",
         "Type": "System.String",
@@ -823,11 +828,6 @@
       {
         "Name": "Image",
         "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
-        "IsRequired": false
-      },
-      {
-        "Name": "StudentID",
-        "Type": "System.String",
         "IsRequired": false
       }
     ],

@@ -59,6 +59,14 @@ namespace Sever.Controllers
             return Ok(result);
         }
 
+        [HttpGet("medicine/getAll")]
+        public async Task<IActionResult> GetAllMedicines()
+        {
+            var result = await _medicineService.GetAllMedicinesAsync();
+            return Ok(result);
+        }
+
+
         [HttpPost("event/create")]
         public async Task<IActionResult> CreateMedicalEvent([FromForm] CreateMedicalEvent request)
         {

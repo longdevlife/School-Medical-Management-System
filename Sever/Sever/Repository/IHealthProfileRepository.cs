@@ -7,12 +7,13 @@ namespace Sever.Repository
     public interface IHealthProfileRepository
     {
         Task<HealthProfile> GetHealthProfileByStudentID(string studentId);
+        Task<bool> UpdateHealthProfile(HealthProfile healthProfile);
     }
 
     public class HealthProfileRepository : IHealthProfileRepository
     {
         private readonly DataContext _context;
-        public HealthProfileRepository( DataContext dataContext)
+        public HealthProfileRepository(DataContext dataContext)
         {
             _context = dataContext;
         }
@@ -23,5 +24,12 @@ namespace Sever.Repository
                 .FirstOrDefaultAsync(h => h.StudentID == studentId);
         }
 
+        public async Task<bool> UpdateHealthProfile(HealthProfile healthProfile)
+        {
+            _context.HealthProfile.Update(healthProfile);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+
+        }
     }
 }

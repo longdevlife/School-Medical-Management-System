@@ -1,8 +1,9 @@
 {
-  "openapi": "3.0.4",
+  "openapi": "3.0.1",
   "info": {
-    "title": "Sever",
-    "version": "1.0"
+    "title": "Sever API",
+    "description": "API cho hệ thống y tế học đường",
+    "version": "v1"
   },
   "paths": {
     "/api/admin/create-accounts": {
@@ -896,50 +897,26 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/CreateHealthCheckUp"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateHealthCheckUp"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateHealthCheckUp"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/nurse/get-health-check-up-by-student": {
-      "get": {
-        "tags": [
-          "Nurse"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "string"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "type": "string"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "type": "string"
+                "type": "object",
+                "properties": {
+                  "classId": {
+                    "type": "string"
+                  },
+                  "dateCheckUp": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              },
+              "encoding": {
+                "classId": {
+                  "style": "form"
+                },
+                "dateCheckUp": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -951,22 +928,20 @@
         }
       }
     },
-    "/api/nurse/get-confirm-healcheck-up": {
+    "/api/nurse/get-health-check-up-by-student/{studentId}": {
       "get": {
         "tags": [
           "Nurse"
         ],
-        "responses": {
-          "200": {
-            "description": "OK"
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
-        }
-      }
-    },
-    "/api/nurse/get-denied-health-check-up": {
-      "get": {
-        "tags": [
-          "Nurse"
         ],
         "responses": {
           "200": {
@@ -987,18 +962,19 @@
         }
       }
     },
-    "/api/nurse/get-health-check-up-by-year": {
+    "/api/nurse/get-health-check-up-by-year/{year}": {
       "get": {
         "tags": [
           "Nurse"
         ],
         "parameters": [
           {
-            "name": "dateTime",
-            "in": "query",
+            "name": "year",
+            "in": "path",
+            "required": true,
             "schema": {
-              "type": "string",
-              "format": "date-time"
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -1540,17 +1516,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateAppointment"
+                "$ref": "#/components/schemas/HealthCheckUpResponse"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateAppointment"
+                "$ref": "#/components/schemas/HealthCheckUpResponse"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateAppointment"
+                "$ref": "#/components/schemas/HealthCheckUpResponse"
               }
             }
           }
@@ -1571,17 +1547,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateAppointment"
+                "$ref": "#/components/schemas/HealthCheckUpResponse"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateAppointment"
+                "$ref": "#/components/schemas/HealthCheckUpResponse"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateAppointment"
+                "$ref": "#/components/schemas/HealthCheckUpResponse"
               }
             }
           }
@@ -1655,30 +1631,21 @@
         }
       }
     },
-    "/api/parent/get-health-check-up-by-parent": {
+    "/api/parent/get-all-health-check-up-by-parent/{parentId}": {
       "get": {
         "tags": [
           "Parent"
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "string"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "type": "string"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "type": "string"
-              }
+        "parameters": [
+          {
+            "name": "parentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1884,10 +1851,6 @@
       "CreateAppointment": {
         "type": "object",
         "properties": {
-          "appointmentID": {
-            "type": "string",
-            "nullable": true
-          },
           "dateTime": {
             "type": "string",
             "format": "date-time"
@@ -1905,32 +1868,6 @@
             "nullable": true
           },
           "healthCheckUpID": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "CreateHealthCheckUp": {
-        "type": "object",
-        "properties": {
-          "studentID": {
-            "type": "string",
-            "nullable": true
-          },
-          "healthCheckUpID": {
-            "type": "string",
-            "nullable": true
-          },
-          "classID": {
-            "type": "string",
-            "nullable": true
-          },
-          "dateCheckUp": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "note": {
             "type": "string",
             "nullable": true
           }
@@ -2021,6 +1958,20 @@
         "type": "object",
         "properties": {
           "idToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "HealthCheckUpResponse": {
+        "type": "object",
+        "properties": {
+          "heathCheckUpID": {
+            "type": "string",
+            "nullable": true
+          },
+          "resson": {
             "type": "string",
             "nullable": true
           }
@@ -2354,6 +2305,19 @@
         },
         "additionalProperties": false
       }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "Nhập 'Bearer <token>' vào đây",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
     }
-  }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
 }

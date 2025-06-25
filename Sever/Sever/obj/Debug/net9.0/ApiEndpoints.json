@@ -283,9 +283,14 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "dto",
-        "Type": "Sever.DTO.HealthCheckUp.CreateHealthCheckUp",
-        "IsRequired": true
+        "Name": "classId",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "dateCheckUp",
+        "Type": "System.DateTime",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -411,28 +416,8 @@
   },
   {
     "ContainingType": "Sever.Controllers.NurseController",
-    "Method": "GetConfirmHealthCheckUp",
-    "RelativePath": "api/nurse/get-confirm-healcheck-up",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.NurseController",
-    "Method": "GetDeniedHealthCheckUp",
-    "RelativePath": "api/nurse/get-denied-health-check-up",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.NurseController",
-    "Method": "GetHealthCheckupsByStudentIdA",
-    "RelativePath": "api/nurse/get-health-check-up-by-student",
+    "Method": "GetHealthCheckupsByStudentId",
+    "RelativePath": "api/nurse/get-health-check-up-by-student/{studentId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -448,15 +433,15 @@
   {
     "ContainingType": "Sever.Controllers.NurseController",
     "Method": "GetHealthCheckupsByYear",
-    "RelativePath": "api/nurse/get-health-check-up-by-year",
+    "RelativePath": "api/nurse/get-health-check-up-by-year/{year}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "dateTime",
-        "Type": "System.DateTime",
-        "IsRequired": false
+        "Name": "year",
+        "Type": "System.Int32",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
@@ -826,7 +811,7 @@
     "Parameters": [
       {
         "Name": "dto",
-        "Type": "Sever.DTO.Appointment.UpdateAppointment",
+        "Type": "Sever.DTO.HealthCheckUp.HealthCheckUpResponse",
         "IsRequired": true
       }
     ],
@@ -858,7 +843,7 @@
     "Parameters": [
       {
         "Name": "dto",
-        "Type": "Sever.DTO.Appointment.UpdateAppointment",
+        "Type": "Sever.DTO.HealthCheckUp.HealthCheckUpResponse",
         "IsRequired": true
       }
     ],
@@ -877,7 +862,7 @@
   {
     "ContainingType": "Sever.Controllers.ParentController",
     "Method": "GetHealthCheckupsByParentId",
-    "RelativePath": "api/parent/get-health-check-up-by-parent",
+    "RelativePath": "api/parent/get-all-health-check-up-by-parent/{parentId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,

@@ -4,11 +4,14 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using OfficeOpenXml;
 using Sever.Context;
 using Sever.Repository;
 using Sever.Repository.Interfaces;
 using Sever.Service;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text;
 using System.Text.Json.Serialization;
 using static Sever.Repository.IMedicineRepository;
@@ -22,7 +25,43 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1", // <-- phiên bản API, không phải OpenAPI
+        Title = "Sever API",
+        Description = "API cho hệ thống y tế học đường"
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Nhập 'Bearer <token>' vào đây"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
+
+
 
 
 
@@ -93,11 +132,14 @@ builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IMedicalEventRepository, MedicalEventRepository>();
 builder.Services.AddScoped<IHealthCheckupRepository, HealthCheckupRepository>();
-builder.Services.AddScoped<IHealthProfileRepository, HealthProfileRepository>();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+<<<<<<< HEAD
 builder.Services.AddScoped<IVaccinationRepository, VaccinationRepository>();
 
 
+=======
+builder.Services.AddScoped<IHealthProfileRepository, HealthProfileRepository>();
+>>>>>>> 5a8bbebb38fca97945b851de2e2f0a690d7312ff
 #endregion
 
 #region Service Scope
@@ -114,9 +156,9 @@ builder.Services.AddScoped<IHealthProfileService, HealthProfileService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ISchoolInfoService, SchoolInfoService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IHealthCheckUpService, HealthCheckUpService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IVaccinationService, VaccinationService>();
-
 
 builder.Services.AddControllers()
     .AddJsonOptions(opt =>

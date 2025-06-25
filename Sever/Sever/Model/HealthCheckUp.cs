@@ -24,7 +24,7 @@ namespace Sever.Model
         public string? CheckerID { get; set; }
         [ForeignKey("CheckerID")]
         public User Checker { get; set; }
-        public string ParentID { get; set; }
+        public string? ParentID { get; set; }
         [ForeignKey("ParentID")]
         public User Parent { get; set; }
         public string StudentID { get; set; }

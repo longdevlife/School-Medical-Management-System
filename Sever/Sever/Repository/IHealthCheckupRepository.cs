@@ -13,11 +13,12 @@ namespace Sever.Repository
         Task<HealthCheckUp> GetHealthCheckupByIdAsync(string id);
         Task<List<HealthCheckUp>> GetAllHealthCheckupsAsync();
         Task<List<HealthCheckUp>> GetHealthCheckupsByStudentIdAsync(string studentId);
-        Task<List<HealthCheckUp>> GetHealthCheckupsByYearAsync(DateTime dateTime);
+        Task<List<HealthCheckUp>> GetHealthCheckupsByYearAsync(int year);
         Task<List<HealthCheckUp>> GetHealthCheckUpsDeniedAsync();
         Task<List<HealthCheckUp>> GetHealthCheckUpsConfirmAsync();
         Task<List<HealthCheckUp>> GetHealthCheckUpsNotResponseAsync();
         Task<bool> UpdateStatus(HealthCheckUp healthCheckup, string status);
+        Task<HealthCheckUp> GetHealthCheckUpByIdAsync(string id);
         string NewID();
 
     }
@@ -61,30 +62,30 @@ namespace Sever.Repository
                 .Where(h => h.StudentID == studentId)
                 .ToListAsync();
         }
-        public async Task<List<HealthCheckUp>> GetHealthCheckupsByYearAsync(DateTime dateTime)
+        public async Task<List<HealthCheckUp>> GetHealthCheckupsByYearAsync(int Year)
         {
             return await _context.HealthCheckUp
-                .Where(h => h.CheckDate != null && h.CheckDate.Value.Year == dateTime.Year)
+                .Where(h => h.CheckDate.Value.Year == Year)
                 .ToListAsync();
         }
         public async Task<List<HealthCheckUp>> GetHealthCheckUpsDeniedAsync()
         {
             return await _context.HealthCheckUp
-                .Where(h => h.Status == "Từ chối")
+                .Where(h => h.Status == "Từ chối" && h.CheckDate >= DateTime.Now)
                 .ToListAsync();
         }
 
         public async Task<List<HealthCheckUp>> GetHealthCheckUpsConfirmAsync()
         {
             return await _context.HealthCheckUp
-                .Where(h => h.Status == "Đã xác nhận")
+                .Where(h => h.Status == "Đã xác nhận" && h.CheckDate >= DateTime.Now)
                 .ToListAsync();
         }
 
         public async Task<List<HealthCheckUp>> GetHealthCheckUpsNotResponseAsync()
         {
             return await _context.HealthCheckUp
-                .Where(h => h.Status == "Chờ phản hồi")
+                .Where(h => h.Status == "Chờ xác nhận" && h.CheckDate >= DateTime.Now)
                 .ToListAsync();
         }
         public async Task<bool> UpdateStatus(HealthCheckUp healthCheckup, string status)
@@ -99,9 +100,16 @@ namespace Sever.Repository
             var lastHealthCheckup = _context.HealthCheckUp
                                      .OrderByDescending(h => h.HealthCheckUpID)
                                      .FirstOrDefault();
-
-            return GenerateID.GenerateNextId(lastHealthCheckup.HealthCheckUpID, "HCU", 4);
+            if (lastHealthCheckup == null)
+            {
+                return "HC0001";
+            }
+            return GenerateID.GenerateNextId(lastHealthCheckup.HealthCheckUpID, "HC", 4);
         }
-        
+
+        public async Task<HealthCheckUp> GetHealthCheckUpByIdAsync(string id)
+        {
+            return await _context.HealthCheckUp.FirstOrDefaultAsync(h => h.HealthCheckUpID == id);
+        }
     }
 }

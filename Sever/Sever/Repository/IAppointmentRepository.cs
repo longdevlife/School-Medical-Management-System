@@ -14,6 +14,7 @@ namespace Sever.Repository
         Task<bool> GetConfirmAppointment();
         Task<bool> UpdateAppointmentByIdAsync(Appointment appointment);
         Task<bool>UpdateStatus(Appointment appointment, string status);
+        Task<bool> CreateAppointment(Appointment appointment);
         Task<string> NewID();
     }
     public class AppointmentRepository : IAppointmentRepository
@@ -58,7 +59,7 @@ namespace Sever.Repository
         public async Task<bool> UpdateAppointmentByIdAsync(Appointment appointment)
         {
             var apm = await GetAppointmentByIdAsync(appointment.AppointmentID);
-
+            if(apm ==  null) throw new ArgumentException("Không tìm thấy cuộc hẹn theo Id này");
             _context.Appointment.Update(apm);
             var result = await _context.SaveChangesAsync();
             return result > 0;
@@ -71,9 +72,14 @@ namespace Sever.Repository
 
         public async Task<string> NewID()
         {
-            var appointment = await _context.Appointment.OrderByDescending(a => a.AppointmentID).FirstOrDefaultAsync();
-            return GenerateID.GenerateNextId(appointment.AppointmentID, "AP", 4);
+            var appointment = await _context.Appointment
+                .OrderByDescending(a => a.AppointmentID)
+                .FirstOrDefaultAsync();
+
+            var lastId = appointment?.AppointmentID ?? "AP0001";
+            return GenerateID.GenerateNextId(lastId, "AP", 4);
         }
+
 
         public async Task<bool> CreateAppointment( Appointment appointment)
         {

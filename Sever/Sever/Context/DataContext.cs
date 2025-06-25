@@ -89,10 +89,17 @@ namespace Sever.Context
             #endregion
 
             #region VaccinationRecord
+      
             modelBuilder.Entity<VaccinationRecord>()
-                .HasOne(vr => vr.Vaccinator)
-                .WithMany(u => u.VaccinationRecord)
-                .HasForeignKey(vr => vr.VaccinatorID)
+                 .HasOne(v => v.Vaccinator)
+                 .WithMany(u => u.VaccinatorVaccinationRecord)
+                 .HasForeignKey(v => v.VaccinatorID)
+                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<VaccinationRecord>()
+                .HasOne(v => v.Nurse)
+                .WithMany(u => u.NurseVaccinationRecord)
+                .HasForeignKey(v => v.NurseID)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<VaccinationRecord>()
@@ -140,7 +147,6 @@ namespace Sever.Context
             #region Files
 
             #endregion
-
 
         }
 

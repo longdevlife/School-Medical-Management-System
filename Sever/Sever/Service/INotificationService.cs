@@ -13,8 +13,12 @@ namespace Sever.Service
         Task MedicalEventNotification(MedicalEvent medicalEvent, string customMessage = null);
         Task MedicineNotificationForParent(Medicine medicine, string customMessage = null);
         Task MedicineNotificationForAllNurses(Medicine medicine, string customMessage = null);
+
         Task<bool> SendHealthCheckupNotificationAsync(StudentProfile student, DateTime date);
         Task<bool> UpdateHealthCheckUpNotifycationAsync(StudentProfile student);
+        Task<bool> SendVaccinationNotificationAsync(StudentProfile student, DateTime? date);
+        Task<bool> UpdateVaccinationNotifycationAsync(StudentProfile student);
+
     }
     public class NotificationService : INotificationService
     {
@@ -184,5 +188,55 @@ namespace Sever.Service
             }
             return false;
         }
+
+        public async Task<bool> SendVaccinationNotificationAsync(StudentProfile student, DateTime? date)
+        {
+            try
+            {
+                string notifyId = await _notificationRepository.GetCurrentNotifyID();
+                var notification = new Notify
+                {
+                    NotifyID = notifyId,
+                    UserID = student.ParentID,
+                    NotifyName = "Tiêm Chủng",
+                    DateTime = DateTime.UtcNow,
+                    Title = "TIÊM CHỦNG",
+                    Description = $"Thông báo tiêm chủng của {student.StudentName} vào ngày {date} mong quý phụ huynh xác nhận cho con tiêm"
+                };
+                await _notificationRepository.AddNotificationAsync(notification);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi gửi thông báo tiêm chủng", ex);
+            }
+            return false;
+        }
+
+        public async Task<bool> UpdateVaccinationNotifycationAsync(StudentProfile student)
+        {
+            try
+            {
+                string notifyId = await _notificationRepository.GetCurrentNotifyID();
+                var notification = new Notify
+                {
+                    NotifyID = notifyId,
+                    UserID = student.ParentID,
+                    NotifyName = "Cập nhật tiêm chủng",
+                    DateTime = DateTime.UtcNow,
+                    Title = "CẬP NHÂT TIÊM CHỦNG",
+                    Description = $"Thông báo cập nhât tiêm chủng của {student.StudentName} vào ngày {DateTime.UtcNow} mong quý phụ huynh theo dõi kết quả tiêm chủng hoặc kết quả theo dõi sau tiêm"
+                };
+                await _notificationRepository.AddNotificationAsync(notification);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi gửi thông báo cập nhật khám sức khỏe.", ex);
+            }
+            return false;
+        }
     }
 }
+
+

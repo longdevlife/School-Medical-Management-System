@@ -1102,6 +1102,264 @@
         }
       }
     },
+    "/api/nurse/vaccine/createByStudentID": {
+      "post": {
+        "tags": [
+          "Nurse"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "VaccineID": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "Dose": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "Notes": {
+                    "type": "string"
+                  },
+                  "VaccinatedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "StudentID": {
+                    "type": "string"
+                  },
+                  "ClassID": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "VaccineID": {
+                  "style": "form"
+                },
+                "Dose": {
+                  "style": "form"
+                },
+                "Notes": {
+                  "style": "form"
+                },
+                "VaccinatedAt": {
+                  "style": "form"
+                },
+                "StudentID": {
+                  "style": "form"
+                },
+                "ClassID": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/vaccine/createByClassID": {
+      "post": {
+        "tags": [
+          "Nurse"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "VaccineID": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "Dose": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "Notes": {
+                    "type": "string"
+                  },
+                  "VaccinatedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "StudentID": {
+                    "type": "string"
+                  },
+                  "ClassID": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "VaccineID": {
+                  "style": "form"
+                },
+                "Dose": {
+                  "style": "form"
+                },
+                "Notes": {
+                  "style": "form"
+                },
+                "VaccinatedAt": {
+                  "style": "form"
+                },
+                "StudentID": {
+                  "style": "form"
+                },
+                "ClassID": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/vaccine/updateByRecordID/{recordId}": {
+      "put": {
+        "tags": [
+          "Nurse"
+        ],
+        "parameters": [
+          {
+            "name": "recordId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVaccineDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVaccineDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVaccineDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/vaccine/updateAfterByRecordID/{recordId}": {
+      "put": {
+        "tags": [
+          "Nurse"
+        ],
+        "parameters": [
+          {
+            "name": "recordId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVaccineAfterDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVaccineAfterDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVaccineAfterDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/vaccine/getAll": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/vaccine/getConfirm": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/vaccine/getDenied": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/vaccine/getNotResponse": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/parent/medicine/create": {
       "post": {
         "tags": [
@@ -1421,6 +1679,80 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/parent/vaccine/confirm": {
+      "put": {
+        "tags": [
+          "Parent"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VaccineReponse"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VaccineReponse"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/VaccineReponse"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/parent/vaccine/denied": {
+      "put": {
+        "tags": [
+          "Parent"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VaccineReponse"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VaccineReponse"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/VaccineReponse"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/parent/vaccine/getParentId": {
+      "get": {
+        "tags": [
+          "Parent"
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1865,6 +2197,134 @@
             "nullable": true
           },
           "phone": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateVaccineAfterDTO": {
+        "type": "object",
+        "properties": {
+          "dateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "followUpNotes": {
+            "type": "string",
+            "nullable": true
+          },
+          "followUpDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "studentID": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateVaccineDTO": {
+        "type": "object",
+        "properties": {
+          "dose": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "dateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "vaccinatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "studentID": {
+            "type": "string",
+            "nullable": true
+          },
+          "vaccineID": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "vaccinatorID": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "VaccineReponse": {
+        "type": "object",
+        "properties": {
+          "recordID": {
+            "type": "string",
+            "nullable": true
+          },
+          "dose": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "vaccinatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "followUpNotes": {
+            "type": "string",
+            "nullable": true
+          },
+          "followUpDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "studentID": {
+            "type": "string",
+            "nullable": true
+          },
+          "parentID": {
+            "type": "string",
+            "nullable": true
+          },
+          "nurseID": {
+            "type": "string",
+            "nullable": true
+          },
+          "vaccineID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "vaccinatorID": {
             "type": "string",
             "nullable": true
           }

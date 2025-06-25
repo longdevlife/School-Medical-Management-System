@@ -95,6 +95,7 @@ builder.Services.AddScoped<IMedicalEventRepository, MedicalEventRepository>();
 builder.Services.AddScoped<IHealthCheckupRepository, HealthCheckupRepository>();
 builder.Services.AddScoped<IHealthProfileRepository, HealthProfileRepository>();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+builder.Services.AddScoped<IVaccinationRepository, VaccinationRepository>();
 
 
 #endregion
@@ -114,6 +115,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ISchoolInfoService, SchoolInfoService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IVaccinationService, VaccinationService>();
 
 
 builder.Services.AddControllers()

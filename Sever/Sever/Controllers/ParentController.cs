@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Sever.DTO.Appointment;
 using Sever.DTO.File;
 using Sever.DTO.SendMedicine;
+using Sever.DTO.Vaccination;
 using Sever.Service;
 using System.Security.Claims;
 
@@ -17,16 +18,19 @@ namespace Sever.Controllers
         private readonly IMedicalEventService _medicalEventService;
         private readonly IHealthCheckUpService _healthCheckUpService;
         private readonly IAppointmentService _appointmentService;
+        private readonly IVaccinationService _vaccinationService;
 
         public ParentController(IMedicineService medicineService,
                 IMedicalEventService medicalEventService,
                 IHealthCheckUpService healthCheckUpService,
-                IAppointmentService appointmentService)
+                IAppointmentService appointmentService,
+                IVaccinationService vaccinationService)
         {
             _medicineService = medicineService;
             _medicalEventService = medicalEventService;
             _healthCheckUpService = healthCheckUpService;
             _appointmentService = appointmentService;
+            _vaccinationService = vaccinationService;
         }
 
         [HttpPost("medicine/create")]
@@ -138,6 +142,48 @@ namespace Sever.Controllers
             if (string.IsNullOrEmpty(parentId))
                 return BadRequest("Thiếu parentId.");
             var result = await _healthCheckUpService.GetHealthCheckupsByParentIdAsync(parentId);
+            return Ok(result);
+        }
+       
+        [HttpPut("vaccine/confirm")]
+        public async Task<IActionResult> ConfirmVaccine([FromBody] VaccineReponse dto)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Người dùng chưa được cấp quyền.");
+            }
+            var result = await _vaccinationService.ConfirmVaccination(dto.RecordID);
+            if (result)
+            {
+                return Ok("Xác nhận tiêm chủng thành công.");
+            }
+            return BadRequest("Xác nhận tiêm chủng thất bại");
+        }
+
+        [HttpPut("vaccine/denied")]
+        public async Task<IActionResult> DeniedVaccine([FromBody] VaccineReponse dto)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Người dùng chưa được cấp quyền.");
+            }
+            var result = await _vaccinationService.DeniedVaccination(dto.RecordID);
+            if (result)
+            {
+                return Ok("Từ chối tiêm chủng thành công.");
+            }
+            return BadRequest("Từ chối tiêm chủng thất bại");
+        }
+       
+        [HttpGet("vaccine/getParentId")]
+        public async Task<IActionResult> GetVaccineByParentId()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("Bạn cần đăng nhập.");
+            var result = await _vaccinationService.GetVaccineByParentUsernameAsync(username);
             return Ok(result);
         }
     }

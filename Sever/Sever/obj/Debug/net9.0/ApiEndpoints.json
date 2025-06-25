@@ -637,6 +637,170 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "CreateVaccinationByClassID",
+    "RelativePath": "api/nurse/vaccine/createByClassID",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "VaccineID",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Dose",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Notes",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "VaccinatedAt",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "StudentID",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "ClassID",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "CreateVaccination",
+    "RelativePath": "api/nurse/vaccine/createByStudentID",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "VaccineID",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Dose",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Notes",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "VaccinatedAt",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "StudentID",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "ClassID",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetAllVaccine",
+    "RelativePath": "api/nurse/vaccine/getAll",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetConfirmVaccine",
+    "RelativePath": "api/nurse/vaccine/getConfirm",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetDeniedVaccine",
+    "RelativePath": "api/nurse/vaccine/getDenied",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetNotResponseVaccine",
+    "RelativePath": "api/nurse/vaccine/getNotResponse",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "UpdateAfterVaccination",
+    "RelativePath": "api/nurse/vaccine/updateAfterByRecordID/{recordId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "recordId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Sever.DTO.Vaccination.UpdateVaccineAfterDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "UpdateVaccination",
+    "RelativePath": "api/nurse/vaccine/updateByRecordID/{recordId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "recordId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Sever.DTO.Vaccination.UpdateVaccineDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "Sever.Controllers.ParentController",
     "Method": "ConfirmAppointment",
     "RelativePath": "api/parent/confirm-appointment",
@@ -826,6 +990,48 @@
         "IsRequired": false
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "ConfirmVaccine",
+    "RelativePath": "api/parent/vaccine/confirm",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Sever.DTO.Vaccination.VaccineReponse",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "DeniedVaccine",
+    "RelativePath": "api/parent/vaccine/denied",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Sever.DTO.Vaccination.VaccineReponse",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "GetVaccineByParentId",
+    "RelativePath": "api/parent/vaccine/getParentId",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

@@ -6,6 +6,7 @@ using Sever.DTO.HealthCheckUp;
 using Sever.DTO.MedicalEvent;
 using Sever.DTO.Medicine;
 using Sever.DTO.SendMedicine;
+using Sever.DTO.Vaccination;
 using Sever.Service;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -22,16 +23,19 @@ namespace Sever.Controllers
         private readonly IMedicalEventService _medicalEventService;
         private readonly IAppointmentService _appointmentService;
         private readonly IHealthCheckUpService _healthCheckUpService;
+        private readonly IVaccinationService _vaccinationService;
 
         public NurseController(IMedicineService medicineService,
             IMedicalEventService medicalEventService,
             IHealthCheckUpService healthCheckUpService,
-            IAppointmentService appointmentService)
+            IAppointmentService appointmentService,
+            IVaccinationService vaccinationService)
         {
             _medicineService = medicineService;
             _medicalEventService = medicalEventService;
             _healthCheckUpService = healthCheckUpService;
             _appointmentService = appointmentService;
+            _vaccinationService = vaccinationService;
         }
 
         [HttpPost("medicine/create")]
@@ -212,5 +216,92 @@ namespace Sever.Controllers
                 return BadRequest("Cập nhật cuộc hẹn không thành công.");
             return Ok("Cập nhật cuộc hẹn thành công.");
         }
+
+
+        [HttpPost("vaccine/createByStudentID")]
+        public async Task<IActionResult> CreateVaccination([FromForm] CreateVaccination dto)
+        {
+            var username = User.Identity?.Name;
+            var result = await _vaccinationService.CreateVaccinationRecordByStudentIDAsync(dto, username);
+            return Ok(result);
+        }
+
+
+        [HttpPost("vaccine/createByClassID")]
+        public async Task<IActionResult> CreateVaccinationByClassID([FromForm] CreateVaccination dto)
+        {
+            var username = User.Identity?.Name;
+            var result = await _vaccinationService.CreateVaccinationRecordByClassIDAsync(dto, username);
+            return Ok(result);
+        }
+
+        [HttpPut("vaccine/updateByRecordID/{recordId}")]
+        public async Task<IActionResult> UpdateVaccination(string recordId, [FromBody] UpdateVaccineDTO dto)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("Bạn cần đăng nhập để thực hiện hành động này.");
+            var result = await _vaccinationService.UpdateVaccinationRecordAsync(dto, username, recordId);
+            if (!result)
+                return BadRequest("Cập nhật tiêm chủng không thành công.");
+            return Ok("Cập nhật tiêm chủng thành công.");
+        }
+
+        [HttpPut("vaccine/updateAfterByRecordID/{recordId}")]
+        public async Task<IActionResult> UpdateAfterVaccination(string recordId, [FromBody] UpdateVaccineAfterDTO dto)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("Bạn cần đăng nhập để thực hiện hành động này.");
+            var result = await _vaccinationService.UpdateVaccinationRecordAfterAsync(dto, username, recordId);
+            if (!result)
+                return BadRequest("Cập nhật tiêm chủng không thành công.");
+            return Ok("Cập nhật tiêm chủng thành công.");
+        }
+
+        [HttpGet("vaccine/getAll")]
+        public async Task<IActionResult> GetAllVaccine()
+        {
+            var result = await _vaccinationService.GetAllVaccineRecordAsync();
+            return Ok(result);
+        }
+        
+        [HttpGet("vaccine/getConfirm")]
+        public async Task<IActionResult> GetConfirmVaccine()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("Bạn cần đăng nhập để thực hiện hành động này.");
+            var result = await _vaccinationService.GetVaccineConfirmAsync();
+            if (result == null || !result.Any())
+                return NotFound("Không tìm thấy tiêm chủng nào đã xác nhận.");
+            return Ok(result);
+        }
+
+        [HttpGet("vaccine/getDenied")]
+        public async Task<IActionResult> GetDeniedVaccine()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("Bạn cần đăng nhập để thực hiện hành động này.");
+            var result = await _vaccinationService.GetVaccineDeniedAsync();
+            if (result == null || !result.Any())
+                return NotFound("Không tìm thấy tiêm chủng nào bị từ chối.");
+            return Ok(result);
+        }
+
+        [HttpGet("vaccine/getNotResponse")]
+        public async Task<IActionResult> GetNotResponseVaccine()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("Bạn cần đăng nhập để thực hiện hành động này.");
+            var result = await _vaccinationService.GetVaccineNotResponseAsync();
+            if (result == null || !result.Any())
+                return NotFound("Không tìm thấy tiêm chủng nào đang chờ xác nhận.");
+            return Ok(result);
+        }
+
+
     }
 }

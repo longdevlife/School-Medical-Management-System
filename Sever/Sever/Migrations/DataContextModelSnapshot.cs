@@ -622,8 +622,17 @@ namespace Sever.Migrations
                     b.Property<int>("Dose")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("FollowUpDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FollowUpNotes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NurseID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -633,14 +642,18 @@ namespace Sever.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTime?>("VaccinatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("VaccinatorID")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("VaccineID")
                         .HasColumnType("int");
 
                     b.HasKey("RecordID");
+
+                    b.HasIndex("NurseID");
 
                     b.HasIndex("StudentID");
 
@@ -890,6 +903,11 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.VaccinationRecord", b =>
                 {
+                    b.HasOne("Sever.Model.User", "Nurse")
+                        .WithMany("NurseVaccinationRecord")
+                        .HasForeignKey("NurseID")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Sever.Model.StudentProfile", "StudentProfile")
                         .WithMany("VaccinationRecord")
                         .HasForeignKey("StudentID")
@@ -897,16 +915,17 @@ namespace Sever.Migrations
                         .IsRequired();
 
                     b.HasOne("Sever.Model.User", "Vaccinator")
-                        .WithMany("VaccinationRecord")
+                        .WithMany("VaccinatorVaccinationRecord")
                         .HasForeignKey("VaccinatorID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Sever.Model.Vaccine", "Vaccine")
                         .WithMany("VaccinationRecord")
                         .HasForeignKey("VaccineID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Nurse");
 
                     b.Navigation("StudentProfile");
 
@@ -976,11 +995,13 @@ namespace Sever.Migrations
 
                     b.Navigation("NurseHealthCheckUp");
 
+                    b.Navigation("NurseVaccinationRecord");
+
                     b.Navigation("ParentHealthCheckUp");
 
                     b.Navigation("StudentProfile");
 
-                    b.Navigation("VaccinationRecord");
+                    b.Navigation("VaccinatorVaccinationRecord");
 
                     b.Navigation("Vaccine");
                 });

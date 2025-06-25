@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Sever.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -395,9 +395,13 @@ namespace Sever.Migrations
                     DateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    VaccinatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    FollowUpNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FollowUpDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     StudentID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    VaccinatorID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    VaccineID = table.Column<int>(type: "int", nullable: false)
+                    NurseID = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    VaccineID = table.Column<int>(type: "int", nullable: false),
+                    VaccinatorID = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -408,6 +412,12 @@ namespace Sever.Migrations
                         principalTable: "StudentProfile",
                         principalColumn: "StudentID",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_VaccinationRecord_Users_NurseID",
+                        column: x => x.NurseID,
+                        principalTable: "Users",
+                        principalColumn: "UserID",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_VaccinationRecord_Users_VaccinatorID",
                         column: x => x.VaccinatorID,
@@ -602,6 +612,11 @@ namespace Sever.Migrations
                 table: "Users",
                 column: "UserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VaccinationRecord_NurseID",
+                table: "VaccinationRecord",
+                column: "NurseID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_VaccinationRecord_StudentID",

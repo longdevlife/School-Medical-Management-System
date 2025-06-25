@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sever.Context;
+using Sever.DTO.Medicine;
 using Sever.Model;
 using Sever.Utilities;
 
@@ -13,7 +14,8 @@ namespace Sever.Repository
         Task<Medicine> GetMedicineByIdAsync(string medicineId);
         Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId);
         Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId);
-        Task<List<Medicine>> GetMedicineByStudentIDAsync(string studentId);
+        Task<List<Medicine>> GetAllMedicinesAsync();
+
         public class MedicineRepository : IMedicineRepository
         {
             private readonly DataContext _context;
@@ -83,12 +85,11 @@ namespace Sever.Repository
                                      .ToListAsync();
             }
 
-            public async Task<List<Medicine>> GetMedicineByStudentIDAsync(string studentId)
+            public async Task<List<Medicine>> GetAllMedicinesAsync()
             {
-                return await _context.Medicine
-                                     .Where(m => m.StudentID == studentId)
-                                     .ToListAsync();
+                return await _context.Medicine.ToListAsync();
             }
+
         }
     }
 }

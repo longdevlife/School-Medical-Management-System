@@ -1,5 +1,8 @@
 ﻿//using Sever.Context;
+//using Sever.DTO.HealthCheckUp;
+//using Sever.DTO.Vaccination;
 //using Sever.Model;
+//using Sever.Repository;
 
 //namespace Sever.Service
 //{
@@ -20,15 +23,79 @@
 //          6. Update vaccine after vaccination + Notify to nurse // (nếu có)
 //          7. Get all vaccination follow history by their studentID 
 //        */
-//        public class VaccinationRepository
+
+//        Task<VaccinationRecord> CreateVaccinationRecordByStudentIDAsync(CreateVaccination dto);
+//        Task<bool> CreateVaccinationRecordByClassAsync(CreateHealthCheckUp newHealthCheckup);
+//        Task<bool> UpdateVaccinationRecordAsync(UpdateHealthCheckUp healthCheckupUpdate);
+//        Task<bool> DeleteHealthCheckupAsync(string id);
+//        Task<HealthCheckUp> GetHealthCheckupByIdAsync(string id);
+//    }
+//    public class VaccinationService : IVaccinationService
+//    {
+//        private readonly IVaccinationRepository _vaccinationRepository;
+//        private readonly IStudentProfileRepository _studentProfileRepository;
+//        private readonly INotificationService _notificationService;
+
+//        public VaccinationService( IVaccinationRepository vaccinationRepository,
+//                                   IStudentProfileRepository studentProfileRepository,
+//                                   INotificationService notificationService)
 //        {
-//            private readonly DataContext _context;
+//            _vaccinationRepository = vaccinationRepository;
+//            _studentProfileRepository = studentProfileRepository;
+//            _notificationService = notificationService;
+//        }
 
-//            public VaccinationRepository(DataContext context)
+//        public async Task<VaccinationRecord> CreateVaccinationRecordByStudentIDAsync(CreateVaccination dto, string)
+//        {
+//            if (dto == null) throw new ArgumentNullException(nameof(dto), "Không được để trống.");
+
+//            // 1. Kiểm tra học sinh tồn tại
+//            var student = await _studentProfileRepository.GetStudentProfileByParentId(dto.StudentID);
+//            if (student == null) throw new Exception("Không tìm thấy học sinh.");
+
+//            // 2. Tạo record mới
+//            var record = new VaccinationRecord
 //            {
-//                _context = context;
-//            }
+//                RecordID = Guid.NewGuid().ToString(),
+//                StudentID = dto.StudentID,
+//                VaccineID = dto.VaccineID,
+//                Dose = dto.Dose,
+//                DateTime = dto.DateTime,
+//                Notes = dto.Notes,
+//                Status = "Chờ xác nhận"
+//            };
 
+//            // 3. Ghi vào DB
+//            await _vaccinationRepository.CreateVaccinationAsync(record);
+
+//            // 4. Gửi thông báo cho phụ huynh
+//            await _notificationService.SendNotificationAsync(
+//                student.ParentID,
+//                $"📢 Phiếu tiêm chủng mới: Học sinh {student.FullName}, Vaccine {dto.VaccineID}, Liều {dto.Dose}. Vui lòng xác nhận."
+//            );
+
+//            return record;
+//        }
+
+//        public Task<bool> CreateVaccinationRecordByClassAsync(CreateHealthCheckUp newHealthCheckup)
+//        {
+//            throw new NotImplementedException();
+//        }
+
+//        public Task<bool> DeleteHealthCheckupAsync(string id)
+//        {
+//            throw new NotImplementedException();
+//        }
+
+//        public Task<HealthCheckUp> GetHealthCheckupByIdAsync(string id)
+//        {
+//            throw new NotImplementedException();
+//        }
+
+//        public Task<bool> UpdateVaccinationRecordAsync(UpdateHealthCheckUp healthCheckupUpdate)
+//        {
+//            throw new NotImplementedException();
 //        }
 //    }
+
 //}

@@ -23,6 +23,8 @@ namespace Sever.Service
 
         Task<List<MedicineResponse>> GetMedicinesByStudentAsync(string studentId);
         Task<List<MedicineResponse>> GetMedicineByParentAsync(string userName);
+        Task<List<MedicineResponse>> GetAllMedicinesAsync();
+
 
         //Parent: create, update, getMedicineByParent, getMedicineByMedicineId, getMedicineByStudentID
         //Nurse: create, update, getMedicineByStatus, getMedicineByStudentID, getMedicineByMedicineId
@@ -187,7 +189,7 @@ namespace Sever.Service
 
                 return true;
             }
-        
+
 
 
             public async Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto, string userName)
@@ -215,7 +217,7 @@ namespace Sever.Service
                 if (!string.IsNullOrWhiteSpace(updateDto.Instructions))
                     medicine.Instructions = updateDto.Instructions;
 
-                    medicine.SentDate = DateTime.UtcNow.AddHours(7);
+                medicine.SentDate = DateTime.UtcNow.AddHours(7);
 
                 if (!string.IsNullOrWhiteSpace(updateDto.Notes))
                     medicine.Notes = updateDto.Notes;
@@ -272,20 +274,20 @@ namespace Sever.Service
                 List<MedicineResponse> response = new List<MedicineResponse>();
                 foreach (var e in medicine)
                 {
-                   response.Add(new MedicineResponse
+                    response.Add(new MedicineResponse
                     {
-                       MedicineID = e.MedicineID,
-                       SentDate = e.SentDate,
-                       MedicineName = e.MedicineName,
-                       Quantity = e.Quantity,
-                       Dosage = e.Dosage,
-                       Instructions = e.Instructions,
-                       Notes = e.Notes,
-                       NurseID = e.NurseID,
-                       ParentID = e.ParentID,
-                       StudentID = e.StudentID,
-                       Status = e.Status
-                   });
+                        MedicineID = e.MedicineID,
+                        SentDate = e.SentDate,
+                        MedicineName = e.MedicineName,
+                        Quantity = e.Quantity,
+                        Dosage = e.Dosage,
+                        Instructions = e.Instructions,
+                        Notes = e.Notes,
+                        NurseID = e.NurseID,
+                        ParentID = e.ParentID,
+                        StudentID = e.StudentID,
+                        Status = e.Status
+                    });
                 }
                 return response;
             }
@@ -304,7 +306,7 @@ namespace Sever.Service
 
                 foreach (var student in studentList)
                 {
-                    var medicines = await _medicineRepository.GetMedicineByStudentIDAsync(student.StudentID);
+                    var medicines = await _medicineRepository.GetMedicineByStudentIdAsync(student.StudentID);
                     foreach (var e in medicines)
                     {
                         response.Add(new MedicineResponse
@@ -322,6 +324,30 @@ namespace Sever.Service
                             Status = e.Status
                         });
                     }
+                }
+                return response;
+            }
+
+            public async Task<List<MedicineResponse>> GetAllMedicinesAsync()
+            {
+                var medicines = await _medicineRepository.GetAllMedicinesAsync();
+                List<MedicineResponse> response = new List<MedicineResponse>();
+                foreach (var e in medicines)
+                {
+                    response.Add(new MedicineResponse
+                    {
+                        MedicineID = e.MedicineID,
+                        SentDate = e.SentDate,
+                        MedicineName = e.MedicineName,
+                        Quantity = e.Quantity,
+                        Dosage = e.Dosage,
+                        Instructions = e.Instructions,
+                        Notes = e.Notes,
+                        NurseID = e.NurseID,
+                        ParentID = e.ParentID,
+                        StudentID = e.StudentID,
+                        Status = e.Status
+                    });
                 }
                 return response;
             }

@@ -690,6 +690,18 @@
         }
       }
     },
+    "/api/nurse/medicine/getAll": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/nurse/event/create": {
       "post": {
         "tags": [

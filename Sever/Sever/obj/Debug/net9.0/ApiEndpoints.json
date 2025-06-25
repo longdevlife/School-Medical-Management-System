@@ -524,6 +524,16 @@
   },
   {
     "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetAllMedicines",
+    "RelativePath": "api/nurse/medicine/getAll",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
     "Method": "GetMedicinesByStudentID",
     "RelativePath": "api/nurse/medicine/getByStudentId/{studentId}",
     "HttpMethod": "GET",

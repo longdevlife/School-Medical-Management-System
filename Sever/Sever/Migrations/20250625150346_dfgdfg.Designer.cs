@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sever.Context;
 
@@ -11,9 +12,11 @@ using Sever.Context;
 namespace Sever.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250625150346_dfgdfg")]
+    partial class dfgdfg
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -172,10 +175,6 @@ namespace Sever.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ParentID")
-<<<<<<< HEAD
-                        .IsRequired()
-=======
->>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Respiration")
@@ -226,13 +225,8 @@ namespace Sever.Migrations
                     b.Property<string>("Disabilities")
                         .HasColumnType("nvarchar(max)");
 
-<<<<<<< HEAD
-                    b.Property<string>("Height")
-                        .HasColumnType("nvarchar(max)");
-=======
                     b.Property<float?>("Height")
                         .HasColumnType("real");
->>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
 
                     b.Property<string>("OtheHealthIssues")
                         .HasColumnType("nvarchar(max)");
@@ -250,13 +244,6 @@ namespace Sever.Migrations
                     b.Property<string>("ToothDecay")
                         .HasColumnType("nvarchar(max)");
 
-<<<<<<< HEAD
-                    b.Property<string>("VisionLeft")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("VisionRight")
-                        .HasColumnType("nvarchar(max)");
-=======
                     b.Property<int?>("VisionLeft")
                         .HasColumnType("int");
 
@@ -265,7 +252,6 @@ namespace Sever.Migrations
 
                     b.Property<float?>("Weight")
                         .HasColumnType("real");
->>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
 
                     b.HasKey("HealthProfileID");
 
@@ -641,24 +627,9 @@ namespace Sever.Migrations
                     b.Property<int>("Dose")
                         .HasColumnType("int");
 
-<<<<<<< HEAD
-                    b.Property<DateTime?>("FollowUpDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("FollowUpNotes")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("NurseID")
-                        .HasColumnType("nvarchar(450)");
-
-=======
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
->>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -667,15 +638,8 @@ namespace Sever.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-<<<<<<< HEAD
-                    b.Property<DateTime?>("VaccinatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("VaccinatorID")
-=======
                     b.Property<string>("VaccinatorID")
                         .IsRequired()
->>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("VaccineID")
@@ -683,11 +647,6 @@ namespace Sever.Migrations
 
                     b.HasKey("RecordID");
 
-<<<<<<< HEAD
-                    b.HasIndex("NurseID");
-
-=======
->>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
                     b.HasIndex("StudentID");
 
                     b.HasIndex("VaccinatorID");
@@ -783,12 +742,7 @@ namespace Sever.Migrations
                     b.HasOne("Sever.Model.User", "Parent")
                         .WithMany("ParentHealthCheckUp")
                         .HasForeignKey("ParentID")
-<<<<<<< HEAD
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-=======
                         .OnDelete(DeleteBehavior.Restrict);
->>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
 
                     b.HasOne("Sever.Model.StudentProfile", "StudentProfile")
                         .WithMany("HealthCheckUp")
@@ -940,14 +894,6 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.VaccinationRecord", b =>
                 {
-<<<<<<< HEAD
-                    b.HasOne("Sever.Model.User", "Nurse")
-                        .WithMany("NurseVaccinationRecord")
-                        .HasForeignKey("NurseID")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-=======
->>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
                     b.HasOne("Sever.Model.StudentProfile", "StudentProfile")
                         .WithMany("VaccinationRecord")
                         .HasForeignKey("StudentID")
@@ -955,16 +901,10 @@ namespace Sever.Migrations
                         .IsRequired();
 
                     b.HasOne("Sever.Model.User", "Vaccinator")
-<<<<<<< HEAD
-                        .WithMany("VaccinatorVaccinationRecord")
-                        .HasForeignKey("VaccinatorID")
-                        .OnDelete(DeleteBehavior.Restrict);
-=======
                         .WithMany("VaccinationRecord")
                         .HasForeignKey("VaccinatorID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
->>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
 
                     b.HasOne("Sever.Model.Vaccine", "Vaccine")
                         .WithMany("VaccinationRecord")
@@ -972,11 +912,6 @@ namespace Sever.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-<<<<<<< HEAD
-                    b.Navigation("Nurse");
-
-=======
->>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
                     b.Navigation("StudentProfile");
 
                     b.Navigation("Vaccinator");
@@ -1045,20 +980,11 @@ namespace Sever.Migrations
 
                     b.Navigation("NurseHealthCheckUp");
 
-<<<<<<< HEAD
-                    b.Navigation("NurseVaccinationRecord");
-
-=======
->>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
                     b.Navigation("ParentHealthCheckUp");
 
                     b.Navigation("StudentProfile");
 
-<<<<<<< HEAD
-                    b.Navigation("VaccinatorVaccinationRecord");
-=======
                     b.Navigation("VaccinationRecord");
->>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
 
                     b.Navigation("Vaccine");
                 });

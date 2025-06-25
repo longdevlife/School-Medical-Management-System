@@ -209,9 +209,29 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "newNews",
-        "Type": "Sever.DTO.News.CreateNews",
-        "IsRequired": true
+        "Name": "NewsID",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Title",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Summary",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Body",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Image",
+        "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -229,7 +249,7 @@
   {
     "ContainingType": "Sever.Controllers.ManagerController",
     "Method": "SearchStudentProfile",
-    "RelativePath": "api/manager/search-student-profile",
+    "RelativePath": "api/manager/search-student-profile/{info}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -256,6 +276,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NewsController",
+    "Method": "GetAllNews",
+    "RelativePath": "api/news/get-all-news",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

@@ -62,12 +62,6 @@ builder.Services.AddSwaggerGen(options =>
 
 
 
-
-
-
-
-
-
 builder.Services.AddDbContext<DataContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -139,7 +133,11 @@ builder.Services.AddScoped<IVaccinationRepository, VaccinationRepository>();
 
 =======
 builder.Services.AddScoped<IHealthProfileRepository, HealthProfileRepository>();
+<<<<<<< HEAD
 >>>>>>> 5a8bbebb38fca97945b851de2e2f0a690d7312ff
+=======
+builder.Services.AddScoped<INewsRepository, NewsRepository>();
+>>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
 #endregion
 
 #region Service Scope
@@ -158,7 +156,11 @@ builder.Services.AddScoped<ISchoolInfoService, SchoolInfoService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IHealthCheckUpService, HealthCheckUpService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+<<<<<<< HEAD
 builder.Services.AddScoped<IVaccinationService, VaccinationService>();
+=======
+builder.Services.AddScoped<INewsService, NewsService>();
+>>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
 
 builder.Services.AddControllers()
     .AddJsonOptions(opt =>

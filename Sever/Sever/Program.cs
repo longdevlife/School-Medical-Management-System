@@ -127,10 +127,7 @@ builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IMedicalEventRepository, MedicalEventRepository>();
 builder.Services.AddScoped<IHealthCheckupRepository, HealthCheckupRepository>();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
-builder.Services.AddScoped<IVaccinationRepository, VaccinationRepository>();
-<<<<<<< HEAD
->>>>>>> 5a8bbebb38fca97945b851de2e2f0a690d7312ff
-=======
+builder.Services.AddScoped<IVaccinationRepository, VaccinationRepository>(); 
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
 builder.Services.AddScoped<IHealthProfileRepository, HealthProfileRepository>();
 #endregion
@@ -152,7 +149,7 @@ builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IVaccinationService, VaccinationService>();
 builder.Services.AddScoped<INewsService, NewsService>();
->>>>>>> 4f14c4ccbc71c96355474b6e7ad2081905e91465
+
 
 builder.Services.AddControllers()
     .AddJsonOptions(opt =>

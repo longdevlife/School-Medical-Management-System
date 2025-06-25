@@ -15,7 +15,6 @@ namespace Sever.Service
         Task MedicineNotificationForAllNurses(Medicine medicine, string customMessage = null);
 
         Task<bool> AppointmentNotify(Appointment appointment);
-
         Task<bool> SendHealthCheckupNotificationAsync(StudentProfile student, DateTime date);
         Task<bool> UpdateHealthCheckUpNotifycationAsync(StudentProfile student);
         Task<bool> SendVaccinationNotificationAsync(StudentProfile student, DateTime? date);
@@ -59,9 +58,7 @@ namespace Sever.Service
                     var parentExists = await _notificationRepository.CheckParentExistsAsync(parentId);
                     if (!parentExists) continue;
 
-                    string notifyId = await _notificationRepository.GetCurrentNotifyID();
-
-                    var notification = new Notify
+                    string notifyId = await _notificationRepository.GetCurrentNotifyID(); var notification = new Notify
                     {
                         NotifyID = notifyId,
                         UserID = parentId,
@@ -197,6 +194,31 @@ namespace Sever.Service
             return false;
         }
 
+        public async Task<bool> AppointmentNotify(Appointment appointment)
+        {
+            try
+            {
+                var healthCheckUp = await _healthCheckUpRepository.GetHealthCheckUpByIdAsync(appointment.HealthCheckUpID);
+                var student = await _studentProfileRepository.SearchStudentProfile(healthCheckUp.StudentID);
+                string notifyId = await _notificationRepository.GetCurrentNotifyID();
+                var notification = new Notify
+                {
+                    NotifyID = notifyId,
+                    UserID = student.ParentID,
+                    NotifyName = "Cuộc hẹn khám sức khỏe",
+                    DateTime = DateTime.UtcNow,
+                    Title = "Cuộc hẹn khám sức khỏe",
+                    Description = $"Học sinh {student} đang có vấn đề về {appointment.Reason} mong phụ huynh có thể xác nhận đi cùng và tham gia cuộc hẹn tư vấn sức khỏe cho em"
+                };
+                await _notificationRepository.AddNotificationAsync(notification);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi gửi thông báo cuộc hẹn khám sức khỏe.", ex);
+            }
+        }
+
         public async Task<bool> SendVaccinationNotificationAsync(StudentProfile student, DateTime? date)
         {
             try
@@ -209,19 +231,17 @@ namespace Sever.Service
                     NotifyName = "Tiêm Chủng",
                     DateTime = DateTime.UtcNow,
                     Title = "TIÊM CHỦNG",
-                    Description = $"Thông báo tiêm chủng của {student.StudentName} vào ngày {date} mong quý phụ huynh xác nhận cho con tiêm"
-
+                    Description = $"Thông báo tiêm chủng của {student.StudentName} vào ngày {date?.ToString("dd/MM/yyyy")} - mong quý phụ huynh xác nhận cho con tiêm."
                 };
                 await _notificationRepository.AddNotificationAsync(notification);
                 return true;
             }
             catch (Exception ex)
             {
-
                 throw new Exception("Lỗi khi gửi thông báo tiêm chủng", ex);
             }
-            return false;
         }
+
 
         public async Task<bool> UpdateVaccinationNotifycationAsync(StudentProfile student)
         {
@@ -236,72 +256,14 @@ namespace Sever.Service
                     DateTime = DateTime.UtcNow,
                     Title = "CẬP NHÂT TIÊM CHỦNG",
                     Description = $"Thông báo cập nhât tiêm chủng của {student.StudentName} vào ngày {DateTime.UtcNow} mong quý phụ huynh theo dõi kết quả tiêm chủng hoặc kết quả theo dõi sau tiêm"
-                };
-                await _notificationRepository.AddNotificationAsync(notification);
+                }; await _notificationRepository.AddNotificationAsync(notification);
                 return true;
             }
             catch (Exception ex)
             {
                 throw new Exception("Lỗi khi gửi thông báo cập nhật khám sức khỏe.", ex);
-            }
-            return false;
-        }
-
-
-
-        public async Task<bool> AppointmentNotify(Appointment appointment)
-        {
-            try
-            {
-                var healthCheckUp = await _healthCheckUpRepository.GetHealthCheckUpByIdAsync(appointment.HealthCheckUpID);
-                var student = await _studentProfileRepository.SearchStudentProfile(healthCheckUp.StudentID);
->>>>>>> 5a8bbebb38fca97945b851de2e2f0a690d7312ff
-                string notifyId = await _notificationRepository.GetCurrentNotifyID();
-                var notification = new Notify
-                {
-                    NotifyName = "Cuộc hẹn khám sức khỏe",
-                    DateTime = DateTime.UtcNow,
-                    Title = "Cuộc hẹn khám sức khỏe",
-                    Description = $"Học sinh {student} đang có vấn đề về {appointment.Reason} mong phụ huynh có thể xác nhận đi cùng và tham gia cuộc hẹn tư vấn sức khỏe cho em"
->>>>>>> 5a8bbebb38fca97945b851de2e2f0a690d7312ff
-                };
-            }
-            catch (Exception ex)
-            {
-<<<<<<< HEAD
-                throw new Exception("Lỗi khi gửi thông báo tiêm chủng", ex);
-            }
-            return false;
-        }
-
-        public async Task<bool> UpdateVaccinationNotifycationAsync(StudentProfile student)
-        {
-            try
-            {
-                string notifyId = await _notificationRepository.GetCurrentNotifyID();
-                var notification = new Notify
-                {
-                    NotifyID = notifyId,
-                    UserID = student.ParentID,
-                    NotifyName = "Cập nhật tiêm chủng",
-                    DateTime = DateTime.UtcNow,
-                    Title = "CẬP NHÂT TIÊM CHỦNG",
-                    Description = $"Thông báo cập nhât tiêm chủng của {student.StudentName} vào ngày {DateTime.UtcNow} mong quý phụ huynh theo dõi kết quả tiêm chủng hoặc kết quả theo dõi sau tiêm"
-                };
-                await _notificationRepository.AddNotificationAsync(notification);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Lỗi khi gửi thông báo cập nhật khám sức khỏe.", ex);
-            }
-            return false;
-=======
-                throw new Exception("Lỗi khi gửi thông báo cuộc hẹn khám sức khỏe.", ex);
             }
             return false;
         }
     }
 }
-
-

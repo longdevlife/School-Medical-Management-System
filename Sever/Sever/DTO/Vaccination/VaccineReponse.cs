@@ -9,11 +9,11 @@ namespace Sever.DTO.Vaccination
         public int Dose { get; set; }
         public DateTime DateTime { get; set; }
         public string? Notes { get; set; }
-        public string Status { get; set; }
+        public string? Status { get; set; }
         public DateTime? VaccinatedAt { get; set; }
         public string? FollowUpNotes { get; set; }
         public DateTime? FollowUpDate { get; set; }
-        public string StudentID { get; set; }
+        public string? StudentID { get; set; }
         public string? ParentID { get; set; }
         public string? NurseID { get; set; }
         public int VaccineID { get; set; }

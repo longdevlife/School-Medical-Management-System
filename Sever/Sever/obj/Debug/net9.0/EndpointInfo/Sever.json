@@ -1253,19 +1253,65 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateVaccineDTO"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateVaccineDTO"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateVaccineDTO"
+                "type": "object",
+                "properties": {
+                  "Dose": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "DateTime": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "Notes": {
+                    "type": "string"
+                  },
+                  "Status": {
+                    "type": "string"
+                  },
+                  "VaccinatedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "StudentID": {
+                    "type": "string"
+                  },
+                  "VaccineID": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "VaccinatorID": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "Dose": {
+                  "style": "form"
+                },
+                "DateTime": {
+                  "style": "form"
+                },
+                "Notes": {
+                  "style": "form"
+                },
+                "Status": {
+                  "style": "form"
+                },
+                "VaccinatedAt": {
+                  "style": "form"
+                },
+                "StudentID": {
+                  "style": "form"
+                },
+                "VaccineID": {
+                  "style": "form"
+                },
+                "VaccinatorID": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -1294,19 +1340,45 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateVaccineAfterDTO"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateVaccineAfterDTO"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateVaccineAfterDTO"
+                "type": "object",
+                "properties": {
+                  "DateTime": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "Status": {
+                    "type": "string"
+                  },
+                  "FollowUpNotes": {
+                    "type": "string"
+                  },
+                  "FollowUpDate": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "StudentID": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "DateTime": {
+                  "style": "form"
+                },
+                "Status": {
+                  "style": "form"
+                },
+                "FollowUpNotes": {
+                  "style": "form"
+                },
+                "FollowUpDate": {
+                  "style": "form"
+                },
+                "StudentID": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -2148,74 +2220,6 @@
             "nullable": true
           },
           "phone": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateVaccineAfterDTO": {
-        "type": "object",
-        "properties": {
-          "dateTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "followUpNotes": {
-            "type": "string",
-            "nullable": true
-          },
-          "followUpDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "studentID": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateVaccineDTO": {
-        "type": "object",
-        "properties": {
-          "dose": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "dateTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "vaccinatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "studentID": {
-            "type": "string",
-            "nullable": true
-          },
-          "vaccineID": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "vaccinatorID": {
             "type": "string",
             "nullable": true
           }

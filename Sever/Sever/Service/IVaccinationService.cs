@@ -288,7 +288,7 @@ namespace Sever.Service
 
         public async Task<List<VaccineReponse>> GetVaccineConfirmAsync()
         {
-            var vaccineRecords = await _vaccinationRepository.GetVaccineDeniedAsync();
+            var vaccineRecords = await _vaccinationRepository.GetVaccineConfirmdAsync();
 
             List<VaccineReponse> responses = new List<VaccineReponse>();
             foreach (var e in vaccineRecords)
@@ -348,9 +348,14 @@ namespace Sever.Service
             var students = await _studentProfileRepository.GetStudentProfileByParentId(parentId);
             if (students == null || students.Count == 0)
                 throw new KeyNotFoundException("Không tìm thấy học sinh cho phụ huynh này.");
-            var tasks = students.Select(s => _vaccinationRepository.GetVaccineByStudentIdAsync(s.StudentID));
-            var vaccineLists = await Task.WhenAll(tasks);
-            var allVaccines = vaccineLists.SelectMany(x => x).ToList();
+
+            var allVaccines = new List<VaccinationRecord>();
+            foreach (var s in students)
+            {
+                var vaccines = await _vaccinationRepository.GetVaccineByStudentIdAsync(s.StudentID);
+                allVaccines.AddRange(vaccines);
+            }
+
             var responses = allVaccines.Select(e => new VaccineReponse
             {
                 RecordID = e.RecordID,

@@ -94,19 +94,19 @@ namespace Sever.Controllers
         }
 
         [HttpPost("create-health-check-up-by-class")]
-        public async Task<IActionResult> CreateHealthCheckUpByClass(CreateHealthCheckUp dto)
+        public async Task<IActionResult> CreateHealthCheckUpByClass([FromForm]string classId,[FromForm] DateTime dateCheckUp)
         {
             var username = User.Identity?.Name;
             if (string.IsNullOrEmpty(username))
                 return Unauthorized("Bạn cần đăng nhập để thực hiện hành động này.");
-            var result = await _healthCheckUpService.CreateHealthCheckupByClassAsync(dto);
+            var result = await _healthCheckUpService.CreateHealthCheckupByClassAsync(classId, dateCheckUp);
             if (!result)
                 return BadRequest("Không thể tạo khám sức khỏe cho lớp học này.");
             return Ok(result);
         }
 
-        [HttpGet("get-health-check-up-by-student")]
-        public async Task<IActionResult> GetHealthCheckupsByStudentIdA([FromBody] string studentId)
+        [HttpGet("get-health-check-up-by-student/{studentId}")]
+        public async Task<IActionResult> GetHealthCheckupsByStudentId(string studentId)
         {
             if (string.IsNullOrEmpty(studentId))
                 return BadRequest("Thiếu studentId.");
@@ -114,29 +114,6 @@ namespace Sever.Controllers
             return Ok(result);
         }
 
-        [HttpGet("get-confirm-healcheck-up")]
-        public async Task<IActionResult> GetConfirmHealthCheckUp()
-        {
-            var username = User.Identity?.Name;
-            if (string.IsNullOrEmpty(username))
-                return Unauthorized("Bạn cần đăng nhập để thực hiện hành động này.");
-            var result = await _healthCheckUpService.GetHealthCheckUpsConfirmAsync();
-            if (result == null || !result.Any())
-                return NotFound("Không tìm thấy khám sức khỏe nào đã xác nhận.");
-            return Ok(result);
-        }
-
-        [HttpGet("get-denied-health-check-up")]
-        public async Task<IActionResult> GetDeniedHealthCheckUp()
-        {
-            var username = User.Identity?.Name;
-            if (string.IsNullOrEmpty(username))
-                return Unauthorized("Bạn cần đăng nhập để thực hiện hành động này.");
-            var result = await _healthCheckUpService.GetHealthCheckUpsDeniedAsync();
-            if (result == null || !result.Any())
-                return NotFound("Không tìm thấy khám sức khỏe nào bị từ chối.");
-            return Ok(result);
-        }
         [HttpGet("get-not-response-health-check-up")]
         public async Task<IActionResult> GetNotResponseHealthCheckUp()
         {
@@ -149,15 +126,15 @@ namespace Sever.Controllers
             return Ok(result);
         }
 
-        [HttpGet("get-health-check-up-by-year")]
-        public async Task<IActionResult> GetHealthCheckupsByYear([FromQuery] DateTime dateTime)
+        [HttpGet("get-health-check-up-by-year/{year}")]
+        public async Task<IActionResult> GetHealthCheckupsByYear( int year)
         {
             var username = User.Identity?.Name;
             if (string.IsNullOrEmpty(username))
                 return Unauthorized("Bạn cần đăng nhập để thực hiện hành động này.");
-            if (dateTime == default)
+            if (year == default)
                 return BadRequest("Thiếu thông tin năm.");
-            var result = await _healthCheckUpService.GetHealthCheckupsByYearAsync(dateTime);
+            var result = await _healthCheckUpService.GetHealthCheckupsByYearAsync(year);
             if (result == null || !result.Any())
                 return NotFound("Không tìm thấy khám sức khỏe nào cho năm này.");
             return Ok(result);

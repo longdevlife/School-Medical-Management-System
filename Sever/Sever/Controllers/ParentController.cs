@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Sever.DTO.Appointment;
 using Sever.DTO.File;
+using Sever.DTO.HealthCheckUp;
 using Sever.DTO.SendMedicine;
 using Sever.Service;
 using System.Security.Claims;
@@ -69,14 +70,14 @@ namespace Sever.Controllers
         }
 
         [HttpPut("confirm-health-check-up")]
-        public async Task<IActionResult> ConfirmHealthCheckUp([FromBody] UpdateAppointment dto)
+        public async Task<IActionResult> ConfirmHealthCheckUp(HealthCheckUpResponse dto)
         {
             var username = User.Identity?.Name;
             if (string.IsNullOrEmpty(username))
             {
                 return Unauthorized("Người dùng chưa được cấp quyền.");
             }
-            var result = await _healthCheckUpService.ConfirmHealCheckup(dto.AppointmentID);
+            var result = await _healthCheckUpService.ConfirmHealCheckup(dto.HeathCheckUpID);
             if (result)
             {
                 return Ok("Xác nhận kiểm tra khám sức khỏe định kì thành công.");
@@ -85,14 +86,14 @@ namespace Sever.Controllers
         }
 
         [HttpPut("denied-health-check-up")]
-        public async Task<IActionResult> DeniedHealthCheckUp([FromBody] UpdateAppointment dto)
+        public async Task<IActionResult> DeniedHealthCheckUp(HealthCheckUpResponse dto)
         {
             var username = User.Identity?.Name;
             if (string.IsNullOrEmpty(username))
             {
                 return Unauthorized("Người dùng chưa được cấp quyền.");
             }
-            var result = await _healthCheckUpService.DeniedHealCheckup(dto.AppointmentID);
+            var result = await _healthCheckUpService.DeniedHealCheckup(dto.HeathCheckUpID);
             if (result)
             {
                 return Ok("Từ chối kiểm tra khám sức khỏe định kì thành công.");
@@ -108,7 +109,7 @@ namespace Sever.Controllers
             {
                 return Unauthorized("Người dùng chưa được cấp quyền.");
             }
-            var result = await _appointmentService.ConfirmAppointMent(dto.AppointmentID);
+            var result = await _appointmentService.ConfirmAppointMent(dto);
             if (result)
             {
                 return Ok("Đã xác nhận tham gia cuộc hẹn");
@@ -124,7 +125,7 @@ namespace Sever.Controllers
             {
                 return Unauthorized("Người dùng chưa được cấp quyền.");
             }
-            var result = await _appointmentService.DeniedAppointMent(dto.AppointmentID);
+            var result = await _appointmentService.DeniedAppointMent(dto);
             if (result)
             {
                 return Ok("Đã từ chối tham gia cuộc hẹn");
@@ -132,8 +133,8 @@ namespace Sever.Controllers
             return BadRequest("Thất bại trong việc từ chối tham gia cuộc hẹn.");
         }
 
-        [HttpGet("get-health-check-up-by-parent")]
-        public async Task<IActionResult> GetHealthCheckupsByParentId([FromBody] string parentId)
+        [HttpGet("get-all-health-check-up-by-parent/{parentId}")]
+        public async Task<IActionResult> GetHealthCheckupsByParentId(string parentId)
         {
             if (string.IsNullOrEmpty(parentId))
                 return BadRequest("Thiếu parentId.");

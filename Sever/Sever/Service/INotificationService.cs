@@ -13,6 +13,7 @@ namespace Sever.Service
         Task MedicalEventNotification(MedicalEvent medicalEvent, string customMessage = null);
         Task MedicineNotificationForParent(Medicine medicine, string customMessage = null);
         Task MedicineNotificationForAllNurses(Medicine medicine, string customMessage = null);
+        Task<bool> AppointmentNotify(Appointment appointment);
         Task<bool> SendHealthCheckupNotificationAsync(StudentProfile student, DateTime date);
         Task<bool> UpdateHealthCheckUpNotifycationAsync(StudentProfile student);
     }
@@ -20,12 +21,18 @@ namespace Sever.Service
     {
         private readonly INotificationRepository _notificationRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IStudentProfileRepository _studentProfileRepository;
+        private readonly IHealthCheckupRepository _healthCheckUpRepository;
         public NotificationService(
             INotificationRepository notificationRepository,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            IStudentProfileRepository studentProfileRepository,
+            IHealthCheckupRepository healthCheckUpRepository)
         {
             _notificationRepository = notificationRepository;
             _userRepository = userRepository;
+            _studentProfileRepository = studentProfileRepository;
+            _healthCheckUpRepository = healthCheckUpRepository;
         }
 
         public async Task MedicalEventNotification(MedicalEvent medicalEvent, string customMessage = null)
@@ -78,14 +85,14 @@ namespace Sever.Service
                 var parentId = await _notificationRepository.GetParentIdByStudentIdAsync(medicine.StudentID);
                 if (string.IsNullOrEmpty(parentId))
                 {
-                    return; 
+                    return;
                 }
                 var parentExists = await _notificationRepository.CheckParentExistsAsync(parentId);
                 if (!parentExists)
                 {
                     return;
-                } 
-                    
+                }
+
                 string notifyId = await _notificationRepository.GetCurrentNotifyID();
 
                 var notification = new Notify
@@ -183,6 +190,31 @@ namespace Sever.Service
                 throw new Exception("Lỗi khi gửi thông báo cập nhật khám sức khỏe.", ex);
             }
             return false;
+        }
+
+        public async Task<bool> AppointmentNotify(Appointment appointment)
+        {
+            try
+            {
+                var healthCheckUp = await _healthCheckUpRepository.GetHealthCheckUpByIdAsync(appointment.HealthCheckUpID);
+                var student = await _studentProfileRepository.SearchStudentProfile(healthCheckUp.StudentID);
+                string notifyId = await _notificationRepository.GetCurrentNotifyID();
+                var notification = new Notify
+                {
+                    NotifyID = notifyId,
+                    UserID = student.ParentID,
+                    NotifyName = "Cuộc hẹn khám sức khỏe",
+                    DateTime = DateTime.UtcNow,
+                    Title = "Cuộc hẹn khám sức khỏe",
+                    Description = $"Học sinh {student} đang có vấn đề về {appointment.Reason} mong phụ huynh có thể xác nhận đi cùng và tham gia cuộc hẹn tư vấn sức khỏe cho em"
+                };
+                await _notificationRepository.AddNotificationAsync(notification);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi gửi thông báo cuộc hẹn khám sức khỏe.", ex);
+            }
         }
     }
 }

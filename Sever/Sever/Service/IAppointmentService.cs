@@ -12,16 +12,19 @@ namespace Sever.Service
         Task<Appointment> GetAppointmentByHealCheckupAsync(string healthCheckUpId);
         Task<bool> UpdateAppointmentByIdAsync(UpdateAppointment appointment);
         Task<bool> GetConfirmAppointment();
-        Task<bool> ConfirmAppointMent(string id);
-        Task<bool> DeniedAppointMent(string id);
+        Task<bool> ConfirmAppointMent(UpdateAppointment dto);
+        Task<bool> DeniedAppointMent(UpdateAppointment dto);
     }
 
     public class AppointmentService : IAppointmentService
     {
         private readonly IAppointmentRepository _appointmentRepository;
-        public AppointmentService(IAppointmentRepository appointmentRepository)
+        private readonly INotificationService _notificationService;
+        public AppointmentService(IAppointmentRepository appointmentRepository,
+                                    INotificationService notificationService)
         {
             _appointmentRepository = appointmentRepository;
+            _notificationService = notificationService;
         }
         public async Task<List<Appointment>> GetAllAppointmentAsync()
         {
@@ -47,16 +50,18 @@ namespace Sever.Service
         {
             return await _appointmentRepository.GetConfirmAppointment();
         }
-        public async Task<bool> ConfirmAppointMent(string id)
+        public async Task<bool> ConfirmAppointMent(UpdateAppointment dto)
         {
-            var appointment = await GetAppointmentByIdAsync(id);
+            var appointment = await GetAppointmentByIdAsync(dto.AppointmentID);
             if (appointment == null) throw new ArgumentException("No appointment found for the specified ID.");
+            appointment.Notes = dto.Notes;
             return await _appointmentRepository.UpdateStatus(appointment, "Đã xác nhận");
         }
-        public async Task<bool> DeniedAppointMent(string id)
+        public async Task<bool> DeniedAppointMent(UpdateAppointment dto)
         {
-            var appointment = await GetAppointmentByIdAsync(id);
+            var appointment = await GetAppointmentByIdAsync(dto.AppointmentID);
             if (appointment == null) throw new ArgumentException("No appointment found for the specified ID.");
+            appointment.Notes = dto.Notes;
             return await _appointmentRepository.UpdateStatus(appointment, "Đã từ chối");
         }
         public async Task<bool> CreateAppointmentAsync(CreateAppointment newAppointment)
@@ -72,7 +77,8 @@ namespace Sever.Service
                 Status = "Chờ xác nhận"
             };
             if (appointment == null) throw new ArgumentNullException("Appointment cannot be null");
-            await _appointmentRepository.UpdateAppointmentByIdAsync(appointment);
+            await _appointmentRepository.CreateAppointment(appointment);
+            await _notificationService.AppointmentNotify(appointment);
             return true;
         }
     }

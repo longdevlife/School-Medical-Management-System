@@ -16,6 +16,8 @@ namespace Sever.Repository
         Task<User?> GetUserByEmailAsync(string email);
         Task<string> NextId();
         Task<User> GetUserByStudentIDAsync(string studentID);
+        Task<List<User>> GetAllUser();
+        Task<List<User>?> SearchUser(string key);
     }
 
     public class UserRepository : IUserRepository
@@ -48,7 +50,7 @@ namespace Sever.Repository
         }
         public async Task<bool> DeleteAccountByUserAsync(User user)
         {
-            if(user.RoleID == "4")
+            if (user.RoleID == "4")
             {
                 return false;
             }
@@ -71,6 +73,19 @@ namespace Sever.Repository
             return _context.Users
                 .Include(u => u.StudentProfile)
                 .FirstOrDefaultAsync(u => u.UserID == studentID);
+        }
+
+        public async Task<List<User>> GetAllUser()
+        {
+            return await _context.Users.Include(u => u.Role).ToListAsync();
+        }
+        public async Task<List<User>?> SearchUser( string key)
+        {
+            return await _context.Users.Include(u => u.Role)
+                                        .Where(u => (u.UserID.Contains(key) || 
+                                        u.UserName.Contains(key) || 
+                                        u.Phone.Contains(key)) &&
+                                        u.RoleID != "4").ToListAsync();
         }
     }
 }

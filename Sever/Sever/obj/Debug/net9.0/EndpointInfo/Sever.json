@@ -209,6 +209,112 @@
         }
       }
     },
+    "/api/admin/get-all-account": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/search-user/{key}": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/get-students-from-file": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "file": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/create-list-student": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CreateStudentRequest"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CreateStudentRequest"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CreateStudentRequest"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/auth/login": {
       "post": {
         "tags": [
@@ -1916,6 +2022,53 @@
         },
         "additionalProperties": false
       },
+      "CreateStudentRequest": {
+        "type": "object",
+        "properties": {
+          "studentName": {
+            "type": "string",
+            "nullable": true
+          },
+          "class": {
+            "type": "string",
+            "nullable": true
+          },
+          "studentAvata": {
+            "type": "string",
+            "format": "binary",
+            "nullable": true
+          },
+          "relationName": {
+            "type": "string",
+            "nullable": true
+          },
+          "nationality": {
+            "type": "string",
+            "nullable": true
+          },
+          "ethnicity": {
+            "type": "string",
+            "nullable": true
+          },
+          "birthday": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sex": {
+            "type": "string",
+            "nullable": true
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
+          },
+          "parentUserName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateUserRequest": {
         "type": "object",
         "properties": {
@@ -1939,7 +2092,7 @@
             "type": "string",
             "nullable": true
           },
-          "roleID": {
+          "roleName": {
             "type": "string",
             "nullable": true
           }

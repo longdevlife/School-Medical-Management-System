@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sever.Context;
 using Sever.Model;
+using Sever.Utilities;
 
 namespace Sever.Repository
 {
@@ -10,6 +11,8 @@ namespace Sever.Repository
         Task<List<StudentProfile>> GetStudentProfileByParentId(string info);
         Task<StudentProfile> GetStudentProfileByStudentId(string info);
         Task<List<StudentProfile>> GetStudentProfilesByClassIdAsync(string classId);
+        Task<bool> CreateStudentProfile(StudentProfile student);
+        Task<string> NextId();
     }
     public class StudentProfileRepository : IStudentProfileRepository
     {
@@ -57,9 +60,23 @@ namespace Sever.Repository
         {
             return await _context.StudentProfile
                 .FirstOrDefaultAsync(s => s.StudentID == id);
-                
+
         }
 
+        public async Task<bool> CreateStudentProfile(StudentProfile student)
+        {
+            await _context.StudentProfile.AddAsync(student);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+        public async Task<string> NextId()
+        {
+            var currentUser = await _context.StudentProfile
+                .OrderByDescending(s => s.StudentID)
+                .FirstOrDefaultAsync();
+            string nextID = GenerateID.GenerateNextId(currentUser?.StudentID, "U", 4);
+            return nextID;
+        }
     }
 
 }

@@ -17,6 +17,22 @@
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "CreateListStudent",
+    "RelativePath": "api/admin/create-list-student",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "students",
+        "Type": "System.Collections.Generic.List\u00601[[Sever.DTO.Student.CreateStudentRequest, Sever, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
     "Method": "DeleteAccount",
     "RelativePath": "api/admin/delete-user",
     "HttpMethod": "DELETE",
@@ -33,6 +49,32 @@
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "GetAllAccount",
+    "RelativePath": "api/admin/get-all-account",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "GetStudentsFromFile",
+    "RelativePath": "api/admin/get-students-from-file",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "file",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
     "Method": "GetUsersFromFile",
     "RelativePath": "api/admin/get-users-from-file",
     "HttpMethod": "POST",
@@ -43,6 +85,22 @@
         "Name": "file",
         "Type": "Microsoft.AspNetCore.Http.IFormFile",
         "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "SearchUser",
+    "RelativePath": "api/admin/search-user/{key}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "key",
+        "Type": "System.String",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []

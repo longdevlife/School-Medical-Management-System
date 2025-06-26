@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Sever.DTO.SchoolInfo;
+using Sever.DTO.Student;
 using Sever.DTO.User;
 using Sever.Service;
 using System.Security.Claims;
@@ -17,13 +18,16 @@ namespace Sever.Controllers
         private readonly IUserService _userService;
         private readonly IFilesService _filesService;
         private readonly ISchoolInfoService _schoolInfoService;
+        private readonly IStudentService _studentService;
         public AdminController(IUserService userService,
                                IFilesService filesService,
-                               ISchoolInfoService schoolInfoService)
+                               ISchoolInfoService schoolInfoService,
+                               IStudentService studentService)
         {
             _userService = userService;
             _filesService = filesService;
             _schoolInfoService = schoolInfoService;
+            _studentService = studentService;
         }
 
         [HttpPost("create-accounts")]
@@ -140,6 +144,87 @@ namespace Sever.Controllers
             catch
             {
                 return BadRequest(new { message = "Cập nhật thông tin trường học thất bại" });
+            }
+        }
+
+        [HttpGet("get-all-account")]
+        public async Task<IActionResult> GetAllAccount()
+        {
+            try
+            {
+                var users = await _userService.GetAllUserAsync();
+                if (users == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy người dùng nào" });
+                }
+                return Ok(users);
+            }
+            catch
+            {
+                return BadRequest(new { message = "Lấy danh sách người dùng thất bại" });
+            }
+        }
+        [HttpGet("search-user/{key}")]
+        public async Task<IActionResult> SearchUser(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                return BadRequest(new { message = "Từ khóa tìm kiếm không được để trống" });
+            }
+            try
+            {
+                var users = await _userService.SearchUserAsync(key);
+                if (users == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy người dùng nào" });
+                }
+                return Ok(users);
+            }
+            catch
+            {
+                return BadRequest(new { message = "Tìm kiếm người dùng thất bại" });
+            }
+        }
+        [HttpPost("get-students-from-file")]
+        public async Task<IActionResult> GetStudentsFromFile(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("File không hợp lệ");
+
+            var users = await _filesService.ReadStudentFromExcelAsync(file);
+
+            return Ok(users);
+        }
+
+        [HttpPost("create-list-student")]
+        public async Task<IActionResult> CreateListStudent(List<CreateStudentRequest> students)
+        {
+            if (students == null || students.Count == 0)
+            {
+                return BadRequest(new { message = "Danh sách học sinh không được để trống" });
+            }
+            try
+            {
+                var results = new List<string>();
+                foreach (var student in students)
+                {
+                    try
+                    {
+                        await _studentService.CreateStudent(student);
+                        results.Add($"Tạo học sinh '{student.StudentName}' thành công");
+                    }
+                    catch (Exception ex)
+                    {
+                        results.Add($"Tạo học sinh '{student.StudentName}' thất bại");
+                        results.Add($"Tạo học sinh '{student.StudentName}' thất bại: {ex.Message}");
+
+                    }
+                }
+                return Ok(new { messages = results });
+            }
+            catch
+            {
+                return BadRequest(new { message = "Tạo học sinh thất bại" });
             }
         }
     }

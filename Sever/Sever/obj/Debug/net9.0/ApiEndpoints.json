@@ -1,6 +1,22 @@
 [
   {
     "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "ActivateAccount",
+    "RelativePath": "api/admin/active-account",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "username",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
     "Method": "CreateAccounts",
     "RelativePath": "api/admin/create-accounts",
     "HttpMethod": "POST",
@@ -291,6 +307,22 @@
   },
   {
     "ContainingType": "Sever.Controllers.ManagerController",
+    "Method": "DeleteNews",
+    "RelativePath": "api/manager/delete-news/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ManagerController",
     "Method": "GetNewsByManager",
     "RelativePath": "api/manager/get-news-by-manager",
     "HttpMethod": "GET",
@@ -324,9 +356,29 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "updateNews",
-        "Type": "Sever.DTO.News.UpdateNews",
-        "IsRequired": true
+        "Name": "NewsID",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Title",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Summary",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Body",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Image",
+        "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

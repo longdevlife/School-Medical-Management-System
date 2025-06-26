@@ -315,6 +315,37 @@
         }
       }
     },
+    "/api/admin/active-account": {
+      "put": {
+        "tags": [
+          "Admin"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/auth/login": {
       "post": {
         "tags": [
@@ -600,23 +631,73 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateNews"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateNews"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateNews"
+                "type": "object",
+                "properties": {
+                  "NewsID": {
+                    "type": "string"
+                  },
+                  "Title": {
+                    "type": "string"
+                  },
+                  "Summary": {
+                    "type": "string"
+                  },
+                  "Body": {
+                    "type": "string"
+                  },
+                  "Image": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              },
+              "encoding": {
+                "NewsID": {
+                  "style": "form"
+                },
+                "Title": {
+                  "style": "form"
+                },
+                "Summary": {
+                  "style": "form"
+                },
+                "Body": {
+                  "style": "form"
+                },
+                "Image": {
+                  "style": "form"
+                }
               }
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/manager/delete-news/{id}": {
+      "delete": {
+        "tags": [
+          "Manager"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -2330,36 +2411,6 @@
           },
           "notes": {
             "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateNews": {
-        "type": "object",
-        "properties": {
-          "newsID": {
-            "type": "string",
-            "nullable": true
-          },
-          "title": {
-            "type": "string",
-            "nullable": true
-          },
-          "summary": {
-            "type": "string",
-            "nullable": true
-          },
-          "body": {
-            "type": "string",
-            "nullable": true
-          },
-          "image": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "binary"
-            },
             "nullable": true
           }
         },

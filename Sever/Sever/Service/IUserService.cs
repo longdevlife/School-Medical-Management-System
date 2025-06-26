@@ -17,6 +17,7 @@ namespace Sever.Service
         Task<bool> DeleteUserByUserNameAsync(DeleteUserRequest username);
         Task<List<GetUser>> GetAllUserAsync();
         Task<List<GetUser>?> SearchUserAsync(string key);
+        Task<bool> ActivativeAccountasync(string userName);
     }
 
     public class UserService : IUserService
@@ -136,6 +137,16 @@ namespace Sever.Service
                 userDtos.Add(userDto);
             }
             return userDtos;
+        }
+
+        public async Task<bool> ActivativeAccountasync(string userName)
+        {
+            if (userName == null)
+            {
+                throw new Exception("UserName không được bỏ trống");
+            }
+            var result = await _userRepository.ActivativeUserAsync(userName);
+            return result;
         }
     }
 }

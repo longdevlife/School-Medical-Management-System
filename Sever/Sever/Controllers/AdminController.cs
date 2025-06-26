@@ -227,5 +227,22 @@ namespace Sever.Controllers
                 return BadRequest(new { message = "Tạo học sinh thất bại" });
             }
         }
+        [HttpPut("active-account")]
+        public async Task<IActionResult> ActivateAccount([FromBody]string username)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                return BadRequest(new { message = "Tên người dùng không được để trống" });
+            }
+            try
+            {
+                var user = await _userService.ActivativeAccountasync(username);  
+                return Ok(new { message = "Kích hoạt tài khoản thành công" });
+            }
+            catch
+            {
+                return BadRequest(new { message = "Kích hoạt tài khoản thất bại" });
+            }
+        }
     }
 }

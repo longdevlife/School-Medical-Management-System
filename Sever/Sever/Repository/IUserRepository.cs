@@ -18,6 +18,7 @@ namespace Sever.Repository
         Task<User> GetUserByStudentIDAsync(string studentID);
         Task<List<User>> GetAllUser();
         Task<List<User>?> SearchUser(string key);
+        Task<bool> ActivativeUserAsync(string userId);
     }
 
     public class UserRepository : IUserRepository
@@ -79,13 +80,26 @@ namespace Sever.Repository
         {
             return await _context.Users.Include(u => u.Role).ToListAsync();
         }
-        public async Task<List<User>?> SearchUser( string key)
+        public async Task<List<User>?> SearchUser(string key)
         {
             return await _context.Users.Include(u => u.Role)
-                                        .Where(u => (u.UserID.Contains(key) || 
-                                        u.UserName.Contains(key) || 
+                                        .Where(u => (u.UserID.Contains(key) ||
+                                        u.UserName.Contains(key) ||
                                         u.Phone.Contains(key)) &&
                                         u.RoleID != "4").ToListAsync();
         }
+        public async Task<bool> ActivativeUserAsync(string username)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            if (user == null)
+            {
+                throw new ArgumentException("User not found");
+            }
+            user.IsActive = true;
+            _context.Users.Update(user);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+        
     }
 }

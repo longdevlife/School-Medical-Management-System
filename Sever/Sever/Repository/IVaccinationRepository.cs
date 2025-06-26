@@ -58,7 +58,6 @@ namespace Sever.Repository
             return await _context.VaccinationRecord.FirstOrDefaultAsync(h => h.RecordID == id);
         }
 
-
         public async Task<string> GetCurrentVaccinationRecordID()
         {
             var lastVaccineRecord = await _context.VaccinationRecord
@@ -99,14 +98,16 @@ namespace Sever.Repository
         public async Task<List<VaccinationRecord>> GetVaccineDeniedAsync()
         {
             return await _context.VaccinationRecord
-                .Where(h => h.Status == " Đã từ chối")
+                //.Where(h => h.Status == " Đã từ chối")
+                .Where(h => EF.Functions.Like(h.Status, "%đã từ chối%"))
                 .ToListAsync();
         }
 
         public async Task<List<VaccinationRecord>> GetVaccineConfirmdAsync()
         {
             return await _context.VaccinationRecord
-                .Where(h => h.Status == "Đã xác nhận")
+                //.Where(h => h.Status == "Đã xác nhận")
+                .Where(h => EF.Functions.Like(h.Status, "%đã xác nhận%"))
                 .ToListAsync();
         }
         public async Task<List<VaccinationRecord>> GetVaccineByStudentIdAsync(string studentId)
@@ -118,8 +119,10 @@ namespace Sever.Repository
         public async Task<List<VaccinationRecord>> GetVaccineNotResponseAsync()
         {
             return await _context.VaccinationRecord
-                .Where(h => h.Status == "Chờ xác nhận")
+              //.Where(h => h.Status == "Chờ xác nhận")
+                .Where(h => EF.Functions.Like(h.Status, "%chờ xác nhận%"))
                 .ToListAsync();
+
         }
 
     }

@@ -213,7 +213,7 @@ namespace Sever.Controllers
         }
 
         [HttpPut("vaccine/updateByRecordID/{recordId}")]
-        public async Task<IActionResult> UpdateVaccination(string recordId, [FromBody] UpdateVaccineDTO dto)
+        public async Task<IActionResult> UpdateVaccination(string recordId, [FromForm] UpdateVaccineDTO dto)
         {
             var username = User.Identity?.Name;
             if (string.IsNullOrEmpty(username))
@@ -225,7 +225,7 @@ namespace Sever.Controllers
         }
 
         [HttpPut("vaccine/updateAfterByRecordID/{recordId}")]
-        public async Task<IActionResult> UpdateAfterVaccination(string recordId, [FromBody] UpdateVaccineAfterDTO dto)
+        public async Task<IActionResult> UpdateAfterVaccination(string recordId, [FromForm] UpdateVaccineAfterDTO dto)
         {
             var username = User.Identity?.Name;
             if (string.IsNullOrEmpty(username))

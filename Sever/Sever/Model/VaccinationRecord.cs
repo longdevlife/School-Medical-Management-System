@@ -10,11 +10,11 @@ namespace Sever.Model
         public int Dose { get; set; }
         public DateTime DateTime { get; set; }
         public string? Notes { get ; set; }
-        public string Status { get; set; }
+        public string? Status { get; set; }
         public DateTime? VaccinatedAt { get; set; }
         public string? FollowUpNotes { get; set; }
         public DateTime? FollowUpDate { get; set; }
-        public string StudentID { get; set; }
+        public string? StudentID { get; set; }
         [ForeignKey("StudentID")]
         public StudentProfile StudentProfile { get; set; }
         public string? NurseID { get; set; }

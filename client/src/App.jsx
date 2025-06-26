@@ -40,6 +40,8 @@ import HealthCheckup from "./pages/healthRecord/HealthCheckup";
 
 import Login from "./pages/Login";
 import HomePage from "./pages/home/HomePage";
+import AboutPage from "./pages/home/AboutPage";
+import NewsPage from "./pages/home/NewsPage";
 
 function App() {
   return (
@@ -49,8 +51,8 @@ function App() {
           {" "}
           {/* Public Routes */}
           <Route path="/home" element={<HomePage />} />
-          <Route path="/gioi-thieu" element={<NewsManagement/>} />
-          <Route path="/tin-tuc" element={<NewsManagement/>} />
+          <Route path="/gioi-thieu" element={<AboutPage/>} />
+          <Route path="/tin-tuc" element={<NewsPage/>} />
           <Route path="/login" element={<Login />} />
           
           {/* Admin layout */}
@@ -129,7 +131,7 @@ function App() {
             <Route path="health-result" element={<HealthCheckup />} />
           </Route>{" "}
           {/* Redirect root to home page */}
-          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </ConfigProvider>

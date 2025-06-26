@@ -226,7 +226,7 @@ const Login = () => {
                 <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
                   <MdLocalHospital className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
+                <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2 pb-1">
                   Đăng Nhập
                 </h1>
                 <p className="text-gray-600 text-base lg:text-lg">

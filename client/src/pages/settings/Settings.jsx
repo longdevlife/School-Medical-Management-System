@@ -1,11 +1,23 @@
 import React from "react";
-import { Card, Form, Input, Button, Switch, Select, Space } from "antd";
+import { Card, Form, Input, Button, Switch, Select, Space, message } from "antd";
+import { updateSchoolInfo } from "../../api/Schoolinfo";
 
 function Settings() {
   const [form] = Form.useForm();
 
-  const onFinish = (values) => {
-    console.log("Form values:", values);
+  const onFinish = async (values) => {
+    try {
+      // Gọi API cập nhật thông tin trường học qua hàm chuẩn
+      await updateSchoolInfo({
+        Name: values.schoolName,
+        Address: values.address,
+        Hotline: values.phone,
+        Email: values.email,
+      });
+      message.success("Cập nhật thông tin trường thành công!");
+    } catch (err) {
+      message.error("Cập nhật thất bại!");
+    }
   };
 
   return (

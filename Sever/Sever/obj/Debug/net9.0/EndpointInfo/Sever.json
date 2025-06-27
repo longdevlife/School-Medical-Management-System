@@ -2028,6 +2028,37 @@
         }
       }
     },
+    "/api/parent/declare-health-profile": {
+      "put": {
+        "tags": [
+          "Parent"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeclareHealthProfile"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeclareHealthProfile"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeclareHealthProfile"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/school/get-school-info": {
       "get": {
         "tags": [
@@ -2246,6 +2277,65 @@
             "nullable": true
           },
           "roleName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeclareHealthProfile": {
+        "type": "object",
+        "properties": {
+          "studentID": {
+            "type": "string",
+            "nullable": true
+          },
+          "allergyHistory": {
+            "type": "string",
+            "nullable": true
+          },
+          "chronicDiseases": {
+            "type": "string",
+            "nullable": true
+          },
+          "pastSurgeries": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "surgicalCause": {
+            "type": "string",
+            "nullable": true
+          },
+          "disabilities": {
+            "type": "string",
+            "nullable": true
+          },
+          "height": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "weight": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "visionLeft": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "visionRight": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "toothDecay": {
+            "type": "string",
+            "nullable": true
+          },
+          "otheHealthIssues": {
             "type": "string",
             "nullable": true
           }

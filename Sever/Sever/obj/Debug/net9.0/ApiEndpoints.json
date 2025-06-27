@@ -1009,6 +1009,22 @@
   },
   {
     "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "DeclareStudentHealthProfile",
+    "RelativePath": "api/parent/declare-health-profile",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "healthProfile",
+        "Type": "Sever.DTO.HealProfile.DeclareHealthProfile",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
     "Method": "DeniedAppointment",
     "RelativePath": "api/parent/denied-appointment",
     "HttpMethod": "PUT",

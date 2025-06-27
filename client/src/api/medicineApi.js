@@ -47,17 +47,14 @@ const medicineApi = {
         }
       });
 
-      console.log("🚀 Sending FormData to PUT /nurse/medicine/update/" + medicineId);
+      console.log(
+        "🚀 Sending FormData to PUT /nurse/medicine/update/" + medicineId
+      );
 
       return axiosClient.put(`/nurse/medicine/update/${medicineId}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 30000,
       });
-    },
-
-    // DELETE - Xóa thuốc theo medicineId
-    delete: (medicineId) => {
-      return axiosClient.delete(`/nurse/medicine/delete/${medicineId}`);
     },
   },
 };

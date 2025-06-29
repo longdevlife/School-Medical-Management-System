@@ -20,7 +20,6 @@ import NurseManagerLayout from "./components/Layout/nursemanager/NurseManagerLay
 import NurseDashboard from "./pages/nurses/NurseDashboard";
 import HealthProfileView from "./pages/profiles/HealthProfileView";
 import MedicationSubmission from "./pages/medications/MedicationSubmission";
-import MedicineEquipmentManagement from "./pages/medicines/MedicineEquipmentManagement";
 import NewsManagement from "./pages/news/NewsManagement";
 import VaccinationManagement from "./pages/events/VaccinationManagement";
 import HealthCheckManagement from "./pages/events/HealthCheckManagement";
@@ -49,10 +48,9 @@ function App() {
           {" "}
           {/* Public Routes */}
           <Route path="/home" element={<HomePage />} />
-          <Route path="/gioi-thieu" element={<NewsManagement/>} />
-          <Route path="/tin-tuc" element={<NewsManagement/>} />
+          <Route path="/gioi-thieu" element={<NewsManagement />} />
+          <Route path="/tin-tuc" element={<NewsManagement />} />
           <Route path="/login" element={<Login />} />
-          
           {/* Admin layout */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
@@ -76,10 +74,7 @@ function App() {
               path="medication-submission"
               element={<MedicationSubmission />}
             />
-            <Route
-              path="medicine-equipment"
-              element={<MedicineEquipmentManagement />}
-            />
+
             <Route
               path="medical-events/vaccination"
               element={<VaccinationManagement />}

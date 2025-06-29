@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using Sever.Context;
 using Sever.DTO.File;
+using Sever.DTO.Student;
 using Sever.DTO.User;
 using Sever.Model;
 using Sever.Repository;
@@ -24,6 +25,7 @@ namespace Sever.Service
         Task<List<Files>> GetImageByMedicalEventIdAsync(string id);
         Task<List<Files>> GetImageByNewsIdAsync(string id);
         Task<bool> DeleteFileAsync(string imageLink);
+        Task<List<CreateStudentRequest>> ReadStudentFromExcelAsync(IFormFile file);
     }
     public class FilesSevice : IFilesService
     {
@@ -156,7 +158,7 @@ namespace Sever.Service
             };
         }
 
-       public async Task<ImageResponse> UploadMedicineImageByAsync(IFormFile file, string id)
+        public async Task<ImageResponse> UploadMedicineImageByAsync(IFormFile file, string id)
         {
             if (file == null || file.Length == 0)
                 throw new ArgumentException("File is empty");
@@ -173,7 +175,7 @@ namespace Sever.Service
 
             if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
                 throw new Exception("Image upload failed");
-         
+
 
             var image = new Files
             {
@@ -219,7 +221,7 @@ namespace Sever.Service
                     Name = worksheet.Cells[row, 3].Text?.Trim(),
                     Email = worksheet.Cells[row, 4].Text?.Trim(),
                     Phone = worksheet.Cells[row, 5].Text?.Trim(),
-                    RoleID = worksheet.Cells[row, 6].Text.Trim()
+                    RoleName = worksheet.Cells[row, 6].Text.Trim()
                 };
 
                 if (!string.IsNullOrEmpty(user.UserName) && !string.IsNullOrEmpty(user.Password))
@@ -231,16 +233,39 @@ namespace Sever.Service
             return users;
         }
 
-        public int RoleIdByRoleName(string roleName)
+        public async Task<List<CreateStudentRequest>> ReadStudentFromExcelAsync(IFormFile file)
         {
-            return roleName switch
+            ExcelPackage.License.SetNonCommercialPersonal("SchoolMedicalManagement");
+
+            var students = new List<CreateStudentRequest>();
+
+            using var stream = new MemoryStream();
+            await file.CopyToAsync(stream);
+            stream.Position = 0;
+
+            using var package = new ExcelPackage(stream);
+            var worksheet = package.Workbook.Worksheets[0];
+
+            int rowCount = worksheet.Dimension.Rows;
+
+            for (int row = 2; row <= rowCount; row++)
             {
-                "Admin" => 4,
-                "Manager" => 3,
-                "SchoolNurse" => 2,
-                "Parent" => 1,
-                _ => throw new ArgumentException("Invalid role name")
-            };
+                var student = new CreateStudentRequest
+                {
+                    StudentName = worksheet.Cells[row, 1].Text.Trim(),
+                    Class = worksheet.Cells[row, 2].Text.Trim(),
+                    RelationName = worksheet.Cells[row, 4].Text?.Trim(),
+                    Nationality = worksheet.Cells[row, 5].Text?.Trim(),
+                    Ethnicity = worksheet.Cells[row, 6].Text?.Trim(),
+                    Birthday = DateTime.TryParse(worksheet.Cells[row, 7].Text, out var birthday) ? birthday : DateTime.MinValue,
+                    Sex = worksheet.Cells[row, 8].Text.Trim(),
+                    Location = worksheet.Cells[row, 9].Text?.Trim(),
+                    parentUserName = worksheet.Cells[row, 10].Text?.Trim()
+                };
+                students.Add(student);
+            }
+
+            return students;
         }
 
         public async Task<List<Files>> GetLogoBySchoolIdAsync(string id)

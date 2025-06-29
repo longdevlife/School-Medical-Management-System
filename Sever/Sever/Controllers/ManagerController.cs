@@ -88,7 +88,7 @@ namespace Sever.Controllers
         }
 
         [HttpPut("update-news")]
-        public async Task<IActionResult> UpdateNews([FromBody] UpdateNews updateNews)
+        public async Task<IActionResult> UpdateNews([FromForm]UpdateNews updateNews)
         {
             if (updateNews == null || string.IsNullOrEmpty(updateNews.NewsID))
             {
@@ -112,6 +112,29 @@ namespace Sever.Controllers
             }
         }
 
-
+        [HttpDelete("delete-news/{id}")]
+        public async Task<IActionResult> DeleteNews(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest(new { message = "ID tin tức không được để trống" });
+            }
+            try
+            {
+                var result = await _newsService.DeleteNewsByIdAsync(id);
+                if (result)
+                {
+                    return Ok(new { message = "Xóa tin tức thành công" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Không tìm thấy tin tức để xóa" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Lỗi khi xóa tin tức: {ex.Message}" });
+            }
+        }
     }
 }

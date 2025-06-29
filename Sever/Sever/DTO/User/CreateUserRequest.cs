@@ -9,6 +9,6 @@ namespace Sever.DTO.User
         public string? Name { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
-        public string RoleID { get; set; }
+        public string RoleName { get; set; }
     }
 }

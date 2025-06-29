@@ -36,6 +36,7 @@ namespace Sever.Service
                 Body = newNews.Body,
                 DateTime = DateTime.Now,
                 UserID = userId,
+                Status = true
             };
 
             try
@@ -43,7 +44,7 @@ namespace Sever.Service
                 var results = _newsRepository.CreateNewsAsync(news);
                 foreach (var item in newNews.Image)
                 {
-                    var imgUp = _filesService.UploadNewsImageByAsync(item, news.NewsID);
+                    var imgUp = await _filesService.UploadNewsImageByAsync(item, news.NewsID);
                     if (imgUp == null)
                     {
                         throw new ArgumentException("Lưu ảnh thất bại");
@@ -91,6 +92,7 @@ namespace Sever.Service
         {
             var newsResponse = new List<GetNewRespone>();
             var listNews = await _newsRepository.GetAllNewsAsync();
+            if(listNews == null) { throw new ArgumentNullException("Không có tin tức nào để hiển thị"); }
             foreach (var item in listNews)
             {
                 var listImage = await _filesService.GetImageByNewsIdAsync(item.NewsID);

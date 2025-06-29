@@ -8,6 +8,7 @@ namespace Sever.Repository
     {
         Task<HealthProfile> GetHealthProfileByStudentID(string studentId);
         Task<bool> UpdateHealthProfile(HealthProfile healthProfile);
+        Task<bool> AddHealthProfile(HealthProfile healthProfile);
     }
 
     public class HealthProfileRepository : IHealthProfileRepository
@@ -30,6 +31,12 @@ namespace Sever.Repository
             var result = await _context.SaveChangesAsync();
             return result > 0;
 
+        }
+        public async Task<bool> AddHealthProfile(HealthProfile healthProfile)
+        {
+            await _context.HealthProfile.AddAsync(healthProfile);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
         }
     }
 }

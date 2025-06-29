@@ -9,14 +9,18 @@ namespace Sever.Service
     {
         Task<GetStudentInfoRequest> SearchStudentProfileAsync(string info);
         Task<List<GetStudentInfoRequest>> GetStudentProfilesByParentAsync(string parent);
+        Task<bool> CreateStudent(CreateStudentRequest createStudentRequests);
     }
 
     public class StudentService : IStudentService
     {
         private readonly IStudentProfileRepository _studentProfileRepository;
-        public StudentService(IStudentProfileRepository studentProfileRepository)
+        private readonly IUserRepository _userRepository;
+        public StudentService(IStudentProfileRepository studentProfileRepository,
+                            IUserRepository userRepository)
         {
             _studentProfileRepository = studentProfileRepository;
+            _userRepository = userRepository;
         }
         public async Task<GetStudentInfoRequest> SearchStudentProfileAsync(string info)
         {
@@ -76,5 +80,29 @@ namespace Sever.Service
                 throw new Exception("Lỗi khi lấy thông tin học sinh theo phụ huynh");
             }
         }
+
+        public async Task<bool> CreateStudent(CreateStudentRequest createStudentRequests)
+        {
+            var parent = await _userRepository.GetUserByUsernameAsync(createStudentRequests.parentUserName);
+            if (parent == null)
+            {
+                throw new KeyNotFoundException("Phụ huynh không tồn tại");
+            }
+            var student = new StudentProfile
+            {
+                StudentID = await _studentProfileRepository.NextId(),
+                StudentName = createStudentRequests.StudentName,
+                Class = createStudentRequests.Class,
+                RelationName = createStudentRequests.RelationName,
+                Nationality = createStudentRequests.Nationality,
+                Ethnicity = createStudentRequests.Ethnicity,
+                Birthday = createStudentRequests.Birthday,
+                Sex = createStudentRequests.Sex,
+                Location = createStudentRequests.Location,
+                ParentID = parent.UserID,
+            };
+            return await _studentProfileRepository.CreateStudentProfile(student);
+        }
+
     }
 }

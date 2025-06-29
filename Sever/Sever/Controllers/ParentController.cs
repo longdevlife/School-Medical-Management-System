@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Sever.DTO.Appointment;
 using Sever.DTO.File;
+using Sever.DTO.HealProfile;
 using Sever.DTO.HealthCheckUp;
 using Sever.DTO.SendMedicine;
 using Sever.DTO.Vaccination;
@@ -21,14 +22,16 @@ namespace Sever.Controllers
         private readonly IAppointmentService _appointmentService;
         private readonly IVaccinationService _vaccinationService;
         private readonly IStudentService _studentService;
-        private readonly IUserService _userService; 
+        private readonly IUserService _userService;
+        private readonly IHealthProfileService _healthProfileService;
         public ParentController(IMedicineService medicineService,
                 IMedicalEventService medicalEventService,
                 IHealthCheckUpService healthCheckUpService,
                 IAppointmentService appointmentService,
                 IVaccinationService vaccinationService,
                 IStudentService studentService,
-                IUserService userService)
+                IUserService userService,
+                IHealthProfileService healthProfileService)
         {
             _medicineService = medicineService;
             _medicalEventService = medicalEventService;
@@ -37,6 +40,7 @@ namespace Sever.Controllers
             _vaccinationService = vaccinationService;
             _studentService = studentService;
             _userService = userService;
+            _healthProfileService = healthProfileService;
         }
 
         [HttpPost("medicine/create")]
@@ -201,7 +205,7 @@ namespace Sever.Controllers
                 return Unauthorized("Người dùng chưa được cấp quyền.");
             }
             var parent = await _userService.GetUserAsyc(username);
-            if (parent ==null)
+            if (parent == null)
             {
                 return BadRequest(new { message = "Không tìm thấy thông tin phụ huynh." });
             }
@@ -213,6 +217,27 @@ namespace Sever.Controllers
             }
             return Ok(student);
 
+        }
+        [HttpPut("declare-health-profile")]
+        public async Task<IActionResult> DeclareStudentHealthProfile(DeclareHealthProfile healthProfile)
+        {
+            if (healthProfile == null)
+            {
+                return BadRequest("Health Profile không được để trống.");
+            }
+            try
+            {
+                var result = await _healthProfileService.DelareHealthProfileAsync(healthProfile);
+                if (result)
+                {
+                    return Ok("Đã khai báo hồ sơ sức khỏe cho học sinh thành công.");
+                }
+                else { return BadRequest("Khai báo hồ sơ sức khỏe cho học sinh thất bại."); }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Lỗi khi khai báo hồ sơ sức khỏe: {ex.Message}" });
+            }
         }
     }
 }

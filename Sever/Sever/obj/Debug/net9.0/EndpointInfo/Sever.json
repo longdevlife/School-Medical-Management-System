@@ -573,6 +573,9 @@
                       "type": "string",
                       "format": "binary"
                     }
+                  },
+                  "Class": {
+                    "type": "string"
                   }
                 }
               },
@@ -599,6 +602,9 @@
                   "style": "form"
                 },
                 "Image": {
+                  "style": "form"
+                },
+                "Class": {
                   "style": "form"
                 }
               }
@@ -912,6 +918,18 @@
               "type": "string"
             }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/event/getAll": {
+      "get": {
+        "tags": [
+          "Nurse"
         ],
         "responses": {
           "200": {
@@ -1481,6 +1499,9 @@
                       "type": "string",
                       "format": "binary"
                     }
+                  },
+                  "Class": {
+                    "type": "string"
                   }
                 }
               },
@@ -1507,6 +1528,9 @@
                   "style": "form"
                 },
                 "Image": {
+                  "style": "form"
+                },
+                "Class": {
                   "style": "form"
                 }
               }

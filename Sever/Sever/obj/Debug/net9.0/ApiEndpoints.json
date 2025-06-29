@@ -363,6 +363,16 @@
   },
   {
     "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetAllMedicalEvent",
+    "RelativePath": "api/nurse/event/getAll",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
     "Method": "GetMedicalEventById",
     "RelativePath": "api/nurse/event/getByEventId/{medicalEventId}",
     "HttpMethod": "GET",
@@ -527,6 +537,11 @@
       {
         "Name": "Image",
         "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Class",
+        "Type": "System.String",
         "IsRequired": false
       }
     ],
@@ -1011,6 +1026,11 @@
       {
         "Name": "Image",
         "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Class",
+        "Type": "System.String",
         "IsRequired": false
       }
     ],

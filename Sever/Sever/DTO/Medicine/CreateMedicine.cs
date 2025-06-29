@@ -15,6 +15,7 @@ namespace Sever.DTO.SendMedicine
         public string StudentID { get; set; }
         public string? Status { get; set; }
         public List<IFormFile>? Image { get; set; }
+        public string? Class { get; set; }
 
 
     }

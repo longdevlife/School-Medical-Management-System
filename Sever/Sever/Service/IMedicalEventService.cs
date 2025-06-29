@@ -16,7 +16,7 @@ namespace Sever.Service
         Task<List<MedicalEventResponse>> GetMedicalEventsByStudentID(string studentId);
         Task<MedicalEventResponse> GetMedicalEvent(string MedicalEventID);
         Task<List<MedicalEventResponse>> GetMedicialEventByParentAsync(string userName);
-
+        Task<List<MedicalEventResponse>> GetAllMedicialEventAsync();
         //nurse: create, update, getByEventId, getByStudentId
         //parent: getByStudentId, getByEventId
 
@@ -192,6 +192,29 @@ namespace Sever.Service
             public Task<List<MedicalEventResponse>> GetMedicalEventsByStudentID(string studentId)
             {
                 throw new NotImplementedException();
+            }
+
+            public async Task<List<MedicalEventResponse>> GetAllMedicialEventAsync()
+            {
+                var medicalEvents = await _medicalEventRepository.GetAllMedicialEventAsync();
+                List<MedicalEventResponse> response = new List<MedicalEventResponse>();
+
+                foreach (var e in medicalEvents)
+                {
+                    response.Add(new MedicalEventResponse
+                    {
+                        MedicalEventID = e.MedicalEventID,
+                        EventDateTime = e.EventDateTime,
+                        Description = e.Description,
+                        ActionTaken = e.ActionTaken,
+                        Notes = e.Notes,
+                        EventTypeID = e.EventType,
+                        NurseID = e.NurseID,
+                        StudentID = e.MedicalEventDetail?.Select(d => d.StudentID).ToList(),
+                    });
+                }
+
+                return response;
             }
 
         }

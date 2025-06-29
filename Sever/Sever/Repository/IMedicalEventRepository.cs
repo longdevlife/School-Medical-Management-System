@@ -17,7 +17,7 @@ namespace Sever.Repository.Interfaces
         Task<string> GetCurrentMedicialEventID();
         Task<List<MedicalEvent>> GetMedicalEventByStudentIdAsync(string studentId);
         Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId);
-
+        Task<List<MedicalEvent>> GetAllMedicialEventAsync();
         public class MedicalEventRepository : IMedicalEventRepository
         {
             private readonly DataContext _context;
@@ -96,6 +96,13 @@ namespace Sever.Repository.Interfaces
                                      .Where(s => s.ParentID == parentId)
                                      .ToListAsync();
             }
+            public async Task<List<MedicalEvent>> GetAllMedicialEventAsync()
+            {
+                return await _context.MedicalEvent
+                                     .Include(e => e.MedicalEventDetail)
+                                     .ToListAsync();
+            }
+
         }
     }
 }

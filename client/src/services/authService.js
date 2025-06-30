@@ -113,7 +113,6 @@ const authService = {
 
   getRole: () => {
     const user = authService.getCurrentUser();
-    // Ensure role is in uppercase to match ProtectedRoute logic
     return user ? user.role.toUpperCase() : null;
   },
 };

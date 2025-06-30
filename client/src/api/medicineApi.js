@@ -1,25 +1,25 @@
 import axiosClient from "./axiosClient";
-
 const medicineApi = {
   nurse: {
-    // GET - Lấy medicine theo studentId
-    GetMedicinesByStudentID: (studentId) => {
-      return axiosClient.get(`nurse/medicine/getByStudentId/${studentId}`);
+    // GET - Lấy DANH SÁCH THUỐC TỪ PHỤ HUYNH GỬI
+    getAll: () => {
+      return axiosClient.get("/nurse/medicine/getAll");
     },
-    // POST - Tạo medicine
-    CreateMedicine: (medicineData) => {
-      const formData = new FormData();
-      Object.keys(medicineData).forEach((key) => {
-        if (medicineData[key] !== null && medicineData[key] !== undefined) {
-          formData.append(key, medicineData[key]);
-        }
-      });
-      return axiosClient.post("nurse/medicine/create", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+
+    // POST - Tạo thuốc cho học sinh
+    create: (medicineData) => {
+    },
+
+    // GET - Search thuốc theo studentId
+    getByStudentId: (studentId) => {
+      return axiosClient.get(`/nurse/medicine/getByStudentId/${studentId}`);
+    },
+
+    // PUT - Cập nhật thuốc theo medicineId
+    update: (medicineId, updateData) => {
     },
   },
-
+  
   parent: {
     // GET - Lấy medicine theo studentId
     getMedicinesByStudentId: (studentId) => {
@@ -105,6 +105,7 @@ const medicineApi = {
       }
     }
   },
+  
 };
 
 export default medicineApi;

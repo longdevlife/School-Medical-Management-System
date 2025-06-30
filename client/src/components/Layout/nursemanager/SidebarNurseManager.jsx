@@ -21,7 +21,7 @@ import "./SidebarStyles.css"; // Import đường dẫn CSS tùy chỉnh
 
 const { Sider } = Layout;
 
-function SidebarNurseManager({ collapsed,  }) {
+function SidebarNurseManager({ collapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -55,11 +55,6 @@ function SidebarNurseManager({ collapsed,  }) {
             key: `${basePath}/medication-submission`, // Tiếp nhận & xác minh thuốc từ phụ huynh
             icon: <MedicineBoxOutlined />,
             label: "Tiếp nhận thuốc",
-          },
-          {
-            key: `${basePath}/medicine-equipment`, // Quản lý thuốc & thiết bị
-            icon: <ToolOutlined />,
-            label: "Thuốc & Thiết bị",
           },
           {
             key: `${basePath}/medical-events`, // Quản lý sự kiện y tế (chỉ dành cho Y TÁ)

@@ -1,5 +1,4 @@
 import axiosClient from "./axiosClient";
-
 const medicineApi = {
     nurse: {
     // GET - Lấy DANH SÁCH THUỐC TỪ PHỤ HUYNH GỬI
@@ -143,6 +142,7 @@ const medicineApi = {
       }
     }
   },
+  
 };
 
 export default medicineApi;

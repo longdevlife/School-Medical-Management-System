@@ -506,7 +506,11 @@ namespace Sever.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+<<<<<<< HEAD
                     b.Property<string>("LogGifs")
+=======
+                    b.Property<string>("LogGift")
+>>>>>>> 2086a7db8953b7c152132d4ba757ee7d52f200da
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Logo")
@@ -822,7 +826,7 @@ namespace Sever.Migrations
                     b.HasOne("Sever.Model.StudentProfile", "StudentProfile")
                         .WithMany()
                         .HasForeignKey("StudentID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Nurse");

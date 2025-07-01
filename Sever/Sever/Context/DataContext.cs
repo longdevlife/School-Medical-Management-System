@@ -86,10 +86,15 @@ namespace Sever.Context
                 .WithMany(u => u.Medicine)
                 .HasForeignKey(m => m.ParentID)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Medicine>()
+               .HasOne(m => m.StudentProfile)
+               .WithMany()
+               .HasForeignKey(m => m.StudentID)
+               .OnDelete(DeleteBehavior.Restrict);
             #endregion
 
             #region VaccinationRecord
-      
+
             modelBuilder.Entity<VaccinationRecord>()
                  .HasOne(v => v.Vaccinator)
                  .WithMany(u => u.VaccinatorVaccinationRecord)

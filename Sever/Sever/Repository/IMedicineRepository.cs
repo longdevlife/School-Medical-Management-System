@@ -49,12 +49,13 @@ namespace Sever.Repository
             return result;
         }
 
-        public async Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId)
-        {
-            return await _context.Medicine
-                .Where(n => n.StudentID == studentId)
-                .ToListAsync();
-        }
+            public async Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId)
+            {
+                return await _context.Medicine
+                    .Include(m => m.StudentProfile)
+                    .Where(n => n.StudentID == studentId)
+                    .ToListAsync();
+            }
 
         public async Task<string> GetCurrentMedicineID()
         {
@@ -89,11 +90,10 @@ namespace Sever.Repository
 
         public async Task<List<Medicine>> GetAllMedicinesAsync()
         {
-            return await _context.Medicine.ToListAsync();
+            return await _context.Medicine
+                                 .Include(m => m.StudentProfile)
+                                 .ToListAsync();
         }
-        public async Task<int> CountMedicinesAsync(DateTime fromDate, DateTime toDate)
-        {
-            return await _context.Medicine.Where(m => m.SentDate >= fromDate && m.SentDate <= toDate).CountAsync();
-        }
+
     }
 }

@@ -499,6 +499,16 @@
   },
   {
     "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetAllMedicalEvent",
+    "RelativePath": "api/nurse/event/getAll",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
     "Method": "GetMedicalEventById",
     "RelativePath": "api/nurse/event/getByEventId/{medicalEventId}",
     "HttpMethod": "GET",
@@ -1166,6 +1176,16 @@
         "IsRequired": false
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "GetMedicinesByParentID",
+    "RelativePath": "api/parent/medicine/getByParentId",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

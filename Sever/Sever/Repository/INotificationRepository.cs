@@ -15,6 +15,7 @@ namespace Sever.Repository.Interfaces
         Task<string> GetParentIdByStudentIdAsync(string studentId);
         Task<List<string>> GetAllNurseIDsAsync();
 
+    }
         public class NotificationRepository : INotificationRepository
         {
             private readonly DataContext _context;
@@ -96,6 +97,6 @@ namespace Sever.Repository.Interfaces
                     .ToListAsync();
             }
 
-        }
+        
     }
 }

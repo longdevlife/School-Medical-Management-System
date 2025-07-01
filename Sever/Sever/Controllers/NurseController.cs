@@ -105,6 +105,13 @@ namespace Sever.Controllers
             return Ok(result);
         }
 
+        [HttpGet("event/getAll")]
+        public async Task<IActionResult> GetAllMedicalEvent()
+        {
+            var result = await _medicalEventService.GetAllMedicialEventAsync();
+            return Ok(result);
+        }
+
         [HttpPost("create-health-check-up-by-class")]
         public async Task<IActionResult> CreateHealthCheckUpByClass([FromForm]string classId,[FromForm] DateTime dateCheckUp)
         {

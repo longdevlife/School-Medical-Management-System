@@ -1144,6 +1144,18 @@
         }
       }
     },
+    "/api/nurse/event/getAll": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/nurse/create-health-check-up-by-class": {
       "post": {
         "tags": [
@@ -1810,6 +1822,18 @@
       }
     },
     "/api/parent/medicine/getByStudentId": {
+      "get": {
+        "tags": [
+          "Parent"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/parent/medicine/getByParentId": {
       "get": {
         "tags": [
           "Parent"

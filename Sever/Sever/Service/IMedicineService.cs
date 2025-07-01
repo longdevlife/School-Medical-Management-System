@@ -25,7 +25,7 @@ namespace Sever.Service
         Task<List<MedicineResponse>> GetMedicineByParentAsync(string userName);
         Task<List<MedicineResponse>> GetAllMedicinesAsync();
 
-
+    }
         //Parent: create, update, getMedicineByParent, getMedicineByMedicineId, getMedicineByStudentID
         //Nurse: create, update, getMedicineByStatus, getMedicineByStudentID, getMedicineByMedicineId
         public class MedicineService : IMedicineService
@@ -34,25 +34,27 @@ namespace Sever.Service
             private readonly IFilesService _filesService;
             private readonly INotificationService _notificationService;
             private readonly IUserService _userService;
+            private readonly IStudentProfileRepository _studentProfileRepository;
 
             public MedicineService(
                 IMedicineRepository medicineRepository,
                 IFilesService filesService,
                 INotificationService notificationService,
-                IUserService userService)
+                IUserService userService,
+                IStudentProfileRepository studentProfileRepository)
             {
                 _medicineRepository = medicineRepository;
                 _filesService = filesService;
                 _notificationService = notificationService;
                 _userService = userService;
-
-
+                _studentProfileRepository = studentProfileRepository;
             }
 
             public async Task<Medicine> CreateMedicineByParentAsync(CreateMedicine dto, string userName)
             {
                 var parent = await _userService.GetUserAsyc(userName);
                 var userId = parent.UserID;
+
 
                 string newId = await _medicineRepository.GetCurrentMedicineID();
 
@@ -89,7 +91,7 @@ namespace Sever.Service
                 var userId = nurse.UserID;
 
                 string newId = await _medicineRepository.GetCurrentMedicineID();
-
+            var student = await _studentProfileRepository.GetStudentProfileByStudentId(dto.StudentID);
                 var medicine = new Medicine
                 {
                     MedicineID = newId,
@@ -101,7 +103,9 @@ namespace Sever.Service
                     Notes = dto.Notes,
                     StudentID = dto.StudentID,
                     Status = (dto.Status == "Chờ xử lý" || dto.Status == "Đã xác nhận" || dto.Status == "Từ chối") ? dto.Status : "Chờ xử lý",
-                    NurseID = userId
+                    NurseID = userId, 
+                    ParentID = student.ParentID
+                    
                 };
                 await _medicineRepository.CreateMedicineAsync(medicine);
                 if (dto.Image != null && dto.Image.Any())
@@ -273,6 +277,7 @@ namespace Sever.Service
                 List<MedicineResponse> response = new List<MedicineResponse>();
                 foreach (var e in medicine)
                 {
+
                     response.Add(new MedicineResponse
                     {
                         MedicineID = e.MedicineID,
@@ -285,51 +290,20 @@ namespace Sever.Service
                         NurseID = e.NurseID,
                         ParentID = e.ParentID,
                         StudentID = e.StudentID,
-                        Status = e.Status
+                        Status = e.Status,
+                        Class = e.StudentProfile.Class,
+                        StudentName = e.StudentProfile.StudentName,
+
                     });
                 }
                 return response;
             }
 
-            public async Task<List<MedicineResponse>> GetMedicineByParentIDAsync(string userName)
-            {
-                var parent = await _userService.GetUserAsyc(userName);
-                if (parent == null) return null;
-
-                var userId = parent.UserID;
-
-                var studentList = await _medicineRepository.GetStudentsByParentIdAsync(userId);
-                if (studentList == null || !studentList.Any()) return null;
-
-                var response = new List<MedicineResponse>();
-
-                foreach (var student in studentList)
-                {
-                    var medicines = await _medicineRepository.GetMedicineByStudentIdAsync(student.StudentID);
-                    foreach (var e in medicines)
-                    {
-                        response.Add(new MedicineResponse
-                        {
-                            MedicineID = e.MedicineID,
-                            SentDate = e.SentDate,
-                            MedicineName = e.MedicineName,
-                            Quantity = e.Quantity,
-                            Dosage = e.Dosage,
-                            Instructions = e.Instructions,
-                            Notes = e.Notes,
-                            NurseID = e.NurseID,
-                            ParentID = e.ParentID,
-                            StudentID = e.StudentID,
-                            Status = e.Status
-                        });
-                    }
-                }
-                return response;
-            }
 
             public async Task<List<MedicineResponse>> GetAllMedicinesAsync()
             {
                 var medicines = await _medicineRepository.GetAllMedicinesAsync();
+                
                 List<MedicineResponse> response = new List<MedicineResponse>();
                 foreach (var e in medicines)
                 {
@@ -345,7 +319,9 @@ namespace Sever.Service
                         NurseID = e.NurseID,
                         ParentID = e.ParentID,
                         StudentID = e.StudentID,
-                        Status = e.Status
+                        Status = e.Status, 
+                        Class = e.StudentProfile.Class,
+                        StudentName = e.StudentProfile.StudentName
                     });
                 }
                 return response;
@@ -380,13 +356,14 @@ namespace Sever.Service
                             NurseID = e.NurseID,
                             ParentID = e.ParentID,
                             StudentID = e.StudentID,
+                            Class = student.Class,
+                            StudentName = student.StudentName,
                             Status = e.Status
                         });
                     }
                 }
                 return response;
             }
-        }
     }
 }
 

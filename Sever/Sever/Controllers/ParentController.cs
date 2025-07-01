@@ -63,22 +63,23 @@ namespace Sever.Controllers
         public async Task<IActionResult> GetMedicinesByStudentID()
         {
             var username = User.Identity?.Name;
-            var result = await _medicineService.GetMedicineByParentAsync(username);
-            if (result == null)
-                return Forbid();
+            var result = await _medicineService.GetMedicinesByStudentAsync(username);
             return Ok(result);
         }
 
+        [HttpGet("medicine/getByParentId")]
+        public async Task<IActionResult> GetMedicinesByParentID()
+        {
+            var username = User.Identity?.Name;
+            var result = await _medicineService.GetMedicineByParentAsync(username);
+            return Ok(result);
+        }
 
         [HttpGet("event/getByStudentId")]
         public async Task<IActionResult> GetMedicalEventByStudentID()
         {
             var username = User.Identity?.Name;
             var result = await _medicalEventService.GetMedicialEventByParentAsync(username);
-
-            if (result == null)
-                return Forbid();
-
             return Ok(result);
         }
 

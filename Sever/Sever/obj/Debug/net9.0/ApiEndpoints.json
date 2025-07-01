@@ -648,11 +648,6 @@
         "Name": "Image",
         "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
         "IsRequired": false
-      },
-      {
-        "Name": "Class",
-        "Type": "System.String",
-        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -1153,13 +1148,18 @@
         "Name": "Image",
         "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
         "IsRequired": false
-      },
-      {
-        "Name": "Class",
-        "Type": "System.String",
-        "IsRequired": false
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "GetMedicinesByParentID",
+    "RelativePath": "api/parent/medicine/getByParentId",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

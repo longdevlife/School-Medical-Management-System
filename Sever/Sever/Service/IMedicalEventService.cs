@@ -1,7 +1,9 @@
-﻿using Sever.DTO.File;
+﻿using Azure;
+using Sever.DTO.File;
 using Sever.DTO.MedicalEvent;
 using Sever.DTO.Medicine;
 using Sever.Model;
+using Sever.Repository;
 using Sever.Repository.Interfaces;
 
 
@@ -11,40 +13,44 @@ namespace Sever.Service
     {
         Task<MedicalEventResponse> CreateMedicalEvent(CreateMedicalEvent dto, string userName);
         Task<bool> UpdateMedicalEvent(MedicalEventUpdateDTO dto, string medicalEventId, string userName);
-        
-        
+
+
         Task<List<MedicalEventResponse>> GetMedicalEventsByStudentID(string studentId);
         Task<MedicalEventResponse> GetMedicalEvent(string MedicalEventID);
         Task<List<MedicalEventResponse>> GetMedicialEventByParentAsync(string userName);
         Task<List<MedicalEventResponse>> GetAllMedicialEventAsync();
         //nurse: create, update, getByEventId, getByStudentId
         //parent: getByStudentId, getByEventId
-
+    }
         public class MedicalEventService : IMedicalEventService
         {
             private readonly IMedicalEventRepository _medicalEventRepository;
             private readonly INotificationService _notificationService;
             private readonly IFilesService _filesService;
             private readonly IUserService _userService;
+            private readonly IStudentProfileRepository _studentProfileRepository;
 
-            public MedicalEventService(
+
+        public MedicalEventService(
                 IMedicalEventRepository medicalEventRepository,
                 INotificationService notificationService,
                 IFilesService filesService,
-                IUserService userService)
+                IUserService userService,
+                IStudentProfileRepository studentProfileRepository)
             {
                 _medicalEventRepository = medicalEventRepository;
                 _notificationService = notificationService;
                 _filesService = filesService;
                 _userService = userService;
+                _studentProfileRepository = studentProfileRepository;
             }
             public async Task<MedicalEventResponse> CreateMedicalEvent(CreateMedicalEvent dto, string userName)
             {
                 try
                 {
+                    
                     var nurse = await _userService.GetUserAsyc(userName);
                     var userId = nurse.UserID;
-
                     string newId = await _medicalEventRepository.GetCurrentMedicialEventID();
                     var medicalEvent = new MedicalEvent
                     {
@@ -55,6 +61,7 @@ namespace Sever.Service
                         Notes = dto.Notes,
                         EventType = dto.EventType,
                         NurseID = userId,
+                        
                     };
 
                     await _medicalEventRepository.CreateMedicalEvent(medicalEvent);
@@ -136,34 +143,47 @@ namespace Sever.Service
                 return true;
             }
 
-            public async Task<MedicalEventResponse> GetMedicalEvent(string MedicalEventID)
+        public async Task<MedicalEventResponse> GetMedicalEvent(string medicalEventID)
+        {
+            var medicalEvent = await _medicalEventRepository.GetMedicalEventById(medicalEventID);
+
+            if (medicalEvent == null)
+                return null;
+
+            var studentId = medicalEvent.MedicalEventDetail?.FirstOrDefault()?.StudentID;
+            string studentName = null;
+            string studentClass = null;
+
+            if (!string.IsNullOrEmpty(studentId))
             {
-                var medicalEvent = await _medicalEventRepository.GetMedicalEventById(MedicalEventID);
-
-                if (medicalEvent == null)
-                    return null;
-
-                return new MedicalEventResponse
-                {
-                    MedicalEventID = medicalEvent.MedicalEventID,
-                    EventDateTime = medicalEvent.EventDateTime,
-                    Description = medicalEvent.Description,
-                    ActionTaken = medicalEvent.ActionTaken,
-                    Notes = medicalEvent.Notes,
-                    EventTypeID = medicalEvent.EventType,
-                    NurseID = medicalEvent.NurseID,
-                    StudentID = medicalEvent.MedicalEventDetail.Select(d => d.StudentID).ToList(),
-                };
+                var student = await _studentProfileRepository.GetStudentProfileByStudentId(studentId);
+                studentName = student?.StudentName;
+                studentClass = student?.Class;
             }
 
-            public async Task<List<MedicalEventResponse>> GetMedicialEventByParentAsync(string userName)
+            return new MedicalEventResponse
+            {
+                MedicalEventID = medicalEvent.MedicalEventID,
+                EventDateTime = medicalEvent.EventDateTime,
+                Description = medicalEvent.Description,
+                ActionTaken = medicalEvent.ActionTaken,
+                Notes = medicalEvent.Notes,
+                EventTypeID = medicalEvent.EventType,
+                NurseID = medicalEvent.NurseID,
+                StudentID = medicalEvent.MedicalEventDetail?.Select(d => d.StudentID).ToList(),
+                StudentName = studentName,
+                Class = studentClass
+            };
+        }
+
+        public async Task<List<MedicalEventResponse>> GetMedicialEventByParentAsync(string userName)
             {
                 var parent = await _userService.GetUserAsyc(userName);
                 if (parent == null) return null;
 
                 var userId = parent.UserID;
 
-                var studentList = await _medicalEventRepository.GetStudentsByParentIdAsync(userId);
+                var studentList = await _studentProfileRepository.GetStudentProfileByParentId(userId);
                 if (studentList == null || !studentList.Any()) return null;
 
                 var response = new List<MedicalEventResponse>();
@@ -183,16 +203,38 @@ namespace Sever.Service
                             EventTypeID = e.EventType,
                             NurseID = e.NurseID,
                             StudentID = e.MedicalEventDetail.Select(d => d.StudentID).ToList(),
+                            StudentName = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.StudentName,
+                            Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class
                         });
                     }
                 }
                 return response;
             }
 
-            public Task<List<MedicalEventResponse>> GetMedicalEventsByStudentID(string studentId)
+            public async Task<List<MedicalEventResponse>> GetMedicalEventsByStudentID(string studentId)
             {
-                throw new NotImplementedException();
+                var medical = await _medicalEventRepository.GetMedicalEventByStudentIdAsync(studentId);
+                List<MedicalEventResponse> response = new List<MedicalEventResponse>();
+   
+            foreach (var e in medical)
+                {
+                response.Add(new MedicalEventResponse
+                    {
+                        MedicalEventID = e.MedicalEventID,
+                        EventDateTime = e.EventDateTime,
+                        Description = e.Description,
+                        ActionTaken = e.ActionTaken,
+                        Notes = e.Notes,
+                        EventTypeID = e.EventType,
+                        NurseID = e.NurseID,
+                        StudentID = e.MedicalEventDetail.Select(d => d.StudentID).ToList(),
+                        StudentName = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.StudentName,
+                        Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class
+                    });
+                }
+                return response;
             }
+
 
             public async Task<List<MedicalEventResponse>> GetAllMedicialEventAsync()
             {
@@ -211,6 +253,8 @@ namespace Sever.Service
                         EventTypeID = e.EventType,
                         NurseID = e.NurseID,
                         StudentID = e.MedicalEventDetail?.Select(d => d.StudentID).ToList(),
+                        StudentName = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.StudentName,
+                        Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class
                     });
                 }
 
@@ -218,5 +262,4 @@ namespace Sever.Service
             }
 
         }
-    }
 }

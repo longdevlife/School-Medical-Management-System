@@ -15,7 +15,7 @@ namespace Sever.Repository
         Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId);
         Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId);
         Task<List<Medicine>> GetAllMedicinesAsync();
-
+    }
         public class MedicineRepository : IMedicineRepository
         {
             private readonly DataContext _context;
@@ -50,6 +50,7 @@ namespace Sever.Repository
             public async Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId)
             {
                 return await _context.Medicine
+                    .Include(m => m.StudentProfile)
                     .Where(n => n.StudentID == studentId)
                     .ToListAsync();
             }
@@ -85,11 +86,12 @@ namespace Sever.Repository
                                      .ToListAsync();
             }
 
-            public async Task<List<Medicine>> GetAllMedicinesAsync()
-            {
-                return await _context.Medicine.ToListAsync();
-            }
-
+        public async Task<List<Medicine>> GetAllMedicinesAsync()
+        {
+            return await _context.Medicine
+                                 .Include(m => m.StudentProfile)
+                                 .ToListAsync();
         }
+
     }
 }

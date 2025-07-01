@@ -16,8 +16,8 @@ namespace Sever.Repository.Interfaces
         Task UpdateMedicalEvent(MedicalEvent medicalEvent);
         Task<string> GetCurrentMedicialEventID();
         Task<List<MedicalEvent>> GetMedicalEventByStudentIdAsync(string studentId);
-        Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId);
         Task<List<MedicalEvent>> GetAllMedicialEventAsync();
+    }
         public class MedicalEventRepository : IMedicalEventRepository
         {
             private readonly DataContext _context;
@@ -81,29 +81,24 @@ namespace Sever.Repository.Interfaces
                 return result;
 
             }
-            public async  Task<List<MedicalEvent>> GetMedicalEventByStudentIdAsync(string studentId)
+            public async Task<List<MedicalEvent>> GetMedicalEventByStudentIdAsync(string studentId)
             {
-                return await _context.MedicalEvent
+                 return await _context.MedicalEvent
                     .Include(m => m.MedicalEventDetail)
-                    .Where(m => m.MedicalEventDetail
-                    .Any(d => d.StudentID == studentId))
+                         .ThenInclude(d => d.StudentProfile)
+                    .Where(m => m.MedicalEventDetail.Any(d => d.StudentID == studentId))
                     .ToListAsync();
-            }
+            } 
 
-            public async Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId)
-            {
-                return await _context.StudentProfile
-                                     .Where(s => s.ParentID == parentId)
-                                     .ToListAsync();
-            }
             public async Task<List<MedicalEvent>> GetAllMedicialEventAsync()
             {
-                return await _context.MedicalEvent
-                                     .Include(e => e.MedicalEventDetail)
-                                     .ToListAsync();
+                 return await _context.MedicalEvent
+                    .Include(e => e.MedicalEventDetail)
+                         .ThenInclude(d => d.StudentProfile)
+                    .ToListAsync();
             }
-
-        }
     }
 }
+
+
 

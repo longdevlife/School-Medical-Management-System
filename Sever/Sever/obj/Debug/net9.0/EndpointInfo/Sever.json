@@ -760,9 +760,6 @@
                       "type": "string",
                       "format": "binary"
                     }
-                  },
-                  "Class": {
-                    "type": "string"
                   }
                 }
               },
@@ -789,9 +786,6 @@
                   "style": "form"
                 },
                 "Image": {
-                  "style": "form"
-                },
-                "Class": {
                   "style": "form"
                 }
               }
@@ -1686,9 +1680,6 @@
                       "type": "string",
                       "format": "binary"
                     }
-                  },
-                  "Class": {
-                    "type": "string"
                   }
                 }
               },
@@ -1715,9 +1706,6 @@
                   "style": "form"
                 },
                 "Image": {
-                  "style": "form"
-                },
-                "Class": {
                   "style": "form"
                 }
               }
@@ -1797,6 +1785,18 @@
       }
     },
     "/api/parent/medicine/getByStudentId": {
+      "get": {
+        "tags": [
+          "Parent"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/parent/medicine/getByParentId": {
       "get": {
         "tags": [
           "Parent"

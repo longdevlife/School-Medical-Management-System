@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Sever.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class INIT : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -28,8 +28,8 @@ namespace Sever.Migrations
                 columns: table => new
                 {
                     SchoolID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Logo = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LogGift = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Logo = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LogGift = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Hotline = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -209,7 +209,7 @@ namespace Sever.Migrations
                     StudentID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     StudentName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Class = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    StudentAvata = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StudentAvata = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RelationName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Nationality = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Ethnicity = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -373,7 +373,7 @@ namespace Sever.Migrations
                         column: x => x.StudentID,
                         principalTable: "StudentProfile",
                         principalColumn: "StudentID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Medicine_Users_NurseID",
                         column: x => x.NurseID,

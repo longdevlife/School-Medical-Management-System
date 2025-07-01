@@ -16,6 +16,12 @@ namespace Sever.Service
         Task<List<MedicalEventResponse>> GetMedicalEventsByStudentID(string studentId);
         Task<MedicalEventResponse> GetMedicalEvent(string MedicalEventID);
         Task<List<MedicalEventResponse>> GetMedicialEventByParentAsync(string userName);
+        Task<int> TotalMedicalEvent(DateTime fromDate, DateTime toDate);
+        Task<int> CountEmergency(DateTime fromDate, DateTime toDate);
+        Task<int> CountAccident(DateTime fromDate, DateTime toDate);
+        Task<int> CountIllness(DateTime fromDate, DateTime toDate);
+        Task<int> CountInjury(DateTime fromDate, DateTime toDate); 
+        Task<int> CountOther(DateTime fromDate, DateTime toDate);
 
         //nurse: create, update, getByEventId, getByStudentId
         //parent: getByStudentId, getByEventId
@@ -194,6 +200,36 @@ namespace Sever.Service
                 throw new NotImplementedException();
             }
 
+            public async Task<int> TotalMedicalEvent(DateTime fromDate, DateTime toDate)
+            {
+                var count = await _medicalEventRepository.TotalMedicalEvent(fromDate, toDate);
+                return count;
+            }
+
+            public async Task<int> CountEmergency(DateTime fromDate, DateTime toDate)
+            {
+                return await _medicalEventRepository.CountEmergency(fromDate, toDate);
+            }
+
+            public async Task<int> CountAccident(DateTime fromDate, DateTime toDate)
+            {
+                return await _medicalEventRepository.CountAccident(fromDate, toDate);
+            }
+
+            public async Task<int> CountIllness(DateTime fromDate, DateTime toDate)
+            {
+                return await _medicalEventRepository.CountIllness(fromDate, toDate);
+            }
+
+            public async Task<int> CountInjury(DateTime fromDate, DateTime toDate)
+            {
+                return await _medicalEventRepository.CountInjury(fromDate, toDate);
+            }
+
+            public async Task<int> CountOther(DateTime fromDate, DateTime toDate)
+            {
+                return await _medicalEventRepository.CountOther(fromDate, toDate);
+            }
         }
     }
 }

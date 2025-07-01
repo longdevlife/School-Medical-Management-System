@@ -15,81 +15,85 @@ namespace Sever.Repository
         Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId);
         Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId);
         Task<List<Medicine>> GetAllMedicinesAsync();
+        Task<int> CountMedicinesAsync(DateTime fromDate, DateTime toDate);
+    }
 
-        public class MedicineRepository : IMedicineRepository
+    public class MedicineRepository : IMedicineRepository
+    {
+        private readonly DataContext _context;
+
+        public MedicineRepository(DataContext context)
         {
-            private readonly DataContext _context;
+            _context = context;
+        }
 
-            public MedicineRepository(DataContext context)
+        public async Task<Medicine> CreateMedicineAsync(Medicine medicine)
+        {
+            await _context.Medicine.AddAsync(medicine);
+            await _context.SaveChangesAsync();
+            return medicine;
+        }
+
+        public async Task UpdateMedicineAsync(Medicine medicine)
+        {
+            _context.Medicine.Update(medicine);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Medicine> GetMedicineByIdAsync(string medicineId)
+        {
+
+            var result = await _context.Medicine.FirstOrDefaultAsync(n => n.MedicineID == medicineId);
+            if (result == null)
+                return null;
+            return result;
+        }
+
+        public async Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId)
+        {
+            return await _context.Medicine
+                .Where(n => n.StudentID == studentId)
+                .ToListAsync();
+        }
+
+        public async Task<string> GetCurrentMedicineID()
+        {
+            var lastMedicine = await _context.Medicine
+                .OrderByDescending(m => m.MedicineID)
+                .FirstOrDefaultAsync();
+
+            string newId;
+            if (lastMedicine == null)
             {
-                _context = context;
+                newId = "M0001";
+            }
+            else
+            {
+                newId = GenerateID.GenerateNextId(lastMedicine.MedicineID, "M", 4);
             }
 
-            public async Task<Medicine> CreateMedicineAsync(Medicine medicine)
+            while (await _context.Medicine.AnyAsync(m => m.MedicineID == newId))
             {
-                await _context.Medicine.AddAsync(medicine);
-                await _context.SaveChangesAsync();
-                return medicine;
+                newId = GenerateID.GenerateNextId(newId, "M", 4);
             }
 
-            public async Task UpdateMedicineAsync(Medicine medicine)
-            {
-                _context.Medicine.Update(medicine);
-                await _context.SaveChangesAsync();
-            }
+            return newId;
+        }
 
-            public async Task<Medicine> GetMedicineByIdAsync(string medicineId)
-            {
+        public async Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId)
+        {
+            return await _context.StudentProfile
+                                 .Where(s => s.ParentID == parentId)
+                                 .ToListAsync();
+        }
 
-                var result = await _context.Medicine.FirstOrDefaultAsync(n => n.MedicineID == medicineId);
-                if (result == null)
-                    return null;
-                return result;
-            }
-
-            public async Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId)
-            {
-                return await _context.Medicine
-                    .Where(n => n.StudentID == studentId)
-                    .ToListAsync();
-            }
-
-            public async Task<string> GetCurrentMedicineID()
-            {
-                var lastMedicine = await _context.Medicine
-                    .OrderByDescending(m => m.MedicineID)
-                    .FirstOrDefaultAsync();
-
-                string newId;
-                if (lastMedicine == null)
-                {
-                    newId = "M0001";
-                }
-                else
-                {
-                    newId = GenerateID.GenerateNextId(lastMedicine.MedicineID, "M", 4);
-                }
-
-                while (await _context.Medicine.AnyAsync(m => m.MedicineID == newId))
-                {
-                    newId = GenerateID.GenerateNextId(newId, "M", 4);
-                }
-
-                return newId;
-            }
-
-            public async Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId)
-            {
-                return await _context.StudentProfile
-                                     .Where(s => s.ParentID == parentId)
-                                     .ToListAsync();
-            }
-
-            public async Task<List<Medicine>> GetAllMedicinesAsync()
-            {
-                return await _context.Medicine.ToListAsync();
-            }
-
+        public async Task<List<Medicine>> GetAllMedicinesAsync()
+        {
+            return await _context.Medicine.ToListAsync();
+        }
+        public async Task<int> CountMedicinesAsync(DateTime fromDate, DateTime toDate)
+        {
+            return await _context.Medicine.Where(m => m.SentDate >= fromDate && m.SentDate <= toDate).CountAsync();
         }
     }
 }

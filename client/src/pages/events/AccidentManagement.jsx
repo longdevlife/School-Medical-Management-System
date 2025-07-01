@@ -43,6 +43,10 @@ export default function AccidentManagement() {
   const [createForm] = Form.useForm();
   const [createLoading, setCreateLoading] = useState(false);
 
+  // Modal cập nhật sự cố y tế
+  const [updateModalVisible, setUpdateModalVisible] = useState(false);
+  const [updateForm] = Form.useForm();
+
   // Map API status từ backend sang frontend format
   const getStatusFromBackend = (backendStatus) => {
     switch (backendStatus) {
@@ -62,6 +66,15 @@ export default function AccidentManagement() {
 
   // Map API -> UI
   function mapAccidentData(item) {
+    // Hỗ trợ nhiều ảnh: imageUrl là mảng
+    let images = [];
+    if (Array.isArray(item.images)) {
+      images = item.images;
+    } else if (item.imageUrl) {
+      images = [item.imageUrl];
+    } else if (item.image) {
+      images = [item.image];
+    }
     return {
       id: item.medicalEventID ?? item.id ?? "",
       key: item.medicalEventID ?? item.id ?? "",
@@ -96,6 +109,7 @@ export default function AccidentManagement() {
       treatment: item.actionTaken || "",
       followUp: item.notes || "",
       submissionDate: item.eventDateTime || "",
+      images, // mảng ảnh
     };
   }
 
@@ -131,21 +145,6 @@ export default function AccidentManagement() {
       item.studentId.includes(searchText);
     return matchesStatus && matchesClass && matchesSearch;
   });
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case "pending":
-        return "Chờ xử lý";
-      case "processing":
-        return "Đang xử lý";
-      case "completed":
-        return "Đã xử lý";
-      case "transferred":
-        return "Đã chuyển viện";
-      default:
-        return status;
-    }
-  };
 
   const classes = ["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B"];
   const statuses = ["pending", "processing", "completed", "transferred"];
@@ -208,7 +207,7 @@ export default function AccidentManagement() {
     {
       title: "Thao tác",
       key: "actions",
-      width: 120,
+      width: 160,
       render: (_, record) => (
         <Space size="small">
           <Button
@@ -219,6 +218,15 @@ export default function AccidentManagement() {
             style={{ padding: "0 4px", fontSize: "12px" }}
           >
             Chi tiết
+          </Button>
+          <Button
+            type="default"
+            icon={<CheckCircleOutlined />}
+            size="small"
+            onClick={() => handleUpdateAccident(record)}
+            style={{ padding: "0 6px", fontSize: "12px" }}
+          >
+            Cập nhật
           </Button>
         </Space>
       ),
@@ -274,6 +282,37 @@ export default function AccidentManagement() {
       }
     } finally {
       setCreateLoading(false);
+    }
+  };
+
+  // Hàm mở modal cập nhật
+  const handleUpdateAccident = (accident) => {
+    setSelectedAccident(accident);
+    updateForm.setFieldsValue({
+      description: accident.description,
+      actionTaken: accident.treatment,
+      notes: accident.followUp,
+      eventType: accident.type,
+    });
+    setUpdateModalVisible(true);
+  };
+
+  // Hàm submit cập nhật
+  const handleUpdateAccidentSubmit = async (values) => {
+    try {
+      const updateData = {
+        Description: values.description?.trim() || "Không có",
+        ActionTaken: values.actionTaken?.trim() || "Không có",
+        Notes: values.notes?.trim() || "Không có",
+        EventType: values.eventType?.trim() || "Không có",
+      };
+      await medicalEventApi.nurse.update(selectedAccident.id, updateData);
+      message.success("Cập nhật sự cố thành công!");
+      setUpdateModalVisible(false);
+      fetchAllAccidents();
+    } catch (err) {
+      message.error("Cập nhật sự cố thất bại!");
+      console.error("❌ Lỗi cập nhật sự cố:", err);
     }
   };
 
@@ -576,7 +615,7 @@ export default function AccidentManagement() {
                     marginBottom: "8px",
                   }}
                 >
-                  Chờ xử lý
+                  Tổng sự cố
                 </Text>
                 <Text
                   style={{
@@ -700,7 +739,7 @@ export default function AccidentManagement() {
           </Row>
         </Card>
 
-        {/* 🔍 Bộ lọc và tìm kiếm */}
+        {/* 🎯 Bộ lọc và tìm kiếm - ĐƯỢC DI CHUYỂN XUỐNG DƯỚI THỐNG KÊ */}
         <Card
           title={
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -725,16 +764,20 @@ export default function AccidentManagement() {
                   strong
                   style={{
                     fontSize: "18px",
-                    background:
-                      "linear-gradient(135deg, #1e293b 0%, #475569 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
+                    color: "#1e293b",
+                    display: "block",
+                    marginBottom: "4px",
                   }}
                 >
                   Bộ lọc và tìm kiếm
                 </Text>
-                <br />
-                <Text type="secondary" style={{ fontSize: "14px" }}>
+                <Text
+                  style={{
+                    fontSize: "14px",
+                    color: "#64748b",
+                    fontWeight: "400",
+                  }}
+                >
                   Lọc theo trạng thái, lớp học và tìm kiếm theo mã học sinh
                 </Text>
               </div>
@@ -743,158 +786,284 @@ export default function AccidentManagement() {
           style={{
             marginBottom: "32px",
             borderRadius: "20px",
+            border: "none",
+            background: "white",
             boxShadow:
-              "0 10px 30px rgba(0,0,0,0.08), 0 1px 8px rgba(0,0,0,0.02)",
-            border: "1px solid rgba(255,255,255,0.8)",
+              "0 20px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05)",
           }}
+          bodyStyle={{ padding: "32px" }}
         >
-          <Row gutter={[16, 16]} align="middle">
-            <Col xs={24} sm={8} md={4}>
-              <div>
-                <Text
-                  strong
-                  style={{
-                    fontSize: "14px",
-                    color: "#374151",
-                    marginBottom: "8px",
-                    display: "block",
-                  }}
-                >
-                  Trạng thái
-                </Text>
+          <div
+            style={{
+              background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
+              padding: "16px 20px",
+              borderRadius: "16px",
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+            }}
+          >
+            <Row gutter={[12, 12]} align="middle">
+              {/* Trạng thái - Compact */}
+              <Col xs={24} sm={12} md={8} lg={6}>
+                <div style={{ marginBottom: "6px" }}>
+                  <Text
+                    strong
+                    style={{
+                      fontSize: "13px",
+                      color: "#1e40af",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    🎯 <span>Trạng thái</span>
+                  </Text>
+                </div>
                 <Select
+                  placeholder="Chọn trạng thái"
+                  style={{ width: "100%" }}
                   value={statusFilter}
                   onChange={setStatusFilter}
-                  style={{ width: "100%" }}
-                  size="large"
-                  suffixIcon={<CaretDownOutlined />}
+                  size="middle"
                 >
-                  <Option value="all">Tất cả trạng thái</Option>
+                  <Option value="all">
+                    <span style={{ fontSize: "13px", color: "#666" }}>
+                      📋 Tất cả
+                    </span>
+                  </Option>
                   {statuses.map((status) => (
                     <Option key={status} value={status}>
-                      {getStatusText(status)}
+                      <span style={{ fontSize: "13px" }}>
+                        {status === "pending"
+                          ? "⏳ Chờ xử lý"
+                          : status === "processing"
+                          ? "🔄 Đang xử lý"
+                          : status === "completed"
+                          ? "✅ Đã xử lý"
+                          : status === "transferred"
+                          ? "🏥 Đã chuyển viện"
+                          : "📋"}
+                      </span>
                     </Option>
                   ))}
                 </Select>
-              </div>
-            </Col>
-
-            <Col xs={24} sm={8} md={4}>
-              <div>
-                <Text
-                  strong
-                  style={{
-                    fontSize: "14px",
-                    color: "#374151",
-                    marginBottom: "8px",
-                    display: "block",
-                  }}
-                >
-                  Lớp
-                </Text>
+              </Col>
+              {/* Lớp học - Compact */}
+              <Col xs={24} sm={12} md={8} lg={5}>
+                <div style={{ marginBottom: "6px" }}>
+                  <Text
+                    strong
+                    style={{
+                      fontSize: "13px",
+                      color: "#7c2d12",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    🏫 <span>Lớp</span>
+                  </Text>
+                </div>
                 <Select
+                  placeholder="Chọn lớp"
+                  style={{ width: "100%" }}
                   value={classFilter}
                   onChange={setClassFilter}
-                  style={{ width: "100%" }}
-                  size="large"
-                  suffixIcon={<CaretDownOutlined />}
+                  size="middle"
                 >
-                  <Option value="all">Tất cả lớp</Option>
+                  <Option value="all">
+                    <span style={{ fontSize: "13px", color: "#666" }}>
+                      🎓 Tất cả
+                    </span>
+                  </Option>
                   {classes.map((cls) => (
                     <Option key={cls} value={cls}>
-                      Lớp {cls}
+                      <span style={{ fontSize: "13px" }}>📚 Lớp {cls}</span>
                     </Option>
                   ))}
                 </Select>
-              </div>
-            </Col>
-
-            <Col xs={24} sm={8} md={6}>
-              <div>
-                <Text
-                  strong
+              </Col>
+              {/* Tìm kiếm học sinh - Compact và không bị xuống hàng */}
+              <Col xs={24} sm={24} md={8} lg={8}>
+                <div style={{ marginBottom: "6px" }}>
+                  <Text
+                    strong
+                    style={{
+                      fontSize: "13px",
+                      color: "#dc2626",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    👤 <span>Tìm kiếm</span>
+                  </Text>
+                </div>
+                <Input.Group compact style={{ display: "flex", width: "100%" }}>
+                  <Input
+                    placeholder="Nhập mã học sinh, tên, lớp..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    onPressEnter={() => {}}
+                    style={{
+                      flex: 1,
+                      borderRadius: "8px 0 0 8px",
+                      fontSize: "13px",
+                      borderRight: "none",
+                      minWidth: 0,
+                    }}
+                    size="middle"
+                  />
+                  <Button
+                    type="primary"
+                    style={{
+                      width: "44px",
+                      minWidth: "44px",
+                      borderRadius: "0 8px 8px 0",
+                      background:
+                        "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
+                      borderColor: "#dc2626",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "14px",
+                      boxShadow: "0 2px 4px rgba(220, 38, 38, 0.2)",
+                      transition: "all 0.2s ease",
+                    }}
+                    size="middle"
+                    title="Tìm kiếm"
+                  >
+                    🔍
+                  </Button>
+                </Input.Group>
+              </Col>
+              {/* Thời gian cập nhật - Compact */}
+              <Col xs={24} sm={24} md={24} lg={5}>
+                <div
                   style={{
-                    fontSize: "14px",
-                    color: "#374151",
-                    marginBottom: "8px",
-                    display: "block",
+                    display: "flex",
+                    justifyContent: { xs: "center", lg: "flex-end" },
+                    alignItems: "center",
+                    height: "100%",
                   }}
                 >
-                  Tìm kiếm theo mã học sinh
-                </Text>
-                <Input.Search
-                  placeholder="Nhập mã học sinh, tên, lớp..."
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  allowClear
-                  size="large"
-                  style={{ width: "100%" }}
-                />
-              </div>
-            </Col>
-
-            <Col xs={24} sm={24} md={10} style={{ textAlign: "right" }}>
-              <div style={{ marginTop: { xs: "0", md: "30px" } }}>
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  size="large"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                    border: "none",
-                    borderRadius: "12px",
-                    height: "48px",
-                    padding: "0 24px",
-                    fontWeight: "600",
-                    boxShadow: "0 8px 20px rgba(16, 185, 129, 0.3)",
-                  }}
-                  onClick={() => setCreateModalVisible(true)}
-                >
-                  Thêm sự cố mới
-                </Button>
-              </div>
-            </Col>
-          </Row>
+                  <div
+                    style={{
+                      padding: "10px 16px",
+                      background:
+                        "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
+                      borderRadius: "12px",
+                      border: "1px solid #bfdbfe",
+                      textAlign: "center",
+                      boxShadow: "0 3px 8px rgba(59, 130, 246, 0.12)",
+                      transition: "all 0.2s ease",
+                      cursor: "pointer",
+                      minWidth: "130px",
+                    }}
+                  >
+                    <div style={{ fontSize: "16px", marginBottom: "4px" }}>
+                      🕒
+                    </div>
+                    <Text
+                      style={{
+                        color: "#1e40af",
+                        fontSize: "11px",
+                        fontWeight: "600",
+                        display: "block",
+                      }}
+                    >
+                      Cập nhật lúc
+                    </Text>
+                    <div
+                      style={{
+                        fontSize: "10px",
+                        color: "#64748b",
+                        marginTop: "2px",
+                        fontWeight: "500",
+                      }}
+                    >
+                      {new Date().toLocaleTimeString("vi-VN")}
+                    </div>
+                  </div>
+                </div>
+              </Col>
+            </Row>
+          </div>
         </Card>
 
         {/* 📋 Bảng danh sách sự cố */}
         <Card
           title={
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "16px",
+              }}
+            >
               <div
-                style={{
-                  width: "50px",
-                  height: "50px",
-                  borderRadius: "16px",
-                  background:
-                    "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: "0 8px 20px rgba(139, 92, 246, 0.3)",
-                  border: "2px solid rgba(255,255,255,0.2)",
-                }}
+                style={{ display: "flex", alignItems: "center", gap: "16px" }}
               >
-                <Text style={{ color: "white", fontSize: "24px" }}>📋</Text>
-              </div>
-              <div>
-                <Text
-                  strong
+                <div
                   style={{
-                    fontSize: "18px",
+                    width: "50px",
+                    height: "50px",
+                    borderRadius: "16px",
                     background:
-                      "linear-gradient(135deg, #1e293b 0%, #475569 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
+                      "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 8px 20px rgba(139, 92, 246, 0.3)",
+                    border: "2px solid rgba(255,255,255,0.2)",
                   }}
                 >
-                  Danh sách sự cố y tế
-                </Text>
-                <br />
-                <Text type="secondary" style={{ fontSize: "14px" }}>
-                  Quản lý và theo dõi tất cả sự cố y tế
-                </Text>
+                  <Text style={{ color: "white", fontSize: "24px" }}>📋</Text>
+                </div>
+                <div>
+                  <Text
+                    strong
+                    style={{
+                      fontSize: "18px",
+                      background:
+                        "linear-gradient(135deg, #1e293b 0%, #475569 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }}
+                  >
+                    Danh sách sự cố y tế
+                  </Text>
+                  <br />
+                  <Text type="secondary" style={{ fontSize: "14px" }}>
+                    Quản lý và theo dõi tất cả sự cố y tế
+                  </Text>
+                </div>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  gap: "12px",
+                }}
+              >
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => setCreateModalVisible(true)}
+                  style={{
+                    borderRadius: "8px",
+                    background:
+                      "linear-gradient(135deg, #52c41a 0%, #73d13d 100%)",
+                    borderColor: "#52c41a",
+                    boxShadow: "0 4px 12px rgba(82, 196, 26, 0.3)",
+                    fontWeight: "600",
+                  }}
+                  size="middle"
+                >
+                  Thêm sự cố mới
+                </Button>
               </div>
             </div>
           }
@@ -959,61 +1128,123 @@ export default function AccidentManagement() {
           }}
         >
           {selectedAccident && (
-            <Descriptions
-              column={2}
-              bordered
-              size="middle"
-              style={{
-                borderRadius: "12px",
-                overflow: "hidden",
-              }}
-            >
-              <Descriptions.Item label="Mã sự cố" span={1}>
-                <Text strong style={{ color: "#1890ff" }}>
-                  {selectedAccident.submissionCode}
-                </Text>
-              </Descriptions.Item>
+            <>
+              <Descriptions
+                column={2}
+                bordered
+                size="middle"
+                style={{
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                }}
+              >
+                <Descriptions.Item label="Mã sự cố" span={1}>
+                  <Text strong style={{ color: "#1890ff" }}>
+                    {selectedAccident.submissionCode}
+                  </Text>
+                </Descriptions.Item>
 
-              <Descriptions.Item label="Học sinh" span={1}>
-                <Text strong>{selectedAccident.studentName}</Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Lớp" span={1}>
-                <Text>{selectedAccident.studentClass}</Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Mã học sinh" span={1}>
-                <Text>{selectedAccident.studentId}</Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Thời gian" span={1}>
-                <Text>
-                  {selectedAccident.date} {selectedAccident.time}
-                </Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Loại sự cố" span={1}>
-                <Text strong style={{ color: "#722ed1" }}>
-                  {selectedAccident.type}
-                </Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Mức độ" span={1}>
-                <Text>{selectedAccident.severity}</Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Người xử lý" span={1}>
-                <Text>{selectedAccident.handledBy}</Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Địa điểm" span={1}>
-                <Text>{selectedAccident.location}</Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Mô tả" span={2}>
-                <Text>{selectedAccident.description || "Chưa có mô tả"}</Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Xử lý" span={2}>
-                <Text>
-                  {selectedAccident.treatment || "Chưa có thông tin xử lý"}
-                </Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Theo dõi" span={2}>
-                <Text></Text>
-              </Descriptions.Item>
-            </Descriptions>
+                <Descriptions.Item label="Học sinh" span={1}>
+                  <Text strong>{selectedAccident.studentName}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Lớp" span={1}>
+                  <Text>{selectedAccident.studentClass}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Mã học sinh" span={1}>
+                  <Text>{selectedAccident.studentId}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Thời gian" span={1}>
+                  <Text>
+                    {selectedAccident.date} {selectedAccident.time}
+                  </Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Loại sự cố" span={1}>
+                  <Text strong style={{ color: "#722ed1" }}>
+                    {selectedAccident.type}
+                  </Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Mức độ" span={1}>
+                  <Text>{selectedAccident.severity}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Người xử lý" span={1}>
+                  <Text>{selectedAccident.handledBy}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Địa điểm" span={1}>
+                  <Text>{selectedAccident.location}</Text>
+                </Descriptions.Item>
+              </Descriptions>
+              <Descriptions
+                column={2}
+                bordered={false}
+                size="middle"
+                style={{
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  marginTop: 16,
+                }}
+              >
+                <Descriptions.Item label="Mô tả" span={2}>
+                  <Text>{selectedAccident.description || "Chưa có mô tả"}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Xử lý" span={2}>
+                  <Text>
+                    {selectedAccident.treatment || "Chưa có thông tin xử lý"}
+                  </Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Theo dõi" span={2}>
+                  <Text>{selectedAccident.followUp || ""}</Text>
+                </Descriptions.Item>
+              </Descriptions>
+              {/* Khung hiển thị nhiều ảnh, mỗi dòng 3 ảnh, đặt ở dưới cùng */}
+              <div style={{
+                margin: '24px 0 0 0',
+                padding: 16,
+                background: '#f9fafb',
+                borderRadius: 14,
+                border: '1px solid #eee',
+                minHeight: 120,
+              }}>
+                <div style={{ fontWeight: 600, marginBottom: 8, color: '#722ed1' }}>Ảnh sự cố y tế</div>
+                {selectedAccident.images && selectedAccident.images.length > 0 ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+                    {selectedAccident.images.map((img, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          width: 140,
+                          height: 100,
+                          borderRadius: 10,
+                          border: '1px solid #e5e7eb',
+                          overflow: 'hidden',
+                          marginBottom: 16,
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                          background: '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <img
+                          src={img}
+                          alt={`Ảnh sự cố ${idx + 1}`}
+                          style={{
+                            maxWidth: '100%',
+                            maxHeight: '100%',
+                            objectFit: 'cover',
+                            transition: 'transform 0.2s',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => window.open(img, '_blank')}
+                          onError={e => (e.target.style.display = 'none')}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <Text type="secondary">Không có ảnh</Text>
+                )}
+              </div>
+            </>
           )}
         </Modal>
 
@@ -1115,6 +1346,70 @@ export default function AccidentManagement() {
                 }}
               >
                 Tạo mới sự cố
+              </Button>
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        {/* Modal cập nhật sự cố y tế */}
+        <Modal
+          title="Cập nhật sự cố y tế"
+          open={updateModalVisible}
+          onCancel={() => setUpdateModalVisible(false)}
+          footer={null}
+          width={600}
+          style={{ borderRadius: "20px" }}
+          destroyOnClose
+        >
+          <Form
+            form={updateForm}
+            layout="vertical"
+            onFinish={handleUpdateAccidentSubmit}
+            autoComplete="off"
+          >
+            <Form.Item
+              label="Mô tả sự cố"
+              name="description"
+              rules={[
+                { required: true, message: "Vui lòng nhập mô tả sự cố!" },
+              ]}
+            >
+              <Input.TextArea placeholder="Mô tả chi tiết sự cố" rows={3} />
+            </Form.Item>
+            <Form.Item
+              label="Xử lý ban đầu"
+              name="actionTaken"
+              rules={[
+                { required: true, message: "Vui lòng nhập xử lý ban đầu!" },
+              ]}
+            >
+              <Input.TextArea
+                placeholder="Các biện pháp xử lý ban đầu"
+                rows={2}
+              />
+            </Form.Item>
+            <Form.Item label="Ghi chú" name="notes">
+              <Input.TextArea placeholder="Ghi chú thêm (nếu có)" rows={2} />
+            </Form.Item>
+            <Form.Item
+              label="Loại sự cố"
+              name="eventType"
+              rules={[{ required: true, message: "Vui lòng nhập loại sự cố!" }]}
+            >
+              <Input placeholder="Nhập loại sự cố (ví dụ: đau, ngã, sốt...)" />
+            </Form.Item>
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                style={{
+                  width: "100%",
+                  height: 44,
+                  fontWeight: 600,
+                  borderRadius: 10,
+                }}
+              >
+                Cập nhật sự cố
               </Button>
             </Form.Item>
           </Form>

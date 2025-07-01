@@ -1600,23 +1600,54 @@ function MedicationSubmission() {
             <div
               style={{
                 display: "flex",
-                alignItems: "center",
                 justifyContent: "space-between",
+                gap: "16px",
               }}
             >
-              <div>
-                <Text strong style={{ fontSize: "16px", color: "#333" }}>
-                  Danh sách yêu cầu thuốc
-                </Text>
+              <div className="flex gap-4">
                 <div
-                  style={{ fontSize: "13px", color: "#666", marginTop: "2px" }}
+                  style={{
+                    width: "50px",
+                    height: "50px",
+                    borderRadius: "16px",
+                    background:
+                      "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 8px 20px rgba(139, 92, 246, 0.3)",
+                    border: "2px solid rgba(255,255,255,0.2)",
+                  }}
                 >
-                  Tổng cộng: <strong>{filteredSubmissions.length}</strong> yêu
-                  cầu
+                  <Text style={{ color: "white", fontSize: "24px" }}>📋</Text>
+                </div>
+                <div>
+                  <Text
+                    strong
+                    style={{
+                      fontSize: "18px",
+                      background:
+                        "linear-gradient(135deg, #1e293b 0%, #475569 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }}
+                  >
+                    Danh sách yêu cầu thuốc
+                  </Text>
+                  <br />
+                  <Text type="secondary" style={{ fontSize: "14px" }}>
+                    Tổng cộng: <strong>{filteredSubmissions.length}</strong> yêu
+                    cầu
+                  </Text>
                 </div>
               </div>
               <div
-                style={{ display: "flex", alignItems: "center", gap: "12px" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  gap: "12px",
+                }}
               >
                 <Button
                   type="primary"

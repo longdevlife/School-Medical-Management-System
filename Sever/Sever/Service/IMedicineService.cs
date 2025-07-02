@@ -364,6 +364,11 @@ namespace Sever.Service
                 }
                 return response;
             }
+
+        public async Task<int> TotalMedicinesAsync(DateTime fromDate, DateTime toDate)
+        {
+            return await _medicineRepository.CountMedicinesAsync(fromDate, toDate);
+        }
     }
 }
 

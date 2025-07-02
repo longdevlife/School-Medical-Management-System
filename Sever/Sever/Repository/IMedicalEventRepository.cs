@@ -9,6 +9,7 @@ namespace Sever.Repository.Interfaces
 {
     public interface IMedicalEventRepository
     {
+        Task<List<MedicalEvent>> GetAllMedicialEventAsync();
         Task<MedicalEvent> CreateMedicalEvent(MedicalEvent medicalEvent);
         Task CreateMedicalEventDetails(IEnumerable<MedicalEventDetail> details);
         Task<MedicalEvent> GetMedicalEventById(string medicalEventId);
@@ -16,7 +17,6 @@ namespace Sever.Repository.Interfaces
         Task UpdateMedicalEvent(MedicalEvent medicalEvent);
         Task<string> GetCurrentMedicialEventID();
         Task<List<MedicalEvent>> GetMedicalEventByStudentIdAsync(string studentId);
-        Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId);
         Task<int> TotalMedicalEvent(DateTime fromDate, DateTime toDate);
         Task<int> CountEmergency(DateTime fromDate, DateTime toDate);
         Task<int> CountAccident(DateTime fromDate, DateTime toDate);
@@ -28,11 +28,6 @@ namespace Sever.Repository.Interfaces
     public class MedicalEventRepository : IMedicalEventRepository
     {
         private readonly DataContext _context;
-        Task<List<MedicalEvent>> GetAllMedicialEventAsync();
-    }
-        public class MedicalEventRepository : IMedicalEventRepository
-        {
-            private readonly DataContext _context;
 
         public MedicalEventRepository(DataContext context)
         {
@@ -92,24 +87,15 @@ namespace Sever.Repository.Interfaces
             string result = GenerateID.GenerateNextId(crurrentMedicine.MedicalEventID, "ME", 4);
             return result;
 
-            }
-            public async Task<List<MedicalEvent>> GetMedicalEventByStudentIdAsync(string studentId)
-            {
-                 return await _context.MedicalEvent
-                    .Include(m => m.MedicalEventDetail)
-                         .ThenInclude(d => d.StudentProfile)
-                    .Where(m => m.MedicalEventDetail.Any(d => d.StudentID == studentId))
-                    .ToListAsync();
-            } 
         }
         public async Task<List<MedicalEvent>> GetMedicalEventByStudentIdAsync(string studentId)
         {
             return await _context.MedicalEvent
-                .Include(m => m.MedicalEventDetail)
-                .Where(m => m.MedicalEventDetail
-                .Any(d => d.StudentID == studentId))
-                .ToListAsync();
-        }
+               .Include(m => m.MedicalEventDetail)
+                    .ThenInclude(d => d.StudentProfile)
+               .Where(m => m.MedicalEventDetail.Any(d => d.StudentID == studentId))
+               .ToListAsync();
+        } 
 
         public async Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId)
         {
@@ -143,15 +129,13 @@ namespace Sever.Repository.Interfaces
                 .Where(m => m.EventType == "Bệnh tật" && m.EventDateTime >= fromDate && m.EventDateTime <= toDate)
                 .CountAsync();
         }
-            public async Task<List<MedicalEvent>> GetAllMedicialEventAsync()
-            {
-                 return await _context.MedicalEvent
-                    .Include(e => e.MedicalEventDetail)
-                         .ThenInclude(d => d.StudentProfile)
-                    .ToListAsync();
-            }
-    }
-}
+        public async Task<List<MedicalEvent>> GetAllMedicialEventAsync()
+        {
+            return await _context.MedicalEvent
+               .Include(e => e.MedicalEventDetail)
+                    .ThenInclude(d => d.StudentProfile)
+               .ToListAsync();
+        }
 
         public async Task<int> CountInjury(DateTime fromDate, DateTime toDate)
         {

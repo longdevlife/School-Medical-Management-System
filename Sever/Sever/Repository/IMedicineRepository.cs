@@ -95,5 +95,9 @@ namespace Sever.Repository
                                  .ToListAsync();
         }
 
+        public async Task<int> CountMedicinesAsync(DateTime fromDate, DateTime toDate)
+        {
+            return await _context.Medicine.Where(m => m.SentDate >= fromDate && m.SentDate <= toDate).CountAsync();
+        }
     }
 }

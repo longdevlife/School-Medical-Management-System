@@ -589,15 +589,18 @@ function MedicationSubmission() {
       statusFilter === "all" || submission.status === statusFilter;
     const matchesClass =
       classFilter === "all" || submission.studentClass === classFilter;
-    
+
     // Multi-field search: studentId, studentName, studentClass - Safe string conversion
     const search = searchText.trim().toLowerCase();
     const matchesSearch =
       !search ||
-      (submission.studentId && String(submission.studentId).toLowerCase().includes(search)) ||
-      (submission.studentName && String(submission.studentName).toLowerCase().includes(search)) ||
-      (submission.studentClass && String(submission.studentClass).toLowerCase().includes(search));
-    
+      (submission.studentId &&
+        String(submission.studentId).toLowerCase().includes(search)) ||
+      (submission.studentName &&
+        String(submission.studentName).toLowerCase().includes(search)) ||
+      (submission.studentClass &&
+        String(submission.studentClass).toLowerCase().includes(search));
+
     return matchesStatus && matchesClass && matchesSearch;
   });
 
@@ -1316,7 +1319,8 @@ function MedicationSubmission() {
                   width: "50px",
                   height: "50px",
                   borderRadius: "16px",
-                  background: "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)",
+                  background:
+                    "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1383,7 +1387,8 @@ function MedicationSubmission() {
                       gap: "6px",
                     }}
                   >
-                    <span style={{ fontSize: "16px" }}>🎯</span> <span>Trạng thái</span>
+                    <span style={{ fontSize: "16px" }}>🎯</span>{" "}
+                    <span>Trạng thái</span>
                   </Text>
                 </div>
                 <Select
@@ -1394,7 +1399,9 @@ function MedicationSubmission() {
                   size="middle"
                 >
                   <Option value="all">
-                    <span style={{ fontSize: "13px", color: "#666" }}>📋 Tất cả</span>
+                    <span style={{ fontSize: "13px", color: "#666" }}>
+                      📋 Tất cả
+                    </span>
                   </Option>
                   {statuses.map((status) => (
                     <Option key={status} value={status}>
@@ -1429,7 +1436,8 @@ function MedicationSubmission() {
                       gap: "6px",
                     }}
                   >
-                    <span style={{ fontSize: "16px" }}>🏫</span> <span>Lớp</span>
+                    <span style={{ fontSize: "16px" }}>🏫</span>{" "}
+                    <span>Lớp</span>
                   </Text>
                 </div>
                 <Select
@@ -1440,7 +1448,9 @@ function MedicationSubmission() {
                   size="middle"
                 >
                   <Option value="all">
-                    <span style={{ fontSize: "13px", color: "#666" }}>🎓 Tất cả</span>
+                    <span style={{ fontSize: "13px", color: "#666" }}>
+                      🎓 Tất cả
+                    </span>
                   </Option>
                   {classes.map((cls) => (
                     <Option key={cls} value={cls}>
@@ -1463,7 +1473,8 @@ function MedicationSubmission() {
                       gap: "6px",
                     }}
                   >
-                    <span style={{ fontSize: "16px" }}>👤</span> <span>Tìm kiếm</span>
+                    <span style={{ fontSize: "16px" }}>👤</span>{" "}
+                    <span>Tìm kiếm</span>
                   </Text>
                 </div>
                 <Input.Group compact style={{ display: "flex", width: "100%" }}>
@@ -1487,7 +1498,8 @@ function MedicationSubmission() {
                       width: "44px",
                       minWidth: "44px",
                       borderRadius: "0 8px 8px 0",
-                      background: "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
+                      background:
+                        "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
                       borderColor: "#dc2626",
                       display: "flex",
                       alignItems: "center",
@@ -1500,7 +1512,9 @@ function MedicationSubmission() {
                     title="Tìm kiếm"
                     onClick={handleSearch}
                   >
-                    <span role="img" aria-label="search">🔍</span>
+                    <span role="img" aria-label="search">
+                      🔍
+                    </span>
                   </Button>
                 </Input.Group>
               </Col>
@@ -1518,7 +1532,8 @@ function MedicationSubmission() {
                   <div
                     style={{
                       padding: "14px 20px",
-                      background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
+                      background:
+                        "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
                       borderRadius: "16px",
                       border: "1px solid #bfdbfe",
                       textAlign: "center",
@@ -1526,11 +1541,27 @@ function MedicationSubmission() {
                       minWidth: "140px",
                     }}
                   >
-                    <div style={{ fontSize: "18px", marginBottom: "4px" }}>🕒</div>
-                    <Text style={{ color: "#1e40af", fontSize: "12px", fontWeight: "600", display: "block" }}>
+                    <div style={{ fontSize: "18px", marginBottom: "4px" }}>
+                      🕒
+                    </div>
+                    <Text
+                      style={{
+                        color: "#1e40af",
+                        fontSize: "12px",
+                        fontWeight: "600",
+                        display: "block",
+                      }}
+                    >
                       Cập nhật lúc
                     </Text>
-                    <div style={{ fontSize: "13px", color: "#64748b", marginTop: "2px", fontWeight: "500" }}>
+                    <div
+                      style={{
+                        fontSize: "13px",
+                        color: "#64748b",
+                        marginTop: "2px",
+                        fontWeight: "500",
+                      }}
+                    >
                       {new Date().toLocaleTimeString("vi-VN")}
                     </div>
                   </div>

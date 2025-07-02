@@ -27,7 +27,6 @@ const authService = {
     try {
       console.log(`Attempting real API login for user: ${username}`);
 
-      // Call real backend API
       const response = await authApi.login({ username, password });
 
       console.log("API Response:", response.data);
@@ -35,7 +34,9 @@ const authService = {
       // Store token and decode user info from JWT
       if (response.data.accessToken) {
         localStorage.setItem("token", response.data.accessToken);
-
+        if (response.data.refreshToken) {
+          localStorage.setItem("refreshToken", response.data.refreshToken);
+        }
         // Decode JWT token to get user info
         const tokenPayload = decodeToken(response.data.accessToken);
         console.log("Token payload:", tokenPayload);
@@ -49,7 +50,7 @@ const authService = {
               0
           );
 
-          // Find username claim (backend uses XMLSoap claims)
+          // Tìm username từ token hoặc sử dụng username đã nhập
           const username_from_token =
             tokenPayload[
               "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
@@ -69,7 +70,7 @@ const authService = {
           localStorage.setItem("user", JSON.stringify(user));
           console.log("Decoded user from token:", user);
 
-          // Return user info along with tokens for Login.jsx
+          // Trả về dữ liệu kết hợp với user
           return {
             ...response.data,
             user: user,
@@ -96,9 +97,20 @@ const authService = {
     }
   },
 
-  logout: () => {
-    console.log("Mock logout");
+  logout: async () => {
+    console.log("Logout Api");
+    try {
+      if (authApi.logout) {
+        const refreshToken = localStorage.getItem("refreshToken");
+        if (refreshToken) {
+          await authApi.logout({ refreshToken });
+        }
+      }
+    } catch (err) {
+      console.warn("Logout API error (ignored):", err);
+    }
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
   },
 

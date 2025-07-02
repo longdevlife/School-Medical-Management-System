@@ -252,15 +252,18 @@ export default function AccidentManagement() {
       statusFilter === "all" || accident.status === statusFilter;
     const matchesClass =
       classFilter === "all" || accident.studentClass === classFilter;
-    
+
     // Multi-field search: studentId, studentName, studentClass - Safe string conversion
     const search = searchText.trim().toLowerCase();
     const matchesSearch =
       !search ||
-      (accident.studentId && String(accident.studentId).toLowerCase().includes(search)) ||
-      (accident.studentName && String(accident.studentName).toLowerCase().includes(search)) ||
-      (accident.studentClass && String(accident.studentClass).toLowerCase().includes(search));
-    
+      (accident.studentId &&
+        String(accident.studentId).toLowerCase().includes(search)) ||
+      (accident.studentName &&
+        String(accident.studentName).toLowerCase().includes(search)) ||
+      (accident.studentClass &&
+        String(accident.studentClass).toLowerCase().includes(search));
+
     return matchesStatus && matchesClass && matchesSearch;
   });
 
@@ -1234,7 +1237,6 @@ export default function AccidentManagement() {
               showTotal: (total, range) =>
                 `${range[0]}-${range[1]} của ${total} sự cố`,
             }}
-            bordered
             size="middle"
             style={{
               borderRadius: "12px",

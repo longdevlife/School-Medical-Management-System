@@ -902,7 +902,7 @@ export default function AccidentManagement() {
                   style={{
                     fontSize: "18px",
                     color: "#1e293b",
-                    display: "block",
+                    display: "flex",
                     marginBottom: "4px",
                   }}
                 >
@@ -1020,7 +1020,7 @@ export default function AccidentManagement() {
                   ))}
                 </Select>
               </Col>
-              {/* Tìm kiếm học sinh - Compact và không bị xuống hàng */}
+              {/* Tìm kiếm học sinh */}
               <Col xs={24} sm={24} md={8} lg={8}>
                 <div style={{ marginBottom: "6px" }}>
                   <Text

@@ -47,6 +47,9 @@ export default function AccidentManagement() {
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
   const [updateForm] = Form.useForm();
 
+  // Đường dẫn gốc cho ảnh nếu chỉ có tên file
+  const IMAGE_BASE_URL = "http://localhost:5000/uploads/";
+
   // Map API status từ backend sang frontend format
   const getStatusFromBackend = (backendStatus) => {
     switch (backendStatus) {
@@ -64,17 +67,8 @@ export default function AccidentManagement() {
     }
   };
 
-  // Map API -> UI
+  // Map API -> UI (chỉ map dữ liệu cơ bản, ảnh sẽ được lấy riêng)
   function mapAccidentData(item) {
-    // Hỗ trợ nhiều ảnh: imageUrl là mảng
-    let images = [];
-    if (Array.isArray(item.images)) {
-      images = item.images;
-    } else if (item.imageUrl) {
-      images = [item.imageUrl];
-    } else if (item.image) {
-      images = [item.image];
-    }
     return {
       id: item.medicalEventID ?? item.id ?? "",
       key: item.medicalEventID ?? item.id ?? "",
@@ -109,17 +103,131 @@ export default function AccidentManagement() {
       treatment: item.actionTaken || "",
       followUp: item.notes || "",
       submissionDate: item.eventDateTime || "",
-      images, // mảng ảnh
+      images: [], // Sẽ được cập nhật sau khi lấy từ API riêng
     };
   }
 
-  // Lấy toàn
+  // Lấy toàn bộ sự cố và ảnh của chúng
   const fetchAllAccidents = async () => {
     setLoading(true);
     try {
       const response = await medicalEventApi.nurse.getAll();
+      console.log("🚀 Debug dữ liệu thô từ API:", response.data);
+      console.log("🔍 Debug item đầu tiên:", response.data[0]);
+
+      // Map dữ liệu cơ bản trước
       const mappedData = response.data.map(mapAccidentData);
-      setAccidents(mappedData);
+
+      // Lấy ảnh cho từng sự cố
+      const accidentsWithImages = await Promise.all(
+        mappedData.map(async (accident) => {
+          try {
+            console.log(`🖼️ Fetching details for ${accident.id}...`);
+
+            // Sử dụng API getByEventID có sẵn để lấy chi tiết (có ảnh)
+            const detailResponse = await medicalEventApi.nurse.getByEventID(
+              accident.id
+            );
+            console.log(
+              `✅ Detail response for ${accident.id}:`,
+              detailResponse.data
+            );
+
+            const item = detailResponse.data;
+            let images = [];
+
+            // Debug chi tiết các trường có thể chứa ảnh
+            console.log(
+              "🔍 Debugging all possible image fields for",
+              accident.id
+            );
+            console.log("📋 item.file:", item.file);
+            console.log("📋 item.files:", item.files);
+            console.log("📋 item.images:", item.images);
+            console.log("📋 item.image:", item.image);
+            console.log("📋 item.imageUrl:", item.imageUrl);
+            console.log("📋 item.imagePath:", item.imagePath);
+            console.log("📋 item.fileName:", item.fileName);
+            console.log("📋 item.filePath:", item.filePath);
+            console.log("📋 item.attachments:", item.attachments);
+
+            // Ưu tiên lấy FileLink nếu có
+            if (item.files && Array.isArray(item.files)) {
+              images = item.files
+                .map((fileData) => {
+                  // Ưu tiên lấy trường FileLink (hoặc fileLink, file_link)
+                  const link =
+                    fileData.FileLink ||
+                    fileData.fileLink ||
+                    fileData.file_link;
+                  if (
+                    link &&
+                    typeof link === "string" &&
+                    link.startsWith("http")
+                  )
+                    return link;
+                  // Nếu là string và là URL đầy đủ
+                  if (
+                    typeof fileData === "string" &&
+                    fileData.startsWith("http")
+                  )
+                    return fileData;
+                  return null;
+                })
+                .filter(Boolean);
+            } else if (
+              item.fileLink &&
+              typeof item.fileLink === "string" &&
+              item.fileLink.startsWith("http")
+            ) {
+              images = [item.fileLink];
+            } else if (
+              item.file &&
+              typeof item.file === "string" &&
+              item.file.startsWith("http")
+            ) {
+              images = [item.file];
+            } else if (Array.isArray(item.images)) {
+              images = item.images
+                .map((img) =>
+                  typeof img === "string"
+                    ? img.startsWith("http")
+                      ? img
+                      : null
+                    : img.FileLink || img.fileLink || img.file_link || null
+                )
+                .filter(Boolean);
+            } else if (
+              item.imageUrl &&
+              typeof item.imageUrl === "string" &&
+              item.imageUrl.startsWith("http")
+            ) {
+              images = [item.imageUrl];
+            } else if (
+              item.image &&
+              typeof item.image === "string" &&
+              item.image.startsWith("http")
+            ) {
+              images = [item.image];
+            }
+
+            console.log(`🖼️ Final images for ${accident.id}:`, images);
+            return { ...accident, images };
+          } catch (error) {
+            console.warn(
+              `⚠️ Không thể lấy chi tiết cho ${accident.id}:`,
+              error
+            );
+            return accident; // Trả về accident mà không có ảnh nếu lỗi
+          }
+        })
+      );
+
+      console.log(
+        "✅ Debug dữ liệu sau khi map và lấy ảnh:",
+        accidentsWithImages
+      );
+      setAccidents(accidentsWithImages);
     } catch (error) {
       setAccidents([]);
       message.error("Không thể tải danh sách sự cố. Vui lòng thử lại sau.");
@@ -235,6 +343,8 @@ export default function AccidentManagement() {
 
   // Modal chi tiết tích hợp trong file
   const handleViewDetails = (accident) => {
+    console.log("🔍 Debug dữ liệu accident:", accident);
+    console.log("🖼️ Debug ảnh accident.images:", accident.images);
     setSelectedAccident(accident);
     setDetailModalVisible(true);
   };
@@ -248,19 +358,25 @@ export default function AccidentManagement() {
   const handleCreateAccident = async (values) => {
     setCreateLoading(true);
     try {
+      // Chuyển fileList thành array file gốc
+      const imageFiles =
+        values.image?.map((fileObj) => fileObj.originFileObj).filter(Boolean) ||
+        [];
+
       const createData = {
         Description: values.description?.trim() || "Không có",
         ActionTaken: values.actionTaken?.trim() || "Không có",
         Notes: values.notes?.trim() || "Không có",
         EventType: values.eventType?.trim() || "Không có",
         StudentID: [values.studentID],
-        Image: values.image || [],
+        Image: imageFiles, // Gửi array file gốc
       };
 
       console.log(
         "🚀 Data gửi lên API (sẽ được convert thành FormData):",
         createData
       );
+      console.log("📁 Số lượng file ảnh:", imageFiles.length);
 
       await medicalEventApi.nurse.create(createData);
       message.success("Tạo sự kiện thành công!");
@@ -300,19 +416,40 @@ export default function AccidentManagement() {
   // Hàm submit cập nhật
   const handleUpdateAccidentSubmit = async (values) => {
     try {
+      // Chuyển fileList thành array file gốc (nếu có)
+      const imageFiles =
+        values.image?.map((fileObj) => fileObj.originFileObj).filter(Boolean) ||
+        [];
+
       const updateData = {
         Description: values.description?.trim() || "Không có",
         ActionTaken: values.actionTaken?.trim() || "Không có",
         Notes: values.notes?.trim() || "Không có",
         EventType: values.eventType?.trim() || "Không có",
+        Image: imageFiles, // Thêm file ảnh (nếu có)
       };
+
+      console.log("🔄 Data cập nhật gửi lên API:", updateData);
+      console.log("📁 Số lượng file ảnh bổ sung:", imageFiles.length);
+
       await medicalEventApi.nurse.update(selectedAccident.id, updateData);
       message.success("Cập nhật sự cố thành công!");
       setUpdateModalVisible(false);
+      updateForm.resetFields();
       fetchAllAccidents();
     } catch (err) {
-      message.error("Cập nhật sự cố thất bại!");
       console.error("❌ Lỗi cập nhật sự cố:", err);
+
+      // Hiển thị thông báo lỗi chi tiết từ backend
+      if (err?.response?.data?.message) {
+        message.error(`Lỗi: ${err.response.data.message}`);
+      } else if (err?.response?.data?.errors) {
+        // Nếu backend trả về validation errors
+        const errorMessages = Object.values(err.response.data.errors).flat();
+        message.error(`Lỗi validation: ${errorMessages.join(", ")}`);
+      } else {
+        message.error("Có lỗi xảy ra khi cập nhật sự cố. Vui lòng thử lại!");
+      }
     }
   };
 
@@ -1196,52 +1333,95 @@ export default function AccidentManagement() {
                 </Descriptions.Item>
               </Descriptions>
               {/* Khung hiển thị nhiều ảnh, mỗi dòng 3 ảnh, đặt ở dưới cùng */}
-              <div style={{
-                margin: '24px 0 0 0',
-                padding: 16,
-                background: '#f9fafb',
-                borderRadius: 14,
-                border: '1px solid #eee',
-                minHeight: 120,
-              }}>
-                <div style={{ fontWeight: 600, marginBottom: 8, color: '#722ed1' }}>Ảnh sự cố y tế</div>
-                {selectedAccident.images && selectedAccident.images.length > 0 ? (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+              <div
+                style={{
+                  margin: "24px 0 0 0",
+                  padding: 16,
+                  background: "#f9fafb",
+                  borderRadius: 14,
+                  border: "1px solid #eee",
+                  minHeight: 120,
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: 600,
+                    marginBottom: 8,
+                    color: "#722ed1",
+                    fontSize: "16px",
+                  }}
+                >
+                  Ảnh sự cố y tế
+                </div>
+                {selectedAccident.images &&
+                selectedAccident.images.length > 0 ? (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(120px, 1fr))",
+                      gap: 12,
+                      maxWidth: "400px", // Giới hạn width để tối đa 3 ảnh/dòng
+                    }}
+                  >
                     {selectedAccident.images.map((img, idx) => (
                       <div
                         key={idx}
                         style={{
-                          width: 140,
-                          height: 100,
-                          borderRadius: 10,
-                          border: '1px solid #e5e7eb',
-                          overflow: 'hidden',
-                          marginBottom: 16,
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                          background: '#fff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          width: "120px",
+                          height: "90px",
+                          borderRadius: 8,
+                          border: "2px solid #e5e7eb",
+                          overflow: "hidden",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                          background: "#fff",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transition: "all 0.2s ease",
+                          cursor: "pointer",
                         }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = "scale(1.05)";
+                          e.target.style.borderColor = "#10b981";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = "scale(1)";
+                          e.target.style.borderColor = "#e5e7eb";
+                        }}
+                        onClick={() => window.open(img, "_blank")}
                       >
                         <img
                           src={img}
                           alt={`Ảnh sự cố ${idx + 1}`}
                           style={{
-                            maxWidth: '100%',
-                            maxHeight: '100%',
-                            objectFit: 'cover',
-                            transition: 'transform 0.2s',
-                            cursor: 'pointer',
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
                           }}
-                          onClick={() => window.open(img, '_blank')}
-                          onError={e => (e.target.style.display = 'none')}
+                          onError={(e) => {
+                            e.target.parentElement.innerHTML =
+                              '<div style="color: #999; font-size: 12px; text-align: center;">Ảnh lỗi</div>';
+                          }}
                         />
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <Text type="secondary">Không có ảnh</Text>
+                  <div
+                    style={{
+                      padding: "24px",
+                      textAlign: "center",
+                      background: "#f9fafb",
+                      borderRadius: "8px",
+                      border: "2px dashed #d1d5db",
+                    }}
+                  >
+                    <div style={{ fontSize: "32px", marginBottom: "8px" }}>
+                      📷
+                    </div>
+                    <Text type="secondary">Không có ảnh sự cố</Text>
+                  </div>
                 )}
               </div>
             </>
@@ -1326,11 +1506,26 @@ export default function AccidentManagement() {
             >
               <Upload
                 beforeUpload={() => false}
-                maxCount={1}
+                multiple
+                maxCount={5}
                 accept="image/*"
-                listType="picture"
+                listType="picture-card"
+                showUploadList={{
+                  showPreviewIcon: true,
+                  showRemoveIcon: true,
+                  showDownloadIcon: false,
+                }}
               >
-                <Button>Chọn ảnh</Button>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "24px", marginBottom: "8px" }}>
+                    📷
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#666" }}>
+                    Chọn ảnh
+                    <br />
+                    (tối đa 5 ảnh)
+                  </div>
+                </div>
               </Upload>
             </Form.Item>
             <Form.Item>
@@ -1397,6 +1592,38 @@ export default function AccidentManagement() {
               rules={[{ required: true, message: "Vui lòng nhập loại sự cố!" }]}
             >
               <Input placeholder="Nhập loại sự cố (ví dụ: đau, ngã, sốt...)" />
+            </Form.Item>
+            <Form.Item
+              label="Hình ảnh bổ sung"
+              name="image"
+              valuePropName="fileList"
+              getValueFromEvent={(e) =>
+                Array.isArray(e) ? e : e && e.fileList
+              }
+            >
+              <Upload
+                beforeUpload={() => false}
+                multiple
+                maxCount={5}
+                accept="image/*"
+                listType="picture-card"
+                showUploadList={{
+                  showPreviewIcon: true,
+                  showRemoveIcon: true,
+                  showDownloadIcon: false,
+                }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "24px", marginBottom: "8px" }}>
+                    📷
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#666" }}>
+                    Thêm ảnh
+                    <br />
+                    (tối đa 5 ảnh)
+                  </div>
+                </div>
+              </Upload>
             </Form.Item>
             <Form.Item>
               <Button

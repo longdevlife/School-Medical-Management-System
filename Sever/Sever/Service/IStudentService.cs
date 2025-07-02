@@ -64,6 +64,8 @@ namespace Sever.Service
                     {
                         StudentID = student.StudentID,
                         StudentName = student.StudentName,
+                        Class = student.Class,
+                        Avatar = student.StudentAvata,
                         Birthday = student.Birthday,
                         Ethnicity = student.Ethnicity,
                         Location = student.Location,

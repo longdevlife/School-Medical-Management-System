@@ -83,6 +83,14 @@ const medicalEventApi = {
         timeout: 10000,
       });
     },
+    // Lấy thông tin sự kiện y tế theo StudentId
+    getByStudentId: (StudentId) => {
+      console.log("📖 Getting medical event by StudentId:", StudentId);
+
+      return axiosClient.get(`nurse/event/getByStudentId/${StudentId}`, {
+        timeout: 10000,
+      });
+    },
   },
 };
 

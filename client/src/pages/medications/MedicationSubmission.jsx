@@ -590,13 +590,13 @@ function MedicationSubmission() {
     const matchesClass =
       classFilter === "all" || submission.studentClass === classFilter;
     
-    // Multi-field search: studentId, studentName, studentClass
+    // Multi-field search: studentId, studentName, studentClass - Safe string conversion
     const search = searchText.trim().toLowerCase();
     const matchesSearch =
       !search ||
-      submission.studentId?.toLowerCase().includes(search) ||
-      submission.studentName?.toLowerCase().includes(search) ||
-      submission.studentClass?.toLowerCase().includes(search);
+      (submission.studentId && String(submission.studentId).toLowerCase().includes(search)) ||
+      (submission.studentName && String(submission.studentName).toLowerCase().includes(search)) ||
+      (submission.studentClass && String(submission.studentClass).toLowerCase().includes(search));
     
     return matchesStatus && matchesClass && matchesSearch;
   });

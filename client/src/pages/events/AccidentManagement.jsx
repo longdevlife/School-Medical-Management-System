@@ -240,17 +240,27 @@ export default function AccidentManagement() {
     fetchAllAccidents();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Filter
-  const filteredAccidents = accidents.filter((item) => {
+  // 🆕 Handle search function - sử dụng local filter giống MedicationSubmission
+  const handleSearch = () => {
+    // Search is handled in filteredAccidents filter logic
+    console.log("🔍 Searching for:", searchText);
+  };
+
+  // Updated filter logic to use searchText for multi-field search (giống MedicationSubmission)
+  const filteredAccidents = accidents.filter((accident) => {
     const matchesStatus =
-      statusFilter === "all" || item.status === statusFilter;
+      statusFilter === "all" || accident.status === statusFilter;
     const matchesClass =
-      classFilter === "all" || item.studentClass === classFilter;
+      classFilter === "all" || accident.studentClass === classFilter;
+    
+    // Multi-field search: studentId, studentName, studentClass - Safe string conversion
+    const search = searchText.trim().toLowerCase();
     const matchesSearch =
-      searchText === "" ||
-      item.studentName.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.studentClass.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.studentId.includes(searchText);
+      !search ||
+      (accident.studentId && String(accident.studentId).toLowerCase().includes(search)) ||
+      (accident.studentName && String(accident.studentName).toLowerCase().includes(search)) ||
+      (accident.studentClass && String(accident.studentClass).toLowerCase().includes(search));
+    
     return matchesStatus && matchesClass && matchesSearch;
   });
 
@@ -1041,7 +1051,7 @@ export default function AccidentManagement() {
                     placeholder="Nhập mã học sinh, tên, lớp..."
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
-                    onPressEnter={() => {}}
+                    onPressEnter={handleSearch}
                     style={{
                       flex: 1,
                       borderRadius: "8px 0 0 8px",
@@ -1069,6 +1079,7 @@ export default function AccidentManagement() {
                     }}
                     size="middle"
                     title="Tìm kiếm"
+                    onClick={handleSearch}
                   >
                     🔍
                   </Button>

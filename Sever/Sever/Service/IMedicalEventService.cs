@@ -11,7 +11,7 @@ namespace Sever.Service
 {
     public interface IMedicalEventService
     {
-        Task<MedicalEventResponse> CreateMedicalEvent(CreateMedicalEvent dto, string userName);
+        Task<MedicalEvent> CreateMedicalEvent(CreateMedicalEvent dto, string userName);
         Task<bool> UpdateMedicalEvent(MedicalEventUpdateDTO dto, string medicalEventId, string userName);
 
 
@@ -44,7 +44,7 @@ namespace Sever.Service
                 _userService = userService;
                 _studentProfileRepository = studentProfileRepository;
             }
-            public async Task<MedicalEventResponse> CreateMedicalEvent(CreateMedicalEvent dto, string userName)
+            public async Task<MedicalEvent> CreateMedicalEvent(CreateMedicalEvent dto, string userName)
             {
                 try
                 {
@@ -84,7 +84,7 @@ namespace Sever.Service
 
                     await _notificationService.MedicalEventNotification(medicalEvent, "Sự kiện y tế được tạo bởi y tá. Vui lòng kiểm tra.");
 
-                    return await GetMedicalEvent(medicalEvent.MedicalEventID);
+                    return medicalEvent;
                 }
                 catch (Exception ex)
                 {

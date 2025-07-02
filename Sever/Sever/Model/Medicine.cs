@@ -27,5 +27,7 @@ namespace Sever.Model
         [ForeignKey("StudentID")]
 
         public StudentProfile StudentProfile { get; set; }
+        public List<Files> File { get; set; }
+
     }
 }

@@ -19,7 +19,10 @@ namespace Sever.Repository
         Task<List<VaccinationRecord>> GetVaccineConfirmdAsync();
         Task<List<VaccinationRecord>> GetVaccineByStudentIdAsync(string studentId);
         Task<List<VaccinationRecord>> GetVaccineNotResponseAsync();
-
+        Task<int> TotalVaccine(DateTime fromDate, DateTime toDate);
+        Task<int> CountConfirmVaccinesAsync(DateTime fromDate, DateTime toDate);
+        Task<int> CountDeniedVaccinesAsync(DateTime fromDate, DateTime toDate);
+        Task<int> CountNotResponseVaccinesAsync(DateTime fromDate, DateTime toDate);
     }
     public class VaccinationRepository : IVaccinationRepository
     {
@@ -84,7 +87,7 @@ namespace Sever.Repository
 
         public async Task<List<VaccinationRecord>> GetAllVaccinationRecordsAsync()
         {
-            return await  _context.VaccinationRecord.ToListAsync();
+            return await _context.VaccinationRecord.ToListAsync();
         }
 
         public async Task<bool> UpdateStatus(VaccinationRecord vaccination, string status)
@@ -119,11 +122,37 @@ namespace Sever.Repository
         public async Task<List<VaccinationRecord>> GetVaccineNotResponseAsync()
         {
             return await _context.VaccinationRecord
-              //.Where(h => h.Status == "Chờ xác nhận")
+                //.Where(h => h.Status == "Chờ xác nhận")
                 .Where(h => EF.Functions.Like(h.Status, "%chờ xác nhận%"))
                 .ToListAsync();
 
         }
 
+        public async Task<int> TotalVaccine(DateTime fromDate, DateTime toDate)
+        {
+            return await _context.VaccinationRecord
+                .Where(v => v.DateTime >= fromDate && v.DateTime <= toDate)
+                .CountAsync();
+        }
+
+        public async Task<int> CountConfirmVaccinesAsync(DateTime fromDate, DateTime toDate)
+        {
+            return await _context.VaccinationRecord
+                 .Where(v => v.Status.Contains("đã xác nhận") && v.DateTime >= fromDate && v.DateTime <= toDate)
+                 .CountAsync();
+
+        }
+        public async Task<int> CountDeniedVaccinesAsync(DateTime fromDate, DateTime toDate)
+        {
+            return await _context.VaccinationRecord
+                .Where(v => v.Status.Contains("đã từ chối") && v.DateTime >= fromDate && v.DateTime <= toDate)
+                .CountAsync();
+        }
+        public async Task<int> CountNotResponseVaccinesAsync(DateTime fromDate, DateTime toDate)
+        {
+            return await _context.VaccinationRecord
+                .Where(v => v.Status.Contains("chờ xác nhận") && v.DateTime >= fromDate && v.DateTime <= toDate)
+                .CountAsync();
+        }
     }
 }

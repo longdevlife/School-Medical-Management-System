@@ -19,6 +19,7 @@ namespace Sever.Service
         Task<ImageResponse> UploadMedicalEventImageByAsync(IFormFile file, string id);
         Task<ImageResponse> UploadNewsImageByAsync(IFormFile file, string id);
         Task<ImageResponse> UploadMedicineImageByAsync(IFormFile file, string id);
+        Task<ImageResponse> UploadSchoolLogoGiftByAsync(IFormFile file, string id);
         Task<List<CreateUserRequest>> ReadUsersFromExcelAsync(IFormFile file);
         Task<List<Files>> GetLogoBySchoolIdAsync(string id);
         Task<List<Files>> GetImageByMedicineIdAsync(string id);
@@ -68,6 +69,44 @@ namespace Sever.Service
             {
                 FileName = file.FileName,
                 FileType = "Image",
+                FileLink = uploadResult.SecureUrl.AbsoluteUri,
+                UploadDate = DateTime.UtcNow,
+                IsActive = true,
+                SchoolID = id
+            };
+
+            await _fileRepository.AddAsync(image);
+            await _fileRepository.SaveChangesAsync();
+
+            return new ImageResponse
+            {
+                Url = image.FileLink,
+                UploadedAt = image.UploadDate
+            };
+        }
+
+        public async Task<ImageResponse> UploadSchoolLogoGiftByAsync(IFormFile file, string id)
+        {
+            if (file == null || file.Length == 0)
+                throw new ArgumentException("File is empty");
+
+            using var stream = file.OpenReadStream();
+
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(file.FileName, stream),
+                Folder = "img"
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
+                throw new Exception("Image upload failed");
+
+            var image = new Files
+            {
+                FileName = file.FileName,
+                FileType = "Gift",
                 FileLink = uploadResult.SecureUrl.AbsoluteUri,
                 UploadDate = DateTime.UtcNow,
                 IsActive = true,

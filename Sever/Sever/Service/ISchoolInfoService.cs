@@ -33,7 +33,8 @@ namespace Sever.Service
                 Address = school.Address,
                 Hotline = school.Hotline,
                 Email = school.Email,
-                Logo = school.Logo
+                Logo = school.Logo,
+                LogGifs = school.LogGifs,
             };
         }
         public async Task<bool> UpdateSchoolInfoAsync(SchoolInfoUpdate schoolInfo)
@@ -47,7 +48,12 @@ namespace Sever.Service
                     var UpdatedLogo = await _filesService.UploadSchoolLogoByAsync(schoolInfo.Logo, schoolInfo.SchoolID);
                     school.Logo = UpdatedLogo.Url;
                 }
-               if(schoolInfo.Name != null)
+                if (school.LogGifs != null)
+                {
+                    var UpdatedLogoGift = await _filesService.UploadSchoolLogoGiftByAsync(schoolInfo.LogoGifs, schoolInfo.SchoolID);
+                    school.LogGifs = UpdatedLogoGift.Url;
+                }
+                if (schoolInfo.Name != null)
                 {
                     school.Name = schoolInfo.Name;
                 }

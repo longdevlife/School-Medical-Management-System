@@ -16,11 +16,14 @@ namespace Sever.Service
     {
         private readonly IStudentProfileRepository _studentProfileRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IHealthProfileRepository _healthProfileRepository;
         public StudentService(IStudentProfileRepository studentProfileRepository,
-                            IUserRepository userRepository)
+                            IUserRepository userRepository,
+                            IHealthProfileRepository healthProfileRepository)
         {
             _studentProfileRepository = studentProfileRepository;
             _userRepository = userRepository;
+            _healthProfileRepository = healthProfileRepository;
         }
         public async Task<GetStudentInfoRequest> SearchStudentProfileAsync(string info)
         {
@@ -61,6 +64,8 @@ namespace Sever.Service
                     {
                         StudentID = student.StudentID,
                         StudentName = student.StudentName,
+                        Class = student.Class,
+                        Avatar = student.StudentAvata,
                         Birthday = student.Birthday,
                         Ethnicity = student.Ethnicity,
                         Location = student.Location,
@@ -101,8 +106,13 @@ namespace Sever.Service
                 Location = createStudentRequests.Location,
                 ParentID = parent.UserID,
             };
-            return await _studentProfileRepository.CreateStudentProfile(student);
-        }
+            await _studentProfileRepository.CreateStudentProfile(student);
 
+            return await _healthProfileRepository.AddHealthProfile(new HealthProfile
+            {
+                HealthProfileID = await _healthProfileRepository.NewID(),
+                StudentID = student.StudentID,
+            });
+        }
     }
 }

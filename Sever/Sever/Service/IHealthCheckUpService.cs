@@ -22,6 +22,10 @@ namespace Sever.Service
         Task<List<HealthCheckUp>> GetHealthCheckUpsNotResponseAsync();
         Task<bool> ConfirmHealCheckup(string id);
         Task<bool> DeniedHealCheckup(string id);
+        Task<int> CountHealthCheckUpByDate(DateTime fromDate, DateTime toDate);
+        Task<int> CountConfirmHealthCheckUpByDate(DateTime fromDate, DateTime toDate);
+        Task<int> CountDeniedHealthCheckUpByDate(DateTime fromDate, DateTime toDate);
+        Task<int> CountNotResponseHealthCheckUpByDate(DateTime fromDate, DateTime toDate);
 
     }
     public class HealthCheckUpService : IHealthCheckUpService
@@ -174,15 +178,35 @@ namespace Sever.Service
             return await _healthCheckupRepository.UpdateStatus(healthCheckUp, "Đã Từ Chối");
         }
 
-        public Task<List<HealthCheckUp>> GetHealthCheckupsByStudentIdAsync(string studentId)
+        public async Task<List<HealthCheckUp>> GetHealthCheckupsByStudentIdAsync(string studentId)
         {
-            var healthCheckups = _healthCheckupRepository.GetHealthCheckupsByStudentIdAsync(studentId);
+            var healthCheckups = await _healthCheckupRepository.GetHealthCheckupsByStudentIdAsync(studentId);
             if (healthCheckups == null)
             {
                 throw new KeyNotFoundException("Không tìm thấy hồ sơ sức khỏe cho học sinh này.");
             }
             return healthCheckups;
         }
-
+        
+        public async Task<int> CountHealthCheckUpByDate(DateTime fromDate, DateTime toDate)
+        {
+            var result = await _healthCheckupRepository.CountHealthCheckUpsAsync(fromDate, toDate);
+            return result;
+        }
+        public async Task<int> CountConfirmHealthCheckUpByDate(DateTime fromDate, DateTime toDate)
+        {
+            var result = await _healthCheckupRepository.CountConfirmHealthCheckUpsAsync(fromDate, toDate);
+            return result;
+        }
+        public async Task<int> CountDeniedHealthCheckUpByDate(DateTime fromDate, DateTime toDate)
+        {
+            var result = await _healthCheckupRepository.CountDeninedHealthCheckUpsAsync(fromDate, toDate);
+            return result;
+        }
+        public async Task<int> CountNotResponseHealthCheckUpByDate(DateTime fromDate, DateTime toDate)
+        {
+            var result = await _healthCheckupRepository.CountNotResponseHealthCheckUpsAsync(fromDate, toDate);
+            return result;
+        }
     }
 }

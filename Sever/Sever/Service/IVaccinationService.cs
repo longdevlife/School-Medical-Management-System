@@ -36,8 +36,10 @@ namespace Sever.Service
         Task<List<VaccineReponse>> GetVaccineConfirmAsync();
         Task<List<VaccineReponse>> GetVaccineNotResponseAsync();
         Task<List<VaccineReponse>> GetVaccineByParentUsernameAsync(string username);
-
-
+        Task<int> TotalVaccine(DateTime fromDate, DateTime toDate);
+        Task<int> CountConfirmVaccine(DateTime fromDate, DateTime toDate);
+        Task<int> CountDeniedVaccine(DateTime fromDate, DateTime toDate);
+        Task<int> CountNotResponseVaccine(DateTime fromDate, DateTime toDate);
 
     }
     public class VaccinationService : IVaccinationService
@@ -375,6 +377,24 @@ namespace Sever.Service
             return responses;
         }
 
+        public async Task<int> TotalVaccine(DateTime fromDate, DateTime toDate)
+        {
+            return await _vaccinationRepository.TotalVaccine(fromDate, toDate);
+        }
 
+        public async Task<int> CountConfirmVaccine(DateTime fromDate, DateTime toDate)
+        {
+            return await _vaccinationRepository.CountConfirmVaccinesAsync(fromDate, toDate);
+        }
+
+        public async Task<int> CountDeniedVaccine(DateTime fromDate, DateTime toDate)
+        {
+            return await _vaccinationRepository.CountDeniedVaccinesAsync(fromDate, toDate);
+        }
+
+        public async Task<int> CountNotResponseVaccine(DateTime fromDate, DateTime toDate)
+        {
+            return await _vaccinationRepository.CountNotResponseVaccinesAsync(fromDate, toDate);
+        }
     }
 }

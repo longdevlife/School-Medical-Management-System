@@ -20,6 +20,10 @@ namespace Sever.Repository
         Task<bool> UpdateStatus(HealthCheckUp healthCheckup, string status);
         Task<HealthCheckUp> GetHealthCheckUpByIdAsync(string id);
         string NewID();
+        Task<int> CountHealthCheckUpsAsync(DateTime fromDate, DateTime toDate);
+        Task<int> CountConfirmHealthCheckUpsAsync(DateTime fromDate, DateTime toDate);
+        Task<int> CountDeninedHealthCheckUpsAsync(DateTime fromDate, DateTime toDate);
+        Task<int> CountNotResponseHealthCheckUpsAsync(DateTime fromDate, DateTime toDate);
 
     }
 
@@ -110,6 +114,30 @@ namespace Sever.Repository
         public async Task<HealthCheckUp> GetHealthCheckUpByIdAsync(string id)
         {
             return await _context.HealthCheckUp.FirstOrDefaultAsync(h => h.HealthCheckUpID == id);
+        }
+        public async Task<int> CountHealthCheckUpsAsync(DateTime fromDate, DateTime toDate)
+        {
+            return await _context.HealthCheckUp
+                .Where(h => h.CheckDate >= fromDate && h.CheckDate <= toDate)
+                .CountAsync();
+        }
+        public async Task<int> CountConfirmHealthCheckUpsAsync(DateTime fromDate, DateTime toDate)
+        {
+            return await _context.HealthCheckUp
+                .Where(h => h.CheckDate >= fromDate && h.CheckDate <= toDate && h.Status == "Đã xác nhận")
+                .CountAsync();
+        }
+        public async Task<int> CountDeninedHealthCheckUpsAsync(DateTime fromDate, DateTime toDate)
+        {
+            return await _context.HealthCheckUp
+                .Where(h => h.CheckDate >= fromDate && h.CheckDate <= toDate && h.Status == "Từ chối")
+                .CountAsync();
+        }
+        public async Task<int> CountNotResponseHealthCheckUpsAsync(DateTime fromDate, DateTime toDate)
+        {
+            return await _context.HealthCheckUp
+                .Where(h => h.CheckDate >= fromDate && h.CheckDate <= toDate && h.Status == "Chờ xác nhận")
+                .CountAsync();
         }
     }
 }

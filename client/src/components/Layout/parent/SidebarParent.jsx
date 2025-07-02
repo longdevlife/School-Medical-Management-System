@@ -9,6 +9,7 @@ import {
   SendOutlined,
   SettingOutlined,
   HeartOutlined,
+  AlertOutlined,
 } from "@ant-design/icons";
 import "./SidebarStyles.css";
 
@@ -37,8 +38,8 @@ function SidebarParent({ collapsed }) {
       label: "Kết quả sức khỏe",
     },
     {
-      key: `${basePath}/events`,
-      icon: <CalendarOutlined />,
+      key: `${basePath}/medical-events`,
+      icon: <AlertOutlined />,
       label: "Sự kiện y tế",
     },
     {

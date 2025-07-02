@@ -55,6 +55,8 @@ const MedicineManagement = () => {
   const [medicineHistory, setMedicineHistory] = useState([]);
 
   const [students, setStudents] = useState([]);
+  const [studentsInitialized, setStudentsInitialized] = useState(false); // 🆕 Theo dõi việc load students lần đầu
+  const [fetchingStudents, setFetchingStudents] = useState(false); // 🆕 Theo dõi đang fetch students
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
 
@@ -72,9 +74,19 @@ const MedicineManagement = () => {
     // Đảm bảo tải dữ liệu từ localStorage trước
     loadPersistedMedicines();
 
-    // Sau đó mới tải dữ liệu từ server và các thao tác khác
-    fetchStudents();
-    fetchMedicinesFromServer();
+    // Tải danh sách học sinh trước
+    // fetchMedicinesFromServer sẽ được gọi tự động khi studentsInitialized = true
+    const initializeData = async () => {
+      try {
+        await fetchStudents();
+        // Không cần gọi fetchMedicinesFromServer ở đây nữa
+        // Nó sẽ được gọi tự động trong useEffect theo dõi studentsInitialized
+      } catch (error) {
+        console.error('❌ Lỗi khởi tạo dữ liệu:', error);
+      }
+    };
+    
+    initializeData();
 
     // Thêm listeners cho trạng thái online/offline
     window.addEventListener('online', handleOnlineStatus);
@@ -83,28 +95,56 @@ const MedicineManagement = () => {
     // Thêm listener cho thay đổi localStorage từ tab khác
     window.addEventListener('storage', handleStorageChange);
 
-    // Tạo interval để cố gắng đồng bộ định kỳ
+    // 🆕 Thêm listener để refresh khi user quay lại tab (catch updates từ nurse)
+    const handleVisibilityChange = () => {
+      if (!document.hidden && navigator.onLine && studentsInitialized) {
+        console.log('👀 User quay lại tab, đang refresh dữ liệu để cập nhật trạng thái mới nhất...');
+        setTimeout(() => {
+          fetchMedicinesFromServer();
+        }, 1000); // Đợi 1s để đảm bảo tab đã focus hoàn toàn
+      }
+    };
+    
+    const handleWindowFocus = () => {
+      if (navigator.onLine && studentsInitialized) {
+        console.log('🔄 Window focus, refresh dữ liệu để cập nhật trạng thái...');
+        setTimeout(() => {
+          fetchMedicinesFromServer();
+        }, 500);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleWindowFocus);
+
+    // Tạo interval để cố gắng đồng bộ định kỳ và check database changes
     const syncInterval = setInterval(() => {
-      if (navigator.onLine) {
+      if (navigator.onLine && studentsInitialized) {
         const pendingSyncMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
         if (pendingSyncMedicines.length > 0) {
           console.log('⏱️ Tự động đồng bộ định kỳ:', pendingSyncMedicines.length, 'yêu cầu');
           syncPendingMedicines(pendingSyncMedicines);
         }
+        
+        // ✅ Định kỳ refresh dữ liệu để phát hiện thay đổi database (bao gồm việc xóa)
+        console.log('⏱️ Định kỳ check database changes (bao gồm xóa database)');
+        fetchMedicinesFromServer();
       }
-    }, 120000); // 2 phút thử đồng bộ một lần
+    }, 30000); // ✅ Giảm từ 2 phút xuống 30 giây để phát hiện thay đổi nhanh hơn
 
     return () => {
       // Cleanup listeners khi component unmount
       window.removeEventListener('online', handleOnlineStatus);
       window.removeEventListener('offline', handleOfflineStatus);
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleWindowFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       clearInterval(syncInterval);
 
       // Lưu lại state medicines khi component unmount để đảm bảo không mất dữ liệu
       saveMedicinesToStorage(medicines);
     };
-  }, []);
+  }, []); // 🔥 QUAN TRỌNG: Empty dependency array để chỉ chạy 1 lần khi mount
 
   // Xử lý khi localStorage thay đổi ở tab khác
   const handleStorageChange = (event) => {
@@ -281,6 +321,28 @@ const MedicineManagement = () => {
         console.error(`❌ Failed to sync medicine ${medicine.MedicineID}:`, error);
       }
     }
+    
+    // 🔥 SAU KHI ĐỒNG BỘ XONG: Kiểm tra xem có còn thuốc nào không
+    // Nếu không còn thuốc nào (database trống hoàn toàn) thì xóa lịch sử
+    setTimeout(() => {
+      if (medicines.length === 0) {
+        console.log('🗑️ Sau khi đồng bộ: Không còn thuốc nào, xóa lịch sử thuốc');
+        clearMedicineHistory('Sau khi đồng bộ - database trống');
+      }
+    }, 1000); // Đợi 1 giây để state được cập nhật
+  };
+
+  // ==================== HISTORY MANAGEMENT ====================
+  
+  // 🔥 Helper function để xóa lịch sử thuốc khi database trống hoàn toàn
+  const clearMedicineHistory = (reason = 'Database trống hoàn toàn') => {
+    try {
+      console.log(`🗑️ Xóa lịch sử thuốc - Lý do: ${reason}`);
+      localStorage.removeItem(MEDICINE_HISTORY_KEY);
+      console.log('✅ Đã xóa lịch sử thuốc thành công');
+    } catch (error) {
+      console.error('❌ Lỗi khi xóa lịch sử thuốc:', error);
+    }
   };
 
   // ==================== HISTORY FUNCTIONS ====================
@@ -375,89 +437,134 @@ const MedicineManagement = () => {
 
   // ==================== API FUNCTIONS ====================
 
-  const fetchStudents = async () => {
+  const fetchStudents = async (isAutoRefresh = false) => {
+    // 🚫 Ngăn việc gọi nhiều lần cùng lúc
+    if (studentsLoading || fetchingStudents) {
+      console.log('⚠️ fetchStudents đã đang chạy, bỏ qua...');
+      return;
+    }
+
+    // 🚫 Ngăn việc gọi lại khi đã initialized (trừ khi force refresh)
+    if (studentsInitialized && !isAutoRefresh) {
+      console.log('⚠️ Students đã được initialized, bỏ qua...');
+      return;
+    }
+
     try {
       setStudentsLoading(true);
-      console.log('🔄 Fetching students from API...');
+      setFetchingStudents(true); // 🆕 Đánh dấu đang fetch
+      console.log('🔄 Đang lấy danh sách học sinh của phụ huynh...');
 
+      // Sử dụng API từ studentApi 
       const response = await studentApi.parent.getMyChildren();
-      console.log('✅ Students API response:', response);
+      console.log('✅ API getMyChildren response:', response);
 
       const studentsData = response.data || [];
 
-      const processedStudents = studentsData.map(student => {
-        const age = new Date().getFullYear() - new Date(student.birthday).getFullYear();
-        const estimatedGrade = Math.max(1, Math.min(12, age - 5));
+      if (Array.isArray(studentsData) && studentsData.length > 0) {
+        const processedStudents = studentsData.map(student => {
+          // Xử lý dữ liệu học sinh dựa trên cấu trúc thực tế từ API
+          // ✅ Ưu tiên trường "class" mới từ backend
+          return {
+            StudentID: student.studentID || student.StudentID || student.id,
+            StudentName: student.studentName || student.StudentName || student.name || 'Học sinh',
+            StudentCode: student.studentID || student.StudentID || student.studentCode || student.id,
+            Class: student.class || student.className || student.ClassName || student.grade || student.classRoom || student.class_name || 'Chưa phân lớp',
+            Age: student.age || (student.birthday ? new Date().getFullYear() - new Date(student.birthday).getFullYear() : 0),
+            Sex: student.sex || student.gender || 'Chưa xác định',
+            Birthday: student.birthday || student.dob || null,
+            ParentName: student.parentName || null
+          };
+        });
 
-        return {
-          StudentID: student.studentID,
-          StudentName: student.studentName,
-          StudentCode: student.studentID,
-          Age: age,
-          Sex: student.sex,
-          Birthday: student.birthday,
-          Location: student.location,
-          ParentName: student.parentName,
-          ParentEmail: student.parentEmail,
-          ParentPhone: student.parentPhone,
-          Nationality: student.nationality,
-          Ethnicity: student.ethnicity,
-          Class: `Lớp ${estimatedGrade}`
-        };
-      });
+        console.log('📋 Danh sách học sinh đã xử lý:', processedStudents);
+        setStudents(processedStudents);
 
-      console.log('📋 Processed students:', processedStudents);
-      setStudents(processedStudents);
-
-      if (processedStudents.length > 0 && !selectedStudentId) {
-        setSelectedStudentId(processedStudents[0].StudentID);
-      }
-
-      message.success(`Đã tải ${processedStudents.length} học sinh`);
-
-    } catch (error) {
-      console.error('❌ Error fetching students:', error);
-
-      const mockStudents = [
-        {
-          StudentID: 'ST001',
-          StudentName: 'Lê Văn Bình',
-          Class: 'Lớp 2',
-          Age: 8,
-          Sex: 'Nam'
-        },
-        {
-          StudentID: 'ST002',
-          StudentName: 'Lê Thị Cẩm Ly',
-          Class: 'Lớp 4',
-          Age: 10,
-          Sex: 'Nữ'
+        // Tự động chọn học sinh đầu tiên nếu chưa chọn
+        if (processedStudents.length > 0 && !selectedStudentId) {
+          console.log('🔍 Tự động chọn học sinh đầu tiên:', processedStudents[0].StudentID);
+          setSelectedStudentId(processedStudents[0].StudentID);
         }
-      ];
 
-      setStudents(mockStudents);
-      if (mockStudents.length > 0 && !selectedStudentId) {
-        setSelectedStudentId(mockStudents[0].StudentID);
+        // Chỉ hiển thị message khi thực sự cần (không phải call từ interval/auto-refresh)
+        console.log('🔍 Debug fetchStudents message:', { isAutoRefresh, studentsLength: processedStudents.length });
+        
+        // ❌ TẠM THỜI TẮT MESSAGE ĐỂ NGĂN SPAM
+        // if (!isAutoRefresh) {
+        //   message.success(`Đã tải ${processedStudents.length} học sinh`);
+        // }
+        
+        // ✅ CHỈ HIỂN THỊ MESSAGE LẦN ĐẦU TIÊN
+        if (!studentsInitialized && !isAutoRefresh) {
+          console.log(`✅ Đã tải ${processedStudents.length} học sinh`);
+        }
+      } else {
+        console.warn('⚠️ Không tìm thấy học sinh nào từ API');
+        // Nếu không có dữ liệu từ API, sử dụng dữ liệu mẫu
+        createMockStudents();
       }
-
-      message.warning('Sử dụng dữ liệu mẫu - Vui lòng kiểm tra kết nối');
+    } catch (error) {
+      console.error('❌ Lỗi khi lấy danh sách học sinh:', error);
+      console.error('❌ Chi tiết lỗi:', error.response?.data);
+      console.error('❌ Mã lỗi:', error.response?.status);
+      
+      // Sử dụng dữ liệu mẫu nếu có lỗi
+      createMockStudents();
     } finally {
       setStudentsLoading(false);
+      setFetchingStudents(false); // 🆕 Đánh dấu kết thúc fetch
+      setStudentsInitialized(true); // 🆕 Đánh dấu đã hoàn thành việc load students
     }
+  };
+
+  const createMockStudents = () => {
+    console.log('⚠️ Sử dụng dữ liệu học sinh mẫu');
+    const mockStudents = [
+      {
+        StudentID: 'ST001',
+        StudentName: 'Lê Văn Bình',
+        Class: 'Lớp 2',
+        Age: 8,
+        Sex: 'Nam'
+      },
+      {
+        StudentID: 'ST002',
+        StudentName: 'Lê Thị Cẩm Ly',
+        Class: 'Lớp 4',
+        Age: 10,
+        Sex: 'Nữ'
+      }
+    ];
+
+    setStudents(mockStudents);
+    setStudentsInitialized(true); // 🆕 Đánh dấu đã hoàn thành việc load students
+    setFetchingStudents(false); // 🆕 Đánh dấu kết thúc fetch
+    if (mockStudents.length > 0 && !selectedStudentId) {
+      setSelectedStudentId(mockStudents[0].StudentID);
+    }
+
+    message.warning('Sử dụng dữ liệu mẫu - Vui lòng kiểm tra kết nối');
   };
 
   const normalizeStatus = (status) => {
     // Nếu status không tồn tại, trả về giá trị mặc định
     if (!status) return 'Chờ xử lý';
 
+    // Debug - log trạng thái gốc
+    console.log('📝 Normalize status - Original:', status);
+
     // Đưa về chữ thường và bỏ dấu cách thừa để dễ so sánh
-    const cleanStatus = status.toLowerCase().trim();
+    const cleanStatus = status.toString().toLowerCase().trim();
+    
+    // Debug - log trạng thái đã làm sạch
+    console.log('�� Normalize status - Cleaned:', cleanStatus);
 
     // Mapping đầy đủ hơn để xử lý các trường hợp khác nhau
     const statusMap = {
       // Các trạng thái tiếng Việt chuẩn
       'chờ xử lý': 'Chờ xử lý',
       'đã xác nhận': 'Đã xác nhận',
+      'đã duyệt': 'Đã xác nhận', // ⭐ Đồng bộ "Đã duyệt" từ y tế thành "Đã xác nhận" cho phụ huynh
       'đang thực hiện': 'Đang thực hiện',
       'đã hoàn thành': 'Đã hoàn thành',
       'từ chối': 'Từ chối',
@@ -467,7 +574,8 @@ const MedicineManagement = () => {
       'cho xu ly': 'Chờ xử lý',
       'cho xac nhan': 'Chờ xác nhận',
       'da xac nhan': 'Đã xác nhận',
-      'dang thuc hien': 'Đang thực hiện',
+      'da duyet': 'Đã xác nhận' // ⭐ Đồng bộ "Đã duyệt" từ y tế thành "Đã xác nhận" cho phụ huynh
+      ,'dang thuc hien': 'Đang thực hiện',
       'da hoan thanh': 'Đã hoàn thành',
       'tu choi': 'Từ chối',
 
@@ -475,13 +583,15 @@ const MedicineManagement = () => {
       'ch? x? lý': 'Chờ xử lý',
       'ch? xác nh?n': 'Chờ xác nhận',
       'ðã xác nh?n': 'Đã xác nhận',
-      'ðang th?c hi?n': 'Đang thực hiện',
+      'ðã duy?t': 'Đã xác nhận' // ⭐ Đồng bộ "Đã duyệt" từ y tế thành "Đã xác nhận" cho phụ huynh
+      ,'ðang th?c hi?n': 'Đang thực hiện',
       'ðã hoàn thành': 'Đã hoàn thành',
       't? ch?i': 'Từ chối',
 
       // Các trạng thái viết tắt hoặc sai chính tả
       'pending': 'Chờ xử lý',
       'confirmed': 'Đã xác nhận',
+      'approved': 'Đã xác nhận', // ⭐ Đồng bộ các trạng thái từ tiếng Anh
       'in progress': 'Đang thực hiện',
       'completed': 'Đã hoàn thành',
       'rejected': 'Từ chối',
@@ -499,7 +609,10 @@ const MedicineManagement = () => {
 
     // Thử tìm trong mapping với chuỗi đã được chuẩn hóa
     const result = statusMap[cleanStatus];
-    if (result) return result;
+    if (result) {
+      console.log('📝 Normalize status - Mapped:', result);
+      return result;
+    }
 
     // Nếu không tìm được, thử kiểm tra một cách thông minh hơn
     if (cleanStatus.includes('ch') && (cleanStatus.includes('ly') || cleanStatus.includes('xu'))) {
@@ -516,6 +629,11 @@ const MedicineManagement = () => {
     }
     if (cleanStatus.includes('thuc') && cleanStatus.includes('hien')) {
       return 'Đang thực hiện';
+    }
+    // ⭐ Kiểm tra "duyệt" -> Đã xác nhận
+    if (cleanStatus.includes('duyet') || cleanStatus.includes('duy?t') || cleanStatus.includes('approv')) {
+      console.log('📝 Normalize status - Detected approval:', cleanStatus);
+      return 'Đã xác nhận';
     }
 
     // Log trạng thái không thể chuẩn hóa để debug
@@ -535,33 +653,198 @@ const MedicineManagement = () => {
       return;
     }
 
-    // Lấy dữ liệu từ server
-    let serverMedicines = [];
-    try {
-      const allMedicinesResponse = await medicineApi.parent.getAllMedicines();
-      if (allMedicinesResponse?.data) {
-        if (Array.isArray(allMedicinesResponse.data)) {
-          serverMedicines = allMedicinesResponse.data;
-        } else if (allMedicinesResponse.data.data && Array.isArray(allMedicinesResponse.data.data)) {
-          serverMedicines = allMedicinesResponse.data.data;
+    // Lấy danh sách học sinh từ state hiện tại
+    const currentStudents = students.length > 0 ? students : [];
+    
+    if (currentStudents.length === 0) {
+      console.log('⚠️ Chưa có danh sách học sinh');
+      
+      // Nếu students chưa được initialized, chờ và chỉ dùng localStorage khi offline
+      if (!studentsInitialized) {
+        console.log('⏳ Students đang được tải, chờ...');
+        if (!navigator.onLine) {
+          loadPersistedMedicines();
+        } else {
+          setMedicines([]); // Hiển thị rỗng khi online nhưng chưa có students
         }
+        setLoading(false);
+        return;
       }
-    } catch (error) {
-      // Nếu lỗi, fallback về localStorage
-      loadPersistedMedicines();
+      
+      // Nếu đã initialized nhưng vẫn không có students
+      console.log('📁 Students đã tải xong nhưng không có dữ liệu');
+      if (!navigator.onLine) {
+        console.log('📱 Offline - Sử dụng localStorage');
+        loadPersistedMedicines();
+      } else {
+        console.log('🌐 Online - Hiển thị rỗng vì không có students');
+        setMedicines([]);
+        saveMedicinesToStorage([]);
+        
+        // 🔥 XÓA LỊCH SỬ THUỐC khi không có students (có thể do database trống)
+        console.log('🗑️ Xóa lịch sử thuốc vì không có students');
+        clearMedicineHistory('Không có students');
+      }
       setLoading(false);
       return;
     }
 
-    if (serverMedicines.length === 0) {
-      // Nếu server trả về rỗng, fallback về localStorage
-      loadPersistedMedicines();
+    console.log('📚 Sử dụng API tối ưu: Lấy TẤT CẢ thuốc của parent từ 1 lần gọi API');
+    
+    // ✅ OPTIMIZATION: Chỉ gọi 1 lần API thay vì loop cho từng student
+    let allMedicines = [];
+    try {
+      const studentIds = currentStudents.map(student => student.StudentID);
+      console.log('🔍 Danh sách ID học sinh:', studentIds);
+      
+      if (studentIds.length === 0) {
+        console.log('⚠️ Không có học sinh nào để lấy thuốc');
+        if (!navigator.onLine) {
+          loadPersistedMedicines();
+        } else {
+          setMedicines([]);
+          saveMedicinesToStorage([]);
+          
+          // 🔥 XÓA LỊCH SỬ THUỐC khi không có studentIds
+          console.log('🗑️ Xóa lịch sử thuốc vì không có studentIds');
+          clearMedicineHistory('Không có studentIds');
+        }
+        setLoading(false);
+        return;
+      }
+      
+      // 🎯 GỌI 1 LẦN API DUY NHẤT để lấy tất cả medicines của parent
+      console.log(`🎯 Đang gọi API lấy TẤT CẢ thuốc của parent...`);
+      const response = await medicineApi.parent.getMedicinesByParentId();
+      
+      // Debug chi tiết response từ API
+      console.log(`✅ API getMedicinesByParentId response:`, response);
+      console.log(`📊 Response data structure:`, {
+        hasResponse: !!response,
+        hasData: !!response?.data,
+        dataType: typeof response?.data,
+        isArray: Array.isArray(response?.data),
+        dataLength: Array.isArray(response?.data) ? response.data.length : 'N/A',
+        dataKeys: response?.data ? Object.keys(response.data) : [],
+        sampleData: response?.data && Array.isArray(response.data) && response.data.length > 0 ? response.data[0] : response?.data
+      });
+      
+      if (response?.data) {
+        if (Array.isArray(response.data)) {
+          allMedicines = response.data;
+          console.log(`📦 Dữ liệu là mảng trực tiếp: ${allMedicines.length} thuốc tổng`);
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          allMedicines = response.data.data;
+          console.log(`📦 Dữ liệu nằm trong trường data: ${allMedicines.length} thuốc tổng`);
+        } else if (response.data.medicineID || response.data.MedicineID) {
+          allMedicines = [response.data];
+          console.log('📦 Dữ liệu là một đối tượng thuốc đơn lẻ');
+        } else {
+          console.log('⚠️ Dữ liệu có cấu trúc không xác định:', response.data);
+          allMedicines = [];
+        }
+        
+        // 🔍 Filter medicines theo studentIds của parent (đảm bảo chỉ hiển thị thuốc của con)
+        const filteredMedicines = allMedicines.filter(med => {
+          const medicineStudentId = med.studentID || med.StudentID || med.student_id;
+          const isForParentChild = studentIds.includes(medicineStudentId);
+          if (!isForParentChild && medicineStudentId) {
+            console.log(`🚫 Loại bỏ thuốc không thuộc con của parent: ${med.medicineID || med.MedicineID} (StudentID: ${medicineStudentId})`);
+          }
+          return isForParentChild;
+        });
+        
+        allMedicines = filteredMedicines;
+        console.log(`✅ Sau khi filter: ${allMedicines.length} thuốc thuộc về con của parent`);
+        
+        // Kiểm tra chi tiết trạng thái của các thuốc
+        if (allMedicines.length > 0) {
+          console.log('📋 Chi tiết các thuốc nhận được:');
+          allMedicines.forEach((med, idx) => {
+            console.log(`Thuốc #${idx + 1}:`, {
+              id: med.medicineID || med.MedicineID,
+              name: med.medicineName || med.MedicineName,
+              status_original: med.status || med.Status,
+              status_normalized: normalizeStatus(med.status || med.Status || 'Chờ xử lý'),
+              studentId: med.studentID || med.StudentID || med.student_id
+            });
+          });
+        }
+      } else {
+        console.log('⚠️ Không nhận được dữ liệu từ API');
+        allMedicines = [];
+      }
+      
+      console.log('📊 Tổng số thuốc nhận được:', allMedicines.length);
+      
+      // Debug - kiểm tra xem có thuốc đã duyệt hay không
+      const approvedMeds = allMedicines.filter(m => 
+        m.status === 'Đã xác nhận' || 
+        m.status === 'Đã duyệt' || 
+        m.Status === 'Đã xác nhận' || 
+        m.Status === 'Đã duyệt'
+      );
+      console.log('📊 Số lượng thuốc đã được duyệt:', approvedMeds.length);
+      if (approvedMeds.length > 0) {
+        console.log('📊 Chi tiết thuốc đã duyệt:', approvedMeds.map(med => ({
+          id: med.medicineID || med.MedicineID,
+          name: med.medicineName || med.MedicineName,
+          status_original: med.status || med.Status
+        })));
+      }
+      
+    } catch (error) {
+      console.error('❌ Lỗi khi lấy dữ liệu từ API:', error);
+      
+      // ✅ CHỈ fallback về localStorage khi OFFLINE
+      if (!navigator.onLine) {
+        console.log('📱 Offline - Sử dụng localStorage');
+        loadPersistedMedicines();
+      } else {
+        console.log('🌐 Online nhưng có lỗi API - Hiển thị rỗng thay vì localStorage cũ');
+        
+        // Chỉ giữ lại thuốc pending
+        const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
+        setMedicines(pendingMedicines);
+        saveMedicinesToStorage(pendingMedicines);
+        
+        message.error('Lỗi kết nối API - Chỉ hiển thị thuốc chưa đồng bộ');
+      }
+      
+      setLoading(false);
+      return;
+    }
+
+    // ✅ QUAN TRỌNG: Nếu API trả về rỗng, có nghĩa database đã bị xóa
+    // KHÔNG ĐƯỢC fallback về localStorage trong trường hợp này
+    if (allMedicines.length === 0) {
+      console.log('🗑️ API trả về rỗng - Database đã bị xóa hoặc không có thuốc');
+      
+      // Chỉ giữ lại các thuốc đang chờ đồng bộ (nếu có)
+      const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
+      
+      if (pendingMedicines.length === 0) {
+        console.log('🗑️ Không có thuốc pending, xóa toàn bộ UI và lịch sử');
+        console.log('✅ Dữ liệu đã được đồng bộ với database (trống)');
+        setMedicines([]);
+        saveMedicinesToStorage([]);
+        
+        // 🔥 XÓA LỊCH SỬ THUỐC khi database trống hoàn toàn
+        console.log('🗑️ Xóa lịch sử thuốc vì database đã trống hoàn toàn');
+        clearMedicineHistory('Database trống hoàn toàn');
+      } else {
+        console.log(`⏳ Chỉ giữ ${pendingMedicines.length} thuốc pending chưa đồng bộ`);
+        setMedicines(pendingMedicines);
+        saveMedicinesToStorage(pendingMedicines);
+        message.warning(`Database trống, chỉ còn ${pendingMedicines.length} thuốc chưa đồng bộ`);
+      }
+      
       setLoading(false);
       return;
     }
 
     // Chuẩn hóa dữ liệu từ server
-    const processedServerMedicines = serverMedicines.map(medicine => ({
+    const processedServerMedicines = allMedicines.map(medicine => ({
       MedicineID: medicine.medicineID || medicine.MedicineID,
       MedicineName: medicine.medicineName || medicine.MedicineName,
       Quantity: medicine.quantity || medicine.Quantity,
@@ -573,13 +856,22 @@ const MedicineManagement = () => {
       StudentID: medicine.studentID || medicine.StudentID || medicine.student_id,
       NurseID: medicine.nurseID || medicine.NurseID || null,
       ParentID: medicine.parentID || medicine.ParentID || null,
-      Images: medicine.images || medicine.Images || [],
+      Images: medicine.image ? [medicine.image] : medicine.images || medicine.Images || [],
       _fromServer: true,
       _serverFetchedAt: new Date().toISOString()
     }));
 
+    // Kiểm tra trạng thái sau khi chuẩn hóa
+    const statusCounts = {};
+    processedServerMedicines.forEach(med => {
+      statusCounts[med.Status] = (statusCounts[med.Status] || 0) + 1;
+    });
+    console.log('📊 Phân bố trạng thái sau khi chuẩn hóa:', statusCounts);
+
     // Chỉ giữ lại các thuốc đang chờ đồng bộ (nếu có)
     const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
+    
+    // ✅ Kết hợp data từ server và pending medicines
     const combinedMedicines = [
       ...processedServerMedicines,
       ...pendingMedicines.filter(m => !processedServerMedicines.some(s => s.MedicineID === m.MedicineID))
@@ -587,10 +879,25 @@ const MedicineManagement = () => {
 
     setMedicines(combinedMedicines);
     saveMedicinesToStorage(combinedMedicines);
-    message.success(`Đã tải ${processedServerMedicines.length} yêu cầu thuốc từ server`);
+    console.log(`✅ Đã tải ${processedServerMedicines.length} yêu cầu thuốc từ server`);
   } catch (error) {
-    message.error('Không thể kết nối đến server - Hiển thị dữ liệu cục bộ');
-    loadPersistedMedicines();
+    console.error('❌ Lỗi không xác định:', error);
+    
+    // ✅ CHỈ fallback về localStorage khi OFFLINE
+    if (!navigator.onLine) {
+      console.log('📱 Offline - Sử dụng localStorage');
+      message.warning('Không có kết nối internet - Hiển thị dữ liệu cục bộ');
+      loadPersistedMedicines();
+    } else {
+      console.log('🌐 Online nhưng có lỗi - Hiển thị rỗng thay vì localStorage cũ');
+      
+      // Chỉ giữ lại thuốc pending
+      const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
+      setMedicines(pendingMedicines);
+      saveMedicinesToStorage(pendingMedicines);
+      
+      message.error('Lỗi không xác định - Chỉ hiển thị thuốc chưa đồng bộ');
+    }
   } finally {
     setLoading(false);
   }
@@ -605,7 +912,7 @@ const MedicineManagement = () => {
 
   const getStudentClass = (studentId) => {
     const student = students.find(s => s.StudentID === studentId);
-    return student ? student.Class : '';
+    return student ? (student.Class || 'Chưa phân lớp') : 'Chưa phân lớp';
   };
 
   const getCurrentStudentMedicines = () => {
@@ -621,23 +928,13 @@ const MedicineManagement = () => {
       `${m.MedicineID} (${m.StudentID}, ${m.Status})`
     ));
 
-    // Kiểm tra cụ thể M0001 và M0002
-    const m0001 = medicines.find(m => m.MedicineID === 'M0001');
-    const m0002 = medicines.find(m => m.MedicineID === 'M0002');
-
-    console.log('Kiểm tra M0001:', m0001 ? {
-      id: m0001.MedicineID,
-      name: m0001.MedicineName,
-      student: m0001.StudentID,
-      status: m0001.Status
-    } : 'Không tìm thấy');
-
-    console.log('Kiểm tra M0002:', m0002 ? {
-      id: m0002.MedicineID,
-      name: m0002.MedicineName,
-      student: m0002.StudentID,
-      status: m0002.Status
-    } : 'Không tìm thấy');
+    // Kiểm tra cụ thể các thuốc có trạng thái "Đã duyệt" hoặc "Đã xác nhận"
+    const approvedMeds = medicines.filter(m => 
+      normalizeStatus(m.Status) === 'Đã xác nhận'
+    );
+    console.log('🔍 Thuốc đã được duyệt trong medicines:', approvedMeds.map(m => 
+      `${m.MedicineID} (${m.StudentID}, ${m.Status})`
+    ));
 
     let filteredMedicines = medicines;
 
@@ -645,22 +942,17 @@ const MedicineManagement = () => {
     if (selectedStudentId) {
       console.log(`Đang lọc theo học sinh: ${selectedStudentId}`);
 
-      // So sánh chi tiết để debug
-      if (m0001) {
-        console.log('So sánh StudentID của M0001:', {
-          id_m0001: m0001.StudentID,
-          id_selected: selectedStudentId,
-          giống_nhau_chính_xác: m0001.StudentID === selectedStudentId,
-          giống_nhau_không_phân_biệt_hoa_thường:
-            m0001.StudentID.toLowerCase() === selectedStudentId.toLowerCase()
-        });
-      }
-
       // Sử dụng so sánh không phân biệt chữ hoa/thường để tránh lỗi case sensitivity
-      filteredMedicines = filteredMedicines.filter(m =>
-        m.StudentID && selectedStudentId &&
-        m.StudentID.toLowerCase() === selectedStudentId.toLowerCase()
-      );
+      filteredMedicines = filteredMedicines.filter(m => {
+        const match = m.StudentID && selectedStudentId &&
+          m.StudentID.toString().toLowerCase() === selectedStudentId.toString().toLowerCase();
+        
+        if (!match && m.StudentID) {
+          console.log(`❓ Thuốc không khớp: ${m.MedicineID}, StudentID: ${m.StudentID} vs ${selectedStudentId}`);
+        }
+        
+        return match;
+      });
 
       console.log(`Sau khi lọc theo học sinh: ${filteredMedicines.length} thuốc còn lại`);
       console.log('ID thuốc sau khi lọc học sinh:', filteredMedicines.map(m => m.MedicineID));
@@ -671,20 +963,14 @@ const MedicineManagement = () => {
       console.log(`Đang lọc theo trạng thái: ${statusFilter}`);
 
       // Kiểm tra chuẩn hóa trạng thái
-      if (m0001 && filteredMedicines.includes(m0001)) {
-        console.log('Trạng thái của M0001:', {
-          gốc: m0001.Status,
-          đã_chuẩn_hóa: normalizeStatus(m0001.Status),
-          trạng_thái_lọc: statusFilter,
-          trạng_thái_lọc_đã_chuẩn_hóa: normalizeStatus(statusFilter),
-          giống_nhau_sau_chuẩn_hóa: normalizeStatus(m0001.Status) === normalizeStatus(statusFilter)
-        });
-      }
-
       filteredMedicines = filteredMedicines.filter(m => {
         const normalizedMedicineStatus = normalizeStatus(m.Status);
         const normalizedFilterStatus = normalizeStatus(statusFilter);
-        return normalizedMedicineStatus === normalizedFilterStatus;
+        const matches = normalizedMedicineStatus === normalizedFilterStatus;
+        
+        console.log(`Kiểm tra trạng thái của ${m.MedicineID}: ${m.Status} -> ${normalizedMedicineStatus} vs ${normalizedFilterStatus}: ${matches}`);
+        
+        return matches;
       });
 
       console.log(`Sau khi lọc theo trạng thái: ${filteredMedicines.length} thuốc còn lại`);
@@ -804,7 +1090,10 @@ const MedicineManagement = () => {
           // Giữ nguyên Status: editingMedicine.Status
           Images: images.length > 0
             ? images.map(file => URL.createObjectURL(file))
-            : editingMedicine.Images || []
+            : editingMedicine.Images || [],
+          // ✅ Đánh dấu cần đồng bộ khi update
+          _pendingSync: true,
+          _lastUpdateAttempt: new Date().toISOString()
         };
 
         // Cập nhật state local trước để giao diện phản hồi nhanh
@@ -827,13 +1116,64 @@ const MedicineManagement = () => {
           };
 
           console.log('Gửi dữ liệu cập nhật lên server:', apiData);
+          console.log('Chi tiết API Data:', {
+            MedicineID: apiData.MedicineID,
+            MedicineName: apiData.MedicineName,
+            Quantity: apiData.Quantity,
+            Dosage: apiData.Dosage,
+            Instructions: apiData.Instructions,
+            Notes: apiData.Notes,
+            Images: apiData.Images,
+            ImagesLength: apiData.Images?.length || 0
+          });
+          
           const updateResponse = await medicineApi.parent.updateMedicine(apiData);
           console.log('Kết quả cập nhật từ server:', updateResponse);
 
+          // ✅ XÓA FLAG _pendingSync KHI THÀNH CÔNG
+          setMedicines(prevMedicines => {
+            const updatedMedicines = prevMedicines.map(med => {
+              if (med.MedicineID === editingMedicine.MedicineID) {
+                return { ...med, _pendingSync: false };
+              }
+              return med;
+            });
+            saveMedicinesToStorage(updatedMedicines);
+            return updatedMedicines;
+          });
+
           message.success('Cập nhật thuốc thành công!');
+          
+          // Force refresh để lấy dữ liệu mới nhất từ server
+          console.log('🔄 Force refresh sau khi cập nhật thuốc thành công');
+          setTimeout(() => {
+            fetchMedicinesFromServer();
+          }, 500);
         } catch (updateError) {
-          console.error('Lỗi khi cập nhật thuốc trên server:', updateError);
-          message.warning('Đã lưu cục bộ, nhưng không thể cập nhật trên server. Thay đổi sẽ được đồng bộ khi có kết nối.');
+          console.error('❌ Lỗi khi cập nhật thuốc trên server:', updateError);
+          console.error('❌ Chi tiết lỗi:', {
+            message: updateError.message,
+            response: updateError.response?.data,
+            status: updateError.response?.status,
+            statusText: updateError.response?.statusText
+          });
+          
+          // Kiểm tra loại lỗi để đưa ra thông báo phù hợp
+          if (updateError.response?.status === 401) {
+            message.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+          } else if (updateError.response?.status === 403) {
+            message.error('Bạn không có quyền cập nhật thuốc này.');
+          } else if (updateError.response?.status === 404) {
+            message.error('Không tìm thấy thuốc cần cập nhật.');
+          } else if (updateError.response?.status >= 500) {
+            message.error('Lỗi server. Vui lòng thử lại sau.');
+          } else if (!navigator.onLine) {
+            message.warning('Không có kết nối internet. Thay đổi sẽ được đồng bộ khi có kết nối.');
+          } else {
+            message.warning(`Đã lưu cục bộ, thay đổi sẽ được đồng bộ khi có kết nối. (Lỗi: ${updateError.message})`);
+          }
+          
+          // ✅ GIỮ NGUYÊN _pendingSync = true để đồng bộ sau
         }
       }
       // Xử lý trường hợp tạo mới
@@ -899,6 +1239,12 @@ const MedicineManagement = () => {
             });
 
             message.success('Đã lưu yêu cầu thuốc trên server!');
+            
+            // Force refresh để lấy dữ liệu mới nhất từ server
+            console.log('🔄 Force refresh sau khi tạo thuốc thành công');
+            setTimeout(() => {
+              fetchMedicinesFromServer();
+            }, 500);
           }
         } catch (createError) {
           console.error('Lỗi khi tạo thuốc trên server:', createError);
@@ -949,25 +1295,32 @@ const MedicineManagement = () => {
 
   const canEdit = (record) => {
     const normalizedStatus = normalizeStatus(record.Status);
-    const canEditStatus = normalizedStatus === 'Chờ xử lý';
+    
+    // Chỉ cho phép edit khi thuốc đang ở trạng thái chờ xử lý hoặc chờ xác nhận
+    const canEditStatus = normalizedStatus === 'Chờ xử lý' || normalizedStatus === 'Chờ xác nhận';
+    
+    // ✅ BACKEND LOGIC: Cho phép update tất cả các medicine chưa được y tế xử lý (NurseID == null)
+    const isUnprocessedByNurse = !record.NurseID; // NurseID == null
 
     console.log('🔍 Can edit check:', {
       medicineId: record.MedicineID,
       originalStatus: record.Status,
       normalizedStatus: normalizedStatus,
-      canEdit: canEditStatus
+      canEditStatus: canEditStatus,
+      isUnprocessedByNurse: isUnprocessedByNurse,
+      canEdit: canEditStatus && isUnprocessedByNurse
     });
 
-    return canEditStatus;
+    return canEditStatus && isUnprocessedByNurse;
   };
 
   // Get statistics
   const currentStudentMedicines = getCurrentStudentMedicines();
   const totalMedicines = currentStudentMedicines.length;
   const pendingCount = currentStudentMedicines.filter(m => normalizeStatus(m.Status) === 'Chờ xử lý').length;
-  const approvedCount = currentStudentMedicines.filter(m => normalizeStatus(m.Status) === 'Đã duyệt').length;
-  const inUseCount = currentStudentMedicines.filter(m => normalizeStatus(m.Status) === 'Đang sử dụng').length;
-  const completedCount = currentStudentMedicines.filter(m => normalizeStatus(m.Status) === 'Hoàn thành').length;
+  const approvedCount = currentStudentMedicines.filter(m => normalizeStatus(m.Status) === 'Đã xác nhận').length;
+  const inUseCount = currentStudentMedicines.filter(m => normalizeStatus(m.Status) === 'Đang thực hiện').length;
+  const completedCount = currentStudentMedicines.filter(m => normalizeStatus(m.Status) === 'Đã hoàn thành').length;
   const rejectedCount = currentStudentMedicines.filter(m => normalizeStatus(m.Status) === 'Từ chối').length;
 
   // ==================== TABLE COLUMNS ====================
@@ -996,7 +1349,7 @@ const MedicineManagement = () => {
           <div>
             <div className="font-medium text-xs text-blue-500 ">{student?.StudentName || 'N/A'}</div>
             <div className="text-xs text-gray-500">
-              {student?.Class || 'N/A'}
+              {getStudentClass(studentId)}
             </div>
           </div>
         );
@@ -1085,6 +1438,18 @@ const MedicineManagement = () => {
                 size="small"
               />
             )}
+            
+            {/* Hiển thị tooltip cho medicine không thể edit */}
+            {!canEdit(record) && (normalizeStatus(record.Status) === 'Chờ xử lý' || normalizeStatus(record.Status) === 'Chờ xác nhận') && (
+              <Button
+                type="text"
+                icon={<EditOutlined />}
+                disabled
+                className="text-gray-400"
+                title="Không thể chỉnh sửa - Đã được y tế xử lý"
+                size="small"
+              />
+            )}
 
             {/* ✅ NÚT XEM LỊCH SỬ */}
             {hasHistory(record) && (
@@ -1136,7 +1501,7 @@ const MedicineManagement = () => {
 
       // Khi thay đổi học sinh, cố gắng lấy lại thuốc của học sinh đó từ server
       if (navigator.onLine) {
-        fetchMedicinesByStudentId(selectedStudentId);
+        fetchMedicinesByParentId();
       } else {
         setTimeout(() => {
           setLoading(false);
@@ -1145,30 +1510,111 @@ const MedicineManagement = () => {
     }
   }, [selectedStudentId]);
 
-  // Hàm lấy thuốc theo mã học sinh
-  const fetchMedicinesByStudentId = async (studentId) => {
-    if (!studentId || !navigator.onLine) return;
+  // Tự động fetch medicines khi danh sách students thay đổi
+  // ❌ REMOVE: Loại bỏ useEffect này để tránh duplicate calls
+  // useEffect(() => {
+  //   if (students.length > 0 && navigator.onLine) {
+  //     console.log('📚 Danh sách học sinh đã có, tự động fetch medicines');
+  //     fetchMedicinesFromServer();
+  //   }
+  // }, [students.length]);
+
+  // 🆕 Theo dõi khi students đã được initialized để fetch medicines
+  useEffect(() => {
+    if (studentsInitialized && students.length > 0) {
+      console.log('✅ Students đã initialized, bắt đầu fetch medicines từ server');
+      fetchMedicinesFromServer();
+    }
+  }, [studentsInitialized]);
+
+  // Hàm lấy thuốc của parent (không cần studentId nữa)
+  const fetchMedicinesByParentId = async () => {
+    if (!navigator.onLine) return;
 
     try {
-      console.log(`👨‍👩‍👧‍👦 Đang lấy thuốc cho học sinh: ${studentId}`);
-      const response = await medicineApi.parent.getMedicinesByStudentId(studentId);
-
+      console.log(`👨‍👩‍👧‍👦 Đang lấy TẤT CẢ thuốc của parent...`);
+      const response = await medicineApi.parent.getMedicinesByParentId();
+      
+      console.log('✅ API getMedicinesByParentId response:', response);
+      
+      // Debug chi tiết cấu trúc dữ liệu
+      console.log('✅ API response.data:', JSON.stringify(response.data, null, 2));
+      
       if (response?.data) {
-        let studentMedicines = [];
+        let allMedicines = [];
 
         if (Array.isArray(response.data)) {
-          studentMedicines = response.data;
+          allMedicines = response.data;
+          console.log('🔍 Dữ liệu là mảng trực tiếp:', allMedicines.length);
         } else if (response.data.data && Array.isArray(response.data.data)) {
-          studentMedicines = response.data.data;
+          allMedicines = response.data.data;
+          console.log('🔍 Dữ liệu nằm trong trường data:', allMedicines.length);
         } else if (response.data.medicineID || response.data.MedicineID) {
-          studentMedicines = [response.data];
+          allMedicines = [response.data];
+          console.log('🔍 Dữ liệu là một đối tượng thuốc đơn lẻ');
+        } else {
+          // Xử lý trường hợp JSON không đúng định dạng mong đợi
+          console.log('⚠️ Dữ liệu có cấu trúc không xác định:', response.data);
+          try {
+            // Thử kiểm tra nếu response là string JSON
+            if (typeof response.data === 'string') {
+              const parsedData = JSON.parse(response.data);
+              console.log('🔄 Đã phân tích dữ liệu string JSON:', parsedData);
+              
+              if (Array.isArray(parsedData)) {
+                allMedicines = parsedData;
+              } else if (parsedData.data && Array.isArray(parsedData.data)) {
+                allMedicines = parsedData.data;
+              }
+            }
+            // Kiểm tra nếu có trường khác chứa dữ liệu
+            else {
+              const possibleFields = ['medicines', 'items', 'results', 'records', 'list'];
+              for (const field of possibleFields) {
+                if (response.data[field] && Array.isArray(response.data[field])) {
+                  console.log(`🔍 Tìm thấy dữ liệu trong trường '${field}'`);
+                  allMedicines = response.data[field];
+                  break;
+                }
+              }
+            }
+          } catch (e) {
+            console.error('❌ Lỗi khi xử lý dữ liệu:', e);
+          }
         }
 
-        if (studentMedicines.length > 0) {
-          console.log(`✅ Tìm thấy ${studentMedicines.length} thuốc của học sinh ${studentId}`);
+        if (allMedicines.length > 0) {
+          console.log(`✅ Tìm thấy ${allMedicines.length} thuốc của parent`);
+          
+          // Kiểm tra chi tiết từng thuốc để hiểu cấu trúc dữ liệu
+          allMedicines.forEach((med, index) => {
+            console.log(`Thuốc #${index + 1}:`, {
+              id: med.medicineID || med.MedicineID,
+              name: med.medicineName || med.MedicineName,
+              status: med.status || med.Status,
+              status_normalized: normalizeStatus(med.status || med.Status || 'Chờ xử lý'),
+              studentId: med.studentID || med.StudentID || med.student_id
+            });
+          });
+          
+          // Debug - kiểm tra xem có thuốc đã duyệt hay không
+          const approvedMeds = allMedicines.filter(m => {
+            const status = (m.status || m.Status || '').toLowerCase();
+            return status.includes('duyệt') || status.includes('xác nhận') || 
+                   status.includes('approved') || status.includes('confirmed');
+          });
+          
+          console.log('📊 Số lượng thuốc đã được duyệt của parent:', approvedMeds.length);
+          if (approvedMeds.length > 0) {
+            console.log('📊 Chi tiết thuốc đã duyệt:', approvedMeds.map(med => ({
+              id: med.medicineID || med.MedicineID,
+              name: med.medicineName || med.MedicineName,
+              status_original: med.status || med.Status
+            })));
+          }
 
           // Chuẩn hóa dữ liệu từ server
-          const processedMedicines = studentMedicines.map(medicine => ({
+          const processedMedicines = allMedicines.map(medicine => ({
             MedicineID: medicine.medicineID || medicine.MedicineID,
             MedicineName: medicine.medicineName || medicine.MedicineName,
             Quantity: medicine.quantity || medicine.Quantity,
@@ -1177,40 +1623,44 @@ const MedicineManagement = () => {
             Notes: medicine.notes || medicine.Notes || '',
             Status: normalizeStatus(medicine.status || medicine.Status || 'Chờ xử lý'),
             SentDate: medicine.sentDate || medicine.SentDate || medicine.createdAt,
-            StudentID: medicine.studentID || medicine.StudentID || medicine.student_id || studentId,
+            StudentID: medicine.studentID || medicine.StudentID || medicine.student_id,
             NurseID: medicine.nurseID || medicine.NurseID || null,
             ParentID: medicine.parentID || medicine.ParentID || null,
-            Images: medicine.images || medicine.Images || [],
+            Images: medicine.image ? [medicine.image] : medicine.images || medicine.Images || [],
             _fromServer: true,
             _serverFetchedAt: new Date().toISOString()
           }));
+
+          // Kiểm tra trạng thái sau khi chuẩn hóa
+          const statusCounts = {};
+          processedMedicines.forEach(med => {
+            statusCounts[med.Status] = (statusCounts[med.Status] || 0) + 1;
+          });
+          console.log('📊 Phân bố trạng thái sau khi chuẩn hóa:', statusCounts);
 
           // Cập nhật medicines trong state
           setMedicines(prevMedicines => {
             // Lấy danh sách ID thuốc mới từ server
             const newMedicineIds = processedMedicines.map(m => m.MedicineID);
 
-            // Giữ lại thuốc của học sinh khác và thuốc đang chờ đồng bộ
-            const otherMedicines = prevMedicines.filter(m => {
-              // Giữ lại nếu thuộc học sinh khác
-              if (m.StudentID !== studentId) return true;
+            // Giữ lại thuốc đang chờ đồng bộ (pending)
+            const pendingMedicines = prevMedicines.filter(m => {
+              // Giữ lại thuốc tạm thời chưa đồng bộ
+              if (m._isTemp || (m.MedicineID && m.MedicineID.startsWith('MED_'))) return true;
 
-              // Hoặc là thuốc tạm thời chưa đồng bộ
-              if (m._isTemp || m.MedicineID.startsWith('MED_')) return true;
-
-              // Hoặc là thuốc cũ không có trong danh sách mới
-              if (!newMedicineIds.includes(m.MedicineID)) return true;
+              // Giữ lại thuốc pending sync không có trong danh sách mới
+              if (m._pendingSync && !newMedicineIds.includes(m.MedicineID)) return true;
 
               // Còn lại sẽ bị thay thế bởi dữ liệu mới
               return false;
             });
 
-            // Kết hợp thuốc cũ với thuốc mới
-            const updatedMedicines = [...otherMedicines, ...processedMedicines];
+            // Kết hợp thuốc pending với thuốc mới từ server
+            const updatedMedicines = [...pendingMedicines, ...processedMedicines];
 
             // Debug
-            console.log('🔄 Đã cập nhật dữ liệu thuốc của học sinh:', {
-              cũ: prevMedicines.filter(m => m.StudentID === studentId).length,
+            console.log('🔄 Đã cập nhật dữ liệu thuốc của parent:', {
+              pending: pendingMedicines.length,
               mới: processedMedicines.length,
               tổngSau: updatedMedicines.length
             });
@@ -1221,17 +1671,17 @@ const MedicineManagement = () => {
             return updatedMedicines;
           });
 
-          // Kiểm tra M0001 và M0002
-          console.log('🔍 Kiểm tra M0001:', studentMedicines.find(m =>
+          // Kiểm tra một số thuốc test
+          console.log('🔍 Kiểm tra M0001:', allMedicines.find(m =>
             m.medicineID === 'M0001' || m.MedicineID === 'M0001'));
-          console.log('🔍 Kiểm tra M0002:', studentMedicines.find(m =>
+          console.log('🔍 Kiểm tra M0002:', allMedicines.find(m =>
             m.medicineID === 'M0002' || m.MedicineID === 'M0002'));
         } else {
-          console.log(`ℹ️ Không tìm thấy thuốc nào của học sinh ${studentId}`);
+          console.log(`ℹ️ Không tìm thấy thuốc nào của parent`);
         }
       }
     } catch (error) {
-      console.error(`❌ Lỗi khi lấy thuốc của học sinh ${studentId}:`, error);
+      console.error(`❌ Lỗi khi lấy thuốc của parent:`, error);
     } finally {
       setLoading(false);
     }
@@ -1522,7 +1972,7 @@ const MedicineManagement = () => {
               >
                 {students.map(student => (
                   <Option key={student.StudentID} value={student.StudentID}>
-                    {student.StudentName} - {student.Class}
+                    {student.StudentName} - {student.Class || 'Chưa phân lớp'}
                   </Option>
                 ))}
               </Select>
@@ -1574,16 +2024,6 @@ const MedicineManagement = () => {
                 </Text>
               </span>
               <div className="flex items-center space-x-2" style={{ marginRight: 10 }}>
-                <Button
-                  type="text"
-                  icon={<ReloadOutlined />}
-                  onClick={fetchMedicinesFromServer}
-                  loading={loading}
-                  className="text-green-500"
-                  size="small"
-                >
-                  Tải lại
-                </Button>
               </div>
             </div>
           }
@@ -1615,7 +2055,7 @@ const MedicineManagement = () => {
                   <div className="text-gray-500">Chưa có yêu cầu thuốc nào</div>
                   <div className="text-sm text-gray-400 mt-1">
                     {selectedStudentId
-                      ? `Chưa có yêu cầu nào cho ${getStudentName(selectedStudentId)}`
+                      ? `Chưa có yêu cầu nào cho ${getStudentName(selectedStudentId)} - ${getStudentClass(selectedStudentId)}`
                       : 'Hãy chọn học sinh để xem yêu cầu thuốc'
                     }
                   </div>
@@ -1633,7 +2073,7 @@ const MedicineManagement = () => {
               {editingMedicine ? 'Chỉnh sửa yêu cầu thuốc' : 'Tạo yêu cầu thuốc mới'}
               {selectedStudentId && (
                 <span className="ml-2 text-sm text-gray-500">
-                  cho {getStudentName(selectedStudentId)}
+                  cho {getStudentName(selectedStudentId)} - {getStudentClass(selectedStudentId)}
                 </span>
               )}
             </div>
@@ -1876,7 +2316,7 @@ const MedicineManagement = () => {
                     </h4>
                     <p className="text-sm text-gray-600">
                       Mã: {viewingMedicineHistory.MedicineID} |
-                      Học sinh: {getStudentName(viewingMedicineHistory.StudentID)}
+                      Học sinh: {getStudentName(viewingMedicineHistory.StudentID)} - {getStudentClass(viewingMedicineHistory.StudentID)}
                     </p>
                   </div>
                   <Tag
@@ -1962,5 +2402,4 @@ const MedicineManagement = () => {
     </div>
   );
 };
-
 export default MedicineManagement;

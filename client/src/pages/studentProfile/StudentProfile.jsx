@@ -8,8 +8,7 @@ import {
   IdcardOutlined,
   TeamOutlined,
   GlobalOutlined,
-  EditOutlined
-} from '@ant-design/icons';
+ } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -114,43 +113,6 @@ const StudentProfile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
       <div className="max-w-6xl mx-auto px-4">
-        
-        {/* Student Selection Header */}
-        <Card className="mb-6 shadow-lg border-0">
-          <div className="flex items-center justify-between">
-            <div>
-              <Title level={3} className="!mb-2">
-                Hồ sơ học sinh
-              </Title>
-              <Text type="secondary">
-                Chọn con để xem thông tin chi tiết
-              </Text>
-            </div>
-            <Select
-              value={selectedStudentId}
-              onChange={handleStudentChange}
-              style={{ width: 300 }}
-              size="large"
-              placeholder="Chọn con"
-            >
-              {studentsData.map(student => (
-                <Option key={student.StudentID} value={student.StudentID}>
-                  <div className="flex items-center">
-                    <Avatar 
-                      size={24} 
-                      src={student.StudentAvata} 
-                      icon={<UserOutlined />}
-                      className="mr-2"
-                    />
-                    <span className="font-medium">{student.StudentName}</span>
-                    <span className="text-gray-500 ml-2">- Lớp {student.Class}</span>
-                  </div>
-                </Option>
-              ))}
-            </Select>
-          </div>
-        </Card>
-
         {/* Tabs cho multiple children - Alternative approach */}
         <Card className="mb-6 shadow-lg border-0">
           <Tabs 
@@ -184,7 +146,7 @@ const StudentProfile = () => {
           <>
             {/* Header Card */}
             <Card className="mb-8 shadow-lg border-0 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 -mx-6 -mt-6 mb-6 px-6 py-8">
+              <div className="bg-gradient-to-r from-blue-400 to-indigo-700 -mx-6 -mt-6 mb-6 px-6 py-8">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-6">
                     <Avatar
@@ -209,14 +171,6 @@ const StudentProfile = () => {
                       </div>
                     </div>
                   </div>
-                  <Button
-                    icon={<EditOutlined />}
-                    size="large"
-                    className="bg-white/20 border-white/30 text-white hover:bg-white/30"
-                    onClick={() => setIsEditModalVisible(true)}
-                  >
-                    Chỉnh sửa
-                  </Button>
                 </div>
               </div>
             </Card>

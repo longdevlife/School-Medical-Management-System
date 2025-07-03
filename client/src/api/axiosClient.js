@@ -44,55 +44,60 @@ axiosClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    // Nếu 401 và có refreshToken, thử refresh
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      localStorage.getItem("refreshToken")
-    ) {
-      if (isRefreshing) {
-        // Nếu đang refresh, chờ refresh xong rồi retry
-        return new Promise(function (resolve, reject) {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers.Authorization = "Bearer " + token;
-            return axiosClient(originalRequest);
+    
+    // Chỉ xử lý lỗi 401 (Unauthorized)
+    if (error.response?.status === 401) {
+      // Nếu có refreshToken và chưa retry, thử refresh
+      if (!originalRequest._retry && localStorage.getItem("refreshToken")) {
+        if (isRefreshing) {
+          // Nếu đang refresh, chờ refresh xong rồi retry
+          return new Promise(function (resolve, reject) {
+            failedQueue.push({ resolve, reject });
           })
-          .catch((err) => Promise.reject(err));
-      }
+            .then((token) => {
+              originalRequest.headers.Authorization = "Bearer " + token;
+              return axiosClient(originalRequest);
+            })
+            .catch((err) => Promise.reject(err));
+        }
 
-      originalRequest._retry = true;
-      isRefreshing = true;
-      try {
-        const refreshToken = localStorage.getItem("refreshToken");
-        const res = await authApi.refreshToken(refreshToken);
-        const newToken = res.data.token;
-        // Lưu token mới vào localStorage
-        localStorage.setItem("token", newToken);
-        processQueue(null, newToken);
-        originalRequest.headers.Authorization = "Bearer " + newToken;
-        return axiosClient(originalRequest);
-      } catch (err) {
-        processQueue(err, null);
+        originalRequest._retry = true;
+        isRefreshing = true;
+        
+        try {
+          const refreshToken = localStorage.getItem("refreshToken");
+          const res = await authApi.refreshToken(refreshToken);
+          const newToken = res.data.token;
+          
+          // Lưu token mới vào localStorage
+          localStorage.setItem("token", newToken);
+          processQueue(null, newToken);
+          originalRequest.headers.Authorization = "Bearer " + newToken;
+          
+          return axiosClient(originalRequest);
+        } catch (refreshError) {
+          // Refresh token thất bại hoặc hết hạn
+          processQueue(refreshError, null);
+          localStorage.removeItem("token");
+          localStorage.removeItem("refreshToken");
+          
+          // Redirect về login
+          window.location.replace("/login");
+          return new Promise(() => {}); // Treo promise để ngăn code chạy tiếp
+        } finally {
+          isRefreshing = false;
+        }
+      } else {
+        // Không có refreshToken hoặc đã retry rồi => logout luôn
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
-        window.location.reload(); // Thêm dòng reload ở đây
-        return new Promise(() => {});
-      } finally {
-        isRefreshing = false;
+        
+        // Redirect về login
+        window.location.replace("/login");
+        return new Promise(() => {}); // Treo promise để ngăn code chạy tiếp
       }
     }
-    // Nếu 401 mà không có refreshToken hoặc đã retry rồi => logout luôn
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
-      // Thêm reload để đảm bảo redirect cứng
-      window.location.href = "/login";
-      window.location.reload();
-      return new Promise(() => {});
-    }
+    
     return Promise.reject(error);
   }
 );

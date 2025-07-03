@@ -54,6 +54,14 @@ namespace Sever.Controllers
             return Ok(result);
         }
 
+        [HttpPut("medicine/addImage/{id}")]
+        public async Task<IActionResult> AddImage(string id, [FromForm] MedicineStatusUpdate dto)
+        {
+            var username = User.Identity?.Name;
+            var result = await _medicineService.AddImageByNurseIDAsync(id, dto, username);
+            return Ok(result);
+        }
+
         [HttpGet("medicine/getByStudentId/{studentId}")]
         public async Task<IActionResult> GetMedicinesByStudentID(string studentId)
         {
@@ -87,6 +95,15 @@ namespace Sever.Controllers
             var result = await _medicalEventService.UpdateMedicalEvent(dto, id, username);
             return Ok(result);
         }
+
+        [HttpPut("event/addImages/{id}")]
+        public async Task<IActionResult> AddImageMedicalEvent([FromForm] MedicalEventUpdateDTO dto, string id)
+        {
+            var username = User.Identity?.Name;
+            var result = await _medicalEventService.AddImage(dto, id, username);
+            return Ok(result);
+        }
+
 
         [HttpGet("event/getByEventId/{medicalEventId}")]
         public async Task<IActionResult> GetMedicalEventById(string medicalEventId)

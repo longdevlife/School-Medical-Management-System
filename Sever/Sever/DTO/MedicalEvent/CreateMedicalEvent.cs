@@ -9,7 +9,7 @@ namespace Sever.DTO.MedicalEvent
         public string? Notes { get; set; }
         public string EventType { get; set; }
         public List<string> StudentID { get; set; }
-        public List<IFormFile>? Image { get; set; }
+        public IFormFile[]? Image { get; set; }
 
 
     }

@@ -59,6 +59,14 @@ namespace Sever.Controllers
             return Ok(result);
         }
 
+        [HttpPut("medicine/addImage")]
+        public async Task<IActionResult> AddImage([FromForm] MedicineUpdateDTO dto)
+        {
+            var username = User.Identity?.Name;
+            var result = await _medicineService.AddImageByParentIDAsync(dto, username);
+            return Ok(result);
+        }
+
         [HttpGet("medicine/getByStudentId")]
         public async Task<IActionResult> GetMedicinesByStudentID()
         {

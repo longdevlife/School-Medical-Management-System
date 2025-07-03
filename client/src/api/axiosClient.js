@@ -44,6 +44,7 @@ axiosClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    // Nếu 401 và có refreshToken, thử refresh
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
@@ -72,17 +73,25 @@ axiosClient.interceptors.response.use(
         processQueue(null, newToken);
         originalRequest.headers.Authorization = "Bearer " + newToken;
         return axiosClient(originalRequest);
-
-        // Nếu refresh token không thành công, xóa token và chuyển hướng đến trang đăng nhập
       } catch (err) {
         processQueue(err, null);
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
         window.location.href = "/login";
-        return Promise.reject(err);
+        window.location.reload(); // Thêm dòng reload ở đây
+        return new Promise(() => {});
       } finally {
         isRefreshing = false;
       }
+    }
+    // Nếu 401 mà không có refreshToken hoặc đã retry rồi => logout luôn
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      // Thêm reload để đảm bảo redirect cứng
+      window.location.href = "/login";
+      window.location.reload();
+      return new Promise(() => {});
     }
     return Promise.reject(error);
   }

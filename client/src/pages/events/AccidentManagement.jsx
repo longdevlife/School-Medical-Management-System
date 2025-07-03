@@ -79,9 +79,7 @@ export default function AccidentManagement() {
         (item.student && item.student.name) ||
         "Chưa có tên",
       studentClass:
-        item.className ||
-        (item.student && item.student.className) ||
-        "Chưa có lớp",
+        item.class || (item.student && item.student.class) || "Chưa có lớp",
       date: item.eventDateTime ? item.eventDateTime.split("T")[0] : "",
       time: item.eventDateTime
         ? item.eventDateTime.split("T")[1]?.slice(0, 5)

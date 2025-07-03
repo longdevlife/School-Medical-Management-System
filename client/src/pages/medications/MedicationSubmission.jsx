@@ -169,7 +169,7 @@ function MedicationSubmission() {
           submissionCode: item.medicineID,
           studentId: item.studentID, // ✅ Map từ API
           studentName: item.studentName || "Chưa có tên",
-          studentClass: item.className || "Chưa có lớp",
+          studentClass: item.class || "Chưa có lớp",
           medicationName: item.medicineName,
           dosage: item.dosage,
           frequency: "Chưa có",
@@ -981,7 +981,7 @@ function MedicationSubmission() {
                   border: "2px solid rgba(255,255,255,0.2)",
                 }}
               >
-                <Text style={{ color: "white", fontSize: "24px" }}>�</Text>
+                <Text style={{ color: "white", fontSize: "24px" }}>💊</Text>
               </div>
               <div>
                 <Text
@@ -1861,8 +1861,24 @@ function MedicationSubmission() {
         <Modal
           title={
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <PlusOutlined style={{ color: "#1890ff", fontSize: "20px" }} />
-              <span>Thêm thuốc mới</span>
+              <div
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "12px",
+                  background:
+                    "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 4px 12px rgba(16, 185, 129, 0.2)",
+                }}
+              >
+                <span style={{ fontSize: "20px" }}>💊</span>
+              </div>
+              <Text strong style={{ fontSize: "18px" }}>
+                Thêm thuốc mới
+              </Text>
             </div>
           }
           open={createModalVisible}

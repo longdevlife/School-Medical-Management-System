@@ -1836,6 +1836,71 @@
         }
       }
     },
+    "/api/nurse/healthProfile/getByStudent/{studentId}": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/healthProfile/update": {
+      "put": {
+        "tags": [
+          "Nurse"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHealthProfile"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHealthProfile"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHealthProfile"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/healthProfile/getAll": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/parent/medicine/create": {
       "post": {
         "tags": [
@@ -2084,6 +2149,18 @@
         }
       }
     },
+    "/api/parent/event/getByParentId": {
+      "get": {
+        "tags": [
+          "Parent"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/parent/confirm-health-check-up": {
       "put": {
         "tags": [
@@ -2316,7 +2393,7 @@
         }
       }
     },
-    "/api/parent/declare-health-profile": {
+    "/api/parent/healthProfile/declare": {
       "put": {
         "tags": [
           "Parent"
@@ -2340,6 +2417,18 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/parent/healthProfile/getByParentId": {
+      "get": {
+        "tags": [
+          "Parent"
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -2788,6 +2877,68 @@
             "nullable": true
           },
           "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateHealthProfile": {
+        "required": [
+          "studentID"
+        ],
+        "type": "object",
+        "properties": {
+          "studentID": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "allergyHistory": {
+            "type": "string",
+            "nullable": true
+          },
+          "chronicDiseases": {
+            "type": "string",
+            "nullable": true
+          },
+          "pastSurgeries": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "surgicalCause": {
+            "type": "string",
+            "nullable": true
+          },
+          "disabilities": {
+            "type": "string",
+            "nullable": true
+          },
+          "height": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "weight": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "visionLeft": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "visionRight": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "toothDecay": {
+            "type": "string",
+            "nullable": true
+          },
+          "otheHealthIssues": {
             "type": "string",
             "nullable": true
           }

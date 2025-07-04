@@ -91,6 +91,14 @@ namespace Sever.Controllers
             return Ok(result);
         }
 
+        [HttpGet("event/getByParentId")]
+        public async Task<IActionResult> GetMedicalEventsByParentID()
+        {
+            var username = User.Identity?.Name;
+            var result = await _medicalEventService.GetMedicialEventByParentAsync(username);
+            return Ok(result);
+        }
+
         [HttpPut("confirm-health-check-up")]
         public async Task<IActionResult> ConfirmHealthCheckUp(HealthCheckUpResponse dto)
         {
@@ -227,26 +235,21 @@ namespace Sever.Controllers
             return Ok(student);
 
         }
-        [HttpPut("declare-health-profile")]
-        public async Task<IActionResult> DeclareStudentHealthProfile(DeclareHealthProfile healthProfile)
+        [HttpPut("healthProfile/declare")]
+        public async Task<IActionResult> DeclareHealthProfile([FromBody] DeclareHealthProfile declareDto)
         {
-            if (healthProfile == null)
-            {
-                return BadRequest("Health Profile không được để trống.");
-            }
-            try
-            {
-                var result = await _healthProfileService.DelareHealthProfileAsync(healthProfile);
-                if (result)
-                {
-                    return Ok("Đã khai báo hồ sơ sức khỏe cho học sinh thành công.");
-                }
-                else { return BadRequest("Khai báo hồ sơ sức khỏe cho học sinh thất bại."); }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = $"Lỗi khi khai báo hồ sơ sức khỏe: {ex.Message}" });
-            }
+            var success = await _healthProfileService.DelareHealthProfileAsync(declareDto);
+            if (!success) return BadRequest("Khai báo không thành công.");
+            return Ok("Khai báo thành công và đã thông báo cho y tá.");
         }
+
+        [HttpGet("healthProfile/getByParentId")]
+        public async Task<IActionResult> GetHeathProfilesByParentID()
+        {
+            var username = User.Identity?.Name;
+            var result = await _medicalEventService.GetMedicialEventByParentAsync(username);
+            return Ok(result);
+        }
+
     }
 }

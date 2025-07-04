@@ -675,6 +675,48 @@
   },
   {
     "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetAllHealthProfiles",
+    "RelativePath": "api/nurse/healthProfile/getAll",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetHealthProfile",
+    "RelativePath": "api/nurse/healthProfile/getByStudent/{studentId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "studentId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "UpdateHealthProfile",
+    "RelativePath": "api/nurse/healthProfile/update",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "updateDto",
+        "Type": "Sever.DTO.HealthProfile.UpdateHealthProfile",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
     "Method": "AddImage",
     "RelativePath": "api/nurse/medicine/addImage/{id}",
     "HttpMethod": "PUT",
@@ -1147,22 +1189,6 @@
   },
   {
     "ContainingType": "Sever.Controllers.ParentController",
-    "Method": "DeclareStudentHealthProfile",
-    "RelativePath": "api/parent/declare-health-profile",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "healthProfile",
-        "Type": "Sever.DTO.HealProfile.DeclareHealthProfile",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.ParentController",
     "Method": "DeniedAppointment",
     "RelativePath": "api/parent/denied-appointment",
     "HttpMethod": "PUT",
@@ -1195,6 +1221,16 @@
   },
   {
     "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "GetMedicalEventsByParentID",
+    "RelativePath": "api/parent/event/getByParentId",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
     "Method": "GetMedicalEventByStudentID",
     "RelativePath": "api/parent/event/getByStudentId",
     "HttpMethod": "GET",
@@ -1223,6 +1259,32 @@
     "ContainingType": "Sever.Controllers.ParentController",
     "Method": "GetStudentInfoByParent",
     "RelativePath": "api/parent/get-student-info-by-parent",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "DeclareHealthProfile",
+    "RelativePath": "api/parent/healthProfile/declare",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "declareDto",
+        "Type": "Sever.DTO.HealProfile.DeclareHealthProfile",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "GetHeathProfilesByParentID",
+    "RelativePath": "api/parent/healthProfile/getByParentId",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,

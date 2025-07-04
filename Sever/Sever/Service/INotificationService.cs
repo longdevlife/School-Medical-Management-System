@@ -4,6 +4,7 @@ using Sever.DTO.MedicalEvent;
 using Sever.Model;
 using Sever.Repository;
 using Sever.Repository.Interfaces;
+using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Sever.Service
@@ -13,6 +14,8 @@ namespace Sever.Service
         Task MedicalEventNotification(MedicalEvent medicalEvent, string customMessage = null);
         Task MedicineNotificationForParent(Medicine medicine, string customMessage = null);
         Task MedicineNotificationForAllNurses(Medicine medicine, string customMessage = null);
+        Task HealthProfileNotificationForAllNurses(string studentId, string customMessage = null);
+        Task HealthProfileNotificationForParent(string studentId, string customMessage = null);
 
         Task<bool> AppointmentNotify(Appointment appointment);
         Task<bool> SendHealthCheckupNotificationAsync(StudentProfile student, DateTime date);
@@ -146,6 +149,69 @@ namespace Sever.Service
                 throw new Exception("Lỗi khi gửi thông báo đơn thuốc đến các y tá.", ex);
             }
         }
+
+        public async Task HealthProfileNotificationForAllNurses(string studentId, string customMessage = null)
+        {
+            try
+            {
+                var allNurseIDs = await _notificationRepository.GetAllNurseIDsAsync();
+                if (allNurseIDs == null || !allNurseIDs.Any())
+                    return;
+
+                foreach (var nurseID in allNurseIDs)
+                {
+                    string notifyId = await _notificationRepository.GetCurrentNotifyID();
+
+                    var notification = new Notify
+                    {
+                        NotifyID = notifyId,
+                        UserID = nurseID,
+                        NotifyName = "Phụ huynh khai báo hồ sơ sức khỏe",
+                        DateTime = DateTime.UtcNow.AddHours(7),
+                        Title = "KHAI BÁO HỒ SƠ SỨC KHỎE",
+                        Description = customMessage ?? $"Hồ sơ sức khỏe của học sinh có mã {studentId} vừa được phụ huynh cập nhật. Vui lòng xác nhận.",
+                    };
+
+                    await _notificationRepository.AddNotificationAsync(notification);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi gửi thông báo hồ sơ sức khỏe đến y tá.", ex);
+            }
+        }
+
+        public async Task HealthProfileNotificationForParent(string studentId, string customMessage = null)
+        {
+            try
+            {
+                var parentId = await _notificationRepository.GetParentIdByStudentIdAsync(studentId);
+                if (string.IsNullOrEmpty(parentId)) return;
+
+                var parentExists = await _notificationRepository.CheckParentExistsAsync(parentId);
+                if (!parentExists) return;
+
+                string notifyId = await _notificationRepository.GetCurrentNotifyID();
+
+                var notification = new Notify
+                {
+                    NotifyID = notifyId,
+                    UserID = parentId,
+                    NotifyName = "Y tá đã cập nhật hồ sơ sức khỏe của học sinh",
+                    DateTime = DateTime.UtcNow.AddHours(7),
+                    Title = "CẬP NHẬT HỒ SƠ SỨC KHỎE",
+                    Description = customMessage ?? $"Hồ sơ sức khỏe của học sinh mã số {studentId} đã được y tá cập nhật. Vui lòng kiểm tra.",
+                };
+
+                await _notificationRepository.AddNotificationAsync(notification);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi gửi thông báo hồ sơ sức khỏe đến phụ huynh.", ex);
+            }
+        }
+
+
         public async Task<bool> SendHealthCheckupNotificationAsync(StudentProfile student, DateTime date)
         {
             try

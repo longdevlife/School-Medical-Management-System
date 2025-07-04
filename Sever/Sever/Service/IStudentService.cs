@@ -74,8 +74,7 @@ namespace Sever.Service
                         ParentEmail = student.Parent.Email,
                         Nationality = student.Nationality,
                         Sex = student.Sex,
-                        ParentPhone = student.Parent.Phone
-
+                        ParentPhone = student.Parent.Phone, 
                     });
                 }
                 return studentInfoList;

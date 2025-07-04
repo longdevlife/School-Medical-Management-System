@@ -31,3 +31,11 @@ export const getAllAccounts = async () => {
   // Trả về đúng dữ liệu backend trả về (object hoặc array)
   return res;
 };
+
+// Mở khoá tài khoản (active account)
+export const activeAccount = (userName) => {
+  // userName là chuỗi, gửi đúng định dạng backend yêu cầu
+  return axiosClient.put("/admin/active-account", userName, {
+    headers: { 'Content-Type': 'application/json' }
+  });
+};

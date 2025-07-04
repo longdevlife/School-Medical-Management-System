@@ -33,7 +33,9 @@ import {
   deleteUser,
   getAllAccounts,
   getUsersFromFile,
+  activeAccount,
 } from "../../api/userApi";
+import axiosClient from "../../api/axiosClient";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -88,13 +90,17 @@ function AccountList() {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
+      console.log('Giá trị form gửi lên update:', values);
       if (editingId) {
-        // Gọi API update user - chỉ gửi đúng các trường backend yêu cầu
-        await updateUserInfo({
-          userName: values.userName,
-          name: values.name,
-          phone: values.phone,
-        });
+        // Gọi API update user - chỉ gửi các trường có giá trị, đúng tên trường backend yêu cầu (chữ thường)
+        const payload = {};
+        if (values.userName) payload.userName = values.userName;
+        if (values.password) payload.password = values.password;
+        if (values.name) payload.name = values.name;
+        if (values.email) payload.email = values.email;
+        if (values.phone) payload.phone = values.phone;
+        console.log('Payload gửi lên API updateUserInfo:', payload);
+        await updateUserInfo(payload);
         message.success("Cập nhật tài khoản thành công!");
       } else {
         // Gửi lên API tạo tài khoản đúng định dạng backend yêu cầu
@@ -185,8 +191,29 @@ function AccountList() {
       title: "Trạng thái",
       dataIndex: "isActive",
       key: "isActive",
-      render: (active) => (
-        <Tag color={active ? "green" : "red"}>{active ? "Kích hoạt" : "Khoá"}</Tag>
+      render: (active, record) => (
+        <>
+          <Tag color={active ? "green" : "red"}>{active ? "Kích hoạt" : "Khoá"}</Tag>
+          {!active && (
+            <Button
+              size="small"
+              type="primary"
+              style={{ marginLeft: 8 }}
+              onClick={async () => {
+                try {
+                  // Gọi API mở khoá tài khoản qua userApi.js
+                  await activeAccount(record.userName);
+                  message.success("Đã mở khoá tài khoản!");
+                  await fetchAccounts();
+                } catch (err) {
+                  message.error("Mở khoá thất bại!");
+                }
+              }}
+            >
+              Mở khoá
+            </Button>
+          )}
+        </>
       ),
     },
     {

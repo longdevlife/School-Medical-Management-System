@@ -1,11 +1,65 @@
-import React from "react";
-import { Card, Form, Input, Button, Switch, Select, Space } from "antd";
+import React, { useEffect } from "react";
+import { Card, Form, Input, Button, Switch, Select, Space, message } from "antd";
+import { updateSchoolInfo, getSchoolInfo } from "../../api/Schoolinfo";
 
 function Settings() {
   const [form] = Form.useForm();
 
-  const onFinish = (values) => {
-    console.log("Form values:", values);
+  useEffect(() => {
+    const fetchSchoolInfo = async () => {
+      try {
+        const res = await getSchoolInfo();
+        const info = Array.isArray(res.data) ? res.data[0] : res.data;
+        if (!info) {
+          message.error("Không có dữ liệu trường học!");
+          return;
+        }
+
+        console.log("School info from API:", info);
+
+        form.setFieldsValue({
+          schoolName: info.schoolName || info.name || info.Name || "",
+          address: info.address || info.Address || "",
+          phone: info.phone || info.hotline || info.Hotline || "",
+          email: info.email || info.Email || "",
+        });
+      } catch (err) {
+        message.error("Không thể tải thông tin trường học!");
+      }
+    };
+    fetchSchoolInfo();
+  }, [form]);
+
+  const onFinish = async (values) => {
+    try {
+      const payload = {
+        SchoolID: "abc", // ID mặc định, đảm bảo backend xử lý được
+        Name: values.schoolName,
+        Address: values.address,
+        Hotline: values.phone,
+        Email: values.email,
+        // Nếu bạn có xử lý upload Logo trong tương lai:
+        // Logo: values.logo,
+      };
+
+      console.log("Payload gửi lên backend:", payload);
+
+      await updateSchoolInfo(payload);
+      message.success("Cập nhật thông tin trường thành công!");
+
+      // Reload lại form
+      const res = await getSchoolInfo();
+      const info = Array.isArray(res.data) ? res.data[0] : res.data;
+      form.setFieldsValue({
+        schoolName: info.schoolName || info.name || info.Name || "",
+        address: info.address || info.Address || "",
+        phone: info.phone || info.hotline || info.Hotline || "",
+        email: info.email || info.Email || "",
+      });
+    } catch (err) {
+      console.error(err);
+      message.error("Cập nhật thất bại!");
+    }
   };
 
   return (

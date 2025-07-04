@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { Layout, Row, Col, Typography } from "antd";
+import React, { useState, useEffect } from "react";
+import { Layout, Row, Col, Typography, Spin } from "antd";
 import AppHeader from "../../components/Layout/Header";
+import { getSchoolInfo } from "../../api/Schoolinfo";
 
 const { Content, Footer } = Layout;
 const { Title, Paragraph } = Typography;
@@ -8,6 +9,8 @@ const { Title, Paragraph } = Typography;
 const AboutPage = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [isHeaderSticky, setIsHeaderSticky] = useState(false);
+  const [schoolInfo, setSchoolInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -15,6 +18,74 @@ const AboutPage = () => {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const fetchSchoolInfo = async () => {
+      try {
+        console.log('=== FETCHING SCHOOL INFO ===');
+        const response = await getSchoolInfo();
+        console.log('✅ API Response:', response);
+        console.log('📊 Response Data:', response.data);
+        console.log('🔍 Data Type:', typeof response.data);
+        console.log('📝 Data Keys:', Object.keys(response.data || {}));
+        console.log('📋 All Data Properties:', response.data);
+        
+        const info = response.data;
+        
+        // Log từng property để xem tên field thực tế
+        console.log('🔍 Name variations:', {
+          Name: info.Name,
+          name: info.name,
+          schoolName: info.schoolName,
+          SchoolName: info.SchoolName
+        });
+        
+        console.log('🔍 Address variations:', {
+          Address: info.Address,
+          address: info.address,
+          schoolAddress: info.schoolAddress
+        });
+        
+        console.log('🔍 Hotline variations:', {
+          Hotline: info.Hotline,
+          hotline: info.hotline,
+          phone: info.phone,
+          Phone: info.Phone
+        });
+        
+        console.log('🔍 Email variations:', {
+          Email: info.Email,
+          email: info.email,
+          schoolEmail: info.schoolEmail
+        });
+        
+        if (info && Object.keys(info).length > 0) {
+          console.log('✅ Setting school info from API');
+          setSchoolInfo(info);
+        } else {
+          console.log('❌ No valid data, using fallback');
+          setSchoolInfo({
+            Name: "Trường Tiểu học ABC",
+            Address: "123 Đường Nguyễn Văn Cừ, Quận 5, TP.HCM",
+            Hotline: "0365858084",
+            Email: "contact@schoolabc.edu.vn"
+          });
+        }
+      } catch (error) {
+        console.error('❌ API Error:', error);
+        setSchoolInfo({
+          Name: "Trường Tiểu học ABC (API Error)",
+          Address: "123 Đường Nguyễn Văn Cừ, Quận 5, TP.HCM", 
+          Hotline: "0365858084",
+          Email: "contact@schoolabc.edu.vn"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSchoolInfo();
   }, []);
 
   const customStyles = `
@@ -36,6 +107,20 @@ const AboutPage = () => {
     .sticky-header > div { padding: 8px 0; transition: padding 0.3s ease; }
     .sticky-header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(59,130,246,0.3), transparent); }
   `;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+        <div className="text-center">
+          <Spin size="large" />
+          <p className="mt-4 text-blue-600 font-medium">Đang tải thông tin trường học...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Debug log
+  console.log('Current schoolInfo state:', schoolInfo);
 
   return (
     <>
@@ -85,39 +170,75 @@ const AboutPage = () => {
                   <div className="max-w-2xl w-full animate-fadeInLeft mx-auto bg-white/90 rounded-3xl shadow-2xl border border-blue-100/40 backdrop-blur-md p-0">
                     {/* Section 1: Giới thiệu */}
                     <section className="px-10 pt-10 pb-8 border-b border-blue-100/40">
-                      <Title className="text-5xl xl:text-6xl font-bold text-blue-700 leading-tight animate-fadeInUp mb-4" style={{ animationDelay: "0.2s" }}>Giới thiệu về Y tế học đường</Title>
+                      <Title className="text-5xl xl:text-6xl font-bold text-blue-700 leading-tight animate-fadeInUp mb-4" style={{ animationDelay: "0.2s" }}>
+                        Giới thiệu về {schoolInfo?.Name || schoolInfo?.name || schoolInfo?.schoolName || "Y tế học đường"}
+                      </Title>
                       <Paragraph className="text-xl text-gray-700 leading-relaxed animate-fadeInUp" style={{ animationDelay: "0.4s" }}>
-                        Hệ thống Y tế học đường mang đến giải pháp chăm sóc sức khỏe toàn diện cho học sinh, với đội ngũ chuyên gia, y tá giàu kinh nghiệm và các dịch vụ hiện đại, an toàn, tận tâm.
+                        Hệ thống {schoolInfo?.Name || schoolInfo?.name || schoolInfo?.schoolName || "Y tế học đường"} mang đến giải pháp chăm sóc sức khỏe toàn diện cho học sinh, với đội ngũ chuyên gia, y tá giàu kinh nghiệm và các dịch vụ hiện đại, an toàn, tận tâm.
                       </Paragraph>
                     </section>
-                    {/* Section 2: Sứ mệnh & Tầm nhìn */}
-                    <section className="px-10 py-10 border-b border-blue-100/40">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                    {/* Section 2: Thông tin liên hệ */}
+                    <section className="px-10 py-8 border-b border-blue-100/40">
+                      <Title level={3} className="text-blue-700 font-bold mb-6">📞 Thông tin liên hệ</Title>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="bg-blue-50 rounded-2xl p-6 shadow-md border border-blue-100 animate-fadeInUp" style={{ animationDelay: "0.6s" }}>
-                          <h3 className="text-2xl font-bold text-blue-600 mb-3">Sứ mệnh</h3>
-                          <p className="text-gray-600">Xây dựng môi trường học đường an toàn, khỏe mạnh, hỗ trợ phát triển toàn diện cho học sinh thông qua các dịch vụ y tế chất lượng cao.</p>
+                          <h4 className="text-lg font-bold text-blue-600 mb-3">📍 Địa chỉ</h4>
+                          <p className="text-gray-600">
+                            {schoolInfo?.Address || schoolInfo?.address || schoolInfo?.schoolAddress || "123 Đường Nguyễn Văn Cừ, Quận 5, TP.HCM"}
+                          </p>
+                        </div>
+                        <div className="bg-blue-50 rounded-2xl p-6 shadow-md border border-blue-100 animate-fadeInUp" style={{ animationDelay: "0.7s" }}>
+                          <h4 className="text-lg font-bold text-blue-600 mb-3">📞 Hotline</h4>
+                          <p className="text-gray-600">
+                            {schoolInfo?.Hotline || schoolInfo?.hotline || schoolInfo?.phone || schoolInfo?.Phone || "0365858084"}
+                          </p>
                         </div>
                         <div className="bg-blue-50 rounded-2xl p-6 shadow-md border border-blue-100 animate-fadeInUp" style={{ animationDelay: "0.8s" }}>
-                          <h3 className="text-2xl font-bold text-blue-600 mb-3">Tầm nhìn</h3>
+                          <h4 className="text-lg font-bold text-blue-600 mb-3">✉️ Email</h4>
+                          <p className="text-gray-600">
+                            {schoolInfo?.Email || schoolInfo?.email || schoolInfo?.schoolEmail || "contact@schoolabc.edu.vn"}
+                          </p>
+                        </div>
+                        <div className="bg-blue-50 rounded-2xl p-6 shadow-md border border-blue-100 animate-fadeInUp" style={{ animationDelay: "0.9s" }}>
+                          <h4 className="text-lg font-bold text-blue-600 mb-3">🌐 Website</h4>
+                          <p className="text-gray-600">www.schoolabc.edu.vn</p>
+                        </div>
+                      </div>
+                    </section>
+
+                    {/* Section 3: Sứ mệnh & Tầm nhìn */}
+                    <section className="px-10 py-10 border-b border-blue-100/40">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="bg-blue-50 rounded-2xl p-6 shadow-md border border-blue-100 animate-fadeInUp" style={{ animationDelay: "1.0s" }}>
+                          <h3 className="text-2xl font-bold text-blue-600 mb-3">🎯 Sứ mệnh</h3>
+                          <p className="text-gray-600">Xây dựng môi trường học đường an toàn, khỏe mạnh, hỗ trợ phát triển toàn diện cho học sinh thông qua các dịch vụ y tế chất lượng cao.</p>
+                        </div>
+                        <div className="bg-blue-50 rounded-2xl p-6 shadow-md border border-blue-100 animate-fadeInUp" style={{ animationDelay: "1.1s" }}>
+                          <h3 className="text-2xl font-bold text-blue-600 mb-3">🚀 Tầm nhìn</h3>
                           <p className="text-gray-600">Trở thành hệ thống y tế học đường hàng đầu, ứng dụng công nghệ hiện đại, kết nối chuyên gia và cộng đồng để nâng cao sức khỏe thế hệ trẻ.</p>
                         </div>
                       </div>
                     </section>
-                    {/* Section 3: Giá trị cốt lõi */}
+
+                    {/* Section 4: Giá trị cốt lõi */}
                     <section className="px-10 py-10 border-b border-blue-100/40">
-                      <Title level={3} className="text-blue-700 font-bold mb-4">Giá trị cốt lõi</Title>
-                      <ul className="flex flex-wrap justify-center gap-6 mt-4">
-                        <li className="bg-blue-100 px-6 py-3 rounded-full text-blue-700 font-semibold shadow">Chuyên nghiệp</li>
-                        <li className="bg-blue-100 px-6 py-3 rounded-full text-blue-700 font-semibold shadow">Tận tâm</li>
-                        <li className="bg-blue-100 px-6 py-3 rounded-full text-blue-700 font-semibold shadow">An toàn</li>
-                        <li className="bg-blue-100 px-6 py-3 rounded-full text-blue-700 font-semibold shadow">Đổi mới</li>
-                        <li className="bg-blue-100 px-6 py-3 rounded-full text-blue-700 font-semibold shadow">Hợp tác</li>
+                      <Title level={3} className="text-blue-700 font-bold mb-4">💎 Giá trị cốt lõi</Title>
+                      <ul className="flex flex-wrap justify-center gap-4 mt-4">
+                        <li className="bg-gradient-to-r from-blue-100 to-blue-200 px-6 py-3 rounded-full text-blue-700 font-semibold shadow-md hover:shadow-lg transition-shadow">🏆 Chuyên nghiệp</li>
+                        <li className="bg-gradient-to-r from-blue-100 to-blue-200 px-6 py-3 rounded-full text-blue-700 font-semibold shadow-md hover:shadow-lg transition-shadow">❤️ Tận tâm</li>
+                        <li className="bg-gradient-to-r from-blue-100 to-blue-200 px-6 py-3 rounded-full text-blue-700 font-semibold shadow-md hover:shadow-lg transition-shadow">🛡️ An toàn</li>
+                        <li className="bg-gradient-to-r from-blue-100 to-blue-200 px-6 py-3 rounded-full text-blue-700 font-semibold shadow-md hover:shadow-lg transition-shadow">🚀 Đổi mới</li>
+                        <li className="bg-gradient-to-r from-blue-100 to-blue-200 px-6 py-3 rounded-full text-blue-700 font-semibold shadow-md hover:shadow-lg transition-shadow">🤝 Hợp tác</li>
                       </ul>
                     </section>
-                    {/* Section 4: Đội ngũ chuyên gia */}
+
+                    {/* Section 5: Đội ngũ chuyên gia */}
                     <section className="px-10 py-10">
-                      <Title level={4} className="text-blue-700 font-bold mb-2">Đội ngũ chuyên gia</Title>
-                      <Paragraph className="text-gray-700">Đội ngũ y bác sĩ, y tá và chuyên gia y tế của chúng tôi đều có trình độ chuyên môn cao, nhiều năm kinh nghiệm trong lĩnh vực chăm sóc sức khỏe học đường, luôn sẵn sàng hỗ trợ và đồng hành cùng học sinh, phụ huynh và nhà trường.</Paragraph>
+                      <Title level={4} className="text-blue-700 font-bold mb-2">👨‍⚕️ Đội ngũ chuyên gia</Title>
+                      <Paragraph className="text-gray-700">
+                        Đội ngũ y bác sĩ, y tá và chuyên gia y tế của {schoolInfo?.Name || schoolInfo?.name || "chúng tôi"} đều có trình độ chuyên môn cao, nhiều năm kinh nghiệm trong lĩnh vực chăm sóc sức khỏe học đường, luôn sẵn sàng hỗ trợ và đồng hành cùng học sinh, phụ huynh và nhà trường.
+                      </Paragraph>
                     </section>
                   </div>
                 </Col>
@@ -125,6 +246,7 @@ const AboutPage = () => {
             </div>
           </div>
         </Content>
+        
         <Footer className="bg-gray-900 text-white p-0" style={{ backgroundColor: "#37AEEF" }}>
           <div className="py-16">
             <div className="max-w-6xl mx-auto px-6">
@@ -168,26 +290,35 @@ const AboutPage = () => {
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
                   <div className="space-y-4">
-                    <h4 className="text-xl font-bold text-white mb-6">LIÊN HỆ</h4>
+                    <h4 className="text-xl font-bold text-white mb-6">📞 LIÊN HỆ</h4>
                     <div className="space-y-4">
-                      <div className="flex items-center space-x-3"><span className="text-white">123 Đường ABC, Quận 1, TP.HCM</span></div>
-                      <div className="flex items-center space-x-3"><span className="text-white">1800 6688</span></div>
-                      <div className="flex items-center space-x-3"><span className="text-white">info@ytehocduong.edu.vn</span></div>
-                      <div className="flex items-center space-x-3"><span className="text-white">www.ytehocduong.edu.vn</span></div>
+                      <div className="flex items-center space-x-3">
+                        <span className="text-white">📍 {schoolInfo?.Address || schoolInfo?.address || "123 Đường Nguyễn Văn Cừ, Quận 5, TP.HCM"}</span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <span className="text-white">📞 {schoolInfo?.Hotline || schoolInfo?.hotline || schoolInfo?.phone || "0365858084"}</span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <span className="text-white">✉️ {schoolInfo?.Email || schoolInfo?.email || "contact@schoolabc.edu.vn"}</span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <span className="text-white">🌐 www.schoolabc.edu.vn</span>
+                      </div>
                     </div>
                   </div>
                 </Col>
               </Row>
             </div>
           </div>
+          
           <div className="border-t text-white py-6">
             <div className="max-w-6xl mx-auto px-6">
               <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                <span className="text-white">© 2024 Y Tế Học Đường. Tất cả quyền được bảo lưu.</span>
+                <span className="text-white">© 2024 {schoolInfo?.Name || schoolInfo?.name || "Trường Tiểu học ABC"}. Tất cả quyền được bảo lưu.</span>
                 <div className="flex space-x-6">
                   <a href="#" className="text-white hover:text-white transition-colors">Điều khoản</a>
                   <a href="#" className="text-white hover:text-white transition-colors">Bảo mật</a>
-                  <a href="#" className="text-white hover:ttext-white transition-colors">Liên hệ</a>
+                  <a href="#" className="text-white hover:text-white transition-colors">Liên hệ</a>
                 </div>
               </div>
             </div>
@@ -199,3 +330,4 @@ const AboutPage = () => {
 };
 
 export default AboutPage;
+

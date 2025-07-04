@@ -95,7 +95,10 @@ function AccountList() {
         // Gọi API update user - chỉ gửi các trường có giá trị, đúng tên trường backend yêu cầu (chữ thường)
         const payload = {};
         if (values.userName) payload.userName = values.userName;
-        if (values.password) payload.password = values.password;
+        // Chỉ update password nếu người dùng nhập mới
+        if (values.password && values.password.trim() !== '') {
+          payload.password = values.password;
+        }
         if (values.name) payload.name = values.name;
         if (values.email) payload.email = values.email;
         if (values.phone) payload.phone = values.phone;
@@ -157,11 +160,65 @@ function AccountList() {
   // Thêm hàm import tài khoản từ file
   const handleImportAccounts = async (file) => {
     try {
-      await getUsersFromFile(file);
-      message.success("Import tài khoản thành công!");
+      console.log('File to upload:', file);
+      console.log('File name:', file.name);
+      console.log('File type:', file.type);
+      console.log('File size:', file.size);
+
+      // Kiểm tra file có hợp lệ không
+      if (!file) {
+        message.error("Vui lòng chọn file!");
+        return;
+      }
+
+      // Kiểm tra định dạng file
+      const allowedTypes = [
+        'application/json',
+        'text/csv',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      ];
+      
+      if (!allowedTypes.includes(file.type) && !file.name.match(/\.(json|csv|xlsx|xls)$/i)) {
+        message.error("Chỉ chấp nhận file JSON, CSV, XLS, XLSX!");
+        return;
+      }
+
+      message.loading({ content: 'Đang import tài khoản...', key: 'import' });
+
+      // Gọi trực tiếp bằng axiosClient để debug
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      console.log('Calling API directly with FormData...');
+      
+      const response = await axiosClient.post('/admin/get-users-from-file', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      console.log('Import response:', response);
+      
+      message.success({ content: "Import tài khoản thành công!", key: 'import' });
       await fetchAccounts();
     } catch (err) {
-      message.error("Import tài khoản thất bại!");
+      console.error('Import error:', err);
+      console.error('Error response:', err.response);
+      console.error('Error status:', err.response?.status);
+      console.error('Error data:', err.response?.data);
+      
+      let errorMessage = "Import tài khoản thất bại!";
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.status === 400) {
+        errorMessage = "Định dạng file không hợp lệ hoặc file bị lỗi!";
+      }
+      
+      message.error({ 
+        content: errorMessage, 
+        key: 'import' 
+      });
     }
   };
 
@@ -180,7 +237,7 @@ function AccountList() {
       title: "Mật khẩu",
       dataIndex: "password",
       key: "password",
-      render: (text) => text ? text : <span style={{color: '#aaa'}}>(trống)</span>
+      render: (text) => text ? text : <span style={{color: '#aaa'}}>********</span>
     },
     {
       title: "Vai trò",
@@ -282,15 +339,18 @@ function AccountList() {
                 Thêm tài khoản
               </Button>
               <label className="inline-flex items-center cursor-pointer bg-blue-50 border border-blue-200 rounded-2xl px-5 py-2 ml-2 hover:bg-blue-100 transition gap-2 shadow-md">
-                <span className="text-blue-600 font-semibold flex items-center gap-1"><UploadIcon />Import JSON</span>
+                <span className="text-blue-600 font-semibold flex items-center gap-1"><UploadIcon />Import File</span>
                 <input
                   type="file"
-                  accept=".json"
+                  accept=".json,.csv,.xlsx,.xls"
                   style={{ display: "none" }}
                   onChange={e => {
-                    if (e.target.files && e.target.files[0]) {
-                      handleImportAccounts(e.target.files[0]);
+                    const file = e.target.files[0];
+                    if (file) {
+                      handleImportAccounts(file);
                     }
+                    // Reset input để có thể chọn cùng file lần nữa
+                    e.target.value = '';
                   }}
                 />
               </label>
@@ -319,7 +379,7 @@ function AccountList() {
             form.resetFields();
             setEditingId(null);
           }}
-          width={600}
+          width={editingId ? 700 : 500}
           okText={editingId ? "Cập nhật" : "Tạo mới"}
           cancelText="Hủy"
           className="rounded-3xl"
@@ -345,20 +405,59 @@ function AccountList() {
             <Form.Item
               name="password"
               label={<span className="font-bold">Mật khẩu</span>}
-              rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
+              rules={[{ required: !editingId, message: "Vui lòng nhập mật khẩu" }]}
             >
-              <Input.Password className="rounded-2xl text-base" />
+              <Input.Password 
+                className="rounded-2xl text-base" 
+                placeholder={editingId ? "Để trống nếu không muốn thay đổi mật khẩu" : "Nhập mật khẩu"}
+              />
             </Form.Item>
-            <Form.Item
-              name="roleName"
-              label={<span className="font-bold">Vai trò</span>}
-              rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
-            >
-              <Select placeholder="Chọn vai trò" className="rounded-2xl text-base">
-                <Option value="Nurse">Nurse</Option>
-                <Option value="Parent">Parent</Option>
-              </Select>
-            </Form.Item>
+            
+            {/* Chỉ hiển thị các trường bổ sung khi edit */}
+            {editingId && (
+              <>
+                <Form.Item
+                  name="name"
+                  label={<span className="font-bold">Họ tên</span>}
+                  rules={[{ required: false, message: "Vui lòng nhập họ tên" }]}
+                >
+                  <Input className="rounded-2xl text-base" placeholder="Nhập họ tên đầy đủ" />
+                </Form.Item>
+                <Form.Item
+                  name="email"
+                  label={<span className="font-bold">Email</span>}
+                  rules={[
+                    { required: false, message: "Vui lòng nhập email" },
+                    { type: 'email', message: 'Email không hợp lệ' }
+                  ]}
+                >
+                  <Input className="rounded-2xl text-base" placeholder="Nhập địa chỉ email" />
+                </Form.Item>
+                <Form.Item
+                  name="phone"
+                  label={<span className="font-bold">Số điện thoại</span>}
+                  rules={[
+                    { required: false, message: "Vui lòng nhập số điện thoại" },
+                    { pattern: /^[0-9]{10,11}$/, message: 'Số điện thoại phải có 10-11 chữ số' }
+                  ]}
+                >
+                  <Input className="rounded-2xl text-base" placeholder="Nhập số điện thoại" />
+                </Form.Item>
+              </>
+            )}
+            
+            {!editingId && (
+              <Form.Item
+                name="roleName"
+                label={<span className="font-bold">Vai trò</span>}
+                rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
+              >
+                <Select placeholder="Chọn vai trò" className="rounded-2xl text-base">
+                  <Option value="Nurse">Nurse</Option>
+                  <Option value="Parent">Parent</Option>
+                </Select>
+              </Form.Item>
+            )}
           </Form>
         </Modal>
         {/* Modal Chi tiết tài khoản */}

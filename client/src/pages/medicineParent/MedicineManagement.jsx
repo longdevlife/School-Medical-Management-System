@@ -85,7 +85,7 @@ const MedicineManagement = () => {
         console.error('❌ Lỗi khởi tạo dữ liệu:', error);
       }
     };
-    
+
     initializeData();
 
     // Thêm listeners cho trạng thái online/offline
@@ -104,7 +104,7 @@ const MedicineManagement = () => {
         }, 1000); // Đợi 1s để đảm bảo tab đã focus hoàn toàn
       }
     };
-    
+
     const handleWindowFocus = () => {
       if (navigator.onLine && studentsInitialized) {
         console.log('🔄 Window focus, refresh dữ liệu để cập nhật trạng thái...');
@@ -125,7 +125,7 @@ const MedicineManagement = () => {
           console.log('⏱️ Tự động đồng bộ định kỳ:', pendingSyncMedicines.length, 'yêu cầu');
           syncPendingMedicines(pendingSyncMedicines);
         }
-        
+
         // ✅ Định kỳ refresh dữ liệu để phát hiện thay đổi database (bao gồm việc xóa)
         console.log('⏱️ Định kỳ check database changes (bao gồm xóa database)');
         fetchMedicinesFromServer();
@@ -321,7 +321,7 @@ const MedicineManagement = () => {
         console.error(`❌ Failed to sync medicine ${medicine.MedicineID}:`, error);
       }
     }
-    
+
     // 🔥 SAU KHI ĐỒNG BỘ XONG: Kiểm tra xem có còn thuốc nào không
     // Nếu không còn thuốc nào (database trống hoàn toàn) thì xóa lịch sử
     setTimeout(() => {
@@ -333,7 +333,7 @@ const MedicineManagement = () => {
   };
 
   // ==================== HISTORY MANAGEMENT ====================
-  
+
   // 🔥 Helper function để xóa lịch sử thuốc khi database trống hoàn toàn
   const clearMedicineHistory = (reason = 'Database trống hoàn toàn') => {
     try {
@@ -488,12 +488,12 @@ const MedicineManagement = () => {
 
         // Chỉ hiển thị message khi thực sự cần (không phải call từ interval/auto-refresh)
         console.log('🔍 Debug fetchStudents message:', { isAutoRefresh, studentsLength: processedStudents.length });
-        
+
         // ❌ TẠM THỜI TẮT MESSAGE ĐỂ NGĂN SPAM
         // if (!isAutoRefresh) {
         //   message.success(`Đã tải ${processedStudents.length} học sinh`);
         // }
-        
+
         // ✅ CHỈ HIỂN THỊ MESSAGE LẦN ĐẦU TIÊN
         if (!studentsInitialized && !isAutoRefresh) {
           console.log(`✅ Đã tải ${processedStudents.length} học sinh`);
@@ -507,7 +507,7 @@ const MedicineManagement = () => {
       console.error('❌ Lỗi khi lấy danh sách học sinh:', error);
       console.error('❌ Chi tiết lỗi:', error.response?.data);
       console.error('❌ Mã lỗi:', error.response?.status);
-      
+
       // Sử dụng dữ liệu mẫu nếu có lỗi
       createMockStudents();
     } finally {
@@ -555,7 +555,7 @@ const MedicineManagement = () => {
 
     // Đưa về chữ thường và bỏ dấu cách thừa để dễ so sánh
     const cleanStatus = status.toString().toLowerCase().trim();
-    
+
     // Debug - log trạng thái đã làm sạch
     console.log('�� Normalize status - Cleaned:', cleanStatus);
 
@@ -575,7 +575,7 @@ const MedicineManagement = () => {
       'cho xac nhan': 'Chờ xác nhận',
       'da xac nhan': 'Đã xác nhận',
       'da duyet': 'Đã xác nhận' // ⭐ Đồng bộ "Đã duyệt" từ y tế thành "Đã xác nhận" cho phụ huynh
-      ,'dang thuc hien': 'Đang thực hiện',
+      , 'dang thuc hien': 'Đang thực hiện',
       'da hoan thanh': 'Đã hoàn thành',
       'tu choi': 'Từ chối',
 
@@ -584,7 +584,7 @@ const MedicineManagement = () => {
       'ch? xác nh?n': 'Chờ xác nhận',
       'ðã xác nh?n': 'Đã xác nhận',
       'ðã duy?t': 'Đã xác nhận' // ⭐ Đồng bộ "Đã duyệt" từ y tế thành "Đã xác nhận" cho phụ huynh
-      ,'ðang th?c hi?n': 'Đang thực hiện',
+      , 'ðang th?c hi?n': 'Đang thực hiện',
       'ðã hoàn thành': 'Đã hoàn thành',
       't? ch?i': 'Từ chối',
 
@@ -643,265 +643,265 @@ const MedicineManagement = () => {
     return status;
   };
 
- const fetchMedicinesFromServer = async () => {
-  try {
-    setLoading(true);
-    if (!navigator.onLine) {
-      // Nếu offline, chỉ dùng localStorage
-      loadPersistedMedicines();
-      setLoading(false);
-      return;
-    }
-
-    // Lấy danh sách học sinh từ state hiện tại
-    const currentStudents = students.length > 0 ? students : [];
-    
-    if (currentStudents.length === 0) {
-      console.log('⚠️ Chưa có danh sách học sinh');
-      
-      // Nếu students chưa được initialized, chờ và chỉ dùng localStorage khi offline
-      if (!studentsInitialized) {
-        console.log('⏳ Students đang được tải, chờ...');
-        if (!navigator.onLine) {
-          loadPersistedMedicines();
-        } else {
-          setMedicines([]); // Hiển thị rỗng khi online nhưng chưa có students
-        }
+  const fetchMedicinesFromServer = async () => {
+    try {
+      setLoading(true);
+      if (!navigator.onLine) {
+        // Nếu offline, chỉ dùng localStorage
+        loadPersistedMedicines();
         setLoading(false);
         return;
       }
-      
-      // Nếu đã initialized nhưng vẫn không có students
-      console.log('📁 Students đã tải xong nhưng không có dữ liệu');
-      if (!navigator.onLine) {
-        console.log('📱 Offline - Sử dụng localStorage');
-        loadPersistedMedicines();
-      } else {
-        console.log('🌐 Online - Hiển thị rỗng vì không có students');
-        setMedicines([]);
-        saveMedicinesToStorage([]);
-        
-        // 🔥 XÓA LỊCH SỬ THUỐC khi không có students (có thể do database trống)
-        console.log('🗑️ Xóa lịch sử thuốc vì không có students');
-        clearMedicineHistory('Không có students');
-      }
-      setLoading(false);
-      return;
-    }
 
-    console.log('📚 Sử dụng API tối ưu: Lấy TẤT CẢ thuốc của parent từ 1 lần gọi API');
-    
-    // ✅ OPTIMIZATION: Chỉ gọi 1 lần API thay vì loop cho từng student
-    let allMedicines = [];
-    try {
-      const studentIds = currentStudents.map(student => student.StudentID);
-      console.log('🔍 Danh sách ID học sinh:', studentIds);
-      
-      if (studentIds.length === 0) {
-        console.log('⚠️ Không có học sinh nào để lấy thuốc');
+      // Lấy danh sách học sinh từ state hiện tại
+      const currentStudents = students.length > 0 ? students : [];
+
+      if (currentStudents.length === 0) {
+        console.log('⚠️ Chưa có danh sách học sinh');
+
+        // Nếu students chưa được initialized, chờ và chỉ dùng localStorage khi offline
+        if (!studentsInitialized) {
+          console.log('⏳ Students đang được tải, chờ...');
+          if (!navigator.onLine) {
+            loadPersistedMedicines();
+          } else {
+            setMedicines([]); // Hiển thị rỗng khi online nhưng chưa có students
+          }
+          setLoading(false);
+          return;
+        }
+
+        // Nếu đã initialized nhưng vẫn không có students
+        console.log('📁 Students đã tải xong nhưng không có dữ liệu');
         if (!navigator.onLine) {
+          console.log('📱 Offline - Sử dụng localStorage');
           loadPersistedMedicines();
         } else {
+          console.log('🌐 Online - Hiển thị rỗng vì không có students');
           setMedicines([]);
           saveMedicinesToStorage([]);
-          
-          // 🔥 XÓA LỊCH SỬ THUỐC khi không có studentIds
-          console.log('🗑️ Xóa lịch sử thuốc vì không có studentIds');
-          clearMedicineHistory('Không có studentIds');
+
+          // 🔥 XÓA LỊCH SỬ THUỐC khi không có students (có thể do database trống)
+          console.log('🗑️ Xóa lịch sử thuốc vì không có students');
+          clearMedicineHistory('Không có students');
         }
         setLoading(false);
         return;
       }
-      
-      // 🎯 GỌI 1 LẦN API DUY NHẤT để lấy tất cả medicines của parent
-      console.log(`🎯 Đang gọi API lấy TẤT CẢ thuốc của parent...`);
-      const response = await medicineApi.parent.getMedicinesByParentId();
-      
-      // Debug chi tiết response từ API
-      console.log(`✅ API getMedicinesByParentId response:`, response);
-      console.log(`📊 Response data structure:`, {
-        hasResponse: !!response,
-        hasData: !!response?.data,
-        dataType: typeof response?.data,
-        isArray: Array.isArray(response?.data),
-        dataLength: Array.isArray(response?.data) ? response.data.length : 'N/A',
-        dataKeys: response?.data ? Object.keys(response.data) : [],
-        sampleData: response?.data && Array.isArray(response.data) && response.data.length > 0 ? response.data[0] : response?.data
-      });
-      
-      if (response?.data) {
-        if (Array.isArray(response.data)) {
-          allMedicines = response.data;
-          console.log(`📦 Dữ liệu là mảng trực tiếp: ${allMedicines.length} thuốc tổng`);
-        } else if (response.data.data && Array.isArray(response.data.data)) {
-          allMedicines = response.data.data;
-          console.log(`📦 Dữ liệu nằm trong trường data: ${allMedicines.length} thuốc tổng`);
-        } else if (response.data.medicineID || response.data.MedicineID) {
-          allMedicines = [response.data];
-          console.log('📦 Dữ liệu là một đối tượng thuốc đơn lẻ');
+
+      console.log('📚 Sử dụng API tối ưu: Lấy TẤT CẢ thuốc của parent từ 1 lần gọi API');
+
+      // ✅ OPTIMIZATION: Chỉ gọi 1 lần API thay vì loop cho từng student
+      let allMedicines = [];
+      try {
+        const studentIds = currentStudents.map(student => student.StudentID);
+        console.log('🔍 Danh sách ID học sinh:', studentIds);
+
+        if (studentIds.length === 0) {
+          console.log('⚠️ Không có học sinh nào để lấy thuốc');
+          if (!navigator.onLine) {
+            loadPersistedMedicines();
+          } else {
+            setMedicines([]);
+            saveMedicinesToStorage([]);
+
+            // 🔥 XÓA LỊCH SỬ THUỐC khi không có studentIds
+            console.log('🗑️ Xóa lịch sử thuốc vì không có studentIds');
+            clearMedicineHistory('Không có studentIds');
+          }
+          setLoading(false);
+          return;
+        }
+
+        // 🎯 GỌI 1 LẦN API DUY NHẤT để lấy tất cả medicines của parent
+        console.log(`🎯 Đang gọi API lấy TẤT CẢ thuốc của parent...`);
+        const response = await medicineApi.parent.getMedicinesByParentId();
+
+        // Debug chi tiết response từ API
+        console.log(`✅ API getMedicinesByParentId response:`, response);
+        console.log(`📊 Response data structure:`, {
+          hasResponse: !!response,
+          hasData: !!response?.data,
+          dataType: typeof response?.data,
+          isArray: Array.isArray(response?.data),
+          dataLength: Array.isArray(response?.data) ? response.data.length : 'N/A',
+          dataKeys: response?.data ? Object.keys(response.data) : [],
+          sampleData: response?.data && Array.isArray(response.data) && response.data.length > 0 ? response.data[0] : response?.data
+        });
+
+        if (response?.data) {
+          if (Array.isArray(response.data)) {
+            allMedicines = response.data;
+            console.log(`📦 Dữ liệu là mảng trực tiếp: ${allMedicines.length} thuốc tổng`);
+          } else if (response.data.data && Array.isArray(response.data.data)) {
+            allMedicines = response.data.data;
+            console.log(`📦 Dữ liệu nằm trong trường data: ${allMedicines.length} thuốc tổng`);
+          } else if (response.data.medicineID || response.data.MedicineID) {
+            allMedicines = [response.data];
+            console.log('📦 Dữ liệu là một đối tượng thuốc đơn lẻ');
+          } else {
+            console.log('⚠️ Dữ liệu có cấu trúc không xác định:', response.data);
+            allMedicines = [];
+          }
+
+          // 🔍 Filter medicines theo studentIds của parent (đảm bảo chỉ hiển thị thuốc của con)
+          const filteredMedicines = allMedicines.filter(med => {
+            const medicineStudentId = med.studentID || med.StudentID || med.student_id;
+            const isForParentChild = studentIds.includes(medicineStudentId);
+            if (!isForParentChild && medicineStudentId) {
+              console.log(`🚫 Loại bỏ thuốc không thuộc con của parent: ${med.medicineID || med.MedicineID} (StudentID: ${medicineStudentId})`);
+            }
+            return isForParentChild;
+          });
+
+          allMedicines = filteredMedicines;
+          console.log(`✅ Sau khi filter: ${allMedicines.length} thuốc thuộc về con của parent`);
+
+          // Kiểm tra chi tiết trạng thái của các thuốc
+          if (allMedicines.length > 0) {
+            console.log('📋 Chi tiết các thuốc nhận được:');
+            allMedicines.forEach((med, idx) => {
+              console.log(`Thuốc #${idx + 1}:`, {
+                id: med.medicineID || med.MedicineID,
+                name: med.medicineName || med.MedicineName,
+                status_original: med.status || med.Status,
+                status_normalized: normalizeStatus(med.status || med.Status || 'Chờ xử lý'),
+                studentId: med.studentID || med.StudentID || med.student_id
+              });
+            });
+          }
         } else {
-          console.log('⚠️ Dữ liệu có cấu trúc không xác định:', response.data);
+          console.log('⚠️ Không nhận được dữ liệu từ API');
           allMedicines = [];
         }
-        
-        // 🔍 Filter medicines theo studentIds của parent (đảm bảo chỉ hiển thị thuốc của con)
-        const filteredMedicines = allMedicines.filter(med => {
-          const medicineStudentId = med.studentID || med.StudentID || med.student_id;
-          const isForParentChild = studentIds.includes(medicineStudentId);
-          if (!isForParentChild && medicineStudentId) {
-            console.log(`🚫 Loại bỏ thuốc không thuộc con của parent: ${med.medicineID || med.MedicineID} (StudentID: ${medicineStudentId})`);
-          }
-          return isForParentChild;
-        });
-        
-        allMedicines = filteredMedicines;
-        console.log(`✅ Sau khi filter: ${allMedicines.length} thuốc thuộc về con của parent`);
-        
-        // Kiểm tra chi tiết trạng thái của các thuốc
-        if (allMedicines.length > 0) {
-          console.log('📋 Chi tiết các thuốc nhận được:');
-          allMedicines.forEach((med, idx) => {
-            console.log(`Thuốc #${idx + 1}:`, {
-              id: med.medicineID || med.MedicineID,
-              name: med.medicineName || med.MedicineName,
-              status_original: med.status || med.Status,
-              status_normalized: normalizeStatus(med.status || med.Status || 'Chờ xử lý'),
-              studentId: med.studentID || med.StudentID || med.student_id
-            });
-          });
+
+        console.log('📊 Tổng số thuốc nhận được:', allMedicines.length);
+
+        // Debug - kiểm tra xem có thuốc đã duyệt hay không
+        const approvedMeds = allMedicines.filter(m =>
+          m.status === 'Đã xác nhận' ||
+          m.status === 'Đã duyệt' ||
+          m.Status === 'Đã xác nhận' ||
+          m.Status === 'Đã duyệt'
+        );
+        console.log('📊 Số lượng thuốc đã được duyệt:', approvedMeds.length);
+        if (approvedMeds.length > 0) {
+          console.log('📊 Chi tiết thuốc đã duyệt:', approvedMeds.map(med => ({
+            id: med.medicineID || med.MedicineID,
+            name: med.medicineName || med.MedicineName,
+            status_original: med.status || med.Status
+          })));
         }
-      } else {
-        console.log('⚠️ Không nhận được dữ liệu từ API');
-        allMedicines = [];
+
+      } catch (error) {
+        console.error('❌ Lỗi khi lấy dữ liệu từ API:', error);
+
+        // ✅ CHỈ fallback về localStorage khi OFFLINE
+        if (!navigator.onLine) {
+          console.log('📱 Offline - Sử dụng localStorage');
+          loadPersistedMedicines();
+        } else {
+          console.log('🌐 Online nhưng có lỗi API - Hiển thị rỗng thay vì localStorage cũ');
+
+          // Chỉ giữ lại thuốc pending
+          const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
+          setMedicines(pendingMedicines);
+          saveMedicinesToStorage(pendingMedicines);
+
+          message.error('Lỗi kết nối API - Chỉ hiển thị thuốc chưa đồng bộ');
+        }
+
+        setLoading(false);
+        return;
       }
-      
-      console.log('📊 Tổng số thuốc nhận được:', allMedicines.length);
-      
-      // Debug - kiểm tra xem có thuốc đã duyệt hay không
-      const approvedMeds = allMedicines.filter(m => 
-        m.status === 'Đã xác nhận' || 
-        m.status === 'Đã duyệt' || 
-        m.Status === 'Đã xác nhận' || 
-        m.Status === 'Đã duyệt'
-      );
-      console.log('📊 Số lượng thuốc đã được duyệt:', approvedMeds.length);
-      if (approvedMeds.length > 0) {
-        console.log('📊 Chi tiết thuốc đã duyệt:', approvedMeds.map(med => ({
-          id: med.medicineID || med.MedicineID,
-          name: med.medicineName || med.MedicineName,
-          status_original: med.status || med.Status
-        })));
+
+      // ✅ QUAN TRỌNG: Nếu API trả về rỗng, có nghĩa database đã bị xóa
+      // KHÔNG ĐƯỢC fallback về localStorage trong trường hợp này
+      if (allMedicines.length === 0) {
+        console.log('🗑️ API trả về rỗng - Database đã bị xóa hoặc không có thuốc');
+
+        // Chỉ giữ lại các thuốc đang chờ đồng bộ (nếu có)
+        const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
+
+        if (pendingMedicines.length === 0) {
+          console.log('🗑️ Không có thuốc pending, xóa toàn bộ UI và lịch sử');
+          console.log('✅ Dữ liệu đã được đồng bộ với database (trống)');
+          setMedicines([]);
+          saveMedicinesToStorage([]);
+
+          // 🔥 XÓA LỊCH SỬ THUỐC khi database trống hoàn toàn
+          console.log('🗑️ Xóa lịch sử thuốc vì database đã trống hoàn toàn');
+          clearMedicineHistory('Database trống hoàn toàn');
+        } else {
+          console.log(`⏳ Chỉ giữ ${pendingMedicines.length} thuốc pending chưa đồng bộ`);
+          setMedicines(pendingMedicines);
+          saveMedicinesToStorage(pendingMedicines);
+          message.warning(`Database trống, chỉ còn ${pendingMedicines.length} thuốc chưa đồng bộ`);
+        }
+
+        setLoading(false);
+        return;
       }
-      
+
+      // Chuẩn hóa dữ liệu từ server
+      const processedServerMedicines = allMedicines.map(medicine => ({
+        MedicineID: medicine.medicineID || medicine.MedicineID,
+        MedicineName: medicine.medicineName || medicine.MedicineName,
+        Quantity: medicine.quantity || medicine.Quantity,
+        Dosage: medicine.dosage || medicine.Dosage,
+        Instructions: medicine.instructions || medicine.Instructions || '',
+        Notes: medicine.notes || medicine.Notes || '',
+        Status: normalizeStatus(medicine.status || medicine.Status || 'Chờ xử lý'),
+        SentDate: medicine.sentDate || medicine.SentDate || medicine.createdAt,
+        StudentID: medicine.studentID || medicine.StudentID || medicine.student_id,
+        NurseID: medicine.nurseID || medicine.NurseID || null,
+        ParentID: medicine.parentID || medicine.ParentID || null,
+        Images: medicine.image ? [medicine.image] : medicine.images || medicine.Images || [],
+        _fromServer: true,
+        _serverFetchedAt: new Date().toISOString()
+      }));
+
+      // Kiểm tra trạng thái sau khi chuẩn hóa
+      const statusCounts = {};
+      processedServerMedicines.forEach(med => {
+        statusCounts[med.Status] = (statusCounts[med.Status] || 0) + 1;
+      });
+      console.log('📊 Phân bố trạng thái sau khi chuẩn hóa:', statusCounts);
+
+      // Chỉ giữ lại các thuốc đang chờ đồng bộ (nếu có)
+      const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
+
+      // ✅ Kết hợp data từ server và pending medicines
+      const combinedMedicines = [
+        ...processedServerMedicines,
+        ...pendingMedicines.filter(m => !processedServerMedicines.some(s => s.MedicineID === m.MedicineID))
+      ];
+
+      setMedicines(combinedMedicines);
+      saveMedicinesToStorage(combinedMedicines);
+      console.log(`✅ Đã tải ${processedServerMedicines.length} yêu cầu thuốc từ server`);
     } catch (error) {
-      console.error('❌ Lỗi khi lấy dữ liệu từ API:', error);
-      
+      console.error('❌ Lỗi không xác định:', error);
+
       // ✅ CHỈ fallback về localStorage khi OFFLINE
       if (!navigator.onLine) {
         console.log('📱 Offline - Sử dụng localStorage');
+        message.warning('Không có kết nối internet - Hiển thị dữ liệu cục bộ');
         loadPersistedMedicines();
       } else {
-        console.log('🌐 Online nhưng có lỗi API - Hiển thị rỗng thay vì localStorage cũ');
-        
+        console.log('🌐 Online nhưng có lỗi - Hiển thị rỗng thay vì localStorage cũ');
+
         // Chỉ giữ lại thuốc pending
         const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
         setMedicines(pendingMedicines);
         saveMedicinesToStorage(pendingMedicines);
-        
-        message.error('Lỗi kết nối API - Chỉ hiển thị thuốc chưa đồng bộ');
+
+        message.error('Lỗi không xác định - Chỉ hiển thị thuốc chưa đồng bộ');
       }
-      
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // ✅ QUAN TRỌNG: Nếu API trả về rỗng, có nghĩa database đã bị xóa
-    // KHÔNG ĐƯỢC fallback về localStorage trong trường hợp này
-    if (allMedicines.length === 0) {
-      console.log('🗑️ API trả về rỗng - Database đã bị xóa hoặc không có thuốc');
-      
-      // Chỉ giữ lại các thuốc đang chờ đồng bộ (nếu có)
-      const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
-      
-      if (pendingMedicines.length === 0) {
-        console.log('🗑️ Không có thuốc pending, xóa toàn bộ UI và lịch sử');
-        console.log('✅ Dữ liệu đã được đồng bộ với database (trống)');
-        setMedicines([]);
-        saveMedicinesToStorage([]);
-        
-        // 🔥 XÓA LỊCH SỬ THUỐC khi database trống hoàn toàn
-        console.log('🗑️ Xóa lịch sử thuốc vì database đã trống hoàn toàn');
-        clearMedicineHistory('Database trống hoàn toàn');
-      } else {
-        console.log(`⏳ Chỉ giữ ${pendingMedicines.length} thuốc pending chưa đồng bộ`);
-        setMedicines(pendingMedicines);
-        saveMedicinesToStorage(pendingMedicines);
-        message.warning(`Database trống, chỉ còn ${pendingMedicines.length} thuốc chưa đồng bộ`);
-      }
-      
-      setLoading(false);
-      return;
-    }
-
-    // Chuẩn hóa dữ liệu từ server
-    const processedServerMedicines = allMedicines.map(medicine => ({
-      MedicineID: medicine.medicineID || medicine.MedicineID,
-      MedicineName: medicine.medicineName || medicine.MedicineName,
-      Quantity: medicine.quantity || medicine.Quantity,
-      Dosage: medicine.dosage || medicine.Dosage,
-      Instructions: medicine.instructions || medicine.Instructions || '',
-      Notes: medicine.notes || medicine.Notes || '',
-      Status: normalizeStatus(medicine.status || medicine.Status || 'Chờ xử lý'),
-      SentDate: medicine.sentDate || medicine.SentDate || medicine.createdAt,
-      StudentID: medicine.studentID || medicine.StudentID || medicine.student_id,
-      NurseID: medicine.nurseID || medicine.NurseID || null,
-      ParentID: medicine.parentID || medicine.ParentID || null,
-      Images: medicine.image ? [medicine.image] : medicine.images || medicine.Images || [],
-      _fromServer: true,
-      _serverFetchedAt: new Date().toISOString()
-    }));
-
-    // Kiểm tra trạng thái sau khi chuẩn hóa
-    const statusCounts = {};
-    processedServerMedicines.forEach(med => {
-      statusCounts[med.Status] = (statusCounts[med.Status] || 0) + 1;
-    });
-    console.log('📊 Phân bố trạng thái sau khi chuẩn hóa:', statusCounts);
-
-    // Chỉ giữ lại các thuốc đang chờ đồng bộ (nếu có)
-    const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
-    
-    // ✅ Kết hợp data từ server và pending medicines
-    const combinedMedicines = [
-      ...processedServerMedicines,
-      ...pendingMedicines.filter(m => !processedServerMedicines.some(s => s.MedicineID === m.MedicineID))
-    ];
-
-    setMedicines(combinedMedicines);
-    saveMedicinesToStorage(combinedMedicines);
-    console.log(`✅ Đã tải ${processedServerMedicines.length} yêu cầu thuốc từ server`);
-  } catch (error) {
-    console.error('❌ Lỗi không xác định:', error);
-    
-    // ✅ CHỈ fallback về localStorage khi OFFLINE
-    if (!navigator.onLine) {
-      console.log('📱 Offline - Sử dụng localStorage');
-      message.warning('Không có kết nối internet - Hiển thị dữ liệu cục bộ');
-      loadPersistedMedicines();
-    } else {
-      console.log('🌐 Online nhưng có lỗi - Hiển thị rỗng thay vì localStorage cũ');
-      
-      // Chỉ giữ lại thuốc pending
-      const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
-      setMedicines(pendingMedicines);
-      saveMedicinesToStorage(pendingMedicines);
-      
-      message.error('Lỗi không xác định - Chỉ hiển thị thuốc chưa đồng bộ');
-    }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   // ==================== HANDLER FUNCTIONS ====================
 
@@ -929,10 +929,10 @@ const MedicineManagement = () => {
     ));
 
     // Kiểm tra cụ thể các thuốc có trạng thái "Đã duyệt" hoặc "Đã xác nhận"
-    const approvedMeds = medicines.filter(m => 
+    const approvedMeds = medicines.filter(m =>
       normalizeStatus(m.Status) === 'Đã xác nhận'
     );
-    console.log('🔍 Thuốc đã được duyệt trong medicines:', approvedMeds.map(m => 
+    console.log('🔍 Thuốc đã được duyệt trong medicines:', approvedMeds.map(m =>
       `${m.MedicineID} (${m.StudentID}, ${m.Status})`
     ));
 
@@ -946,11 +946,11 @@ const MedicineManagement = () => {
       filteredMedicines = filteredMedicines.filter(m => {
         const match = m.StudentID && selectedStudentId &&
           m.StudentID.toString().toLowerCase() === selectedStudentId.toString().toLowerCase();
-        
+
         if (!match && m.StudentID) {
           console.log(`❓ Thuốc không khớp: ${m.MedicineID}, StudentID: ${m.StudentID} vs ${selectedStudentId}`);
         }
-        
+
         return match;
       });
 
@@ -967,9 +967,9 @@ const MedicineManagement = () => {
         const normalizedMedicineStatus = normalizeStatus(m.Status);
         const normalizedFilterStatus = normalizeStatus(statusFilter);
         const matches = normalizedMedicineStatus === normalizedFilterStatus;
-        
+
         console.log(`Kiểm tra trạng thái của ${m.MedicineID}: ${m.Status} -> ${normalizedMedicineStatus} vs ${normalizedFilterStatus}: ${matches}`);
-        
+
         return matches;
       });
 
@@ -1126,7 +1126,7 @@ const MedicineManagement = () => {
             Images: apiData.Images,
             ImagesLength: apiData.Images?.length || 0
           });
-          
+
           const updateResponse = await medicineApi.parent.updateMedicine(apiData);
           console.log('Kết quả cập nhật từ server:', updateResponse);
 
@@ -1143,7 +1143,7 @@ const MedicineManagement = () => {
           });
 
           message.success('Cập nhật thuốc thành công!');
-          
+
           // Force refresh để lấy dữ liệu mới nhất từ server
           console.log('🔄 Force refresh sau khi cập nhật thuốc thành công');
           setTimeout(() => {
@@ -1157,7 +1157,7 @@ const MedicineManagement = () => {
             status: updateError.response?.status,
             statusText: updateError.response?.statusText
           });
-          
+
           // Kiểm tra loại lỗi để đưa ra thông báo phù hợp
           if (updateError.response?.status === 401) {
             message.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
@@ -1172,7 +1172,7 @@ const MedicineManagement = () => {
           } else {
             message.warning(`Đã lưu cục bộ, thay đổi sẽ được đồng bộ khi có kết nối. (Lỗi: ${updateError.message})`);
           }
-          
+
           // ✅ GIỮ NGUYÊN _pendingSync = true để đồng bộ sau
         }
       }
@@ -1239,7 +1239,7 @@ const MedicineManagement = () => {
             });
 
             message.success('Đã lưu yêu cầu thuốc trên server!');
-            
+
             // Force refresh để lấy dữ liệu mới nhất từ server
             console.log('🔄 Force refresh sau khi tạo thuốc thành công');
             setTimeout(() => {
@@ -1295,10 +1295,10 @@ const MedicineManagement = () => {
 
   const canEdit = (record) => {
     const normalizedStatus = normalizeStatus(record.Status);
-    
+
     // Chỉ cho phép edit khi thuốc đang ở trạng thái chờ xử lý hoặc chờ xác nhận
     const canEditStatus = normalizedStatus === 'Chờ xử lý' || normalizedStatus === 'Chờ xác nhận';
-    
+
     // ✅ BACKEND LOGIC: Cho phép update tất cả các medicine chưa được y tế xử lý (NurseID == null)
     const isUnprocessedByNurse = !record.NurseID; // NurseID == null
 
@@ -1399,10 +1399,10 @@ const MedicineManagement = () => {
       width: 100, // ✅ Giảm từ 120 xuống 100
       render: (date) => (
         <div className="text-center">
-          <div className="text-xs font-medium" style={{display:"flex"}}>
+          <div className="text-xs font-medium" style={{ display: "flex" }}>
             {date ? new Date(date).toLocaleDateString('vi-VN') : 'Chưa có'}
           </div>
-          <div className="text-xs text-gray-500" style={{display:"flex"}}>
+          <div className="text-xs text-gray-500" style={{ display: "flex" }}>
             {date ? new Date(date).toLocaleTimeString('vi-VN', {
               hour: '2-digit',
               minute: '2-digit'
@@ -1438,7 +1438,7 @@ const MedicineManagement = () => {
                 size="small"
               />
             )}
-            
+
             {/* Hiển thị tooltip cho medicine không thể edit */}
             {!canEdit(record) && (normalizeStatus(record.Status) === 'Chờ xử lý' || normalizeStatus(record.Status) === 'Chờ xác nhận') && (
               <Button
@@ -1534,12 +1534,12 @@ const MedicineManagement = () => {
     try {
       console.log(`👨‍👩‍👧‍👦 Đang lấy TẤT CẢ thuốc của parent...`);
       const response = await medicineApi.parent.getMedicinesByParentId();
-      
+
       console.log('✅ API getMedicinesByParentId response:', response);
-      
+
       // Debug chi tiết cấu trúc dữ liệu
       console.log('✅ API response.data:', JSON.stringify(response.data, null, 2));
-      
+
       if (response?.data) {
         let allMedicines = [];
 
@@ -1560,7 +1560,7 @@ const MedicineManagement = () => {
             if (typeof response.data === 'string') {
               const parsedData = JSON.parse(response.data);
               console.log('🔄 Đã phân tích dữ liệu string JSON:', parsedData);
-              
+
               if (Array.isArray(parsedData)) {
                 allMedicines = parsedData;
               } else if (parsedData.data && Array.isArray(parsedData.data)) {
@@ -1585,7 +1585,7 @@ const MedicineManagement = () => {
 
         if (allMedicines.length > 0) {
           console.log(`✅ Tìm thấy ${allMedicines.length} thuốc của parent`);
-          
+
           // Kiểm tra chi tiết từng thuốc để hiểu cấu trúc dữ liệu
           allMedicines.forEach((med, index) => {
             console.log(`Thuốc #${index + 1}:`, {
@@ -1596,14 +1596,14 @@ const MedicineManagement = () => {
               studentId: med.studentID || med.StudentID || med.student_id
             });
           });
-          
+
           // Debug - kiểm tra xem có thuốc đã duyệt hay không
           const approvedMeds = allMedicines.filter(m => {
             const status = (m.status || m.Status || '').toLowerCase();
-            return status.includes('duyệt') || status.includes('xác nhận') || 
-                   status.includes('approved') || status.includes('confirmed');
+            return status.includes('duyệt') || status.includes('xác nhận') ||
+              status.includes('approved') || status.includes('confirmed');
           });
-          
+
           console.log('📊 Số lượng thuốc đã được duyệt của parent:', approvedMeds.length);
           if (approvedMeds.length > 0) {
             console.log('📊 Chi tiết thuốc đã duyệt:', approvedMeds.map(med => ({
@@ -1692,9 +1692,9 @@ const MedicineManagement = () => {
       {/* Header */}
       <div
         style={{
-          background: "linear-gradient(90deg, #7f5af0 0%, #ff6b9d 100%)",
+          background: "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
           borderRadius: "32px",
-          boxShadow: "0 10px 32px rgba(127,90,240,0.13)",
+          boxShadow: "0 10px 32px rgba(22,160,133,0.18)",
           padding: "32px 40px 28px 40px",
           margin: "32px 0 24px 0",
           maxWidth: "100%",
@@ -1712,12 +1712,14 @@ const MedicineManagement = () => {
               width: 80,
               height: 80,
               borderRadius: 24,
-              background: "linear-gradient(135deg, #ffb86b 0%, #ff6b9d 100%)",
+              background: "linear-gradient(135deg, #d1f4f9 0%, #80d0c7 100%)", // xanh nhạt đến xanh teal
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: "0 8px 24px rgba(255,107,157,0.18), inset 0 2px 4px rgba(255,255,255,0.2)",
-              border: "2px solid rgba(255,255,255,0.2)"
+              boxShadow:
+                "0 8px 24px rgba(128,208,199,0.25), inset 0 2px 4px rgba(255,255,255,0.3)", // hiệu ứng ánh sáng nhẹ
+              border: "2px solid rgba(255,255,255,0.4)",
+              backdropFilter: "blur(2px)", // hiệu ứng kính mờ nhẹ
             }}
           >
             <span style={{ fontSize: 44, filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.13))" }}>💊</span>
@@ -1734,7 +1736,7 @@ const MedicineManagement = () => {
                 marginBottom: 8
               }}
             >
-              Tạo yêu cầu thuốc
+              Gửi thuốc cho y tế
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div
@@ -1754,7 +1756,7 @@ const MedicineManagement = () => {
                   textShadow: "1px 1px 3px rgba(0,0,0,0.10)"
                 }}
               >
-                Gửi thuốc đến cho con em một cách dễ dàng
+               Chăm sóc sức khỏe toàn diện cho trẻ
               </span>
             </div>
           </div>
@@ -1770,7 +1772,7 @@ const MedicineManagement = () => {
               minWidth: 90,
               textAlign: "center",
               color: "#fff",
-              boxShadow: "0 2px 8px rgba(127,90,240,0.09)"
+              boxShadow: "0 2px 8px rgba(22,160,133,0.12)"
             }}
           >
             <div style={{ fontSize: 26, marginBottom: 4 }}>
@@ -1788,7 +1790,7 @@ const MedicineManagement = () => {
               minWidth: 110,
               textAlign: "center",
               color: "#fff",
-              boxShadow: "0 2px 8px rgba(127,90,240,0.09)"
+              boxShadow: "0 2px 8px rgba(22,160,133,0.12)"
             }}
           >
             <div style={{ fontSize: 26, marginBottom: 4 }}>
@@ -1828,10 +1830,16 @@ const MedicineManagement = () => {
                       alignItems: "center",
                       justifyContent: "center",
                       boxShadow: "0 4px 12px rgba(16,185,129,0.13)",
-                      border: "2px solid rgba(255,255,255,0.2)"
+                      border: "2px solid rgba(255,255,255,0.2)",
+                      transform: "perspective(1000px) rotateX(5deg)",
+                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
                     }}
                   >
-                    <span style={{ color: "white", fontSize: 20 }}>❓</span>
+                    <span style={{
+                      color: "white",
+                      fontSize: 20,
+                      textShadow: "0 2px 4px rgba(0,0,0,0.2)"
+                    }}>💊</span>
                   </div>
                   <div>
                     <Text strong style={{ fontSize: 16, color: "#1e293b" }}>
@@ -1845,69 +1853,109 @@ const MedicineManagement = () => {
               }
             >
               <Row gutter={24} justify="center">
-                <Col xs={24} sm={12} md={5}>
-                  <div style={{
-                    background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
-                    borderRadius: 18,
-                    padding: "20px 0",
-                    textAlign: "center",
-                    boxShadow: "0 4px 16px rgba(245,158,11,0.10)"
-                  }}>
-                    <div style={{ fontSize: 36, marginBottom: 8 }}>⏳</div>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: "#d97706" }}>{pendingCount}</div>
-                    <div style={{ fontSize: 14, color: "#92400e", fontWeight: 600 }}>Chờ xử lý</div>
-                  </div>
-                </Col>
-                <Col xs={24} sm={12} md={5}>
-                  <div style={{
-                    background: "linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)",
-                    borderRadius: 18,
-                    padding: "20px 0",
-                    textAlign: "center",
-                    boxShadow: "0 4px 16px rgba(34,197,94,0.10)"
-                  }}>
-                    <div style={{ fontSize: 36, marginBottom: 8 }}>✅</div>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: "#16a34a" }}>{approvedCount}</div>
-                    <div style={{ fontSize: 14, color: "#15803d", fontWeight: 600 }}>Đã duyệt</div>
-                  </div>
-                </Col>
-                <Col xs={24} sm={12} md={5}>
+                <Col xs={12} md={4}>
                   <div style={{
                     background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                     borderRadius: 18,
                     padding: "20px 0",
                     textAlign: "center",
-                    boxShadow: "0 4px 16px rgba(59,130,246,0.10)"
+                    boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
+                    border: "2px solid rgba(255,255,255,0.2)",
+                    transform: "perspective(1000px) rotateX(1deg)",
+                    transition: "all 0.3s ease",
                   }}>
-                    <div style={{ fontSize: 36, marginBottom: 8 }}>💊</div>
+                    <div style={{
+                      fontSize: 36,
+                      marginBottom: 8,
+                      textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
+                    }}>🕛</div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{pendingCount}</div>
+                    <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Chờ xử lý</div>
+                  </div>
+                </Col>
+                <Col xs={12} md={4}>
+                  <div style={{
+                    background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
+                    borderRadius: 18,
+                    padding: "20px 0",
+                    textAlign: "center",
+                    boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
+                    border: "2px solid rgba(255,255,255,0.2)",
+                    transform: "perspective(1000px) rotateX(1deg)",
+                    transition: "all 0.3s ease",
+                  }}>
+                    <div style={{
+                      fontSize: 36,
+                      marginBottom: 8,
+                      textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
+                    }}>✔️</div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{approvedCount}</div>
+                    <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Đã duyệt</div>
+                  </div>
+                </Col>
+                <Col xs={12} md={4}>
+                  <div style={{
+                    background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
+                    borderRadius: 18,
+                    padding: "20px 0",
+                    textAlign: "center",
+                    boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
+                    border: "2px solid rgba(255,255,255,0.2)",
+                    transform: "perspective(1000px) rotateX(1deg)",
+                    transition: "all 0.3s ease",
+                  }}>
+                    <div style={{
+                      fontSize: 36,
+                      marginBottom: 8,
+                      textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
+                    }}>💊</div>
                     <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{inUseCount}</div>
                     <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Đang sử dụng</div>
                   </div>
                 </Col>
-                <Col xs={24} sm={12} md={5}>
+                <Col xs={12} md={4}>
                   <div style={{
-                    background: "linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)",
+                    background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                     borderRadius: 18,
                     padding: "20px 0",
                     textAlign: "center",
-                    boxShadow: "0 4px 16px rgba(124,58,237,0.10)"
+                    boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
+                    border: "2px solid rgba(255,255,255,0.2)",
+                    transform: "perspective(1000px) rotateX(1deg)",
+                    transition: "all 0.3s ease",
                   }}>
-                    <div style={{ fontSize: 36, marginBottom: 8 }}>🎯</div>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: "#7c3aed" }}>{completedCount}</div>
-                    <div style={{ fontSize: 14, color: "#6d28d9", fontWeight: 600 }}>Hoàn thành</div>
+                    <div style={{
+                      fontSize: 36,
+                      marginBottom: 8,
+                      textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
+                    }}>🎯</div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{completedCount}</div>
+                    <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Hoàn thành</div>
                   </div>
                 </Col>
-                <Col xs={24} sm={12} md={4}>
-                  <div style={{
-                    background: "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+                <Col xs={12} md={4}>
+                   <div style={{
+                    background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                     borderRadius: 18,
                     padding: "20px 0",
                     textAlign: "center",
-                    boxShadow: "0 4px 16px rgba(239,68,68,0.10)"
+                    boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
+                    border: "2px solid rgba(255,255,255,0.2)",
+                    transform: "perspective(1000px) rotateX(1deg)",
+                    transition: "all 0.3s ease",
                   }}>
-                    <div style={{ fontSize: 36, marginBottom: 8 }}>❌</div>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: "#dc2626" }}>{rejectedCount}</div>
-                    <div style={{ fontSize: 14, color: "#b91c1c", fontWeight: 600 }}>Từ chối</div>
+                    <div style={{
+                      fontSize: 36,
+                      marginBottom: 8,
+                      textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
+                    }}>❌</div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{rejectedCount}</div>
+                    <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Từ chối</div>
                   </div>
                 </Col>
               </Row>
@@ -1919,74 +1967,84 @@ const MedicineManagement = () => {
         <Card
           style={{
             borderRadius: 18,
-            background: "#f9fafb",
+            background: "#ffffff",
             marginBottom: 24,
             boxShadow: "0 2px 8px rgba(127,90,240,0.06)",
             border: "none"
           }}
           bodyStyle={{ padding: 18 }}
         >
-          <Row gutter={0} align="middle" justify="space-between">
-            {/* Trạng thái */}
-            <Col xs={24} sm={8} md={6} lg={5}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                <span style={{ fontSize: 18, color: "#e11d48" }}>🎯</span>
-                <span style={{ fontWeight: 600, color: "#334155" }}>Trạng thái</span>
-              </div>
-              <Select
-                placeholder="Tất cả"
-                style={{ width: "100%" }}
-                value={statusFilter}
-                onChange={setStatusFilter}
-                allowClear
-                size="middle"
-              >
-                <Option value="">Tất cả</Option>
-                <Option value="Chờ xử lý">Chờ xử lý</Option>
-                <Option value="Đã duyệt">Đã duyệt</Option>
-                <Option value="Đang sử dụng">Đang sử dụng</Option>
-                <Option value="Hoàn thành">Hoàn thành</Option>
-                <Option value="Từ chối">Từ chối</Option>
-              </Select>
-            </Col>
+          <Row gutter={[16, 16]} align="middle" justify="space-between">
+            {/* Nhóm 2 cột filter */}
+            <Col xs={24} sm={16} md={10} lg={8}>
+              <Row gutter={12} align="middle">
+                {/* Trạng thái */}
+                <Col xs={12} sm={12} md={12} lg={12}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                    <span style={{ fontSize: 18, color: "#e11d48" }}>🎯</span>
+                    <span style={{ fontWeight: 600, color: "#334155" }}>Trạng thái</span>
+                  </div>
+                  <Select
+                    placeholder="Tất cả"
+                    style={{ width: "100%" }}
+                    value={statusFilter}
+                    onChange={setStatusFilter}
+                    allowClear
+                    size="middle"
+                  >
+                    <Option value="">Tất cả</Option>
+                    <Option value="Chờ xử lý">Chờ xử lý</Option>
+                    <Option value="Đã duyệt">Đã duyệt</Option>
+                    <Option value="Đang sử dụng">Đang sử dụng</Option>
+                    <Option value="Hoàn thành">Hoàn thành</Option>
+                    <Option value="Từ chối">Từ chối</Option>
+                  </Select>
+                </Col>
 
-            {/* Học sinh */}
-            <Col xs={24} sm={8} md={6} lg={5}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                <span style={{ fontSize: 18, color: "#0ea5e9" }}>👦</span>
-                <span style={{ fontWeight: 600, color: "#334155" }}>Học sinh</span>
-              </div>
-              <Select
-                placeholder="Chọn học sinh"
-                style={{ width: "100%" }}
-                value={selectedStudentId}
-                onChange={(value) => {
-                  setSelectedStudentId(value);
-                  setStatusFilter('');
-                }}
-                loading={studentsLoading}
-                showSearch
-                optionFilterProp="children"
-                allowClear
-                size="middle"
-              >
-                {students.map(student => (
-                  <Option key={student.StudentID} value={student.StudentID}>
-                    {student.StudentName} - {student.Class || 'Chưa phân lớp'}
-                  </Option>
-                ))}
-              </Select>
+                {/* Học sinh */}
+                <Col xs={12} sm={12} md={12} lg={12}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                    <span style={{ fontSize: 18, color: "#0ea5e9" }}>👦</span>
+                    <span style={{ fontWeight: 600, color: "#334155" }}>Học sinh</span>
+                  </div>
+                  <Select
+                    placeholder="Chọn học sinh"
+                    style={{ width: "100%" }}
+                    value={selectedStudentId}
+                    onChange={(value) => {
+                      setSelectedStudentId(value);
+                      setStatusFilter('');
+                    }}
+                    loading={studentsLoading}
+                    showSearch
+                    optionFilterProp="children"
+                    allowClear
+                    size="middle"
+                  >
+                    {students.map(student => (
+                      <Option key={student.StudentID} value={student.StudentID}>
+                        {student.StudentName} - {student.Class || 'Chưa phân lớp'}
+                      </Option>
+                    ))}
+                  </Select>
+                </Col>
+              </Row>
             </Col>
 
             {/* Thêm thuốc mới + Cập nhật (nằm cùng 1 cột, bên phải) */}
-            <Col xs={24} sm={16} md={12} lg={10} style={{ display: "flex", justifyContent: "flex-end" }}>
+            <Col xs={24} sm={8} md={14} lg={16} style={{ display: "flex", justifyContent: "flex-end" }}>
               <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
                 <Button
                   type="primary"
                   icon={<PlusOutlined />}
                   onClick={handleCreate}
-                  disabled={!selectedStudentId}
-                  className="bg-blue-500 hover:bg-blue-600"
+                  style={{
+                    borderRadius: "8px",
+                    background: "linear-gradient(135deg,rgb(32, 81, 195) 0%,rgb(42, 100, 215) 100%)",
+                    borderColor: "#52c41a",
+                    boxShadow: "0 4px 12px rgba(68, 123, 211, 0.3)",
+                    fontWeight: "600"
+                  }}
                   size="middle"
                 >
                   Thêm thuốc mới

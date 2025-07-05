@@ -4,7 +4,7 @@ const studentApi = {
     parent : {
         //GET- lấy danh sách con của phụ huynh 
         getMyChildren: () => {
-            return axiosClient.get("/parent/get-student-info-by-parent");
+            return axiosClient.get("parent/get-student-info-by-parent");
         },
     }
 };

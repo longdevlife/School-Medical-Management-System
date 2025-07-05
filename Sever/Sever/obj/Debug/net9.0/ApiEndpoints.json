@@ -75,6 +75,22 @@
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "GetStudentInfoByParent",
+    "RelativePath": "api/admin/get-student-info-by-parent",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "username",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
     "Method": "GetStudentsFromFile",
     "RelativePath": "api/admin/get-students-from-file",
     "HttpMethod": "POST",

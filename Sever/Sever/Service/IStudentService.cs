@@ -35,6 +35,8 @@ namespace Sever.Service
                     StudentID = studentProfile.StudentID,
                     StudentName = studentProfile.StudentName,
                     Nationality = studentProfile.Nationality,
+                    Class = studentProfile.Class,
+                    Avatar = studentProfile.StudentAvata,
                     Ethnicity = studentProfile.Ethnicity,
                     Birthday = studentProfile.Birthday,
                     Sex = studentProfile.Sex,

@@ -244,5 +244,26 @@ namespace Sever.Controllers
                 return BadRequest(new { message = "Kích hoạt tài khoản thất bại" });
             }
         }
+        [HttpGet("get-student-info-by-parent")]
+        public async Task<IActionResult> GetStudentInfoByParent([FromBody]string username)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Tên tài khoản người dùng không hợp lệ");
+            }
+            var parent = await _userService.GetUserAsyc(username);
+            if (parent == null)
+            {
+                return BadRequest(new { message = "Không tìm thấy thông tin phụ huynh." });
+            }
+
+            var student = await _studentService.GetStudentProfilesByParentAsync(parent.UserID);
+            if (student == null)
+            {
+                return NotFound(new { message = "Không tìm thấy thông tin học sinh." });
+            }
+            return Ok(student);
+
+        }
     }
 }

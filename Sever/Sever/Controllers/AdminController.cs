@@ -244,5 +244,50 @@ namespace Sever.Controllers
                 return BadRequest(new { message = "Kích hoạt tài khoản thất bại" });
             }
         }
+        [HttpGet("get-student-info-by-parent")]
+        public async Task<IActionResult> GetStudentInfoByParent([FromBody]string username)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Tên tài khoản người dùng không hợp lệ");
+            }
+            var parent = await _userService.GetUserAsyc(username);
+            if (parent == null)
+            {
+                return BadRequest(new { message = "Không tìm thấy thông tin phụ huynh." });
+            }
+
+            var student = await _studentService.GetStudentProfilesByParentAsync(parent.UserID);
+            if (student == null)
+            {
+                return NotFound(new { message = "Không tìm thấy thông tin học sinh." });
+            }
+            return Ok(student);
+
+        }
+        [HttpPost("create-student-profile")]
+        public async Task<IActionResult> CreateStudentProfile([FromBody] CreateStudentRequest createStudentRequest)
+        {
+            if (createStudentRequest == null)
+            {
+                return BadRequest(new { message = "Thông tin học sinh không được để trống" });
+            }
+            try
+            {
+                var result = await _studentService.CreateStudent(createStudentRequest);
+                if (result)
+                {
+                    return Ok(new { message = "Tạo hồ sơ học sinh thành công" });
+                }
+                else
+                {
+                    return BadRequest(new { message = "Tạo hồ sơ học sinh thất bại" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Tạo hồ sơ học sinh thất bại: {ex.Message}" });
+            }
+        }
     }
 }

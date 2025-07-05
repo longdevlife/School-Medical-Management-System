@@ -265,5 +265,29 @@ namespace Sever.Controllers
             return Ok(student);
 
         }
+        [HttpPost("create-student-profile")]
+        public async Task<IActionResult> CreateStudentProfile([FromBody] CreateStudentRequest createStudentRequest)
+        {
+            if (createStudentRequest == null)
+            {
+                return BadRequest(new { message = "Thông tin học sinh không được để trống" });
+            }
+            try
+            {
+                var result = await _studentService.CreateStudent(createStudentRequest);
+                if (result)
+                {
+                    return Ok(new { message = "Tạo hồ sơ học sinh thành công" });
+                }
+                else
+                {
+                    return BadRequest(new { message = "Tạo hồ sơ học sinh thất bại" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Tạo hồ sơ học sinh thất bại: {ex.Message}" });
+            }
+        }
     }
 }

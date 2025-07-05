@@ -49,6 +49,22 @@
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "CreateStudentProfile",
+    "RelativePath": "api/admin/create-student-profile",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "createStudentRequest",
+        "Type": "Sever.DTO.Student.CreateStudentRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
     "Method": "DeleteAccount",
     "RelativePath": "api/admin/delete-user",
     "HttpMethod": "DELETE",

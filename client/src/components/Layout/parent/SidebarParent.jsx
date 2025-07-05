@@ -3,7 +3,6 @@ import { Layout, Menu } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   UserOutlined,
-  CalendarOutlined,
   MedicineBoxOutlined,
   BarChartOutlined,
   SendOutlined,
@@ -28,7 +27,7 @@ function SidebarParent({ collapsed }) {
       label: "Hồ sơ học sinh",
     },
     {
-      key: `${basePath}/health-profile`,
+      key: `${basePath}/declare-health`,
       icon: <HeartOutlined />,
       label: "Hồ sơ sức khỏe",
     },

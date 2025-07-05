@@ -1981,7 +1981,7 @@ const MedicineManagement = () => {
                 {/* Trạng thái */}
                 <Col xs={12} sm={12} md={12} lg={12}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                    <span style={{ fontSize: 18, color: "#e11d48" }}>🎯</span>
+                    <span style={{ fontSize: 18, color: "#e11d48" }}>🔄</span>
                     <span style={{ fontWeight: 600, color: "#334155" }}>Trạng thái</span>
                   </div>
                   <Select
@@ -2004,7 +2004,7 @@ const MedicineManagement = () => {
                 {/* Học sinh */}
                 <Col xs={12} sm={12} md={12} lg={12}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                    <span style={{ fontSize: 18, color: "#0ea5e9" }}>👦</span>
+                    <span style={{ fontSize: 18, color: "#0ea5e9" }}>🎓</span>
                     <span style={{ fontWeight: 600, color: "#334155" }}>Học sinh</span>
                   </div>
                   <Select
@@ -2411,9 +2411,6 @@ const MedicineManagement = () => {
                             <EditOutlined className="text-purple-500" />
                             <span className="font-medium text-gray-800">
                               {entry.action === 'UPDATE' ? 'Cập nhật' : entry.action}
-                            </span>
-                            <span className="text-sm text-gray-500">
-                              bởi {entry.updatedBy || 'Parent'}
                             </span>
                           </div>
                           <span className="text-xs text-gray-400">

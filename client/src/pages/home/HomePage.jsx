@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Layout,
   Button,
@@ -24,6 +24,7 @@ import {
 } from "@ant-design/icons";
 
 import AppHeader from "../../components/Layout/Header";
+import { getSchoolInfo } from "../../api/Schoolinfo";
 
 const { Content, Footer } = Layout;
 const { Title, Paragraph } = Typography;
@@ -31,6 +32,7 @@ const { Title, Paragraph } = Typography;
 const HomePage = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [isHeaderSticky, setIsHeaderSticky] = useState(false);
+  const [schoolInfo, setSchoolInfo] = useState(null);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -41,6 +43,38 @@ const HomePage = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    const fetchSchoolInfo = async () => {
+      try {
+        const response = await getSchoolInfo();
+        const info = response.data;
+        if (info && Object.keys(info).length > 0) {
+          setSchoolInfo(info);
+        } else {
+          // Fallback data
+          setSchoolInfo({
+            Name: "Y Tế Học Đường",
+            Address: "123 Đường ABC, Quận 1, TP.HCM",
+            Hotline: "1800 6688",
+            Email: "info@ytehocduong.edu.vn"
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching school info:', error);
+        // Fallback data nếu API lỗi
+        setSchoolInfo({
+          Name: "Y Tế Học Đường",
+          Address: "123 Đường ABC, Quận 1, TP.HCM",
+          Hotline: "1800 6688",
+          Email: "info@ytehocduong.edu.vn"
+        });
+      }
+    };
+
+    fetchSchoolInfo();
+  }, []);
+
   const customStyles = `
     @keyframes spin-slow {
       from { transform: rotate(0deg); }
@@ -731,7 +765,7 @@ const HomePage = () => {
             >
               {[
                 "Khám sức khỏe định kỳ hàng tháng",
-                "Theo dỗi phát triển thể chất",
+                "Theo dõi phát triển thể chất",
                 "Hỗ trợ y tế 24/7",
                 "Tư vấn dinh dưỡng chuyên nghiệp"
               ].map((item, index) => (
@@ -1013,35 +1047,37 @@ const HomePage = () => {
                 <Col xs={24} sm={12} lg={6}>
                   <div className="space-y-4">
                     <h4 className="text-xl font-bold text-white mb-6">
-                      LIÊN HỆ
+                      📞 LIÊN HỆ
                     </h4>
                     <div className="space-y-4">
-                      <div className="flex items-center space-x-3">
-                        <EnvironmentOutlined className="text-white" />
-                        <span className="text-white">
-                          123 Đường ABC, Quận 1, TP.HCM
+                      <div className="flex items-start space-x-3">
+                        <EnvironmentOutlined className="text-white mt-1 flex-shrink-0" />
+                        <span className="text-white break-words">
+                          {schoolInfo?.Address || schoolInfo?.address || "123 Đường ABC, Quận 1, TP.HCM"}
                         </span>
                       </div>
                       <div className="flex items-center space-x-3">
                         <PhoneOutlined className="text-white" />
-                        <span className="text-white">1800 6688</span>
+                        <a href={`tel:${schoolInfo?.Hotline || schoolInfo?.hotline || "1800 6688"}`} className="text-white hover:text-blue-200 transition-colors">
+                          {schoolInfo?.Hotline || schoolInfo?.hotline || "1800 6688"}
+                        </a>
                       </div>
                       <div className="flex items-center space-x-3">
                         <MailOutlined className="text-white" />
-                        <span className="text-white">
-                          info@ytehocduong.edu.vn
-                        </span>
+                        <a href={`mailto:${schoolInfo?.Email || schoolInfo?.email || "info@ytehocduong.edu.vn"}`} className="text-white hover:text-blue-200 transition-colors break-all">
+                          {schoolInfo?.Email || schoolInfo?.email || "info@ytehocduong.edu.vn"}
+                        </a>
                       </div>
                       <div className="flex items-center space-x-3">
                         <GlobalOutlined className="text-white" />
-                        <span className="text-white">
+                        <a href="https://www.ytehocduong.edu.vn" target="_blank" rel="noopener noreferrer" className="text-white hover:text-blue-200 transition-colors">
                           www.ytehocduong.edu.vn
-                        </span>
+                        </a>
                       </div>
                       <div className="flex space-x-4 mt-6">
-                        <FacebookOutlined className="text-2xl text-white hover:text-blue-700 cursor-pointer transition-colors" />
-                        <TwitterOutlined className="text-2xl text-white hover:text-blue-700cursor-pointer transition-colors" />
-                        <InstagramOutlined className="text-2xl text-white hover:text-blue-700 cursor-pointer transition-colors" />
+                        <FacebookOutlined className="text-2xl text-white hover:text-blue-200 cursor-pointer transition-colors" />
+                        <TwitterOutlined className="text-2xl text-white hover:text-blue-200 cursor-pointer transition-colors" />
+                        <InstagramOutlined className="text-2xl text-white hover:text-blue-200 cursor-pointer transition-colors" />
                       </div>
                     </div>
                   </div>
@@ -1053,31 +1089,31 @@ const HomePage = () => {
             <div className="max-w-6xl mx-auto px-6">
               <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                 <span className="text-white">
-                  © 2024 Y Tế Học Đường. Tất cả quyền được bảo lưu.
+                  © 2024 {schoolInfo?.Name || schoolInfo?.name || "Y Tế Học Đường"}. Tất cả quyền được bảo lưu.
                 </span>
                 <div className="flex space-x-6">
                   <a
                     href="#"
-                    className="text-white hover:text-white transition-colors"
+                    className="text-white hover:text-blue-200 transition-colors"
                   >
                     Điều khoản
                   </a>
                   <a
                     href="#"
-                    className="text-white hover:text-white transition-colors"
+                    className="text-white hover:text-blue-200 transition-colors"
                   >
                     Bảo mật
                   </a>
                   <a
                     href="#"
-                    className="text-white hover:ttext-white transition-colors"
+                    className="text-white hover:text-blue-200 transition-colors"
                   >
                     Liên hệ
                   </a>
                 </div>
               </div>
             </div>
-          </div>{" "}
+          </div>
         </Footer>
       </Layout>
     </>

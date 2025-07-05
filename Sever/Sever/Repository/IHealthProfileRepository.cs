@@ -11,6 +11,8 @@ namespace Sever.Repository
         Task<bool> UpdateHealthProfile(HealthProfile healthProfile);
         Task<bool> AddHealthProfile(HealthProfile healthProfile);
         Task<string> NewID();
+        Task<List<HealthProfile>> GetAllAsync();
+
     }
 
     public class HealthProfileRepository : IHealthProfileRepository
@@ -53,5 +55,11 @@ namespace Sever.Repository
             var newid = GenerateID.GenerateNextId(healthProfile.HealthProfileID, "HP", 4);
             return newid;
         }
+
+        public async Task<List<HealthProfile>> GetAllAsync()
+        {
+            return await _context.HealthProfile.ToListAsync();
+        }
+
     }
 }

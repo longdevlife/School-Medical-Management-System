@@ -74,7 +74,7 @@ namespace Sever.Repository
             var currentUser = await _context.StudentProfile
                 .OrderByDescending(s => s.StudentID)
                 .FirstOrDefaultAsync();
-            string nextID = GenerateID.GenerateNextId(currentUser?.StudentID, "U", 4);
+            string nextID = GenerateID.GenerateNextId(currentUser?.StudentID, "ST", 4);
             return nextID;
         }
     }

@@ -10,6 +10,13 @@ using Sever.Repository;
 using System;
 using System.Diagnostics;
 
+/* status cho bên medical để delete
+   get thêm file ảnh   done
+   đổi list ảnh thành array trong medicine và medical 
+   chỗ update ảnh bên medical và medicine thì ko cần xóa ảnh cũ nữa,   done
+            chỉ cần thêm ảnh mới vào là được hoặc bỏ lun cái thêm ảnh  done
+    
+*/
 namespace Sever.Service
 {
     public interface IMedicineService
@@ -18,7 +25,8 @@ namespace Sever.Service
         Task<Medicine> CreateMedicineByNurseAsync(CreateMedicine dto, string userName);
         Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string userName);
         Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto, string userName);
-
+        Task<bool> AddImageByNurseIDAsync(string medicineId, MedicineStatusUpdate updateDto, string userName);
+        Task<bool> AddImageByParentIDAsync(MedicineUpdateDTO updateDto, string userName);
 
         Task<List<MedicineResponse>> GetMedicinesByStudentAsync(string studentId);
         Task<List<MedicineResponse>> GetMedicineByParentAsync(string userName);
@@ -74,7 +82,7 @@ namespace Sever.Service
 
             await _medicineRepository.CreateMedicineAsync(medicine);
 
-            if (dto.Image != null && dto.Image.Any())
+            if (dto.Image != null && dto.Image.Length > 0)
             {
                 foreach (var item in dto.Image)
                 {
@@ -90,7 +98,7 @@ namespace Sever.Service
             var nurse = await _userService.GetUserAsyc(userName);
             var userId = nurse.UserID;
 
-                string newId = await _medicineRepository.GetCurrentMedicineID();
+            string newId = await _medicineRepository.GetCurrentMedicineID();
             var student = await _studentProfileRepository.GetStudentProfileByStudentId(dto.StudentID);
                 var medicine = new Medicine
                 {
@@ -108,7 +116,7 @@ namespace Sever.Service
                     
                 };
                 await _medicineRepository.CreateMedicineAsync(medicine);
-                if (dto.Image != null && dto.Image.Any())
+                if (dto.Image != null && dto.Image.Length > 0)
                 {
                     foreach (var item in dto.Image)
                     {
@@ -163,7 +171,7 @@ namespace Sever.Service
 
             medicine.SentDate = DateTime.UtcNow.AddHours(7);
 
-            if (updateDto.Image != null && updateDto.Image.Any())
+            if (updateDto.Image != null && updateDto.Image.Length > 0)
             {
                 var oldImages = await _filesService.GetImageByMedicineIdAsync(medicine.MedicineID);
                 foreach (var img in oldImages)
@@ -192,9 +200,56 @@ namespace Sever.Service
 
             return true;
         }
+        public async Task<bool> AddImageByParentIDAsync(MedicineUpdateDTO updateDto, string userName)
+        {
 
+            var parent = await _userService.GetUserAsyc(userName);
+            if (parent == null) throw new Exception("Không tìm thấy tài khoản phụ huynh.");
+            var userId = parent.UserID;
 
+            var studentList = await _medicineRepository.GetStudentsByParentIdAsync(userId);
+            if (studentList == null || !studentList.Any())
+                throw new Exception("Phụ huynh không có học sinh nào liên kết.");
+            var studentIds = studentList.Select(s => s.StudentID).ToList();
 
+            var allMedicines = new List<Medicine>();
+
+            foreach (var studentId in studentIds)
+            {
+                var medicines = await _medicineRepository.GetMedicineByStudentIdAsync(studentId);
+                allMedicines.AddRange(
+                    medicines.Where(m => m.ParentID == userId && m.NurseID == null)
+                );
+            }
+
+            if (!allMedicines.Any())
+                throw new Exception("Không tìm thấy đơn thuốc hợp lệ để chỉnh sửa.");
+
+            var medicine = allMedicines.OrderByDescending(m => m.SentDate).First();
+
+            if (updateDto.Image != null && updateDto.Image.Length > 0)
+            {
+                foreach (var img in updateDto.Image)
+                {
+                    try
+                    {
+                        await _filesService.UploadMedicineImageByAsync(img, medicine.MedicineID);
+                    }
+                    catch
+                    {
+                        throw new ArgumentException("Lưu ảnh thất bại");
+                    }
+                }
+            }
+
+            await _medicineRepository.UpdateMedicineAsync(medicine);
+            await _notificationService.MedicineNotificationForAllNurses(
+                medicine,
+                $"Phụ huynh '{medicine.ParentID}' đã cập nhật đơn thuốc cho học sinh '{medicine.StudentID}'."
+            );
+
+            return true;
+        }
         public async Task<bool> UpdateMedicineByNurseAsync(string medicineId, MedicineStatusUpdate updateDto, string userName)
         {
             var nurse = await _userService.GetUserAsyc(userName);
@@ -227,7 +282,7 @@ namespace Sever.Service
 
             medicine.NurseID = userId;
 
-            var validStatuses = new List<string> { "Chờ xác nhận", "Đã xác nhận", "Đang thực hiện", "Đã hoàn thành", "Từ chối" };
+            var validStatuses = new List<string> { "Chờ xử lý", "Đã xác nhận", "Đang thực hiện", "Đã hoàn thành", "Từ chối" };
 
             if (!string.IsNullOrWhiteSpace(updateDto.Status))
             {
@@ -246,7 +301,7 @@ namespace Sever.Service
 
             await _medicineRepository.UpdateMedicineAsync(medicine);
 
-            if (updateDto.Image != null && updateDto.Image.Any())
+            if (updateDto.Image != null && updateDto.Image.Length > 0)
             {
                 var listImage = await _filesService.GetImageByMedicineIdAsync(medicine.MedicineID);
                 foreach (var item in listImage)
@@ -271,8 +326,44 @@ namespace Sever.Service
             return true;
         }
 
-            public async Task<List<MedicineResponse>> GetMedicinesByStudentAsync(string studentId)
+
+        public async Task<bool> AddImageByNurseIDAsync(string medicineId, MedicineStatusUpdate updateDto, string userName)
+        {
+            var nurse = await _userService.GetUserAsyc(userName);
+            var userId = nurse.UserID;
+
+            var medicine = await _medicineRepository.GetMedicineByIdAsync(medicineId);
+            if (medicine == null)
             {
+                throw new Exception("Không tìm thấy đơn thuốc.");
+            }
+
+            medicine.NurseID = userId;
+
+            if (updateDto.Image != null && updateDto.Image.Length > 0)
+            {
+
+                foreach (var item in updateDto.Image)
+                {
+                    try
+                    {
+                        await _filesService.UploadMedicineImageByAsync(item, medicine.MedicineID);
+                    }
+                    catch
+                    {
+                        throw new ArgumentException("Lưu ảnh thất bại");
+                    }
+                }
+            }
+            await _medicineRepository.UpdateMedicineAsync(medicine);
+            await _notificationService.MedicineNotificationForParent(medicine, $"Đơn thuốc đã được cập nhật bởi y tá với trạng thái '{medicine.Status}'.");
+
+            return true;
+        }
+
+
+        public async Task<List<MedicineResponse>> GetMedicinesByStudentAsync(string studentId)
+        {
                 var medicine = await _medicineRepository.GetMedicineByStudentIdAsync(studentId);
                 List<MedicineResponse> response = new List<MedicineResponse>();
                 foreach (var e in medicine)
@@ -297,11 +388,11 @@ namespace Sever.Service
                     });
                 }
                 return response;
-            }
+        }
 
 
-            public async Task<List<MedicineResponse>> GetAllMedicinesAsync()
-            {
+        public async Task<List<MedicineResponse>> GetAllMedicinesAsync()
+        {
                 var medicines = await _medicineRepository.GetAllMedicinesAsync();
                 
                 List<MedicineResponse> response = new List<MedicineResponse>();
@@ -325,10 +416,10 @@ namespace Sever.Service
                     });
                 }
                 return response;
-            }
+        }
 
-            public async Task<List<MedicineResponse>> GetMedicineByParentAsync(string userName)
-            {
+        public async Task<List<MedicineResponse>> GetMedicineByParentAsync(string userName)
+        {
                 var parent = await _userService.GetUserAsyc(userName);
                 if (parent == null) return null;
 
@@ -363,7 +454,7 @@ namespace Sever.Service
                     }
                 }
                 return response;
-            }
+        }
 
         public async Task<int> TotalMedicinesAsync(DateTime fromDate, DateTime toDate)
         {

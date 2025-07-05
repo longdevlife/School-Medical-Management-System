@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Sever.DTO.Appointment;
 using Sever.DTO.File;
 using Sever.DTO.HealthCheckUp;
+using Sever.DTO.HealthProfile;
 using Sever.DTO.MedicalEvent;
 using Sever.DTO.Medicine;
 using Sever.DTO.SendMedicine;
@@ -24,18 +25,22 @@ namespace Sever.Controllers
         private readonly IAppointmentService _appointmentService;
         private readonly IHealthCheckUpService _healthCheckUpService;
         private readonly IVaccinationService _vaccinationService;
+        private readonly IHealthProfileService _healthProfileService;
+
 
         public NurseController(IMedicineService medicineService,
             IMedicalEventService medicalEventService,
             IHealthCheckUpService healthCheckUpService,
             IAppointmentService appointmentService,
-            IVaccinationService vaccinationService)
+            IVaccinationService vaccinationService, 
+            IHealthProfileService healthProfileService)
         {
             _medicineService = medicineService;
             _medicalEventService = medicalEventService;
             _healthCheckUpService = healthCheckUpService;
             _appointmentService = appointmentService;
             _vaccinationService = vaccinationService;
+            _healthProfileService = healthProfileService;
         }
 
         [HttpPost("medicine/create")]
@@ -51,6 +56,14 @@ namespace Sever.Controllers
         {
             var username = User.Identity?.Name;
             var result = await _medicineService.UpdateMedicineByNurseAsync(id, dto, username);
+            return Ok(result);
+        }
+
+        [HttpPut("medicine/addImage/{id}")]
+        public async Task<IActionResult> AddImage(string id, [FromForm] MedicineStatusUpdate dto)
+        {
+            var username = User.Identity?.Name;
+            var result = await _medicineService.AddImageByNurseIDAsync(id, dto, username);
             return Ok(result);
         }
 
@@ -87,6 +100,15 @@ namespace Sever.Controllers
             var result = await _medicalEventService.UpdateMedicalEvent(dto, id, username);
             return Ok(result);
         }
+
+        [HttpPut("event/addImages/{id}")]
+        public async Task<IActionResult> AddImageMedicalEvent([FromForm] MedicalEventUpdateDTO dto, string id)
+        {
+            var username = User.Identity?.Name;
+            var result = await _medicalEventService.AddImage(dto, id, username);
+            return Ok(result);
+        }
+
 
         [HttpGet("event/getByEventId/{medicalEventId}")]
         public async Task<IActionResult> GetMedicalEventById(string medicalEventId)
@@ -286,6 +308,30 @@ namespace Sever.Controllers
             return Ok(result);
         }
 
+        [HttpGet("healthProfile/getByStudent/{studentId}")]
+        public async Task<IActionResult> GetHealthProfile(string studentId)
+        {
+            var result = await _healthProfileService.GetHealthProfileByStudentIdAsync(studentId);
+            return Ok(result);
+        }
+
+        [HttpPut("healthProfile/update")]
+        public async Task<IActionResult> UpdateHealthProfile([FromBody] UpdateHealthProfile updateDto)
+        {
+            var userName = User.Identity?.Name;
+            if (string.IsNullOrEmpty(userName))
+                return Unauthorized("Bạn cần đăng nhập để thực hiện hành động này.");
+            var success = await _healthProfileService.UpdateHealthProfileAsync(updateDto, userName);
+            if (!success) return BadRequest("Cập nhật thất bại.");
+            return Ok("Cập nhật thành công và đã thông báo cho phụ huynh.");
+        }
+
+        [HttpGet("healthProfile/getAll")]
+        public async Task<IActionResult> GetAllHealthProfiles()
+        {
+            var result = await _healthProfileService.GetAllHealthProfilesAsync();
+            return Ok(result);
+        }
 
     }
 }

@@ -25,7 +25,8 @@ namespace Sever.Model
         public string Status { get; set; }
         public string StudentID { get; set; }
         [ForeignKey("StudentID")]
-
         public StudentProfile StudentProfile { get; set; }
+        public List<Files> File { get; set; }
+
     }
 }

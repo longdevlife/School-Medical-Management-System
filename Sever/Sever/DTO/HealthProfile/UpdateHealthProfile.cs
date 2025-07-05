@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Sever.Model
+namespace Sever.DTO.HealthProfile
 {
-    public class HealthProfile
+    public class UpdateHealthProfile
     {
-        [Key]
-        public string HealthProfileID { get; set; }
+        [Required]
+        public string StudentID { get; set; }
+
         public string? AllergyHistory { get; set; }
         public string? ChronicDiseases { get; set; }
         public byte? PastSurgeries { get; set; }
@@ -18,9 +18,5 @@ namespace Sever.Model
         public int? VisionRight { get; set; }
         public string? ToothDecay { get; set; }
         public string? OtheHealthIssues { get; set; }
-        public string StudentID { get; set; }
-        [ForeignKey("StudentID")]
-        public StudentProfile StudentProfile { get; set; }
-
     }
 }

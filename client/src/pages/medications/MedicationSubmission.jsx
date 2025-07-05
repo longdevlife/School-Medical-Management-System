@@ -172,8 +172,6 @@ function MedicationSubmission() {
           studentClass: item.class || "Chưa có lớp",
           medicationName: item.medicineName,
           dosage: item.dosage,
-          frequency: "Chưa có",
-          duration: "Chưa có",
           instructions: item.instructions,
           reason: "Chưa có",
           quantity: item.quantity,
@@ -643,7 +641,7 @@ function MedicationSubmission() {
           </Text>
           <br />
           <Text type="secondary" style={{ fontSize: "12px" }}>
-            {record.dosage} - {record.frequency}
+            Cho uống : {record.dosage}
           </Text>
         </div>
       ),
@@ -1597,7 +1595,7 @@ function MedicationSubmission() {
                     border: "2px solid rgba(255,255,255,0.2)",
                   }}
                 >
-                  <Text style={{ color: "white", fontSize: "24px" }}>💊</Text>
+                  <Text style={{ color: "white", fontSize: "24px" }}>📋</Text>
                 </div>
                 <div>
                   <Text

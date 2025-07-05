@@ -17,6 +17,8 @@ import {
   Upload,
   Descriptions,
   Divider,
+  Tabs,
+  Radio,
 } from "antd";
 import {
   PlusOutlined,
@@ -31,7 +33,7 @@ import {
   CaretDownOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import medicineApi from "../../api/medicineApi";
+import vaccineApi from "../../api/vaccineApi";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -40,13 +42,12 @@ const { Option } = Select;
 function VaccinationManagement() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [verifyModalVisible, setVerifyModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [classFilter, setClassFilter] = useState("all");
   const [searchText, setSearchText] = useState(""); // 🆕 Search text for multi-field search
-  const [form] = Form.useForm();
+  const [activeTab, setActiveTab] = useState("waiting-confirmation"); // 🆕 Tab state: waiting-confirmation, vaccination, post-vaccination
 
   // modal thêm vaccine
   const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -60,166 +61,116 @@ function VaccinationManagement() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editForm] = Form.useForm();
 
-  const getStatusFromBackend = (backendStatus) => {
-    switch (backendStatus) {
-      case "Chờ xử lý":
-        return "pending";
-      case "Chờ xác nhận":
-        return "pending";
-      case "Đã xác nhận":
-      case "Đã duyệt":
-        return "approved";
-      case "Đang sử dụng":
-      case "Đang thực hiện":
-        return "in-use";
-      case "Hoàn thành":
-      case "Đã hoàn thành":
-        return "completed";
-      case "Từ chối":
-        return "rejected";
-      default:
-        return "pending";
-    }
-  };
-
-  // API fetch data
+  // API fetch data từ vaccine endpoint thật
   const fetchSubmissions = async () => {
     setLoading(true);
     try {
-      const response = await medicineApi.nurse.getAll();
-      console.log("API response:", response.data);
+      console.log("🔄 Fetching vaccine data...");
 
-      // 🔍 DEBUG: Kiểm tra studentID trong API response
-      console.log("🔍 First item studentID:", response.data[0]?.studentID);
-      console.log(
-        "🔍 All studentIDs:",
-        response.data.map((item) => item.studentID)
-      );
+      const response = await vaccineApi.nurse.getAll();
 
-      // Map dữ liệu cơ bản và ảnh trực tiếp từ getAll response
+      console.log("🦠 Total items from API:", response.data.length);
+
+      // Map dataBE
       const mappedData = response.data.map((item) => {
-        let images = [];
 
-        // Debug chi tiết các trường có thể chứa ảnh
-        console.log(
-          "🔍 Debugging all possible image fields for",
-          item.medicineID
-        );
-        console.log("📋 item.file:", item.file);
-        console.log("📋 item.files:", item.files);
-        console.log("📋 item.images:", item.images);
-        console.log("📋 item.image:", item.image);
-        console.log("📋 item.imageUrl:", item.imageUrl);
-
-        // Ưu tiên lấy FileLink nếu có (tương tự AccidentManagement)
-        if (item.files && Array.isArray(item.files)) {
-          images = item.files
-            .map((fileData) => {
-              // Ưu tiên lấy trường FileLink (hoặc fileLink, file_link)
-              const link =
-                fileData.FileLink || fileData.fileLink || fileData.file_link;
-              if (link && typeof link === "string" && link.startsWith("http"))
-                return link;
-              // Nếu là string và là URL đầy đủ
-              if (typeof fileData === "string" && fileData.startsWith("http"))
-                return fileData;
-              return null;
-            })
-            .filter(Boolean);
-        } else if (
-          item.fileLink &&
-          typeof item.fileLink === "string" &&
-          item.fileLink.startsWith("http")
-        ) {
-          images = [item.fileLink];
-        } else if (
-          item.file &&
-          typeof item.file === "string" &&
-          item.file.startsWith("http")
-        ) {
-          images = [item.file];
-        } else if (Array.isArray(item.images)) {
-          images = item.images
-            .map((img) =>
-              typeof img === "string"
-                ? img.startsWith("http")
-                  ? img
-                  : null
-                : img.FileLink || img.fileLink || img.file_link || null
-            )
-            .filter(Boolean);
-        } else if (
-          item.imageUrl &&
-          typeof item.imageUrl === "string" &&
-          item.imageUrl.startsWith("http")
-        ) {
-          images = [item.imageUrl];
-        } else if (
-          item.image &&
-          typeof item.image === "string" &&
-          item.image.startsWith("http")
-        ) {
-          images = [item.image];
+        // Map dataBE
+        let status = "pending";
+        if (item.status) {
+          const backendStatus = item.status.trim();        
+          switch (backendStatus) {
+            case "Đã chấp nhận":
+            case "Đã xác nhận":
+              status = "confirmed";
+              break;
+            case "Chờ tiêm":
+              status = "approved";
+              break;
+            case "Đã tiêm":
+              status = "injected";
+              break;
+            case "Đang tiêm":
+              status = "injected";
+              break;
+            case "Đang theo dõi":
+              status = "monitoring";
+              break;
+            case "Từ chối":
+            case "Đã từ chối":
+              status = "rejected";
+              break;
+            case "Hoàn thành":
+              status = "completed";
+              break;
+            case "Chờ xác nhận":
+              status = "pending";
+              break;
+            default:
+              status = "pending";
+          }
+       
         }
 
-        console.log(`🖼️ Final images for ${item.medicineID}:`, images);
-
         return {
-          id: item.medicineID,
-          key: item.medicineID,
-          submissionCode: item.medicineID,
-          studentId: item.studentID, // ✅ Map từ API
-          studentName: item.studentName || "Chưa có tên",
-          studentClass: item.class || "Chưa có lớp",
-          // Map medicine data to vaccine UI fields
-          vaccineName: item.medicineName || "Chưa có tên vaccine",
-          vaccinationType: item.dosage || "Chưa có loại",
-          scheduledDate: item.sentDate || new Date().toISOString(),
-          administrationNotes: item.instructions || "Chưa có ghi chú",
-          // Keep original fields for API compatibility
-          medicationName: item.medicineName,
-          dosage: item.dosage,
-          frequency: "Chưa có",
-          duration: "Chưa có",
-          instructions: item.instructions,
-          reason: "Chưa có",
-          quantity: item.quantity,
-          status: getStatusFromBackend(item.status),
-          submissionDate: item.sentDate,
+          id: item.recordID,
+          key: item.recordID,
+          submissionCode: item.recordID,
+          studentId: item.studentID,
+          studentName: `Học sinh ${item.studentID}`, 
+          studentClass: "Chưa có lớp",
+          classId: item.classID || 4,
+
+          // Vaccine specific fields
+          vaccineName: `Vaccine ID: ${item.vaccineID}`, // Cần join với vaccine table để lấy tên
+          vaccinationType: `Liều ${item.dose}`,
+          scheduledDate: dayjs(item.dateTime).format("DD/MM/YYYY"),
+          actualDate: item.vaccinatedAt
+            ? dayjs(item.vaccinatedAt).format("DD/MM/YYYY")
+            : null,
+          administrationNotes: item.notes || "Chưa có ghi chú",
+          reaction: "",
+          location: "Phòng y tế",
+          doctorID: item.nurseID,
+          dose: item.dose,
+          vaccineID: item.vaccineID,
+          vaccinatorID: item.vaccinatorID,
+
+          // Follow up fields
+          followUpNotes: item.followUpNotes,
+          followUpDate: item.followUpDate,
+
+          // UI display fields
+          status: status,
+          submissionDate: item.dateTime,
           verifiedBy: item.nurseID || null,
-          verifiedDate: null,
+          verifiedDate: item.vaccinatedAt,
           verificationNotes: item.notes,
           urgencyLevel: "normal",
-          vaccineImages: images, // UI display
-          medicationImages: images, // API compatibility
-          consentFormImage: null,
-          parentSignature: null,
-          administrationTimes: [],
-          createdBy: item.parentID
-            ? "parent"
-            : item.status === "Chờ xử lý"
-            ? "parent"
-            : "nurse",
+
+          // Metadata
+          createdBy: "nurse",
         };
       });
 
-      console.log("✅ Debug dữ liệu sau khi map và lấy ảnh:", mappedData);
+      console.log("✅ Mapped vaccine data:", mappedData);
       setSubmissions(mappedData);
     } catch (error) {
-      console.error("Lỗi fetch api:", error);
-      message.error("Không thể tải danh sách vaccine. Vui lòng thử lại sau.");
+      console.error("❌ Lỗi fetch vaccine API:", error);
+      console.error("❌ Error response:", error.response?.data);
+      console.error("❌ Error status:", error.response?.status);
+
+      if (error.response?.status === 401) {
+        message.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+      } else if (error.response?.status === 403) {
+        message.error("Bạn không có quyền truy cập chức năng này.");
+      } else if (error.response?.status === 404) {
+        message.error("Không tìm thấy dữ liệu vaccine.");
+      } else {
+        message.error("Không thể tải danh sách vaccine. Vui lòng thử lại sau.");
+      }
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleVerify = (submission) => {
-    setSelectedSubmission(submission);
-    form.setFieldsValue({
-      status: submission.status === "pending" ? "approved" : submission.status,
-      verificationNotes: submission.verificationNotes || "",
-    });
-    setVerifyModalVisible(true);
   };
 
   const handleViewDetails = (submission) => {
@@ -227,116 +178,86 @@ function VaccinationManagement() {
     setDetailModalVisible(true);
   };
 
-  // Tạo mới vaccine (UI) - backend vẫn dùng medicine API
+  // Tạo mới vaccine - sử dụng vaccineApi
   const handleCreateVaccine = async (values) => {
     try {
-      // Chuyển fileList thành array file gốc
-      const imageFiles =
-        values.image?.map((fileObj) => fileObj.originFileObj).filter(Boolean) ||
-        [];
-
+      // Tạo data theo format vaccineApi
       const createData = {
-        // Map vaccine UI fields to medicine API fields
-        MedicineName: values.vaccineName,
-        Quantity: "1", // Default for vaccine
-        Dosage: values.vaccinationType,
-        Instructions: values.administrationNotes,
-        StudentID: values.studentId,
-        Status: "Chờ xử lý",
-        Image: imageFiles, // Gửi array file gốc
+        VaccineID: values.vaccineId || "1",
+        Dose: values.dose || "1",
+        Notes: values.administrationNotes || "",
+        VaccinatedAt: values.scheduledDate
+          ? dayjs(values.scheduledDate).format("YYYY-MM-DD HH:mm:ss")
+          : dayjs().format("YYYY-MM-DD HH:mm:ss"),
+      
       };
 
+      console.log("🚀 Create Type:", values.createType);
       console.log("🚀 Data gửi lên API:", createData);
-      console.log("📁 Số lượng file ảnh:", imageFiles.length);
+
       console.log("📝 Form values:", values);
 
-      await medicineApi.nurse.create(createData);
-      message.success("Thêm vaccine mới thành công!");
+      // Chọn API endpoint dựa trên loại tạo
+      if (values.createType === "student") {
+        // Tạo cho 1 học sinh
+        createData.StudentID = values.studentId;
+        await vaccineApi.nurse.createByStudentID(createData);
+        message.success(
+          `Tạo yêu cầu tiêm chủng cho học sinh ${values.studentId} thành công!`
+        );
+      } else {
+        // Tạo cho cả lớp
+        createData.ClassID = values.classId;
+        await vaccineApi.nurse.createByClassID(createData);
+        message.success(
+          `Tạo yêu cầu tiêm chủng cho lớp ${values.classId} thành công!`
+        );
+      }
+
       setCreateModalVisible(false);
       createForm.resetFields();
       fetchSubmissions();
     } catch (error) {
       console.error("Lỗi tạo vaccine:", error);
-      // Error handling đơn giản
-      if (error.response?.status === 500) {
-        message.error("Student ID không tồn tại! Vui lòng kiểm tra lại.");
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+
+      if (error.response?.status === 400) {
+        const errorMessage =
+          error.response?.data?.message || "Dữ liệu không hợp lệ";
+        message.error(`Lỗi: ${errorMessage}`);
+      } else if (error.response?.status === 404) {
+        message.error(
+          values.createType === "student"
+            ? "Student ID không tồn tại! Vui lòng kiểm tra lại."
+            : "Class ID không tồn tại! Vui lòng kiểm tra lại."
+        );
+      } else if (error.response?.status === 500) {
+        message.error("Lỗi server. Vui lòng thử lại sau.");
       } else {
         message.error("Thêm vaccine thất bại!");
       }
     }
   };
 
-  // Xử lý yêu cầu tiêm chủng (UI) - backend vẫn dùng medicine API
-  const handleVerifySubmit = async (values) => {
-    try {
-      const updateData = {
-        StudentID: selectedSubmission.studentId,
-        // Map vaccine UI fields back to medicine API fields
-        MedicineName:
-          selectedSubmission.vaccineName || selectedSubmission.medicationName,
-        Quantity: selectedSubmission.quantity || "1",
-        Dosage: selectedSubmission.vaccinationType || selectedSubmission.dosage,
-        Instructions:
-          selectedSubmission.administrationNotes ||
-          selectedSubmission.instructions,
-        Status: values.status === "approved" ? "Đã xác nhận" : "Từ chối",
-        Notes: values.verificationNotes,
-        SentDate: selectedSubmission.submissionDate,
-        ParentID: selectedSubmission.parentId || null,
-      };
-
-      console.log("🚀 Verify Submit - JSON Data gửi lên API:", updateData);
-      console.log("📝 Form values:", values);
-      console.log("📋 Selected submission:", selectedSubmission);
-
-      // Kiểm tra ID hợp lệ trước khi gọi API
-      if (
-        !selectedSubmission.id ||
-        selectedSubmission.id.toString().startsWith("TEST_")
-      ) {
-        message.error("ID vaccine không hợp lệ! Không thể cập nhật test data.");
-        return;
-      }
-
-      await medicineApi.nurse.update(selectedSubmission.id, updateData);
-
-      fetchSubmissions();
-
-      message.success(
-        values.status === "approved"
-          ? "Đã xác nhận lịch tiêm chủng từ phụ huynh!"
-          : "Đã từ chối yêu cầu tiêm chủng!"
-      );
-      setVerifyModalVisible(false);
-    } catch (error) {
-      console.error("❌ Lỗi xử lý yêu cầu:", error);
-      console.error("❌ Error response:", error.response?.data);
-      console.error("❌ Error status:", error.response?.status);
-
-      if (error.response?.status === 400) {
-        const validationErrors =
-          error.response?.data?.errors || error.response?.data?.message;
-        if (validationErrors) {
-          message.error(
-            `Validation Error: ${JSON.stringify(validationErrors)}`
-          );
-        } else {
-          message.error("Dữ liệu gửi lên không hợp lệ! Vui lòng kiểm tra lại.");
-        }
-      } else if (error.response?.status === 404) {
-        message.error("Không tìm thấy vaccine cần cập nhật!");
-      } else {
-        message.error("Xử lý yêu cầu thất bại!");
-      }
-    }
-  };
-
-  // Cập nhật tiến độ tiêm chủng
+  // Cập nhật tiến độ tiêm chủng theo workflow mới
   const handleUpdateProgress = (submission) => {
     setSelectedSubmission(submission);
+
+    let nextStatus = "completed";
+    if (submission.status === "confirmed") {
+      nextStatus = "approved"; // Đã xác nhận → Chờ tiêm
+    } else if (submission.status === "approved") {
+      nextStatus = "injected"; // Chờ tiêm → Đã tiêm
+    } else if (submission.status === "injected") {
+      nextStatus = "monitoring"; // Đã tiêm → Đang theo dõi
+    } else if (submission.status === "monitoring") {
+      nextStatus = "completed"; // Đang theo dõi → Hoàn thành
+    }
+
     updateForm.setFieldsValue({
       currentStatus: submission.status,
-      newStatus: submission.status === "approved" ? "in-use" : "completed",
+      newStatus: nextStatus,
       progressNotes: "",
       administrationTime: dayjs(),
     });
@@ -345,44 +266,23 @@ function VaccinationManagement() {
 
   const handleUpdateProgressSubmit = async (values) => {
     try {
-      // Chuyển fileList thành array file gốc (nếu có)
-      const imageFiles =
-        values.image?.map((fileObj) => fileObj.originFileObj).filter(Boolean) ||
-        [];
-
       let backendStatus;
       switch (values.newStatus) {
-        case "in-use":
-          backendStatus = "Đang thực hiện";
+        case "approved":
+          backendStatus = "Chờ tiêm";
+          break;
+        case "injected":
+          backendStatus = "Đã tiêm";
+          break;
+        case "monitoring":
+          backendStatus = "Đang theo dõi";
           break;
         case "completed":
-          backendStatus = "Đã hoàn thành";
+          backendStatus = "Hoàn thành";
           break;
         default:
-          backendStatus = "Đã xác nhận";
+          backendStatus = "Chờ tiêm";
       }
-
-      const updateData = {
-        StudentID: selectedSubmission.studentId,
-        // Map vaccine UI fields back to medicine API fields
-        MedicineName:
-          selectedSubmission.vaccineName || selectedSubmission.medicationName,
-        Quantity: selectedSubmission.quantity || "1",
-        Dosage: selectedSubmission.vaccinationType || selectedSubmission.dosage,
-        Instructions:
-          selectedSubmission.administrationNotes ||
-          selectedSubmission.instructions,
-        Status: backendStatus,
-        Notes: values.progressNotes,
-        SentDate: selectedSubmission.submissionDate,
-        ParentID: selectedSubmission.parentId || null,
-        Image: imageFiles, // Thêm file ảnh (nếu có)
-      };
-
-      console.log("🚀 Update Progress - JSON Data gửi lên API:", updateData);
-      console.log("📁 Số lượng file ảnh bổ sung:", imageFiles.length);
-      console.log("📝 Form values từ modal:", values);
-      console.log("🔄 Backend Status:", backendStatus);
 
       // Kiểm tra ID hợp lệ trước khi gọi API
       if (
@@ -393,8 +293,132 @@ function VaccinationManagement() {
         return;
       }
 
-      await medicineApi.nurse.update(selectedSubmission.id, updateData);
-      fetchSubmissions();
+      // Workflow: Chọn API dựa trên status hiện tại
+      if (
+        ["confirmed", "approved"].includes(selectedSubmission.status) &&
+        values.newStatus === "injected"
+      ) {
+        // confirmed/approved → injected: Dùng updateByRecordID
+        const updateData = {
+          Dose: selectedSubmission.dose || 1, // ✅ Number cho parseInt trong API
+          DateTime: values.administrationTime
+            ? dayjs(values.administrationTime).format("YYYY-MM-DD HH:mm:ss")
+            : dayjs().format("YYYY-MM-DD HH:mm:ss"),
+          Notes: values.progressNotes || "",
+          Status: backendStatus,
+          VaccinatedAt: values.administrationTime
+            ? dayjs(values.administrationTime).format("YYYY-MM-DD HH:mm:ss")
+            : dayjs().format("YYYY-MM-DD HH:mm:ss"),
+          StudentID: selectedSubmission.studentId, // ✅ String theo API spec
+          VaccineID: selectedSubmission.vaccineID || 1, // ✅ Number cho parseInt trong API          ClassID: selectedSubmission.classId || 4, // ✅ Thêm ClassID như trong Postman test
+          
+          // ✅ Tạm thời skip VaccinatorID để test
+          skipVaccinatorID: true, // 🧪 TEST: Bỏ qua VaccinatorID
+        };
+
+        console.log(
+          "🚀 Update Progress (updateByRecordID) - Data gửi lên API:",
+          updateData
+        );
+        console.log("🔍 ClassID được gửi:", updateData.ClassID);
+
+        // ✅ Debug VaccinatorID từ localStorage
+        try {
+          const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+          console.log("👤 Current User from localStorage:", currentUser);
+          console.log(
+            "🆔 Username sẽ làm VaccinatorID:",
+            currentUser.username || currentUser.userID || currentUser.id || "nurse"
+          );
+        } catch (e) {
+          console.log(
+            "⚠️ Không đọc được user từ localStorage, dùng VaccinatorID = nurse"
+          );
+        }
+        const updateResponse = await vaccineApi.nurse.updateByRecordID(
+          selectedSubmission.id,
+          updateData
+        );
+        console.log("✅ Update Response:", updateResponse);
+        console.log("✅ Update Response Data:", updateResponse.data);
+      } else if (
+        ["injected", "monitoring"].includes(selectedSubmission.status)
+      ) {
+        // injected → monitoring, monitoring → completed: Dùng updateAfterByRecordID
+        const updateAfterData = {
+          DateTime: values.administrationTime
+            ? dayjs(values.administrationTime).format("YYYY-MM-DD HH:mm:ss")
+            : dayjs().format("YYYY-MM-DD HH:mm:ss"),
+          Status: backendStatus,
+          FollowUpNotes: values.progressNotes || "",
+          FollowUpDate:
+            values.newStatus === "completed"
+              ? dayjs().format("YYYY-MM-DD HH:mm:ss")
+              : "",
+          StudentID: selectedSubmission.studentId,
+        };
+
+        console.log(
+          "🚀 Update Progress (updateAfterByRecordID) - Data gửi lên API:",
+          updateAfterData
+        );
+
+        // ✅ Debug VaccinatorID từ localStorage cho updateAfter
+        try {
+          const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+          console.log(
+            "👤 Current User from localStorage (updateAfter):",
+            currentUser
+          );
+          console.log(
+            "🆔 Username sẽ làm VaccinatorID (updateAfter):",
+            currentUser.username || currentUser.userID || currentUser.id || "nurse"
+          );
+        } catch (e) {
+          console.log(
+            "⚠️ Không đọc được user từ localStorage (updateAfter), dùng VaccinatorID = nurse"
+          );
+        }
+        const updateAfterResponse =
+          await vaccineApi.nurse.updateAfterByRecordID(
+            selectedSubmission.id,
+            updateAfterData
+          );
+        console.log("✅ UpdateAfter Response:", updateAfterResponse);
+        console.log("✅ UpdateAfter Response Data:", updateAfterResponse.data);
+      } else {
+        // Fallback: Dùng updateByRecordID cho các case khác
+        const updateData = {
+          Dose: selectedSubmission.dose || 1, // ✅ Number cho parseInt trong API
+          DateTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+          Notes: values.progressNotes || "",
+          Status: backendStatus,
+          StudentID: selectedSubmission.studentId, // ✅ String theo API spec
+          VaccineID: selectedSubmission.vaccineID || 1, // ✅ Number cho parseInt trong API
+          ClassID: selectedSubmission.classId || 4, // ✅ Thêm ClassID như trong Postman test
+        };
+
+        console.log(
+          "🚀 Update Progress (fallback updateByRecordID) - Data gửi lên API:",
+          updateData
+        );
+        console.log("🔍 ClassID được gửi (fallback):", updateData.ClassID);
+        const fallbackResponse = await vaccineApi.nurse.updateByRecordID(
+          selectedSubmission.id,
+          updateData
+        );
+        console.log("✅ Fallback Response:", fallbackResponse);
+        console.log("✅ Fallback Response Data:", fallbackResponse.data);
+      }
+
+      console.log("🔄 Bắt đầu fetch lại dữ liệu sau khi update...");
+
+      // Thêm delay nhỏ để đảm bảo backend đã update xong
+      setTimeout(async () => {
+        await fetchSubmissions();
+        console.log("✅ Hoàn thành fetch dữ liệu mới với delay");
+      }, 500);
+
       message.success("Cập nhật tiến độ tiêm chủng thành công!");
       setUpdateModalVisible(false);
       updateForm.resetFields();
@@ -428,8 +452,9 @@ function VaccinationManagement() {
   const handleEdit = (submission) => {
     setSelectedSubmission(submission);
 
-    console.log("🔍 Handle Edit - Submission data:", submission);
-    console.log("🔍 Available fields:", Object.keys(submission));
+    // ❌ Tắt debug logs
+    // console.log("🔍 Handle Edit - Submission data:", submission);
+    // console.log("🔍 Available fields:", Object.keys(submission));
 
     editForm.setFieldsValue({
       vaccineName: submission.vaccineName || submission.medicationName,
@@ -439,26 +464,22 @@ function VaccinationManagement() {
         : null,
       administrationNotes:
         submission.administrationNotes || submission.instructions,
-      urgency: submission.urgency || "normal",
       notes: submission.notes || "",
     });
 
-    console.log("🔍 Form values set for vaccine UI");
+    // ❌ Tắt debug logs
+    // console.log("🔍 Form values set for vaccine UI");
 
     setEditModalVisible(true);
   };
 
   const handleEditSubmit = async (values) => {
     try {
-      console.log(
-        "🔍 DEBUG - selectedSubmission full object:",
-        selectedSubmission
-      );
-      console.log("🔍 DEBUG - studentId value:", selectedSubmission.studentId);
-      console.log(
-        "🔍 DEBUG - Available fields:",
-        Object.keys(selectedSubmission)
-      );
+      // ❌ Tắt debug logs chi tiết
+      // console.log("🔍 DEBUG - selectedSubmission full object:", selectedSubmission);
+      // console.log("🔍 DEBUG - studentId value:", selectedSubmission.studentId);
+      // console.log("🔍 DEBUG - Available fields:", Object.keys(selectedSubmission));
+
       const studentID =
         selectedSubmission.studentId ||
         selectedSubmission.StudentID ||
@@ -473,41 +494,21 @@ function VaccinationManagement() {
         return;
       }
 
-      // Map status từ frontend sang backend format
-      let backendStatus;
-      switch (selectedSubmission.status) {
-        case "pending":
-          backendStatus = "Chờ xử lý";
-          break;
-        case "approved":
-          backendStatus = "Đã xác nhận";
-          break;
-        case "in-use":
-          backendStatus = "Đang thực hiện";
-          break;
-        case "completed":
-          backendStatus = "Đã hoàn thành";
-          break;
-        case "rejected":
-          backendStatus = "Từ chối";
-          break;
-        default:
-          backendStatus = "Chờ xử lý";
-      }
       const updateData = {
-        StudentID: studentID,
-        // Map vaccine UI fields back to medicine API fields
-        MedicineName: values.vaccineName,
-        Quantity: "1", // Default for vaccine
-        Dosage: values.vaccinationType,
-        Instructions: values.administrationNotes,
-        Status: backendStatus,
-        Notes: values.notes,
-        SentDate: selectedSubmission.submissionDate,
-        ParentID: selectedSubmission.parentId || null,
+        Dose: selectedSubmission.dose || 1, // ✅ Number cho parseInt trong API
+        DateTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+        Notes: values.notes || "",
+        // Không gửi Status khi edit để tránh Entity Framework conflict
+        VaccinatedAt: values.scheduledDate
+          ? dayjs(values.scheduledDate).format("YYYY-MM-DD HH:mm:ss")
+          : "",
+        StudentID: studentID, // ✅ String theo API spec
+        VaccineID: selectedSubmission.vaccineID || 1, // ✅ Number cho parseInt trong API
+        // ❌ TẠYM THỜI KHÔNG GỬI VaccinatorID để tránh lỗi FOREIGN KEY
+        // VaccinatorID: selectedSubmission.vaccinatorID || "nurse001", // ✅ String theo API spec
       };
 
-      console.log("🚀 Edit Submit - JSON Data gửi lên API:", updateData);
+      console.log("🚀 Edit Submit - Data gửi lên API (NO STATUS):", updateData);
       console.log("📝 Form values:", values);
 
       if (
@@ -518,7 +519,10 @@ function VaccinationManagement() {
         return;
       }
 
-      await medicineApi.nurse.update(selectedSubmission.id, updateData);
+      await vaccineApi.nurse.updateByRecordID(
+        selectedSubmission.id,
+        updateData
+      );
       fetchSubmissions();
 
       message.success("Cập nhật thông tin vaccine thành công!");
@@ -555,15 +559,19 @@ function VaccinationManagement() {
   const getStatusColor = (status) => {
     switch (status) {
       case "pending":
-        return "orange";
+        return "orange"; // Chờ phản hồi parent
+      case "confirmed":
+        return "blue"; // Đã chấp nhận/xác nhận
       case "approved":
-        return "green";
-      case "in-use":
-        return "blue";
+        return "cyan"; // Chờ tiêm
+      case "injected":
+        return "green"; // Đã tiêm xong
+      case "monitoring":
+        return "purple"; // Đang theo dõi sau tiêm
       case "completed":
-        return "cyan";
+        return "success"; // Hoàn thành toàn bộ quy trình
       case "rejected":
-        return "red";
+        return "red"; // Parent từ chối
       default:
         return "default";
     }
@@ -572,22 +580,34 @@ function VaccinationManagement() {
   const getStatusText = (status) => {
     switch (status) {
       case "pending":
-        return "Chờ xử lý";
+        return "Chờ phản hồi";
+      case "confirmed":
+        return "Đã chấp nhận";
       case "approved":
-        return "Đã xác nhận";
-      case "in-use":
-        return "Đang tiêm chủng";
+        return "Chờ tiêm";
+      case "injected":
+        return "Đã tiêm";
+      case "monitoring":
+        return "Đang theo dõi";
       case "completed":
         return "Hoàn thành";
       case "rejected":
-        return "Đã từ chối";
+        return "Từ chối";
       default:
         return status;
     }
   };
 
   const classes = ["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B"];
-  const statuses = ["pending", "approved", "in-use", "completed", "rejected"];
+  const statuses = [
+    "pending",
+    "confirmed",
+    "approved",
+    "injected",
+    "monitoring",
+    "completed",
+    "rejected",
+  ];
 
   // 🆕 Handle search function
   const handleSearch = () => {
@@ -595,8 +615,23 @@ function VaccinationManagement() {
     console.log("🔍 Searching for:", searchText);
   };
 
-  // Updated filter logic to use searchText for multi-field search
+  // Updated filter logic with 3 tabs
   const filteredSubmissions = submissions.filter((submission) => {
+    // Tab filtering first
+    let matchesTab = false;
+    if (activeTab === "waiting-confirmation") {
+      // Tab 1: Chờ xác nhận (pending, confirmed, rejected)
+      matchesTab = ["pending", "confirmed", "rejected"].includes(
+        submission.status
+      );
+    } else if (activeTab === "vaccination") {
+      // Tab 2: Tiêm chủng (approved, injected)
+      matchesTab = ["approved", "injected"].includes(submission.status);
+    } else if (activeTab === "post-vaccination") {
+      // Tab 3: Theo dõi sau tiêm (monitoring, completed)
+      matchesTab = ["monitoring", "completed"].includes(submission.status);
+    }
+
     const matchesStatus =
       statusFilter === "all" || submission.status === statusFilter;
     const matchesClass =
@@ -613,7 +648,7 @@ function VaccinationManagement() {
       (submission.studentClass &&
         String(submission.studentClass).toLowerCase().includes(search));
 
-    return matchesStatus && matchesClass && matchesSearch;
+    return matchesTab && matchesStatus && matchesClass && matchesSearch;
   });
 
   const columns = [
@@ -703,33 +738,44 @@ function VaccinationManagement() {
           >
             Chi tiết
           </Button>
-          {record.status === "pending" && record.createdBy === "parent" && (
-            <>
-              <Button
-                type="default"
-                icon={<EditOutlined />}
-                size="small"
-                onClick={() => handleEdit(record)}
-                style={{
-                  padding: "0 6px",
-                  fontSize: "12px",
-                  marginRight: "4px",
-                }}
-              >
-                Sửa
-              </Button>
-              <Button
-                type="primary"
-                icon={<CheckOutlined />}
-                size="small"
-                onClick={() => handleVerify(record)}
-                style={{ padding: "0 6px", fontSize: "12px" }}
-              >
-                Xử lý
-              </Button>
-            </>
+          {/* Nếu chờ phản hồi parent, chỉ có thể sửa thông báo */}
+          {record.status === "pending" && (
+            <Button
+              type="default"
+              icon={<EditOutlined />}
+              size="small"
+              onClick={() => handleEdit(record)}
+              style={{ padding: "0 6px", fontSize: "12px" }}
+            >
+              Sửa
+            </Button>
           )}
-          {(record.status === "approved" || record.status === "in-use") && (
+          {/* Nếu đã chấp nhận/xác nhận, có thể chuyển sang chờ tiêm */}
+          {record.status === "confirmed" && (
+            <Button
+              type="primary"
+              icon={<CheckOutlined />}
+              size="small"
+              onClick={() => handleUpdateProgress(record)}
+              style={{ padding: "0 6px", fontSize: "12px" }}
+            >
+              Chuẩn bị tiêm
+            </Button>
+          )}
+          {/* Nếu chờ tiêm, có thể thực hiện tiêm */}
+          {record.status === "approved" && (
+            <Button
+              type="primary"
+              icon={<CheckOutlined />}
+              size="small"
+              onClick={() => handleUpdateProgress(record)}
+              style={{ padding: "0 6px", fontSize: "12px" }}
+            >
+              Thực hiện tiêm
+            </Button>
+          )}
+          {/* Nếu đã tiêm, chuyển sang theo dõi (tự động chuyển tab) */}
+          {record.status === "injected" && (
             <Button
               type="default"
               icon={<ClockCircleOutlined />}
@@ -737,7 +783,19 @@ function VaccinationManagement() {
               onClick={() => handleUpdateProgress(record)}
               style={{ padding: "0 6px", fontSize: "12px" }}
             >
-              Cập nhật
+              Bắt đầu theo dõi
+            </Button>
+          )}
+          {/* Nếu đang theo dõi, có thể hoàn thành */}
+          {record.status === "monitoring" && (
+            <Button
+              type="default"
+              icon={<ClockCircleOutlined />}
+              size="small"
+              onClick={() => handleUpdateProgress(record)}
+              style={{ padding: "0 6px", fontSize: "12px" }}
+            >
+              Hoàn thành
             </Button>
           )}
         </Space>
@@ -761,8 +819,7 @@ function VaccinationManagement() {
       {/* 🎨 Modern Enhanced Header with Navigation Feel */}
       <div
         style={{
-          background:
-            "linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%)",
+          background: "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
           borderRadius: "0 0 32px 32px",
           padding: "40px 32px 48px",
           marginBottom: "40px",
@@ -976,7 +1033,7 @@ function VaccinationManagement() {
       </div>
       {/* Main Content Container */}
       <div style={{ padding: "0 32px 32px" }}>
-        {/* 📊 Thống kê trạng thái đơn tiêm chủng - ĐƯỢC DI CHUYỂN LÊN TRÊN ĐẦU */}
+        {/* 📊 Thống kê trạng thái đơn tiêm chủng */}
         <Card
           title={
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -992,6 +1049,7 @@ function VaccinationManagement() {
                   justifyContent: "center",
                   boxShadow: "0 8px 20px rgba(16, 185, 129, 0.3)",
                   border: "2px solid rgba(255,255,255,0.2)",
+                  minWidth: "25px",
                 }}
               >
                 <Text style={{ color: "white", fontSize: "24px" }}> 💉 </Text>
@@ -1028,10 +1086,11 @@ function VaccinationManagement() {
             boxShadow:
               "0 20px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05)",
           }}
-          bodyStyle={{ padding: "32px" }}
+          bodyStyle={{ padding: "16px" }}
         >
-          <Row gutter={[20, 20]} justify="center">
-            <Col xs={12} sm={8} md={4}>
+          <Row gutter={[16, 16]} justify="center">
+            {/* Chờ phản hồi */}
+            <Col xs={12} sm={8} md={6} lg={3}>
               <Card
                 hoverable
                 style={{
@@ -1043,111 +1102,37 @@ function VaccinationManagement() {
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
                 }}
-                bodyStyle={{ padding: "20px" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 20px 40px rgba(245, 158, 11, 0.3)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow =
-                    "0 10px 25px rgba(245, 158, 11, 0.2)";
-                }}
+                bodyStyle={{ padding: "16px" }}
               >
                 <div style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      fontSize: "40px",
-                      marginBottom: "12px",
-                      filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.1))",
-                    }}
-                  >
+                  <div style={{ fontSize: "32px", marginBottom: "8px" }}>
                     ⏳
                   </div>
                   <div
                     style={{
-                      fontSize: "28px",
+                      fontSize: "24px",
                       fontWeight: "800",
                       color: "#d97706",
-                      marginBottom: "6px",
-                      textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
+                      marginBottom: "4px",
                     }}
                   >
                     {submissions.filter((s) => s.status === "pending").length}
                   </div>
                   <Text
                     style={{
-                      fontSize: "13px",
+                      fontSize: "12px",
                       color: "#92400e",
                       fontWeight: "600",
                     }}
                   >
-                    Chờ xử lý
+                    Chờ phản hồi
                   </Text>
                 </div>
               </Card>
             </Col>
 
-            <Col xs={12} sm={8} md={4}>
-              <Card
-                hoverable
-                style={{
-                  borderRadius: "16px",
-                  border: "none",
-                  background:
-                    "linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)",
-                  boxShadow: "0 10px 25px rgba(34, 197, 94, 0.2)",
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                  cursor: "pointer",
-                }}
-                bodyStyle={{ padding: "20px" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 20px 40px rgba(34, 197, 94, 0.3)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow =
-                    "0 10px 25px rgba(34, 197, 94, 0.2)";
-                }}
-              >
-                <div style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      fontSize: "40px",
-                      marginBottom: "12px",
-                      filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.1))",
-                    }}
-                  >
-                    ✅
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "28px",
-                      fontWeight: "800",
-                      color: "#16a34a",
-                      marginBottom: "6px",
-                      textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
-                    }}
-                  >
-                    {submissions.filter((s) => s.status === "approved").length}
-                  </div>
-                  <Text
-                    style={{
-                      fontSize: "13px",
-                      color: "#15803d",
-                      fontWeight: "600",
-                    }}
-                  >
-                    Đã duyệt
-                  </Text>
-                </div>
-              </Card>
-            </Col>
-
-            <Col xs={12} sm={8} md={4}>
+            {/* Đã chấp nhận */}
+            <Col xs={12} sm={8} md={6} lg={3}>
               <Card
                 hoverable
                 style={{
@@ -1159,101 +1144,197 @@ function VaccinationManagement() {
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
                 }}
-                bodyStyle={{ padding: "20px" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 20px 40px rgba(59, 130, 246, 0.3)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow =
-                    "0 10px 25px rgba(59, 130, 246, 0.2)";
-                }}
+                bodyStyle={{ padding: "16px" }}
               >
                 <div style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      fontSize: "40px",
-                      marginBottom: "12px",
-                      filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.1))",
-                    }}
-                  >
-                    💉
+                  <div style={{ fontSize: "32px", marginBottom: "8px" }}>
+                    ✅
                   </div>
                   <div
                     style={{
-                      fontSize: "28px",
+                      fontSize: "24px",
                       fontWeight: "800",
                       color: "#2563eb",
-                      marginBottom: "6px",
-                      textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
+                      marginBottom: "4px",
                     }}
                   >
-                    {submissions.filter((s) => s.status === "in-use").length}
+                    {submissions.filter((s) => s.status === "confirmed").length}
                   </div>
                   <Text
                     style={{
-                      fontSize: "13px",
+                      fontSize: "12px",
                       color: "#1d4ed8",
                       fontWeight: "600",
                     }}
                   >
-                    Đang tiêm
+                    Đã chấp nhận
                   </Text>
                 </div>
               </Card>
             </Col>
 
-            <Col xs={12} sm={8} md={4}>
+            {/* Chờ tiêm */}
+            <Col xs={12} sm={8} md={6} lg={3}>
               <Card
                 hoverable
                 style={{
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)",
-                  boxShadow: "0 10px 25px rgba(124, 58, 237, 0.2)",
+                    "linear-gradient(135deg, #cffafe 0%, #a7f3d0 100%)",
+                  boxShadow: "0 10px 25px rgba(6, 182, 212, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
                 }}
-                bodyStyle={{ padding: "20px" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 20px 40px rgba(124, 58, 237, 0.3)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow =
-                    "0 10px 25px rgba(124, 58, 237, 0.2)";
-                }}
+                bodyStyle={{ padding: "16px" }}
               >
                 <div style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      fontSize: "40px",
-                      marginBottom: "12px",
-                      filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.1))",
-                    }}
-                  >
-                    🎯
+                  <div style={{ fontSize: "32px", marginBottom: "8px" }}>
+                    🚀
                   </div>
                   <div
                     style={{
-                      fontSize: "28px",
+                      fontSize: "24px",
                       fontWeight: "800",
+                      color: "#0891b2",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    {submissions.filter((s) => s.status === "approved").length}
+                  </div>
+                  <Text
+                    style={{
+                      fontSize: "12px",
+                      color: "#0e7490",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Chờ tiêm
+                  </Text>
+                </div>
+              </Card>
+            </Col>
+
+            {/* Đã tiêm */}
+            <Col xs={12} sm={8} md={6} lg={3}>
+              <Card
+                hoverable
+                style={{
+                  borderRadius: "16px",
+                  border: "none",
+                  background:
+                    "linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)",
+                  boxShadow: "0 10px 25px rgba(34, 197, 94, 0.2)",
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  cursor: "pointer",
+                }}
+                bodyStyle={{ padding: "16px" }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "32px", marginBottom: "8px" }}>
+                    💉
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "24px",
+                      fontWeight: "800",
+                      color: "#16a34a",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    {submissions.filter((s) => s.status === "injected").length}
+                  </div>
+                  <Text
+                    style={{
+                      fontSize: "12px",
+                      color: "#15803d",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Đã tiêm
+                  </Text>
+                </div>
+              </Card>
+            </Col>
+
+            {/* Đang theo dõi */}
+            <Col xs={12} sm={8} md={6} lg={3}>
+              <Card
+                hoverable
+                style={{
+                  borderRadius: "16px",
+                  border: "none",
+                  background:
+                    "linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)",
+                  boxShadow: "0 10px 25px rgba(147, 51, 234, 0.2)",
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  cursor: "pointer",
+                }}
+                bodyStyle={{ padding: "16px" }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "32px", marginBottom: "8px" }}>
+                    🩺
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "24px",
+                      fontWeight: "800",
+                      color: "#9333ea",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    {
+                      submissions.filter((s) => s.status === "monitoring")
+                        .length
+                    }
+                  </div>
+                  <Text
+                    style={{
+                      fontSize: "12px",
                       color: "#7c3aed",
-                      marginBottom: "6px",
-                      textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Đang theo dõi
+                  </Text>
+                </div>
+              </Card>
+            </Col>
+
+            {/* Hoàn thành */}
+            <Col xs={12} sm={8} md={6} lg={3}>
+              <Card
+                hoverable
+                style={{
+                  borderRadius: "16px",
+                  border: "none",
+                  background:
+                    "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
+                  boxShadow: "0 10px 25px rgba(34, 197, 94, 0.3)",
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  cursor: "pointer",
+                }}
+                bodyStyle={{ padding: "16px" }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "32px", marginBottom: "8px" }}>
+                    🎉
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "24px",
+                      fontWeight: "800",
+                      color: "#16a34a",
+                      marginBottom: "4px",
                     }}
                   >
                     {submissions.filter((s) => s.status === "completed").length}
                   </div>
                   <Text
                     style={{
-                      fontSize: "13px",
-                      color: "#6d28d9",
+                      fontSize: "12px",
+                      color: "#15803d",
                       fontWeight: "600",
                     }}
                   >
@@ -1263,7 +1344,8 @@ function VaccinationManagement() {
               </Card>
             </Col>
 
-            <Col xs={12} sm={8} md={4}>
+            {/* Từ chối */}
+            <Col xs={12} sm={8} md={6} lg={3}>
               <Card
                 hoverable
                 style={{
@@ -1275,42 +1357,25 @@ function VaccinationManagement() {
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
                 }}
-                bodyStyle={{ padding: "20px" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 20px 40px rgba(239, 68, 68, 0.3)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow =
-                    "0 10px 25px rgba(239, 68, 68, 0.2)";
-                }}
+                bodyStyle={{ padding: "16px" }}
               >
                 <div style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      fontSize: "40px",
-                      marginBottom: "12px",
-                      filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.1))",
-                    }}
-                  >
+                  <div style={{ fontSize: "32px", marginBottom: "8px" }}>
                     ❌
                   </div>
                   <div
                     style={{
-                      fontSize: "28px",
+                      fontSize: "24px",
                       fontWeight: "800",
                       color: "#dc2626",
-                      marginBottom: "6px",
-                      textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
+                      marginBottom: "4px",
                     }}
                   >
                     {submissions.filter((s) => s.status === "rejected").length}
                   </div>
                   <Text
                     style={{
-                      fontSize: "13px",
+                      fontSize: "12px",
                       color: "#b91c1c",
                       fontWeight: "600",
                     }}
@@ -1322,8 +1387,7 @@ function VaccinationManagement() {
             </Col>
           </Row>
         </Card>
-
-        {/* 🎯 Bộ lọc và tìm kiếm - ĐƯỢC DI CHUYỂN XUỐNG DƯỚI THỐNG KÊ */}
+        {/* 🎯 Bộ lọc và tìm kiếm */}
         <Card
           title={
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -1420,11 +1484,13 @@ function VaccinationManagement() {
                     <Option key={status} value={status}>
                       <span style={{ fontSize: "13px" }}>
                         {status === "pending"
-                          ? "⏳ Chờ xử lý"
+                          ? "⏳ Chờ phản hồi"
                           : status === "approved"
-                          ? "✅ Đã duyệt"
-                          : status === "in-use"
-                          ? "� Đang tiêm"
+                          ? "✅ Chờ tiêm"
+                          : status === "injected"
+                          ? "💉 Đã tiêm"
+                          : status === "monitoring"
+                          ? "👁️ Đang theo dõi"
                           : status === "completed"
                           ? "🎯 Hoàn thành"
                           : status === "rejected"
@@ -1584,7 +1650,7 @@ function VaccinationManagement() {
           </div>
         </Card>
 
-        {/* 📋 Bảng danh sách vaccine */}
+        {/* 📋 Bảng danh sách vaccine với Tabs */}
         <Card
           title={
             <div
@@ -1610,7 +1676,7 @@ function VaccinationManagement() {
                     border: "2px solid rgba(255,255,255,0.2)",
                   }}
                 >
-                  <Text style={{ color: "white", fontSize: "24px" }}> 💉 </Text>
+                  <Text style={{ color: "white", fontSize: "24px" }}> 📋 </Text>
                 </div>
                 <div>
                   <Text
@@ -1655,6 +1721,55 @@ function VaccinationManagement() {
                 >
                   Thêm lịch tiêm chủng mới
                 </Button>
+
+                {/* � Nút debug VaccinatorID */}
+                <Button
+                  type="dashed"
+                  icon={<span>🔍</span>}
+                  onClick={() => {
+                    try {
+                      const currentUser = JSON.parse(
+                        localStorage.getItem("user") || "{}"
+                      );
+                      console.log("🔍 Debug - localStorage user:", currentUser);
+                      const userID =
+                        currentUser.username || currentUser.userID || currentUser.id || "nurse";
+                      message.info(`VaccinatorID sẽ sử dụng: ${userID}`);
+                    } catch (e) {
+                      console.log("❌ Lỗi đọc localStorage:", e);
+                      message.error("Không đọc được user từ localStorage");
+                    }
+                  }}
+                  style={{
+                    borderColor: "#722ed1",
+                    color: "#722ed1",
+                    fontWeight: "600",
+                    borderRadius: "8px",
+                  }}
+                  size="middle"
+                >
+                  Debug VaccinatorID
+                </Button>
+
+                {/* �🔄 Nút refresh để test */}
+                <Button
+                  icon={<span>🔄</span>}
+                  onClick={() => {
+                    console.log("🔄 Manual refresh clicked!");
+                    fetchSubmissions();
+                  }}
+                  style={{
+                    borderRadius: "8px",
+                    background:
+                      "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                    borderColor: "#3b82f6",
+                    color: "white",
+                    fontWeight: "600",
+                  }}
+                  size="middle"
+                >
+                  Refresh Data
+                </Button>
               </div>
             </div>
           }
@@ -1667,20 +1782,111 @@ function VaccinationManagement() {
           }}
           bodyStyle={{ padding: "0" }}
         >
-          <Table
-            columns={columns}
-            dataSource={filteredSubmissions}
-            loading={loading}
-            rowKey="id"
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} của ${total} vaccine`,
-            }}
-            scroll={{ x: 800 }}
-            style={{ borderRadius: "0 0 20px 20px" }}
+          {/* 🎯 Tabs cho workflow vaccine - Đặt ngay dưới tiêu đề */}
+          <Tabs
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            style={{ padding: "24px 24px 0 24px" }}
+            size="large"
+            type="card"
+            items={[
+              {
+                key: "waiting-confirmation",
+                label: (
+                  <span style={{ fontSize: "16px", fontWeight: "600" }}>
+                    📋 Chờ xác nhận (
+                    {
+                      submissions.filter((s) =>
+                        ["pending", "confirmed", "rejected"].includes(s.status)
+                      ).length
+                    }
+                    )
+                  </span>
+                ),
+                children: (
+                  /* Bảng danh sách cho Tab Chờ xác nhận */
+                  <Table
+                    columns={columns}
+                    dataSource={filteredSubmissions}
+                    loading={loading}
+                    rowKey="id"
+                    pagination={{
+                      pageSize: 10,
+                      showSizeChanger: true,
+                      showQuickJumper: true,
+                      showTotal: (total, range) =>
+                        `${range[0]}-${range[1]} của ${total} đơn chờ xác nhận`,
+                    }}
+                    scroll={{ x: 800 }}
+                    style={{ borderRadius: "0 0 20px 20px" }}
+                  />
+                ),
+              },
+              {
+                key: "vaccination",
+                label: (
+                  <span style={{ fontSize: "16px", fontWeight: "600" }}>
+                    💉 Tiêm chủng (
+                    {
+                      submissions.filter((s) =>
+                        ["approved", "injected"].includes(s.status)
+                      ).length
+                    }
+                    )
+                  </span>
+                ),
+                children: (
+                  /* Bảng danh sách cho Tab Tiêm chủng */
+                  <Table
+                    columns={columns}
+                    dataSource={filteredSubmissions}
+                    loading={loading}
+                    rowKey="id"
+                    pagination={{
+                      pageSize: 10,
+                      showSizeChanger: true,
+                      showQuickJumper: true,
+                      showTotal: (total, range) =>
+                        `${range[0]}-${range[1]} của ${total} đơn tiêm chủng`,
+                    }}
+                    scroll={{ x: 800 }}
+                    style={{ borderRadius: "0 0 20px 20px" }}
+                  />
+                ),
+              },
+              {
+                key: "post-vaccination",
+                label: (
+                  <span style={{ fontSize: "16px", fontWeight: "600" }}>
+                    🩺 Theo dõi sau tiêm (
+                    {
+                      submissions.filter((s) =>
+                        ["monitoring", "completed"].includes(s.status)
+                      ).length
+                    }
+                    )
+                  </span>
+                ),
+                children: (
+                  /* Bảng danh sách cho Tab Theo dõi sau tiêm */
+                  <Table
+                    columns={columns}
+                    dataSource={filteredSubmissions}
+                    loading={loading}
+                    rowKey="id"
+                    pagination={{
+                      pageSize: 10,
+                      showSizeChanger: true,
+                      showQuickJumper: true,
+                      showTotal: (total, range) =>
+                        `${range[0]}-${range[1]} của ${total} ca theo dõi`,
+                    }}
+                    scroll={{ x: 800 }}
+                    style={{ borderRadius: "0 0 20px 20px" }}
+                  />
+                ),
+              },
+            ]}
           />
         </Card>
 
@@ -1833,42 +2039,6 @@ function VaccinationManagement() {
           )}
         </Modal>
 
-        {/* Modal xử lý yêu cầu */}
-        <Modal
-          title={
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <CheckOutlined style={{ color: "#52c41a", fontSize: "20px" }} />
-              <span>Xử lý yêu cầu tiêm chủng</span>
-            </div>
-          }
-          open={verifyModalVisible}
-          onCancel={() => setVerifyModalVisible(false)}
-          onOk={() => form.submit()}
-          okText="Xác nhận"
-          cancelText="Hủy"
-        >
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleVerifySubmit}
-            initialValues={{ status: "approved" }}
-          >
-            <Form.Item
-              label="Trạng thái xử lý"
-              name="status"
-              rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
-            >
-              <Select>
-                <Option value="approved">✅ Chấp nhận</Option>
-                <Option value="rejected">❌ Từ chối</Option>
-              </Select>
-            </Form.Item>
-            <Form.Item label="Ghi chú" name="verificationNotes">
-              <TextArea rows={4} placeholder="Nhập ghi chú..." />
-            </Form.Item>
-          </Form>
-        </Modal>
-
         {/* Modal thêm vaccine mới */}
         <Modal
           title={
@@ -1889,7 +2059,7 @@ function VaccinationManagement() {
                 <span style={{ fontSize: "20px" }}> 💉 </span>
               </div>
               <Text strong style={{ fontSize: "18px" }}>
-                Thêm vaccine mới
+                Tạo yêu cầu tiêm chủng
               </Text>
             </div>
           }
@@ -1905,34 +2075,113 @@ function VaccinationManagement() {
             layout="vertical"
             onFinish={handleCreateVaccine}
           >
+            {/* Chọn loại tạo yêu cầu */}
             <Form.Item
-              label="Mã học sinh"
-              name="studentId"
+              label="Loại yêu cầu tiêm chủng"
+              name="createType"
               rules={[
-                { required: true, message: "Vui lòng nhập mã học sinh!" },
+                { required: true, message: "Vui lòng chọn loại yêu cầu!" },
               ]}
+              initialValue="student"
             >
-              <Input placeholder="Nhập mã học sinh..." />
+              <Radio.Group style={{ width: "100%" }}>
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Radio.Button
+                      value="student"
+                      style={{
+                        width: "100%",
+                        textAlign: "center",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      👤 Cho 1 học sinh
+                    </Radio.Button>
+                  </Col>
+                  <Col span={12}>
+                    <Radio.Button
+                      value="class"
+                      style={{
+                        width: "100%",
+                        textAlign: "center",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      🏫 Cho cả lớp
+                    </Radio.Button>
+                  </Col>
+                </Row>
+              </Radio.Group>
             </Form.Item>
+
+            {/* Conditional fields based on createType */}
+            <Form.Item shouldUpdate>
+              {({ getFieldValue }) => {
+                const createType = getFieldValue("createType");
+
+                if (createType === "student") {
+                  return (
+                    <Form.Item
+                      label="Mã học sinh"
+                      name="studentId"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng nhập mã học sinh!",
+                        },
+                      ]}
+                    >
+                      <Input placeholder="Nhập mã học sinh (vd: ST0003)..." />
+                    </Form.Item>
+                  );
+                } else {
+                  return (
+                    <Form.Item
+                      label="Chọn lớp"
+                      name="classId"
+                      rules={[
+                        { required: true, message: "Vui lòng chọn lớp!" },
+                      ]}
+                    >
+                      <Select placeholder="Chọn lớp để tạo yêu cầu tiêm chủng">
+                        {classes.map((cls) => (
+                          <Option key={cls} value={cls}>
+                            🏫 Lớp {cls}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  );
+                }
+              }}
+            </Form.Item>
+
             <Form.Item
-              label="Tên vaccine"
-              name="vaccineName"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên vaccine!" },
-              ]}
+              label="ID Vaccine"
+              name="vaccineId"
+              rules={[{ required: true, message: "Vui lòng nhập ID vaccine!" }]}
+              initialValue="1"
             >
-              <Input placeholder="Nhập tên vaccine..." />
+              <Input placeholder="Nhập ID vaccine (mặc định: 1)..." />
             </Form.Item>
+
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
-                  label="Loại vaccine"
-                  name="vaccinationType"
+                  label="Số liều"
+                  name="dose"
                   rules={[
-                    { required: true, message: "Vui lòng nhập loại vaccine!" },
+                    { required: true, message: "Vui lòng nhập số liều!" },
                   ]}
+                  initialValue="1"
                 >
-                  <Input placeholder="Nhập loại vaccine..." />
+                  <Input placeholder="Nhập số liều (vd: 1, 2, 3)..." />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -2025,7 +2274,8 @@ function VaccinationManagement() {
               ]}
             >
               <Select>
-                <Option value="in-use">� Đang tiêm chủng</Option>
+                <Option value="injected">💉 Đã tiêm</Option>
+                <Option value="monitoring">👁️ Đang theo dõi</Option>
                 <Option value="completed">🎯 Hoàn thành</Option>
               </Select>
             </Form.Item>
@@ -2131,13 +2381,6 @@ function VaccinationManagement() {
               rules={[{ required: true, message: "Vui lòng nhập ghi chú!" }]}
             >
               <TextArea rows={3} placeholder="Nhập ghi chú tiêm chủng..." />
-            </Form.Item>
-            <Form.Item label="Mức độ ưu tiên" name="urgency">
-              <Select>
-                <Option value="normal">🟢 Bình thường</Option>
-                <Option value="urgent">🟡 Khẩn cấp</Option>
-                <Option value="critical">🔴 Rất khẩn cấp</Option>
-              </Select>
             </Form.Item>
             <Form.Item label="Ghi chú" name="notes">
               <TextArea rows={3} placeholder="Nhập ghi chú..." />

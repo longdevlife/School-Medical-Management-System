@@ -3,12 +3,12 @@ import { Layout, Menu } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   UserOutlined,
-  CalendarOutlined,
   MedicineBoxOutlined,
   BarChartOutlined,
   SendOutlined,
   SettingOutlined,
   HeartOutlined,
+  AlertOutlined,
 } from "@ant-design/icons";
 import "./SidebarStyles.css";
 
@@ -27,7 +27,7 @@ function SidebarParent({ collapsed }) {
       label: "Hồ sơ học sinh",
     },
     {
-      key: `${basePath}/health-profile`,
+      key: `${basePath}/declare-health`,
       icon: <HeartOutlined />,
       label: "Hồ sơ sức khỏe",
     },
@@ -37,8 +37,8 @@ function SidebarParent({ collapsed }) {
       label: "Kết quả sức khỏe",
     },
     {
-      key: `${basePath}/events`,
-      icon: <CalendarOutlined />,
+      key: `${basePath}/medical-events`,
+      icon: <AlertOutlined />,
       label: "Sự kiện y tế",
     },
     {

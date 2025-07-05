@@ -38,10 +38,12 @@ import VaccineDetail from "./pages/vaccinations/VaccineDetail";
 import HealthCheckup from "./pages/healthRecord/HealthCheckup";
 import MedicineManagement from "./pages/medicineParent/MedicineManagement";
 
+
 import Login from "./pages/Login";
 import HomePage from "./pages/home/HomePage";
 import AboutPage from "./pages/home/AboutPage";
 import NewsPage from "./pages/home/NewsPage";
+
 
 
 function App() {
@@ -124,13 +126,11 @@ function App() {
           <Route index element={<ParentProfile />} />
             <Route path="profile-student" element={<StudentProfile />} />
             <Route path="profile" element={<ParentProfile />} />
-            <Route path="events" element={<MedicalEvent />} />
             <Route path="medical-events" element={<MedicalEvent />} />
             <Route path="vaccinations" element={<Vaccine />} />
             <Route path="vaccinations/:id" element={<VaccineDetail />} />
             <Route path="health-result" element={<HealthCheckup />} />
             <Route path="send-medicine" element={<MedicineManagement />} />
-           
           </Route>{" "}
           {/* Redirect root to home page */}
           <Route path="/" element={<Navigate to="/login" replace />} />

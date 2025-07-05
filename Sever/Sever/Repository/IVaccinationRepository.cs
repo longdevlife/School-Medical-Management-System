@@ -58,7 +58,8 @@ namespace Sever.Repository
 
         public async Task<VaccinationRecord> GetVaccineByRecordIdAsync(string id)
         {
-            return await _context.VaccinationRecord.FirstOrDefaultAsync(h => h.RecordID == id);
+            return await _context.VaccinationRecord
+                        .FirstOrDefaultAsync(h => h.RecordID == id);
         }
 
         public async Task<string> GetCurrentVaccinationRecordID()
@@ -87,7 +88,11 @@ namespace Sever.Repository
 
         public async Task<List<VaccinationRecord>> GetAllVaccinationRecordsAsync()
         {
-            return await _context.VaccinationRecord.ToListAsync();
+            return await _context.VaccinationRecord
+                .Include(r => r.StudentProfile)
+                .Include(r => r.Vaccinator)
+                 .Include(r => r.Vaccine)
+                .ToListAsync();
         }
 
         public async Task<bool> UpdateStatus(VaccinationRecord vaccination, string status)
@@ -101,29 +106,35 @@ namespace Sever.Repository
         public async Task<List<VaccinationRecord>> GetVaccineDeniedAsync()
         {
             return await _context.VaccinationRecord
-                //.Where(h => h.Status == " Đã từ chối")
-                .Where(h => EF.Functions.Like(h.Status, "%đã từ chối%"))
+                .Where(h => h.Status.Trim() == "Đã từ chối") 
+                .Include(r => r.StudentProfile)
+                .Include(r => r.Vaccine)
                 .ToListAsync();
         }
 
         public async Task<List<VaccinationRecord>> GetVaccineConfirmdAsync()
         {
             return await _context.VaccinationRecord
-                //.Where(h => h.Status == "Đã xác nhận")
-                .Where(h => EF.Functions.Like(h.Status, "%đã xác nhận%"))
+                .Where(h => h.Status == "Đã xác nhận")
+                .Include(r => r.StudentProfile)
+                .Include(r => r.Vaccine)
                 .ToListAsync();
         }
         public async Task<List<VaccinationRecord>> GetVaccineByStudentIdAsync(string studentId)
         {
             return await _context.VaccinationRecord
                 .Where(v => v.StudentID == studentId)
+                .Include(r => r.StudentProfile)
+                .Include(r => r.Vaccinator)
+                .Include(r => r.Vaccine)
                 .ToListAsync();
         }
         public async Task<List<VaccinationRecord>> GetVaccineNotResponseAsync()
         {
             return await _context.VaccinationRecord
-                //.Where(h => h.Status == "Chờ xác nhận")
-                .Where(h => EF.Functions.Like(h.Status, "%chờ xác nhận%"))
+                .Where(h => h.Status == "Chờ xác nhận")
+                .Include(r => r.StudentProfile)
+                .Include(r => r.Vaccine)
                 .ToListAsync();
 
         }

@@ -107,7 +107,7 @@ namespace Sever.Service
             };
             await _studentProfileRepository.CreateStudentProfile(student);
 
-            return await _healthProfileRepository.AddHealthProfile(new HealthProfile
+            return await _healthProfileRepository.AddHealthProfile( new HealthProfile
             {
                 HealthProfileID = await _healthProfileRepository.NewID(),
                 StudentID = student.StudentID,

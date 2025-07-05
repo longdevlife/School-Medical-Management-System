@@ -1030,6 +1030,22 @@
   },
   {
     "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetVaccineByStudentId",
+    "RelativePath": "api/nurse/vaccine/getByStudentId/{studentId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "studentId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
     "Method": "GetConfirmVaccine",
     "RelativePath": "api/nurse/vaccine/getConfirm",
     "HttpMethod": "GET",

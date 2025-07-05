@@ -18,5 +18,11 @@ namespace Sever.DTO.Vaccination
         public string? NurseID { get; set; }
         public int VaccineID { get; set; }
         public string? VaccinatorID { get; set; }
+        public string? Class { get; set; }
+        public string? StudentName { get; set; }
+        public string? VaccinatorName { get; set; }
+        public string? VaccineName { get; set; }
+
+
     }
 }

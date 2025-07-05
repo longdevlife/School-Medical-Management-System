@@ -127,127 +127,167 @@ const AboutPage = () => {
       <style>{customStyles}</style>
       <Layout className="min-h-screen">
         <Content className={`p-0 ${isHeaderSticky ? "pt-16" : ""} transition-all duration-300`}>
-          <div className="relative h-screen bg-gradient-to-br from-blue-50 via-blue-100/50 to-blue-200/30 flex flex-col overflow-hidden">
-            <div className={`relative z-30 w-full flex-shrink-0 transition-all duration-300 ${isHeaderSticky ? "sticky-header" : ""}`}>
-              <div className="w-full">
-                <AppHeader collapsed={collapsed} setCollapsed={setCollapsed} />
-              </div>
+          {/* Header Section */}
+          <div className={`relative z-30 w-full flex-shrink-0 transition-all duration-300 ${isHeaderSticky ? "sticky-header" : ""}`}>
+            <div className="w-full">
+              <AppHeader collapsed={collapsed} setCollapsed={setCollapsed} />
             </div>
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full opacity-40 animate-pulse" style={{ animationDelay: "2s" }}></div>
-              <div className="absolute bottom-32 left-16 w-24 h-24 bg-gradient-to-br from-blue-200 to-blue-300 rounded-full opacity-30 animate-pulse" style={{ animationDelay: "2.5s" }}></div>
-              <div className="absolute top-1/2 right-1/3 w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full opacity-50 animate-pulse" style={{ animationDelay: "3s" }}></div>
-              <div className="absolute inset-0 opacity-5 animate-fadeInUp" style={{ animationDelay: "0.5s" }}>
-                <div className="w-full h-full" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, #3B82F6 1px, transparent 0)`, backgroundSize: "40px 40px" }}></div>
-              </div>
-              <div className="absolute top-1/4 left-10 w-2 h-20 bg-gradient-to-b from-blue-300 to-transparent rounded-full opacity-30 animate-fadeInLeft" style={{ animationDelay: "1.5s" }}></div>
-              <div className="absolute bottom-1/4 right-10 w-2 h-16 bg-gradient-to-t from-blue-400 to-transparent rounded-full opacity-25 animate-fadeInRight" style={{ animationDelay: "1.8s" }}></div>
-              <div className="absolute top-32 left-1/4 w-6 h-6 border-2 border-blue-300 rounded rotate-45 opacity-20 animate-spin-slow"></div>
-              <div className="absolute bottom-40 right-1/4 w-4 h-4 bg-blue-200 rotate-12 opacity-30 animate-float" style={{ animationDelay: "2.2s" }}></div>
-            </div>
-            <div className="flex-1 w-full relative z-10 flex items-center justify-center">
-              <Row gutter={[48, 32]} align="middle" className="w-full h-full">
-                {/* Left: Image & Decorative */}
-                <Col xs={24} lg={12} className="h-full flex items-center justify-center">
-                  <div className="relative h-full flex items-center justify-center px-8 lg:px-16">
-                    {/* Background decorative circles */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-80 h-80 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full opacity-15 animate-pulse"></div>
-                      <div className="absolute w-96 h-96 bg-blue-500 rounded-full opacity-10"></div>
-                    </div>
-                    {/* Main Image */}
-                    <div className="relative z-10 transform hover:scale-105 transition-transform duration-700 animate-fadeInRight animate-float">
-                      <img
-                        src="/anhBacsi.png"
-                        alt="Bác sĩ chuyên nghiệp"
-                        className="w-full max-w-max mx-auto object-contain drop-shadow-2xl"
-                      />
-                    </div>
+          </div>
+
+          {/* Hero Section */}
+          <div className="relative bg-gradient-to-br from-blue-50 via-blue-100/50 to-blue-200/30 py-20">
+            <div className="max-w-7xl mx-auto px-4">
+              <Row gutter={[48, 32]} align="middle">
+                {/* Left: Hero Content */}
+                <Col xs={24} lg={12}>
+                  <div className="text-center lg:text-left animate-fadeInLeft">
+                    <Title className="text-4xl xl:text-5xl font-bold text-blue-700 leading-tight mb-6">
+                      Giới thiệu về {schoolInfo?.Name || schoolInfo?.name || schoolInfo?.schoolName || "Y tế học đường"}
+                    </Title>
+                    <Paragraph className="text-xl text-gray-700 leading-relaxed mb-8">
+                      Hệ thống {schoolInfo?.Name || schoolInfo?.name || schoolInfo?.schoolName || "Y tế học đường"} mang đến giải pháp chăm sóc sức khỏe toàn diện cho học sinh, với đội ngũ chuyên gia, y tá giàu kinh nghiệm và các dịch vụ hiện đại, an toàn, tận tâm.
+                    </Paragraph>
                   </div>
                 </Col>
-                {/* Right: About Content */}
-                <Col xs={24} lg={12} className="h-full flex items-center justify-center">
-                  <div className="max-w-2xl w-full animate-fadeInLeft mx-auto bg-white/90 rounded-3xl shadow-2xl border border-blue-100/40 backdrop-blur-md p-0">
-                    {/* Section 1: Giới thiệu */}
-                    <section className="px-10 pt-10 pb-8 border-b border-blue-100/40">
-                      <Title className="text-5xl xl:text-6xl font-bold text-blue-700 leading-tight animate-fadeInUp mb-4" style={{ animationDelay: "0.2s" }}>
-                        Giới thiệu về {schoolInfo?.Name || schoolInfo?.name || schoolInfo?.schoolName || "Y tế học đường"}
-                      </Title>
-                      <Paragraph className="text-xl text-gray-700 leading-relaxed animate-fadeInUp" style={{ animationDelay: "0.4s" }}>
-                        Hệ thống {schoolInfo?.Name || schoolInfo?.name || schoolInfo?.schoolName || "Y tế học đường"} mang đến giải pháp chăm sóc sức khỏe toàn diện cho học sinh, với đội ngũ chuyên gia, y tá giàu kinh nghiệm và các dịch vụ hiện đại, an toàn, tận tâm.
-                      </Paragraph>
-                    </section>
-
-                    {/* Section 2: Thông tin liên hệ */}
-                    <section className="px-10 py-8 border-b border-blue-100/40">
-                      <Title level={3} className="text-blue-700 font-bold mb-6">📞 Thông tin liên hệ</Title>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-blue-50 rounded-2xl p-6 shadow-md border border-blue-100 animate-fadeInUp" style={{ animationDelay: "0.6s" }}>
-                          <h4 className="text-lg font-bold text-blue-600 mb-3">📍 Địa chỉ</h4>
-                          <p className="text-gray-600">
-                            {schoolInfo?.Address || schoolInfo?.address || schoolInfo?.schoolAddress || "123 Đường Nguyễn Văn Cừ, Quận 5, TP.HCM"}
-                          </p>
-                        </div>
-                        <div className="bg-blue-50 rounded-2xl p-6 shadow-md border border-blue-100 animate-fadeInUp" style={{ animationDelay: "0.7s" }}>
-                          <h4 className="text-lg font-bold text-blue-600 mb-3">📞 Hotline</h4>
-                          <p className="text-gray-600">
-                            {schoolInfo?.Hotline || schoolInfo?.hotline || schoolInfo?.phone || schoolInfo?.Phone || "0365858084"}
-                          </p>
-                        </div>
-                        <div className="bg-blue-50 rounded-2xl p-6 shadow-md border border-blue-100 animate-fadeInUp" style={{ animationDelay: "0.8s" }}>
-                          <h4 className="text-lg font-bold text-blue-600 mb-3">✉️ Email</h4>
-                          <p className="text-gray-600">
-                            {schoolInfo?.Email || schoolInfo?.email || schoolInfo?.schoolEmail || "contact@schoolabc.edu.vn"}
-                          </p>
-                        </div>
-                        <div className="bg-blue-50 rounded-2xl p-6 shadow-md border border-blue-100 animate-fadeInUp" style={{ animationDelay: "0.9s" }}>
-                          <h4 className="text-lg font-bold text-blue-600 mb-3">🌐 Website</h4>
-                          <p className="text-gray-600">www.schoolabc.edu.vn</p>
-                        </div>
-                      </div>
-                    </section>
-
-                    {/* Section 3: Sứ mệnh & Tầm nhìn */}
-                    <section className="px-10 py-10 border-b border-blue-100/40">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="bg-blue-50 rounded-2xl p-6 shadow-md border border-blue-100 animate-fadeInUp" style={{ animationDelay: "1.0s" }}>
-                          <h3 className="text-2xl font-bold text-blue-600 mb-3">🎯 Sứ mệnh</h3>
-                          <p className="text-gray-600">Xây dựng môi trường học đường an toàn, khỏe mạnh, hỗ trợ phát triển toàn diện cho học sinh thông qua các dịch vụ y tế chất lượng cao.</p>
-                        </div>
-                        <div className="bg-blue-50 rounded-2xl p-6 shadow-md border border-blue-100 animate-fadeInUp" style={{ animationDelay: "1.1s" }}>
-                          <h3 className="text-2xl font-bold text-blue-600 mb-3">🚀 Tầm nhìn</h3>
-                          <p className="text-gray-600">Trở thành hệ thống y tế học đường hàng đầu, ứng dụng công nghệ hiện đại, kết nối chuyên gia và cộng đồng để nâng cao sức khỏe thế hệ trẻ.</p>
-                        </div>
-                      </div>
-                    </section>
-
-                    {/* Section 4: Giá trị cốt lõi */}
-                    <section className="px-10 py-10 border-b border-blue-100/40">
-                      <Title level={3} className="text-blue-700 font-bold mb-4">💎 Giá trị cốt lõi</Title>
-                      <ul className="flex flex-wrap justify-center gap-4 mt-4">
-                        <li className="bg-gradient-to-r from-blue-100 to-blue-200 px-6 py-3 rounded-full text-blue-700 font-semibold shadow-md hover:shadow-lg transition-shadow">🏆 Chuyên nghiệp</li>
-                        <li className="bg-gradient-to-r from-blue-100 to-blue-200 px-6 py-3 rounded-full text-blue-700 font-semibold shadow-md hover:shadow-lg transition-shadow">❤️ Tận tâm</li>
-                        <li className="bg-gradient-to-r from-blue-100 to-blue-200 px-6 py-3 rounded-full text-blue-700 font-semibold shadow-md hover:shadow-lg transition-shadow">🛡️ An toàn</li>
-                        <li className="bg-gradient-to-r from-blue-100 to-blue-200 px-6 py-3 rounded-full text-blue-700 font-semibold shadow-md hover:shadow-lg transition-shadow">🚀 Đổi mới</li>
-                        <li className="bg-gradient-to-r from-blue-100 to-blue-200 px-6 py-3 rounded-full text-blue-700 font-semibold shadow-md hover:shadow-lg transition-shadow">🤝 Hợp tác</li>
-                      </ul>
-                    </section>
-
-                    {/* Section 5: Đội ngũ chuyên gia */}
-                    <section className="px-10 py-10">
-                      <Title level={4} className="text-blue-700 font-bold mb-2">👨‍⚕️ Đội ngũ chuyên gia</Title>
-                      <Paragraph className="text-gray-700">
-                        Đội ngũ y bác sĩ, y tá và chuyên gia y tế của {schoolInfo?.Name || schoolInfo?.name || "chúng tôi"} đều có trình độ chuyên môn cao, nhiều năm kinh nghiệm trong lĩnh vực chăm sóc sức khỏe học đường, luôn sẵn sàng hỗ trợ và đồng hành cùng học sinh, phụ huynh và nhà trường.
-                      </Paragraph>
-                    </section>
+                
+                {/* Right: Hero Image */}
+                <Col xs={24} lg={12}>
+                  <div className="text-center animate-fadeInRight">
+                    <img
+                      src="/anhBacsi.png"
+                      alt="Bác sĩ chuyên nghiệp"
+                      className="w-full max-w-lg mx-auto object-contain drop-shadow-2xl"
+                    />
                   </div>
                 </Col>
               </Row>
             </div>
           </div>
+
+          {/* Contact Info Section */}
+          <div className="bg-white py-20">
+            <div className="max-w-7xl mx-auto px-4">
+              <Title level={2} className="text-center text-blue-700 font-bold mb-12">📞 Thông tin liên hệ</Title>
+              <Row gutter={[24, 24]}>
+                <Col xs={24} sm={12} lg={6}>
+                  <div className="bg-blue-50 rounded-2xl p-6 text-center shadow-md border border-blue-100 h-full">
+                    <h4 className="text-lg font-bold text-blue-600 mb-3">📍 Địa chỉ</h4>
+                    <p className="text-gray-600">
+                      {schoolInfo?.Address || schoolInfo?.address || schoolInfo?.schoolAddress || "123 Đường Nguyễn Văn Cừ, Quận 5, TP.HCM"}
+                    </p>
+                  </div>
+                </Col>
+                <Col xs={24} sm={12} lg={6}>
+                  <div className="bg-blue-50 rounded-2xl p-6 text-center shadow-md border border-blue-100 h-full">
+                    <h4 className="text-lg font-bold text-blue-600 mb-3">📞 Hotline</h4>
+                    <p className="text-gray-600">
+                      {schoolInfo?.Hotline || schoolInfo?.hotline || schoolInfo?.phone || schoolInfo?.Phone || "0365858084"}
+                    </p>
+                  </div>
+                </Col>
+                <Col xs={24} sm={12} lg={6}>
+                  <div className="bg-blue-50 rounded-2xl p-6 text-center shadow-md border border-blue-100 h-full">
+                    <h4 className="text-lg font-bold text-blue-600 mb-3">✉️ Email</h4>
+                    <p className="text-gray-600">
+                      {schoolInfo?.Email || schoolInfo?.email || schoolInfo?.schoolEmail || "contact@schoolabc.edu.vn"}
+                    </p>
+                  </div>
+                </Col>
+                <Col xs={24} sm={12} lg={6}>
+                  <div className="bg-blue-50 rounded-2xl p-6 text-center shadow-md border border-blue-100 h-full">
+                    <h4 className="text-lg font-bold text-blue-600 mb-3">🌐 Website</h4>
+                    <p className="text-gray-600">www.schoolabc.edu.vn</p>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          </div>
+
+          {/* Mission & Vision Section */}
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 py-20">
+            <div className="max-w-7xl mx-auto px-4">
+              <Row gutter={[48, 32]} align="middle">
+                <Col xs={24} lg={12}>
+                  <div className="bg-white rounded-2xl p-8 shadow-xl border border-blue-100 h-full">
+                    <h3 className="text-3xl font-bold text-blue-600 mb-4">🎯 Sứ mệnh</h3>
+                    <p className="text-gray-700 text-lg leading-relaxed">
+                      Xây dựng môi trường học đường an toàn, khỏe mạnh, hỗ trợ phát triển toàn diện cho học sinh thông qua các dịch vụ y tế chất lượng cao.
+                    </p>
+                  </div>
+                </Col>
+                <Col xs={24} lg={12}>
+                  <div className="bg-white rounded-2xl p-8 shadow-xl border border-blue-100 h-full">
+                    <h3 className="text-3xl font-bold text-blue-600 mb-4">🚀 Tầm nhìn</h3>
+                    <p className="text-gray-700 text-lg leading-relaxed">
+                      Trở thành hệ thống y tế học đường hàng đầu, ứng dụng công nghệ hiện đại, kết nối chuyên gia và cộng đồng để nâng cao sức khỏe thế hệ trẻ.
+                    </p>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          </div>
+
+          {/* Core Values Section */}
+          <div className="bg-white py-20">
+            <div className="max-w-7xl mx-auto px-4">
+              <Title level={2} className="text-center text-blue-700 font-bold mb-12">💎 Giá trị cốt lõi</Title>
+              <Row gutter={[24, 24]} justify="center">
+                <Col xs={24} sm={12} md={8} lg={4}>
+                  <div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 shadow-md h-full">
+                    <div className="text-4xl mb-4">🏆</div>
+                    <h4 className="text-lg font-bold text-blue-700 mb-2">Chuyên nghiệp</h4>
+                    <p className="text-gray-600 text-sm">Đội ngũ y tế có trình độ cao</p>
+                  </div>
+                </Col>
+                <Col xs={24} sm={12} md={8} lg={4}>
+                  <div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 shadow-md h-full">
+                    <div className="text-4xl mb-4">❤️</div>
+                    <h4 className="text-lg font-bold text-blue-700 mb-2">Tận tâm</h4>
+                    <p className="text-gray-600 text-sm">Chăm sóc với tình yêu thương</p>
+                  </div>
+                </Col>
+                <Col xs={24} sm={12} md={8} lg={4}>
+                  <div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 shadow-md h-full">
+                    <div className="text-4xl mb-4">🛡️</div>
+                    <h4 className="text-lg font-bold text-blue-700 mb-2">An toàn</h4>
+                    <p className="text-gray-600 text-sm">Đảm bảo an toàn tuyệt đối</p>
+                  </div>
+                </Col>
+                <Col xs={24} sm={12} md={8} lg={4}>
+                  <div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 shadow-md h-full">
+                    <div className="text-4xl mb-4">🚀</div>
+                    <h4 className="text-lg font-bold text-blue-700 mb-2">Đổi mới</h4>
+                    <p className="text-gray-600 text-sm">Ứng dụng công nghệ hiện đại</p>
+                  </div>
+                </Col>
+                <Col xs={24} sm={12} md={8} lg={4}>
+                  <div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 shadow-md h-full">
+                    <div className="text-4xl mb-4">🤝</div>
+                    <h4 className="text-lg font-bold text-blue-700 mb-2">Hợp tác</h4>
+                    <p className="text-gray-600 text-sm">Kết nối cộng đồng giáo dục</p>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          </div>
+
+          {/* Team Section */}
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 py-20">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="text-center">
+                <Title level={2} className="text-blue-700 font-bold mb-6">👨‍⚕️ Đội ngũ chuyên gia</Title>
+                <div className="max-w-4xl mx-auto">
+                  <Paragraph className="text-lg text-gray-700 leading-relaxed">
+                    Đội ngũ y bác sĩ, y tá và chuyên gia y tế của {schoolInfo?.Name || schoolInfo?.name || "chúng tôi"} đều có trình độ chuyên môn cao, nhiều năm kinh nghiệm trong lĩnh vực chăm sóc sức khỏe học đường, luôn sẵn sàng hỗ trợ và đồng hành cùng học sinh, phụ huynh và nhà trường.
+                  </Paragraph>
+                </div>
+              </div>
+            </div>
+          </div>
         </Content>
         
-        <Footer className="bg-gray-900 text-white p-0" style={{ backgroundColor: "#37AEEF" }}>
+        {/* Footer with proper spacing */}
+        <Footer className="bg-gray-900 text-white p-0 mt-0" style={{ backgroundColor: "#37AEEF" }}>
           <div className="py-16">
             <div className="max-w-6xl mx-auto px-6">
               <Row gutter={[48, 32]}>

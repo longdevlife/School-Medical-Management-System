@@ -33,7 +33,7 @@ function AdminLayout() {
           </div>
         </Content>
 
-        <Footer />
+        
       </Layout>
     </Layout>
   );

@@ -44,12 +44,12 @@ function Settings() {
 
         console.log("School info from API:", info);
 
-        // Map đúng tên field từ API response
+        // Map đúng tên field từ API response (sử dụng field names thực tế)
         form.setFieldsValue({
-          schoolName: info.Name || info.name || info.schoolName || "",
-          address: info.Address || info.address || "",
-          phone: info.Hotline || info.hotline || info.phone || "",
-          email: info.Email || info.email || "",
+          schoolName: info.name || info.Name || info.schoolName || "",
+          address: info.address || info.Address || "",
+          phone: info.hotline || info.Hotline || info.phone || "",
+          email: info.email || info.Email || "",
         });
       } catch (err) {
         console.error("Error fetching school info:", err);
@@ -69,14 +69,35 @@ function Settings() {
       
       console.log('Form values:', values);
       
-      // Payload theo đúng format API yêu cầu (query parameters)
+      // Create a simple default file if no logo is selected
+      let logoFileToSend = logoFile;
+      if (!logoFileToSend) {
+        // Create a simple image file as default instead of text file
+        const canvas = document.createElement('canvas');
+        canvas.width = 100;
+        canvas.height = 100;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#f0f0f0';
+        ctx.fillRect(0, 0, 100, 100);
+        ctx.fillStyle = '#666';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Default Logo', 50, 50);
+        
+        // Convert canvas to blob and create file
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        logoFileToSend = new File([blob], 'default-logo.png', { type: 'image/png' });
+      }
+      
+      // Payload với field names đúng theo backend yêu cầu
       const payload = {
-        SchoolID: "school-001",
+        SchoolID: "S001",
         Name: values.schoolName || "",
         Address: values.address || "",
         Hotline: values.phone || "",
         Email: values.email || "",
-        Logo: logoFile // Thêm file logo nếu có
+        Logo: logoFileToSend,     // Backend expects both fields
+        LogoGifs: logoFileToSend  // Same file for both fields
       };
 
       console.log("Payload gửi lên backend:", payload);
@@ -86,16 +107,16 @@ function Settings() {
       
       message.success("Cập nhật thông tin trường thành công!");
 
-      // Reload lại thông tin sau khi update
+      // Reload lại thông tin sau khi update với field names đúng
       try {
         const res = await getSchoolInfo();
         const info = res.data;
         if (info) {
           form.setFieldsValue({
-            schoolName: info.Name || info.name || info.schoolName || "",
-            address: info.Address || info.address || "",
-            phone: info.Hotline || info.hotline || info.phone || "",
-            email: info.Email || info.email || "",
+            schoolName: info.name || info.Name || info.schoolName || "",
+            address: info.address || info.Address || "",
+            phone: info.hotline || info.Hotline || info.phone || "",
+            email: info.email || info.Email || "",
           });
         }
       } catch (fetchErr) {
@@ -337,30 +358,58 @@ function Settings() {
   ];
 
   return (
-    <div style={{ 
-      padding: '24px', 
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-      minHeight: '100vh' 
-    }}>
-      <div style={{ 
-        marginBottom: '24px', 
-        textAlign: 'center',
-        background: 'rgba(255,255,255,0.95)',
-        padding: '24px',
-        borderRadius: '16px',
-        backdropFilter: 'blur(10px)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
-      }}>
-        <SettingOutlined style={{ fontSize: '36px', color: '#667eea', marginBottom: '12px' }} />
-        <Title level={2} style={{ margin: 0, color: '#1e293b' }}>⚙️ Cài đặt hệ thống</Title>
-        <Text style={{ fontSize: '16px', color: '#64748b' }}>
-          Quản lý thông tin trường học và cấu hình giao diện
-        </Text>
-      </div>
+    <div className="p-0 sm:p-8 bg-gradient-to-br from-blue-200 via-white to-blue-100 min-h-screen flex flex-col items-center">
+      <div className="w-full max-w-6xl">
+        {/* Header tinh tế hơn */}
+        <div className="mb-14 flex items-center gap-8">
+          <div className="relative">
+            <div className="bg-gradient-to-br from-blue-400 to-blue-700 rounded-full p-7 shadow-2xl flex items-center justify-center border-4 border-white animate-fade-in">
+              <SettingOutlined className="text-white text-5xl drop-shadow-xl" />
+            </div>
+            <span className="absolute -bottom-3 -right-3 bg-white rounded-full px-3 py-1 text-xs text-blue-700 font-bold shadow border border-blue-100 select-none tracking-wide" style={{letterSpacing: 1}}>SETTINGS</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Title level={2} className="text-blue-900 mb-0 font-black tracking-widest drop-shadow-xl leading-tight" style={{letterSpacing: 2}}>Cài Đặt Hệ Thống</Title>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="w-2 h-2 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 animate-pulse shadow"></span>
+              <Text type="secondary" className="text-lg font-medium text-gray-600 italic tracking-wide">Quản lý thông tin trường học và cấu hình giao diện</Text>
+            </div>
+          </div>
+        </div>
 
-      <Tabs defaultActiveKey="1" type="card" size="large" items={tabItems} />
+        <Card className="rounded-3xl shadow-2xl border-blue-200 bg-white/95">
+          <Tabs 
+            defaultActiveKey="1" 
+            type="card" 
+            size="large" 
+            items={tabItems.map(item => ({
+              ...item,
+              children: (
+                <div className="p-6">
+                  {React.cloneElement(item.children, {
+                    style: { 
+                      borderRadius: '24px',
+                      border: 'none',
+                      boxShadow: '0 8px 32px rgba(59, 130, 246, 0.1)',
+                      background: 'linear-gradient(135deg, #f8faff 0%, #f1f5ff 100%)'
+                    }
+                  })}
+                </div>
+              )
+            }))}
+            className="rounded-2xl"
+            tabBarStyle={{
+              background: 'linear-gradient(135deg, #e0eaff 0%, #f0f6ff 100%)',
+              borderRadius: '16px 16px 0 0',
+              margin: 0,
+              padding: '8px 16px 0'
+            }}
+          />
+        </Card>
+      </div>
     </div>
   );
 }
 
 export default Settings;
+

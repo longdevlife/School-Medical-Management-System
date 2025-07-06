@@ -121,7 +121,6 @@ function App() {
             <Route index element={<ParentProfile />} />
             <Route path="profile-student" element={<StudentProfile />} />
             <Route path="profile" element={<ParentProfile />} />
-            <Route path="events" element={<MedicalEvent />} />
             <Route path="medical-events" element={<MedicalEvent />} />
             <Route path="vaccinations" element={<Vaccine />} />
             <Route path="vaccinations/:id" element={<VaccineDetail />} />

@@ -1,280 +1,250 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Card,
   Form,
   Input,
+  InputNumber,
   Button,
-  Select,
+  Card,
   Row,
   Col,
-  Typography,
+  Select,
   message,
   Spin,
-  Alert,
-  Tabs,
-  InputNumber,
-  DatePicker
+  Typography,
+  Space,
+  Divider,
+  Alert
 } from 'antd';
 import {
+  UserOutlined,
   HeartOutlined,
+  EyeOutlined,
   SaveOutlined,
-  ReloadOutlined,
-  CheckCircleOutlined,
-  ExclamationCircleOutlined,
-  UserOutlined
+  ReloadOutlined
 } from '@ant-design/icons';
 import declareApi from '../../api/declareApi';
 import studentApi from '../../api/studentApi';
 
-
 const { Title, Text } = Typography;
-const { TextArea } = Input;
 const { Option } = Select;
+const { TextArea } = Input;
 
 const DeclareHealthProfile = () => {
-  // States
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [students, setStudents] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [studentsLoading, setStudentsLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-  const [form] = Form.useForm();
+  const [healthProfile, setHealthProfile] = useState(null);
 
-  // Helper functions
-  const getStudentName = (studentId) => {
-    const student = students.find(s => s.StudentID === studentId);
-    return student ? student.StudentName : '';
-  };
-
-  const getStudentClass = (studentId) => {
-    const student = students.find(s => s.StudentID === studentId);
-    return student ? (student.Class || 'Chưa phân lớp') : '';
-  };
-
-  // Fetch students từ database với debug mở rộng
+  // Fetch danh sách học sinh của phụ huynh
   const fetchStudents = async () => {
     try {
       setStudentsLoading(true);
-      setError(null);
-      
-      console.log('🚀 Bắt đầu fetch students...');
-      console.log('🔐 Token hiện tại:', localStorage.getItem('token') ? 'Có token' : 'Không có token');
-      console.log('📡 Base URL:', 'https://localhost:7040/api/');
-      console.log('📡 Full URL:', 'https://localhost:7040/api/parent/get-student-info-by-parent');
-      
-      // Test kết nối trước
-      console.log('🔄 Đang test API connection...');
-      
       const response = await studentApi.parent.getMyChildren();
-      console.log('📥 API Response Status:', response.status);
-      console.log('📥 API Response Headers:', response.headers);
-      console.log('📥 API Response Data:', response.data);
-      
+
       if (response?.data) {
-        console.log('📋 Response data type:', typeof response.data);
-        console.log('📋 Response data keys:', Object.keys(response.data || {}));
-        
         let studentsData = [];
-        
-        // Thử nhiều cách parse data
+
         if (Array.isArray(response.data)) {
           studentsData = response.data;
-          console.log('✅ Data is direct array, length:', studentsData.length);
         } else if (response.data.data && Array.isArray(response.data.data)) {
           studentsData = response.data.data;
-          console.log('✅ Data in .data property, length:', studentsData.length);
         } else if (response.data.students && Array.isArray(response.data.students)) {
           studentsData = response.data.students;
-          console.log('✅ Data in .students property, length:', studentsData.length);
-        } else if (response.data.result && Array.isArray(response.data.result)) {
-          studentsData = response.data.result;
-          console.log('✅ Data in .result property, length:', studentsData.length);
-        } else {
-          console.log('⚠️ Cannot find array in response:', response.data);
-          console.log('📝 Available keys:', Object.keys(response.data || {}));
-          
-          // Thử tìm array đầu tiên trong response
-          const firstArrayKey = Object.keys(response.data || {}).find(key => 
-            Array.isArray(response.data[key])
-          );
-          
-          if (firstArrayKey) {
-            studentsData = response.data[firstArrayKey];
-            console.log(`✅ Found array in .${firstArrayKey}, length:`, studentsData.length);
-          }
         }
-        
-        if (studentsData.length === 0) {
-          console.log('⚠️ No students found in response');
-          setStudents([]);
-          message.warning('Không tìm thấy học sinh nào trong hệ thống');
-          return;
-        }
-        
-        console.log('📋 First student sample:', studentsData[0]);
-        
-        const processedStudents = studentsData.map((student, index) => {
-          console.log(`🔍 Processing student ${index + 1}:`, student);
-          const processed = {
-            StudentID: student.studentID || student.StudentID || student.id || student.ID || index + 1,
-            StudentName: student.studentName || student.StudentName || student.name || student.fullName || `Học sinh ${index + 1}`,
-            Class: student.class || student.className || student.ClassName || student.grade || student.classRoom || student.class_name || 'Chưa phân lớp',
-            Age: student.age || student.Age,
-            Sex: student.sex || student.Sex || student.gender,
-            Birthday: student.birthday || student.Birthday || student.dateOfBirth,
-            ParentName: student.parentName || student.ParentName
-          };
-          console.log(`✅ Processed student ${index + 1}:`, processed);
-          return processed;
-        });
-        
-        console.log('✅ All processed students:', processedStudents);
+
+        const processedStudents = studentsData.map(student => ({
+          StudentID: student.studentID || student.StudentID || student.id,
+          StudentName: student.studentName || student.StudentName || student.name,
+          Class: student.class || student.className || student.ClassName
+        }));
+
         setStudents(processedStudents);
-        message.success(`Đã tải thành công ${processedStudents.length} học sinh`);
-        
-        // Auto-select first student if available
-        if (processedStudents.length > 0 && !selectedStudentId) {
-          console.log('🎯 Auto-selecting first student:', processedStudents[0]);
+
+        console.log('👥 Danh sách học sinh đã load:', processedStudents);
+        console.log('📋 Student IDs:', processedStudents.map(s => s.StudentID));
+
+        // Auto select first student
+        if (processedStudents.length > 0) {
+          console.log('🎯 Auto selecting first student:', processedStudents[0].StudentID);
           setSelectedStudentId(processedStudents[0].StudentID);
         }
-      } else {
-        console.log('❌ No response.data received');
-        setStudents([]);
-        message.error('API không trả về dữ liệu');
       }
     } catch (error) {
-      console.error('❌ Full error object:', error);
-      console.error('❌ Error message:', error.message);
-      console.error('❌ Error response:', error.response);
-      console.error('❌ Error request:', error.request);
-      console.error('❌ Error config:', error.config);
-      
-      let errorMessage = 'Không thể tải danh sách học sinh';
-      
-      if (error.code === 'NETWORK_ERROR' || error.message.includes('Network Error')) {
-        errorMessage = 'Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.';
-      } else if (error.code === 'ERR_CERT_AUTHORITY_INVALID') {
-        errorMessage = 'Lỗi chứng chỉ SSL. Server có thể không được trust.';
-      } else if (error.response?.status === 401) {
-        errorMessage = 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại';
-      } else if (error.response?.status === 403) {
-        errorMessage = 'Bạn không có quyền truy cập dữ liệu này';
-      } else if (error.response?.status === 404) {
-        errorMessage = 'Không tìm thấy API endpoint';
-      } else if (error.response?.status >= 500) {
-        errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
-      }
-      
-      setError(errorMessage);
-      setStudents([]);
-      message.error(errorMessage);
+      message.error('Không thể tải danh sách học sinh');
     } finally {
       setStudentsLoading(false);
-      console.log('🏁 Fetch students completed');
     }
   };
 
-  // Load health profile khi chọn học sinh
-  const loadHealthProfile = async (studentID) => {
-    if (!studentID) return;
-    
+  // Load thông tin hồ sơ sức khỏe
+  const loadHealthProfile = async (studentId) => {
+    if (!studentId) return;
+
     try {
       setLoading(true);
-      console.log('🔍 Đang tải health profile cho học sinh:', studentID);
-      
-      // Gọi API với studentID để lấy thông tin hiện tại
-      const response = await declareApi.parent.declareHealthProfile(studentID, {});
-      
+      console.log(`🔍 Đang tải hồ sơ sức khỏe cho học sinh ID: ${studentId}`);
+
+      // Gọi API để lấy health profiles của parent
+      const response = await declareApi.parent.getHealthProfile();
+
+      console.log('📋 Raw API response:', response);
+
       if (response?.data) {
-        const healthData = response.data;
-        console.log('✅ Đã tải health profile:', healthData);
-        
-        // Fill form với dữ liệu từ backend
-        form.setFieldsValue({
-          allergyHistory: healthData.allergyHistory || '',
-          chronicDiseases: healthData.chronicDiseases || '',
-          pastSurgeries: healthData.pastSurgeries || 0,
-          surgicalCause: healthData.surgicalCause || '',
-          disabilities: healthData.disabilities || '',
-          height: healthData.height || '',
-          weight: healthData.weight || '',
-          visionLeft: healthData.visionLeft || '',
-          visionRight: healthData.visionRight || '',
-          toothDecay: healthData.toothDecay || '',
-          otheHealthIssues: healthData.otheHealthIssues || ''
-        });
-        
-        message.success('Đã tải thông tin hồ sơ sức khỏe');
+        if (Array.isArray(response.data)) {
+          console.log('📊 Dữ liệu là array với', response.data.length, 'health profiles');
+
+          if (response.data.length === 0) {
+            console.log('⚠️ Backend trả về empty array - có thể chưa có health profile nào trong DB');
+            // Tạo form trống cho user điền
+            form.resetFields();
+            form.setFieldsValue({ studentID: studentId });
+            setHealthProfile(null);
+            message.info('Chưa có hồ sơ sức khỏe, vui lòng điền thông tin để tạo mới');
+            return;
+          }
+
+          // Debug: In ra structure của từng item
+          response.data.forEach((item, index) => {
+            console.log(`📋 Item ${index}:`, JSON.stringify(item, null, 2));
+          });
+
+          // Tìm health profile của student được chọn
+          const healthProfileData = response.data.find(item =>
+            item.StudentID === studentId || item.studentID === studentId || item.studentId === studentId
+          );
+
+          if (healthProfileData) {
+            console.log('✅ Tìm thấy health profile:', healthProfileData);
+            setHealthProfile(healthProfileData);
+
+            // Fill form với dữ liệu từ backend (Backend trả về camelCase)
+            const formData = {
+              studentID: healthProfileData.studentID || studentId,
+              allergyHistory: healthProfileData.allergyHistory || '',
+              chronicDiseases: healthProfileData.chronicDiseases || '',
+              pastSurgeries: healthProfileData.pastSurgeries || 0,
+              surgicalCause: healthProfileData.surgicalCause || '',
+              disabilities: healthProfileData.disabilities || '',
+              height: healthProfileData.height || '',
+              weight: healthProfileData.weight || '',
+              visionLeft: healthProfileData.visionLeft ? String(healthProfileData.visionLeft) : '',
+              visionRight: healthProfileData.visionRight ? String(healthProfileData.visionRight) : '',
+              toothDecay: healthProfileData.toothDecay || '',
+              otheHealthIssues: healthProfileData.otheHealthIssues || ''
+            };
+
+            console.log('📝 Form data để fill:', formData);
+            form.setFieldsValue(formData);
+
+            // Kiểm tra xem có dữ liệu thực sự không
+            const hasData = formData.allergyHistory || formData.chronicDiseases ||
+              formData.height || formData.weight || formData.disabilities ||
+              formData.surgicalCause || formData.toothDecay || formData.otheHealthIssues;
+
+            if (hasData) {
+              message.success('Đã tải thông tin hồ sơ sức khỏe');
+            } else {
+              message.info('Hồ sơ sức khỏe chưa có thông tin chi tiết, vui lòng cập nhật');
+            }
+          } else {
+            console.log('❌ Không tìm thấy health profile cho student:', studentId);
+            console.log('📋 Các Student ID có sẵn:', response.data.map(item =>
+              item.StudentID || item.studentID || item.studentId || 'NO_ID'
+            ));
+
+            // Reset form khi không tìm thấy - có thể student này chưa có health profile
+            form.resetFields();
+            form.setFieldsValue({ studentID: studentId });
+            setHealthProfile(null);
+            message.info('Chưa có hồ sơ sức khỏe cho học sinh này, vui lòng điền thông tin để tạo mới');
+          }
+        } else {
+          console.log('⚠️ Response data không phải array:', response.data);
+          console.log('📋 Type của response.data:', typeof response.data);
+
+          // Reset form khi data không đúng format
+          form.resetFields();
+          form.setFieldsValue({ studentID: studentId });
+          setHealthProfile(null);
+          message.info('Chưa có hồ sơ sức khỏe, vui lòng điền thông tin');
+        }
+      } else {
+        console.log('⚠️ Response không có data:', response);
+
+        // Reset form khi không có data
+        form.resetFields();
+        form.setFieldsValue({ studentID: studentId });
+        setHealthProfile(null);
+        message.info('Chưa có hồ sơ sức khỏe, vui lòng điền thông tin');
       }
     } catch (error) {
-      console.error('❌ Lỗi khi tải health profile:', error);
-      
+      console.error('❌ Lỗi khi tải hồ sơ sức khỏe:', error);
+      console.error('❌ Error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      });
+
+      // Reset form khi có lỗi
+      form.resetFields();
+      form.setFieldsValue({ studentID: studentId });
+      setHealthProfile(null);
+
       if (error.response?.status === 404) {
-        console.log('⚠️ Chưa có health profile, form sẽ trống');
-        form.resetFields();
-        message.info('Chưa có hồ sơ sức khỏe, vui lòng điền thông tin');
+        message.info('Chưa có hồ sơ sức khỏe, vui lòng điền thông tin để tạo mới');
+      } else if (error.response?.status === 401) {
+        message.error('Phiên đăng nhập hết hạn, vui lòng đăng nhập lại');
       } else {
-        message.error('Không thể tải hồ sơ sức khỏe');
+        message.error('Không thể tải hồ sơ sức khỏe: ' + (error.response?.data?.message || error.message));
       }
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle student change
-  const handleStudentChange = (studentID) => {
-    setSelectedStudentId(studentID);
-    loadHealthProfile(studentID);
-  };
-
-  // Load health profile khi selectedStudentId thay đổi
-  useEffect(() => {
-    if (selectedStudentId) {
-      loadHealthProfile(selectedStudentId);
-    }
-  }, [selectedStudentId]);
-
-  // Handle form submit
+  // Xử lý submit form
   const handleSubmit = async (values) => {
-    if (!selectedStudentId) {
-      message.error('Vui lòng chọn học sinh');
-      return;
-    }
-
     try {
       setSubmitting(true);
-      
+      console.log('📤 Form values:', values);
+      console.log('🔍 otheHealthIssues value:', values.otheHealthIssues);
+
+      // Chuẩn bị data theo format PascalCase mà backend mong đợi
       const submitData = {
-        studentID: selectedStudentId,
-        allergyHistory: values.allergyHistory || '',
-        chronicDiseases: values.chronicDiseases || '',
-        pastSurgeries: parseInt(values.pastSurgeries) || 0,
-        surgicalCause: values.surgicalCause || '',
-        disabilities: values.disabilities || '',
-        height: parseFloat(values.height) || 0,
-        weight: parseFloat(values.weight) || 0,
-        visionLeft: parseFloat(values.visionLeft) || 0,
-        visionRight: parseFloat(values.visionRight) || 0,
-        toothDecay: values.toothDecay || '',
-        otheHealthIssues: values.otheHealthIssues || ''
+        StudentID: selectedStudentId,
+        AllergyHistory: values.allergyHistory || '',
+        ChronicDiseases: values.chronicDiseases || '',
+        PastSurgeries: parseInt(values.pastSurgeries) || 0,
+        SurgicalCause: values.surgicalCause || '',
+        Disabilities: values.disabilities || '',
+        Height: values.height ? parseFloat(values.height) : null,
+        Weight: values.weight ? parseFloat(values.weight) : null,
+        VisionLeft: values.visionLeft ? parseInt(values.visionLeft.replace(/[^0-9]/g, '')) || null : null,
+        VisionRight: values.visionRight ? parseInt(values.visionRight.replace(/[^0-9]/g, '')) || null : null,
+        ToothDecay: values.toothDecay || '',
+        OtheHealthIssues: values.otheHealthIssues || ''
       };
 
-      console.log('🚀 Đang cập nhật health profile:', submitData);
-      
-      const response = await declareApi.parent.declareHealthProfile(selectedStudentId, submitData);
-      
-      if (response?.data) {
-        console.log('✅ Cập nhật health profile thành công');
-        message.success('Đã cập nhật hồ sơ sức khỏe thành công!');
-      }
+      console.log('📤 Submit data (PascalCase):', submitData);
+      console.log('🔍 OtheHealthIssues submit value:', submitData.OtheHealthIssues);
+
+      await declareApi.parent.updateHealthProfile(submitData);
+
+      message.success('Cập nhật hồ sơ sức khỏe thành công!');
+
+      // Reload để cập nhật dữ liệu mới
+      await loadHealthProfile(selectedStudentId);
+
     } catch (error) {
-      console.error('❌ Lỗi khi cập nhật health profile:', error);
-      
-      if (error.response?.status === 404) {
-        message.error('Không tìm thấy học sinh');
+      console.error('❌ Submit error:', error);
+
+      if (error.response?.status === 400) {
+        message.error('Dữ liệu không hợp lệ, vui lòng kiểm tra lại');
       } else if (error.response?.status === 403) {
-        message.error('Bạn không có quyền cập nhật hồ sơ này');
+        message.error('Bạn không có quyền cập nhật thông tin này');
       } else {
         message.error('Có lỗi xảy ra khi cập nhật hồ sơ sức khỏe');
       }
@@ -283,504 +253,680 @@ const DeclareHealthProfile = () => {
     }
   };
 
-  // Component mount
+  // Xử lý thay đổi học sinh
+  const handleStudentChange = (studentId) => {
+    setSelectedStudentId(studentId);
+    form.resetFields();
+  };
+
+  // Load students khi component mount
   useEffect(() => {
     fetchStudents();
   }, []);
 
+  // Load health profile khi selectedStudentId thay đổi
+  useEffect(() => {
+    if (selectedStudentId) {
+      loadHealthProfile(selectedStudentId);
+    }
+  }, [selectedStudentId]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl shadow-xl p-8 m-8 text-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-red-400 to-orange-400 rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="text-4xl">❤️</span>
+      <div
+        style={{
+          background: "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
+          borderRadius: "32px",
+          boxShadow: "0 10px 32px rgba(22,160,133,0.18)",
+          padding: "32px 40px 28px 40px",
+          margin: "32px 0 24px 0",
+          maxWidth: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          minHeight: 120
+        }}
+      >
+        {/* Left: Icon + Title */}
+        <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
+          {/* Icon */}
+          <div
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: 24,
+              background: "linear-gradient(135deg, #d1f4f9 0%, #80d0c7 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow:
+                "0 8px 24px rgba(128,208,199,0.25), inset 0 2px 4px rgba(255,255,255,0.3)",
+              border: "2px solid rgba(255,255,255,0.4)",
+              backdropFilter: "blur(2px)",
+            }}
+          >
+            <span style={{ fontSize: 44, filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.13))" }}>🗒</span>
+          </div>
+          {/* Title + Subtitle */}
+          <div>
+            <div
+              style={{
+                fontSize: 36,
+                fontWeight: 900,
+                color: "#fff",
+                textShadow: "2px 2px 8px rgba(0,0,0,0.13)",
+                letterSpacing: "0.5px",
+                marginBottom: 8
+              }}
+            >
+              Khai báo hồ sơ sức khỏe
             </div>
-            
-            <div>
-              <h1 className="text-4xl font-black mb-2 tracking-wide">
-                Khai báo sức khỏe
-              </h1>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full shadow-sm"></div>
-                <p className="text-gray-100 text-lg font-medium">
-                  Cập nhật thông tin sức khỏe cho con em
-                </p>
-              </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: "#10b981",
+                  boxShadow: "0 0 0 4px rgba(16,185,129,0.18)"
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 17,
+                  color: "#f3f4f6",
+                  fontWeight: 500,
+                  textShadow: "1px 1px 3px rgba(0,0,0,0.10)"
+                }}
+              >
+                Xem và cập nhật thông tin sức khỏe của con
+              </span>
             </div>
           </div>
           
-          <div className="flex space-x-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 text-center min-w-[80px]">
-              <div className="text-2xl mb-1">👦</div>
-              <div className="text-2xl font-bold">{students.length}</div>
-              <div className="text-xs opacity-80">Học sinh</div>
+        </div>
+
+        {/* Ngày */}
+        <div style={{ display: "flex", gap: 18 }}>
+          <div
+            style={{
+              background: "rgba(255,255,255,0.13)",
+              borderRadius: 18,
+              padding: "18px 28px",
+              minWidth: 110,
+              textAlign: "center",
+              color: "#fff",
+              boxShadow: "0 2px 8px rgba(22,160,133,0.12)"
+            }}
+          >
+            <div style={{ fontSize: 26, marginBottom: 4 }}>
+              <span role="img" aria-label="clock">⏰</span>
             </div>
-            
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 text-center min-w-[100px]">
-              <div className="text-2xl mb-1">⏰</div>
-              <div className="text-lg font-bold">
-                {new Date().toLocaleDateString('vi-VN')}
-              </div>
-              <div className="text-xs opacity-80">Hôm nay</div>
+            <div style={{ fontSize: 18, fontWeight: 700 }}>
+              {new Date().toLocaleDateString('vi-VN')}
             </div>
+            <div style={{ fontSize: 13, opacity: 0.85 }}>Hôm nay</div>
           </div>
         </div>
+
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 pb-8">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-4">
         {/* Student Selection Card */}
-        <Card className="rounded-2xl shadow-lg border-0 mb-6 bg-gray-50">
-          <Row gutter={16} align="middle">
-            <Col xs={24} sm={12} md={8}>
-              <div className="flex items-center space-x-2 mb-2">
-                <UserOutlined className="text-blue-500 text-lg" />
-                <span className="font-semibold text-gray-700">Chọn học sinh</span>
-              </div>
-              <Select
-                placeholder="Chọn học sinh"
-                className="w-full"
-                value={selectedStudentId}
-                onChange={handleStudentChange}
-                loading={studentsLoading}
-                showSearch
-                optionFilterProp="children"
-                size="large"
-              >
-                {students.map(student => (
-                  <Option key={student.StudentID} value={student.StudentID}>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-medium">{student.StudentName}</span>
-                      <span className="text-gray-500">- {student.Class}</span>
-                    </div>
-                  </Option>
-                ))}
-              </Select>
-            </Col>
-            
-            <Col xs={24} sm={12} md={16} className="flex justify-end">
-              <Button
-                icon={<ReloadOutlined />}
-                onClick={fetchStudents}
-                loading={studentsLoading}
-                className="bg-indigo-100 text-indigo-700 border-indigo-200 hover:bg-indigo-200 rounded-xl font-semibold px-6"
-                size="large"
-              >
-                Tải lại danh sách
-              </Button>
-            </Col>
-          </Row>
-        </Card>
 
-        {/* Error Alert */}
-        {error && (
-          <Alert
-            message="Có lỗi xảy ra"
-            description={error}
-            type="error"
-            showIcon
-            closable
-            onClose={() => setError(null)}
-            className="mb-6 rounded-xl"
-            action={
-              <Button 
-                size="small" 
-                type="primary" 
-                onClick={fetchStudents}
-                className="rounded-lg"
-              >
-                Thử lại
-              </Button>
-            }
-          />
-        )}
-
-        {/* Main Form */}
+        {/* Health Profile Form */}
         {selectedStudentId && (
-          <>
+          <Spin spinning={loading}>
             <Card
-              className="rounded-2xl shadow-lg border-0"
+              style={{
+                borderRadius: 20,
+                border: "none",
+                background: "white",
+                boxShadow: "0 8px 32px rgba(127,90,240,0.07), 0 0 0 1px #f3f4f6",
+                marginBottom: 24,
+              }}
+              bodyStyle={{ padding: "32px" }}
               title={
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-400 to-pink-500 rounded-xl flex items-center justify-center shadow-md">
-                      <HeartOutlined className="text-white text-lg" />
+                <Row align="middle" justify="space-between">
+                  <Col>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: 12,
+                          background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: "0 4px 12px rgba(59,130,246,0.13)",
+                          border: "2px solid rgba(255,255,255,0.2)",
+                        }}
+                      >
+                        <span style={{
+                          color: "white",
+                          fontSize: 18,
+                          textShadow: "0 2px 4px rgba(0,0,0,0.2)"
+                        }}>🏥</span>
+                      </div>
+                      <div>
+                        <Text strong style={{ fontSize: 16, color: "#1e293b" }}>
+                          Hồ sơ sức khỏe chi tiết
+                        </Text>
+                        <div style={{ fontSize: 13, color: "#64748b" }}>
+                          {healthProfile ? 'Cập nhật thông tin sức khỏe hiện tại' : 'Tạo mới hồ sơ sức khỏe'}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800 m-0">
-                        Hồ sơ sức khỏe - {getStudentName(selectedStudentId)}
-                      </h3>
-                      <p className="text-sm text-gray-500 m-0">
-                        Lớp: {getStudentClass(selectedStudentId)}
-                      </p>
+                  </Col>
+                  <Col>
+                    <div style={{ minWidth: 280 }}>
+                      <Select
+                        style={{ width: '100%' }}
+                        placeholder="Chọn học sinh để xem hồ sơ sức khỏe"
+                        value={selectedStudentId}
+                        onChange={handleStudentChange}
+                        loading={studentsLoading}
+                        size="large"
+                      >
+                        {students.map(student => (
+                          <Option key={student.StudentID} value={student.StudentID}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <span style={{ fontSize: '16px' }}>👨‍🎓</span>
+                              <div>
+                                <span>{student.StudentName}</span>
+                                <span>-</span>
+                                <span style={{ color: '#64748b', marginLeft: 8 }}>
+                                   Lớp {student.Class}
+                                </span>
+                              </div>
+                            </div>
+                          </Option>
+                        ))}
+                      </Select>
                     </div>
-                  </div>
-                  
-                  <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1">
-                    <CheckCircleOutlined />
-                    <span>Sẵn sàng khai báo</span>
-                  </div>
-                </div>
+                  </Col>
+                </Row>
               }
-              loading={loading}
             >
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleSubmit}
-              className="mt-6"
-            >
-              <Tabs 
-                defaultActiveKey="physical" 
-                type="card"
-                className="custom-tabs"
+
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={handleSubmit}
+                initialValues={{
+                  pastSurgeries: 0,
+                  height: '',
+                  weight: ''
+                }}
               >
-                {/* Tab 1: Thông tin thể chất */}
-                <Tabs.TabPane 
-                  tab={
-                    <span className="flex items-center space-x-2">
-                      <span>�</span>
-                      <span>Thông tin thể chất</span>
-                    </span>
-                  } 
-                  key="physical"
-                >
-                  <div className="bg-blue-50 rounded-xl p-6">
-                    <Row gutter={24}>
-                      <Col xs={24} sm={12} md={8}>
-                        <Form.Item
-                          name="height"
-                          label={<span className="font-semibold text-gray-700">Chiều cao (m)</span>}
-                          rules={[
-                            { required: true, message: 'Vui lòng nhập chiều cao' },
-                            { type: 'number', min: 0.5, max: 2.5, message: 'Chiều cao phải từ 0.5-2.5m' }
-                          ]}
+                <Row gutter={[24, 24]}>
+                  {/* Tiền sử bệnh án Section */}
+                  <Col span={24}>
+                    <Card
+                      style={{
+                        borderRadius: 16,
+                        border: "2px solid #bfdbfe",
+                        background: "linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%)",
+                        boxShadow: "0 4px 16px rgba(59, 130, 246, 0.08)"
+                      }}
+                      bodyStyle={{ padding: "24px 28px" }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
+                        <div
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 12,
+                            background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            marginRight: 12,
+                            boxShadow: "0 4px 12px rgba(37, 99, 235, 0.25)"
+                          }}
                         >
-                          <InputNumber
-                            placeholder="Ví dụ: 1.9"
-                            className="w-full rounded-xl"
-                            size="large"
-                            min={0.5}
-                            max={2.5}
-                            step={0.01}
-                            precision={2}
-                          />
-                        </Form.Item>
-                      </Col>
-                      
-                      <Col xs={24} sm={12} md={8}>
-                        <Form.Item
-                          name="weight"
-                          label={<span className="font-semibold text-gray-700">Cân nặng (kg)</span>}
-                          rules={[
-                            { required: true, message: 'Vui lòng nhập cân nặng' },
-                            { type: 'number', min: 10, max: 200, message: 'Cân nặng phải từ 10-200kg' }
-                          ]}
-                        >
-                          <InputNumber
-                            placeholder="Ví dụ: 70"
-                            className="w-full rounded-xl"
-                            size="large"
-                            min={10}
-                            max={200}
-                            precision={1}
-                          />
-                        </Form.Item>
-                      </Col>
-                      
-                      <Col xs={24} sm={12} md={8}>
-                        <Form.Item
-                          name="pastSurgeries"
-                          label={<span className="font-semibold text-gray-700">Số lần phẫu thuật</span>}
-                        >
-                          <InputNumber
-                            placeholder="Ví dụ: 1"
-                            className="w-full rounded-xl"
-                            size="large"
-                            min={0}
-                            max={50}
-                          />
-                        </Form.Item>
-                      </Col>
-                      
-                      <Col xs={24} sm={12}>
-                        <Form.Item
-                          name="visionLeft"
-                          label={<span className="font-semibold text-gray-700">Thị lực mắt trái</span>}
-                        >
-                          <InputNumber
-                            placeholder="Ví dụ: 10"
-                            className="w-full rounded-xl"
-                            size="large"
-                            min={0}
-                            max={10}
-                            step={0.1}
-                            precision={1}
-                          />
-                        </Form.Item>
-                      </Col>
-                      
-                      <Col xs={24} sm={12}>
-                        <Form.Item
-                          name="visionRight"
-                          label={<span className="font-semibold text-gray-700">Thị lực mắt phải</span>}
-                        >
-                          <InputNumber
-                            placeholder="Ví dụ: 10"
-                            className="w-full rounded-xl"
-                            size="large"
-                            min={0}
-                            max={10}
-                            step={0.1}
-                            precision={1}
-                          />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </div>
-                </Tabs.TabPane>
+                          <HeartOutlined style={{ color: "white", fontSize: 18 }} />
+                        </div>
+                        <div>
+                          <Title level={4} style={{ margin: 0, marginRight: 127, color: "#1e3a8a" }}>
+                            Tiền sử bệnh án
+                          </Title>
+                          <Text style={{ color: "#a3a3a3", fontSize: 13 }}>
+                            Thông tin về các bệnh đã mắc phải và điều trị
+                          </Text>
+                        </div>
+                      </div>
 
-                {/* Tab 2: Tình trạng sức khỏe */}
-                <Tabs.TabPane 
-                  tab={
-                    <span className="flex items-center space-x-2">
-                      <span>🏥</span>
-                      <span>Tình trạng sức khỏe</span>
-                    </span>
-                  } 
-                  key="health"
-                >
-                  <div className="bg-green-50 rounded-xl p-6">
-                    <Row gutter={24}>
-                      <Col xs={24} md={12}>
-                        <Form.Item
-                          name="allergyHistory"
-                          label={<span className="font-semibold text-gray-700">Tiền sử dị ứng</span>}
-                        >
-                          <TextArea
-                            rows={4}
-                            placeholder="Mô tả tiền sử dị ứng của con (thực phẩm, thuốc, môi trường...)"
-                            className="rounded-xl"
-                          />
-                        </Form.Item>
-                      </Col>
-                      
-                      <Col xs={24} md={12}>
-                        <Form.Item
-                          name="chronicDiseases"
-                          label={<span className="font-semibold text-gray-700">Bệnh mạn tính</span>}
-                        >
-                          <TextArea
-                            rows={4}
-                            placeholder="Mô tả các bệnh mạn tính của con (hen suyễn, tiểu đường, tim mạch...)"
-                            className="rounded-xl"
-                          />
-                        </Form.Item>
-                      </Col>
-                      
-                      <Col xs={24} md={12}>
-                        <Form.Item
-                          name="surgicalCause"
-                          label={<span className="font-semibold text-gray-700">Nguyên nhân phẫu thuật</span>}
-                        >
-                          <TextArea
-                            rows={3}
-                            placeholder="Mô tả nguyên nhân các lần phẫu thuật (nếu có)"
-                            className="rounded-xl"
-                          />
-                        </Form.Item>
-                      </Col>
-                      
-                      <Col xs={24} md={12}>
-                        <Form.Item
-                          name="disabilities"
-                          label={<span className="font-semibold text-gray-700">Khuyết tật (nếu có)</span>}
-                        >
-                          <TextArea
-                            rows={3}
-                            placeholder="Mô tả tình trạng khuyết tật của con (nếu có)"
-                            className="rounded-xl"
-                          />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </div>
-                </Tabs.TabPane>
+                      <Row gutter={[20, 20]}>
+                        <Col span={12}>
+                          <Form.Item
+                            label={
+                              <span style={{ fontWeight: 600, color: "#374151" }}>
+                                Tiền sử dị ứng
+                              </span>
+                            }
+                            name="allergyHistory"
+                          >
+                            <TextArea
+                              rows={3}
+                              placeholder="Ví dụ: Dị ứng thuốc kháng sinh, dị ứng phấn hoa..."
+                              style={{
+                                borderRadius: 8,
+                                color: "#374151"
+                              }}
+                            />
+                          </Form.Item>
+                        </Col>
 
-                {/* Tab 3: Thông tin khác */}
-                <Tabs.TabPane 
-                  tab={
-                    <span className="flex items-center space-x-2">
-                      <span>📝</span>
-                      <span>Thông tin khác</span>
-                    </span>
-                  } 
-                  key="other"
-                >
-                  <div className="bg-orange-50 rounded-xl p-6">
-                    <Row gutter={24}>
-                      <Col xs={24} md={12}>
-                        <Form.Item
-                          name="toothDecay"
-                          label={<span className="font-semibold text-gray-700">Tình trạng răng miệng</span>}
-                        >
-                          <TextArea
-                            rows={4}
-                            placeholder="Mô tả tình trạng răng miệng, sâu răng của con"
-                            className="rounded-xl"
-                          />
-                        </Form.Item>
-                      </Col>
-                      
-                      <Col xs={24} md={12}>
-                        <Form.Item
-                          name="otheHealthIssues"
-                          label={<span className="font-semibold text-gray-700">Vấn đề sức khỏe khác</span>}
-                        >
-                          <TextArea
-                            rows={4}
-                            placeholder="Các vấn đề sức khỏe khác cần lưu ý"
-                            className="rounded-xl"
-                          />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </div>
-                </Tabs.TabPane>
-              </Tabs>
+                        <Col span={12}>
+                          <Form.Item
+                            label={
+                              <span style={{ fontWeight: 600, color: "#374151" }}>
+                                Bệnh mãn tính
+                              </span>
+                            }
+                            name="chronicDiseases"
+                          >
+                            <TextArea
+                              rows={3}
+                              placeholder="Ví dụ: Hen suyễn, tiểu đường, cao huyết áp..."
+                              style={{
+                                borderRadius: 8,
+                                color: "#374151"
+                              }}
+                            />
+                          </Form.Item>
+                        </Col>
 
-              {/* Submit Button */}
-              <div className="flex justify-end space-x-4 pt-6 border-t mt-6">
-                <Button
-                  size="large"
-                  onClick={() => form.resetFields()}
-                  disabled={submitting}
-                  className="rounded-xl px-8 font-semibold"
-                >
-                  Đặt lại
-                </Button>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={submitting}
-                  icon={<SaveOutlined />}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 border-0 rounded-xl px-8 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                  size="large"
-                >
-                  Cập nhật hồ sơ sức khỏe
-                </Button>
-              </div>
-            </Form>
-          </Card>
-          </>
+                        <Col span={12}>
+                          <Form.Item
+                            label={
+                              <span style={{ fontWeight: 600, color: "#374151" }}>
+                                Số lần phẫu thuật
+                              </span>
+                            }
+                            name="pastSurgeries"
+                          >
+                            <InputNumber
+                              style={{
+                                width: '100%',
+                                borderRadius: 8,
+                                color: "#374151"
+                              }}
+                              min={0}
+                              placeholder="0"
+                            />
+                          </Form.Item>
+                        </Col>
+
+                        <Col span={12}>
+                          <Form.Item
+                            label={
+                              <span style={{ fontWeight: 600, color: "#374151" }}>
+                                Nguyên nhân phẫu thuật
+                              </span>
+                            }
+                            name="surgicalCause"
+                          >
+                            <Input
+                              placeholder="Ví dụ: Phẫu thuật ruột thừa, phẫu thuật gãy xương..."
+                              style={{
+                                borderRadius: 8,
+                                color: "#374151",
+                              }}
+                            />
+                          </Form.Item>
+                        </Col>
+
+                        <Col span={24}>
+                          <Form.Item
+                            label={
+                              <span style={{ fontWeight: 600, color: "#374151" }}>
+                                Khuyết tật (nếu có)
+                              </span>
+                            }
+                            name="disabilities"
+                          >
+                            <TextArea
+                              rows={2}
+                              placeholder="Mô tả các khuyết tật về thể chất hoặc tinh thần (nếu có)..."
+                              style={{
+                                borderRadius: 8,
+                                color: "#374151"
+                              }}
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    </Card>
+                  </Col>
+
+                  {/* Thông số cơ thể Section */}
+                  <Col span={24}>
+                    <Card
+                      style={{
+                        borderRadius: 16,
+                        border: "2px solid #bfdbfe",
+                        background: "linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%)",
+                        boxShadow: "0 4px 16px rgba(59, 130, 246, 0.08)"
+                      }}
+                      bodyStyle={{ padding: "24px 28px" }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
+                        <div
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 12,
+                            background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            marginRight: 12,
+                            boxShadow: "0 4px 12px rgba(37, 99, 235, 0.25)"
+                          }}
+                        >
+                          <UserOutlined style={{ color: "white", fontSize: 18 }} />
+                        </div>
+                        <div>
+                          <Title level={4} style={{ margin: 0, marginRight: 40, color: "#1e3a8a" }}>
+                            Thông số cơ thể
+                          </Title>
+                          <Text style={{ color: "#a3a3a3", fontSize: 13 }}>
+                            Các chỉ số về phát triển thể chất
+                          </Text>
+                        </div>
+                      </div>
+
+                      <Row gutter={[20, 20]}>
+                        <Col span={8}>
+                          <Form.Item
+                            label={
+                              <span style={{ fontWeight: 600, color: "#374151" }}>
+                                Chiều cao (m)
+                              </span>
+                            }
+                            name="height"
+                          >
+                            <InputNumber
+                              style={{
+                                width: '100%',
+                                borderRadius: 8,
+                                border: "1px solid #93c5fd"
+                              }}
+                              min={0}
+                              max={250}
+                              step={0.1}
+                              placeholder="VD: 120.5"
+                              formatter={value => `${value} `}
+                              parser={value => value.replace('m', '')}
+                            />
+                          </Form.Item>
+                        </Col>
+
+                        <Col span={8}>
+                          <Form.Item
+                            label={
+                              <span style={{ fontWeight: 600, color: "#374151" }}>
+                                Cân nặng (kg)
+                              </span>
+                            }
+                            name="weight"
+                          >
+                            <InputNumber
+                              style={{
+                                width: '100%',
+                                borderRadius: 8,
+                                border: "1px solid #93c5fd"
+                              }}
+                              min={0}
+                              max={200}
+                              step={0.1}
+                              placeholder="VD: 25.5"
+                              formatter={value => `${value}`}
+                              parser={value => value.replace(' kg', '')}
+                            />
+                          </Form.Item>
+                        </Col>
+
+                        <Col span={8}>
+                          <Form.Item name="toothDecay" label="Tình trạng răng miệng">
+                            <Input placeholder="Nhập tình trạng răng miệng (nếu có)" />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    </Card>
+                  </Col>
+
+                  {/* Thị lực Section */}
+                  <Col span={24}>
+                    <Card
+                      style={{
+                        borderRadius: 16,
+                        border: "2px solid #bfdbfe",
+                        background: "linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%)",
+                        boxShadow: "0 4px 16px rgba(59, 130, 246, 0.08)"
+                      }}
+                      bodyStyle={{ padding: "24px 28px" }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
+                        <div
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 12,
+                            background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            marginRight: 12,
+                            boxShadow: "0 4px 12px rgba(37, 99, 235, 0.25)"
+                          }}
+                        >
+                          <EyeOutlined style={{ color: "white", fontSize: 18 }} />
+                        </div>
+                        <div>
+                          <Title level={4} style={{ margin: 0, marginRight: 50, color: "#1e3a8a" }}>
+                            Thị lực và tầm nhìn
+                          </Title>
+                          <Text style={{ color: "#a3a3a3", fontSize: 13 }}>
+                            Đánh giá khả năng nhìn của cả hai mắt
+                          </Text>
+                        </div>
+                      </div>
+
+                      <Row gutter={[20, 20]}>
+                        <Col span={12}>
+                          <Form.Item
+                            label={
+                              <span style={{ fontWeight: 600, color: "#374151" }}>
+                                Thị lực mắt trái
+                              </span>
+                            }
+                            name="visionLeft"
+                          >
+                            <Input placeholder="Nhập thị lực mắt trái " />
+                          </Form.Item>
+                        </Col>
+
+                        <Col span={12}>
+                          <Form.Item
+                            label={
+                              <span style={{ fontWeight: 600, color: "#374151" }}>
+                                Thị lực mắt phải
+                              </span>
+                            }
+                            name="visionRight"
+                          >
+                            <Input placeholder="Nhập thị lực mắt phải" />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    </Card>
+                  </Col>
+
+                  {/* Vấn đề sức khỏe khác Section */}
+                  <Col span={24}>
+                    <Card
+                      style={{
+                        borderRadius: 16,
+                        border: "2px solid #bfdbfe",
+                        background: "linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%)",
+                        boxShadow: "0 4px 16px rgba(59, 130, 246, 0.08)"
+                      }}
+                      bodyStyle={{ padding: "24px 28px" }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
+                        <div
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 12,
+                            background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            marginRight: 12,
+                            boxShadow: "0 4px 12px rgba(37, 99, 235, 0.25)"
+                          }}
+                        >
+                          <span style={{ color: "white", fontSize: 18 }}>🩺</span>
+                        </div>
+                        <div>
+                          <Title level={4} style={{ margin: 0, marginRight: 70, color: "#1e3a8a" }}>
+                            Vấn đề sức khỏe khác
+                          </Title>
+                          <Text style={{ color: "#a3a3a3", fontSize: 13 }}>
+                            Các thông tin bổ sung về tình trạng sức khỏe
+                          </Text>
+                        </div>
+                      </div>
+
+                      <Form.Item
+                        label={
+                          <span style={{ fontWeight: 600, color: "#374151" }}>
+                            Các vấn đề sức khỏe khác
+                          </span>
+                        }
+                        name="otheHealthIssues"
+                      >
+                        <TextArea
+                          rows={4}
+                          placeholder="Ví dụ: Hay bị đau đầu, khó ngủ, hay ốm vặt, có sử dụng thuốc thường xuyên..."
+                          style={{
+                            borderRadius: 8,
+                            color: "#374151"
+                          }}
+                        />
+                      </Form.Item>
+                    </Card>
+                  </Col>
+                </Row>
+
+                {/* Submit Button Section */}
+                <Col span={24}>
+                  <Card
+                    style={{
+                      borderRadius: 16,
+                      textAlign: "center"
+                    }}
+                    bodyStyle={{ padding: "32px" }}
+                  >
+                    <div style={{ marginBottom: 16 }}>
+                      <Title level={5} style={{ color: "#1e3a8a", marginBottom: 8 }}>
+                        🏥 Xác nhận thông tin
+                      </Title>
+                      <Text style={{ color: "#6b7280" }}>
+                        Vui lòng kiểm tra kỹ thông tin trước khi lưu hồ sơ sức khỏe
+                      </Text>
+                    </div>
+
+                    <Space size="large">
+                      <Button
+                        type="default"
+                        onClick={() => form.resetFields()}
+                        disabled={submitting}
+                        size="large"
+                        style={{
+                          borderRadius: 12,
+                          height: 48,
+                          paddingLeft: 24,
+                          paddingRight: 24,
+                          border: "2px solid #e5e7eb",
+                          fontWeight: 600
+                        }}
+                        icon={<ReloadOutlined />}
+                      >
+                        Đặt lại
+                      </Button>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        loading={submitting}
+                        icon={<SaveOutlined />}
+                        size="large"
+                        style={{
+                          borderRadius: 12,
+                          height: 48,
+                          paddingLeft: 32,
+                          paddingRight: 32,
+                          background: "linear-gradient(135deg,rgb(5, 82, 150) 0%,rgb(26, 147, 178) 100%)",
+                          border: "none",
+                          boxShadow: "0 4px 16px rgba(5, 74, 131, 0.25)",
+                          fontWeight: 700,
+                          fontSize: 16
+                        }}
+                      >
+                        {healthProfile ? ' Cập nhật hồ sơ' : ' Lưu hồ sơ mới'}
+                      </Button>
+                    </Space>
+                  </Card>
+                </Col>
+              </Form>
+            </Card>
+          </Spin>
         )}
-
-        {/* No Student Selected */}
-        {!selectedStudentId && !studentsLoading && students.length > 0 && (
-          <Card className="text-center rounded-2xl shadow-lg border-0">
-            <div className="py-16">
-              <div className="w-24 h-24 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-6">
-                <HeartOutlined className="text-4xl text-gray-400" />
-              </div>
-              <Title level={3} className="text-gray-500 mb-4">
-                Chọn học sinh để khai báo sức khỏe
-              </Title>
-              <Text className="text-gray-400 text-lg">
-                Vui lòng chọn học sinh từ danh sách trên để bắt đầu khai báo thông tin sức khỏe
-              </Text>
-            </div>
-          </Card>
-        )}
-
-        {/* No Students */}
-        {students.length === 0 && !studentsLoading && (
-          <Card className="text-center rounded-2xl shadow-lg border-0">
-            <div className="py-16">
-              <div className="w-24 h-24 bg-gradient-to-br from-orange-200 to-red-300 rounded-full flex items-center justify-center mx-auto mb-6">
-                <ExclamationCircleOutlined className="text-4xl text-orange-500" />
-              </div>
-              <Title level={3} className="text-gray-500 mb-4">
-                Chưa có học sinh nào
-              </Title>
-              <Text className="text-gray-400 text-lg mb-6">
-                Hiện tại chưa có học sinh nào trong danh sách của bạn
-              </Text>
-              <Button 
-                type="primary" 
-                onClick={fetchStudents}
-                icon={<ReloadOutlined />}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 border-0 rounded-xl px-8 font-semibold"
-                size="large"
+        {/* Empty State */}
+        {!selectedStudentId && !studentsLoading && (
+          <Card
+            style={{
+              borderRadius: 20,
+              border: "none",
+              background: "white",
+              boxShadow: "0 8px 32px rgba(127,90,240,0.07), 0 0 0 1px #f3f4f6",
+            }}
+            bodyStyle={{ padding: "48px" }}
+          >
+            <div style={{ textAlign: 'center' }}>
+              <div
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 20,
+                  background: "linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 24px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
+                }}
               >
-                Tải lại danh sách
-              </Button>
-            </div>
-          </Card>
-        )}
-
-        {/* Loading State */}
-        {studentsLoading && (
-          <Card className="text-center rounded-2xl shadow-lg border-0">
-            <div className="py-16">
-              <Spin size="large" tip="Đang tải danh sách học sinh..." />
+                <UserOutlined style={{ fontSize: '32px', color: '#9ca3af' }} />
+              </div>
+              <Title level={4} type="secondary" style={{ marginBottom: '8px' }}>
+                Vui lòng chọn học sinh
+              </Title>
+              <Text type="secondary">
+                Chọn học sinh từ danh sách để xem và cập nhật hồ sơ sức khỏe
+              </Text>
             </div>
           </Card>
         )}
       </div>
-
-      <style jsx>{`
-        .custom-tabs .ant-tabs-tab {
-          border-radius: 12px 12px 0 0;
-          border: none;
-          background: transparent;
-          color: #6b7280;
-          font-weight: 500;
-          padding: 12px 24px;
-        }
-
-        .custom-tabs .ant-tabs-tab-active {
-          background: white;
-          color: #7c3aed;
-          font-weight: 600;
-          box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
-        }
-
-        .custom-tabs .ant-tabs-tab:hover {
-          color: #7c3aed;
-        }
-
-        .ant-input, .ant-input-number, .ant-select-selector, .ant-picker {
-          border-radius: 12px;
-          border: 2px solid #e5e7eb;
-          transition: all 0.2s ease;
-        }
-
-        .ant-input:hover, .ant-input-number:hover, .ant-select-selector:hover, .ant-picker:hover {
-          border-color: #7c3aed;
-          box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-        }
-
-        .ant-input:focus, .ant-input-number-focused, .ant-select-focused .ant-select-selector, .ant-picker-focused {
-          border-color: #7c3aed;
-          box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
-        }
-
-        .ant-btn-primary:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(124, 58, 237, 0.3);
-        }
-
-        .ant-form-item-required::before {
-          color: #ef4444;
-          font-weight: bold;
-        }
-      `}</style>
     </div>
   );
 };
-
 export default DeclareHealthProfile;
-
-
-

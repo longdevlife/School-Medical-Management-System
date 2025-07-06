@@ -55,37 +55,35 @@ const vaccineApi = {
       });
     },
 
-    // Cập nhật vaccine record
+    // Cập nhật vaccine record (cho tab "Chờ xác nhận")
     updateByRecordID: (recordID, data) => {
       const formData = new FormData();
 
-      if (data.Dose) formData.append("Dose", parseInt(data.Dose) || 1);
-      if (data.DateTime) formData.append("DateTime", data.DateTime);
-      if (data.Notes) formData.append("Notes", data.Notes);
-      if (data.Status) formData.append("Status", data.Status);
-      if (data.VaccinatedAt) formData.append("VaccinatedAt", data.VaccinatedAt);
-      if (data.StudentID) formData.append("StudentID", String(data.StudentID));
-      if (data.VaccineID)
-        formData.append("VaccineID", parseInt(data.VaccineID) || 1);
-      if (data.ClassID) formData.append("ClassID", parseInt(data.ClassID) || 1);
+      // ✅ Các field theo đúng spec backend (lowercase)
+      if (data.dose !== undefined) {
+        formData.append("dose", parseInt(data.dose) || 1);
+      }
+      if (data.vaccineId !== undefined) {
+        formData.append("vaccineId", parseInt(data.vaccineId) || 1);
+      }
+      if (data.studentId) {
+        formData.append("studentId", String(data.studentId));
+      }
+      if (data.vaccinatedAt) {
+        formData.append("vaccinatedAt", data.vaccinatedAt);
+      }
+      if (data.vaccinatorID) {
+        formData.append("vaccinatorID", String(data.vaccinatorID));
+      }
+      if (data.notes) {
+        formData.append("notes", data.notes);
+      }
 
-      if (data.VaccinatorID) {
-        formData.append("VaccinatorID", String(data.VaccinatorID));
-      } else if (data.skipVaccinatorID !== true) {
-        try {
-          const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-          const userID =
-            currentUser.username ||
-            currentUser.userID ||
-            currentUser.id ||
-            formData.append("VaccinatorID", String(userID));
-          console.log("✅ VaccinatorID được gửi:", userID);
-        } catch (e) {
-          formData.append("VaccinatorID", "nurse");
-          console.log("✅ VaccinatorID fallback = nurse");
-        }
-      } else {
-        console.log("⚠️ Bỏ qua VaccinatorID theo yêu cầu");
+      // 🔍 Debug log để kiểm tra data gửi lên
+      console.log("🚀 updateByRecordID - recordID:", recordID);
+      console.log("🚀 updateByRecordID - data gửi lên:");
+      for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}: ${value}`);
       }
 
       return axiosClient.put(

@@ -73,11 +73,10 @@ function VaccinationManagement() {
 
       // Map dataBE
       const mappedData = response.data.map((item) => {
-
         // Map dataBE
         let status = "pending";
         if (item.status) {
-          const backendStatus = item.status.trim();        
+          const backendStatus = item.status.trim();
           switch (backendStatus) {
             case "Đã chấp nhận":
             case "Đã xác nhận":
@@ -108,7 +107,6 @@ function VaccinationManagement() {
             default:
               status = "pending";
           }
-       
         }
 
         return {
@@ -116,13 +114,13 @@ function VaccinationManagement() {
           key: item.recordID,
           submissionCode: item.recordID,
           studentId: item.studentID,
-          studentName: `Học sinh ${item.studentID}`, 
-          studentClass: "Chưa có lớp",
+          studentName: item.studentName,
+          studentClass: item.class,
           classId: item.classID || 4,
 
           // Vaccine specific fields
-          vaccineName: `Vaccine ID: ${item.vaccineID}`, // Cần join với vaccine table để lấy tên
-          vaccinationType: `Liều ${item.dose}`,
+          vaccineName: item.vaccineName,
+          vaccinationType: item.dose,
           scheduledDate: dayjs(item.dateTime).format("DD/MM/YYYY"),
           actualDate: item.vaccinatedAt
             ? dayjs(item.vaccinatedAt).format("DD/MM/YYYY")
@@ -130,7 +128,7 @@ function VaccinationManagement() {
           administrationNotes: item.notes || "Chưa có ghi chú",
           reaction: "",
           location: "Phòng y tế",
-          doctorID: item.nurseID,
+          nurseId: item.nurseID,
           dose: item.dose,
           vaccineID: item.vaccineID,
           vaccinatorID: item.vaccinatorID,
@@ -186,10 +184,8 @@ function VaccinationManagement() {
         VaccineID: values.vaccineId || "1",
         Dose: values.dose || "1",
         Notes: values.administrationNotes || "",
-        VaccinatedAt: values.scheduledDate
-          ? dayjs(values.scheduledDate).format("YYYY-MM-DD HH:mm:ss")
-          : dayjs().format("YYYY-MM-DD HH:mm:ss"),
-      
+        // Sử dụng thời gian hiện tại thay vì scheduledDate
+        VaccinatedAt: dayjs().format("YYYY-MM-DD HH:mm:ss"),
       };
 
       console.log("🚀 Create Type:", values.createType);
@@ -300,7 +296,7 @@ function VaccinationManagement() {
       ) {
         // confirmed/approved → injected: Dùng updateByRecordID
         const updateData = {
-          Dose: selectedSubmission.dose || 1, // ✅ Number cho parseInt trong API
+          Dose: selectedSubmission.dose || 1,
           DateTime: values.administrationTime
             ? dayjs(values.administrationTime).format("YYYY-MM-DD HH:mm:ss")
             : dayjs().format("YYYY-MM-DD HH:mm:ss"),
@@ -310,10 +306,25 @@ function VaccinationManagement() {
             ? dayjs(values.administrationTime).format("YYYY-MM-DD HH:mm:ss")
             : dayjs().format("YYYY-MM-DD HH:mm:ss"),
           StudentID: selectedSubmission.studentId, // ✅ String theo API spec
-          VaccineID: selectedSubmission.vaccineID || 1, // ✅ Number cho parseInt trong API          ClassID: selectedSubmission.classId || 4, // ✅ Thêm ClassID như trong Postman test
-          
-          // ✅ Tạm thời skip VaccinatorID để test
-          skipVaccinatorID: true, // 🧪 TEST: Bỏ qua VaccinatorID
+          VaccineID: selectedSubmission.vaccineID || 1, // ✅ Number cho parseInt trong API
+          // ✅ Thêm VaccinatorID từ localStorage
+          VaccinatorID: (() => {
+            try {
+              const currentUser = JSON.parse(
+                localStorage.getItem("user") || "{}"
+              );
+              const userID =
+                currentUser.userID ||
+                currentUser.id ||
+                currentUser.userId ||
+                "1"; // Default nurse ID number
+              console.log("✅ VaccinatorID cho update progress:", userID);
+              return parseInt(userID) || 1; // Convert to number
+            } catch (e) {
+              console.log("⚠️ Fallback VaccinatorID = 1");
+              return 1;
+            }
+          })(),
         };
 
         console.log(
@@ -327,12 +338,12 @@ function VaccinationManagement() {
           const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
           console.log("👤 Current User from localStorage:", currentUser);
           console.log(
-            "🆔 Username sẽ làm VaccinatorID:",
-            currentUser.username || currentUser.userID || currentUser.id || "nurse"
+            "🆔 UserID sẽ làm VaccinatorID:",
+            currentUser.userID || currentUser.id || currentUser.userId || "1"
           );
         } catch (e) {
           console.log(
-            "⚠️ Không đọc được user từ localStorage, dùng VaccinatorID = nurse"
+            "⚠️ Không đọc được user từ localStorage, dùng VaccinatorID = 1"
           );
         }
         const updateResponse = await vaccineApi.nurse.updateByRecordID(
@@ -363,22 +374,6 @@ function VaccinationManagement() {
           updateAfterData
         );
 
-        // ✅ Debug VaccinatorID từ localStorage cho updateAfter
-        try {
-          const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-          console.log(
-            "👤 Current User from localStorage (updateAfter):",
-            currentUser
-          );
-          console.log(
-            "🆔 Username sẽ làm VaccinatorID (updateAfter):",
-            currentUser.username || currentUser.userID || currentUser.id || "nurse"
-          );
-        } catch (e) {
-          console.log(
-            "⚠️ Không đọc được user từ localStorage (updateAfter), dùng VaccinatorID = nurse"
-          );
-        }
         const updateAfterResponse =
           await vaccineApi.nurse.updateAfterByRecordID(
             selectedSubmission.id,
@@ -395,7 +390,24 @@ function VaccinationManagement() {
           Status: backendStatus,
           StudentID: selectedSubmission.studentId, // ✅ String theo API spec
           VaccineID: selectedSubmission.vaccineID || 1, // ✅ Number cho parseInt trong API
-          ClassID: selectedSubmission.classId || 4, // ✅ Thêm ClassID như trong Postman test
+          // ✅ Thêm VaccinatorID từ localStorage cho fallback
+          VaccinatorID: (() => {
+            try {
+              const currentUser = JSON.parse(
+                localStorage.getItem("user") || "{}"
+              );
+              const userID =
+                currentUser.userID ||
+                currentUser.id ||
+                currentUser.userId ||
+                "1"; // Default nurse ID number
+              console.log("✅ VaccinatorID cho fallback:", userID);
+              return parseInt(userID) || 1; // Convert to number
+            } catch (e) {
+              console.log("⚠️ Fallback VaccinatorID = 1");
+              return 1;
+            }
+          })(),
         };
 
         console.log(
@@ -452,65 +464,55 @@ function VaccinationManagement() {
   const handleEdit = (submission) => {
     setSelectedSubmission(submission);
 
-    // ❌ Tắt debug logs
-    // console.log("🔍 Handle Edit - Submission data:", submission);
-    // console.log("🔍 Available fields:", Object.keys(submission));
-
     editForm.setFieldsValue({
-      vaccineName: submission.vaccineName || submission.medicationName,
-      vaccinationType: submission.vaccinationType || submission.dosage,
-      scheduledDate: submission.scheduledDate
-        ? dayjs(submission.scheduledDate)
-        : null,
-      administrationNotes:
-        submission.administrationNotes || submission.instructions,
-      notes: submission.notes || "",
+      vaccineId: submission.vaccineID || submission.vaccineId || "1", // ID vaccine
+      dose:
+        submission.dose ||
+        submission.vaccinationType ||
+        submission.dosage ||
+        "1", // Số liều
+      vaccinatedAt:
+        submission.vaccinatedAt || submission.scheduledDate
+          ? dayjs(submission.vaccinatedAt || submission.scheduledDate)
+          : dayjs(), // Ngày tiêm
+      notes:
+        submission.notes ||
+        submission.administrationNotes ||
+        submission.instructions ||
+        "", // Ghi chú
     });
-
-    // ❌ Tắt debug logs
-    // console.log("🔍 Form values set for vaccine UI");
 
     setEditModalVisible(true);
   };
 
   const handleEditSubmit = async (values) => {
     try {
-      // ❌ Tắt debug logs chi tiết
-      // console.log("🔍 DEBUG - selectedSubmission full object:", selectedSubmission);
-      // console.log("🔍 DEBUG - studentId value:", selectedSubmission.studentId);
-      // console.log("🔍 DEBUG - Available fields:", Object.keys(selectedSubmission));
+      let nurseID =
+        selectedSubmission.nurseID ||
+        selectedSubmission.nurseid ||
+        selectedSubmission.nurseId ||
+        selectedSubmission.verifiedBy;
 
-      const studentID =
-        selectedSubmission.studentId ||
-        selectedSubmission.StudentID ||
-        selectedSubmission.id;
+      console.log("👤 Selected submission data:", selectedSubmission);
+      console.log("🆔 NurseID extracted from data:", nurseID);
 
-      if (!studentID) {
-        message.error("Thiếu thông tin StudentID! Không thể cập nhật vaccine.");
+      if (!nurseID) {
+        message.error("Thiếu thông tin NurseID! Không thể cập nhật vaccine.");
         console.error(
-          "❌ Missing StudentID in selectedSubmission:",
+          "❌ Missing NurseID in selectedSubmission:",
           selectedSubmission
         );
         return;
       }
 
-      const updateData = {
-        Dose: selectedSubmission.dose || 1, // ✅ Number cho parseInt trong API
-        DateTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-        Notes: values.notes || "",
-        // Không gửi Status khi edit để tránh Entity Framework conflict
-        VaccinatedAt: values.scheduledDate
-          ? dayjs(values.scheduledDate).format("YYYY-MM-DD HH:mm:ss")
-          : "",
-        StudentID: studentID, // ✅ String theo API spec
-        VaccineID: selectedSubmission.vaccineID || 1, // ✅ Number cho parseInt trong API
-        // ❌ TẠYM THỜI KHÔNG GỬI VaccinatorID để tránh lỗi FOREIGN KEY
-        // VaccinatorID: selectedSubmission.vaccinatorID || "nurse001", // ✅ String theo API spec
-      };
+      // Kiểm tra format nurseID hợp lệ
+      if (!nurseID || (typeof nurseID === "string" && nurseID.trim() === "")) {
+        message.error("NurseID không hợp lệ! Hiện tại: " + nurseID);
+        console.error("❌ Invalid NurseID:", nurseID);
+        return;
+      }
 
-      console.log("🚀 Edit Submit - Data gửi lên API (NO STATUS):", updateData);
-      console.log("📝 Form values:", values);
-
+      // Kiểm tra ID hợp lệ
       if (
         !selectedSubmission.id ||
         selectedSubmission.id.toString().startsWith("TEST_")
@@ -518,6 +520,31 @@ function VaccinationManagement() {
         message.error("ID vaccine không hợp lệ! Không thể cập nhật test data.");
         return;
       }
+
+      // Chuẩn bị dữ liệu theo spec backend - CHỈ GỬI CÁC TRƯỜNG CẦN THIẾT
+      const updateData = {
+        dose: parseInt(values.dose) || parseInt(selectedSubmission.dose) || 1, // Number - từ form hoặc data hiện tại
+        vaccineId:
+          parseInt(values.vaccineId) ||
+          parseInt(selectedSubmission.vaccineID) ||
+          1, // Number - từ form hoặc data hiện tại
+        vaccinatedAt: values.vaccinatedAt
+          ? dayjs(values.vaccinatedAt).format("YYYY-MM-DD")
+          : dayjs().format("YYYY-MM-DD"), // String YYYY-MM-DD - bắt buộc
+        vaccinatorID: nurseID, // String NurseID - giữ nguyên format "U0004"
+        notes: values.notes || "", // String - tùy chọn
+      };
+
+      // KHÔNG gửi các trường không cần thiết: dateTime, status, name, studentId
+      // Backend sẽ tự động cập nhật name khi thay đổi vaccineId
+
+      console.log(
+        "🚀 Edit Submit - Data gửi lên API (CHỈ CÁC TRƯỜNG CẦN THIẾT):",
+        updateData
+      );
+      console.log("📝 Form values nhận được:", values);
+      console.log("👤 NurseID (VaccinatorID) as string:", nurseID);
+      console.log("🆔 Record ID để update:", selectedSubmission.id);
 
       await vaccineApi.nurse.updateByRecordID(
         selectedSubmission.id,
@@ -690,7 +717,7 @@ function VaccinationManagement() {
           </Text>
           <br />
           <Text type="secondary" style={{ fontSize: "12px" }}>
-            {record.vaccinationType} - {record.scheduledDate}
+            Số lần tiêm : {record.vaccinationType}
           </Text>
         </div>
       ),
@@ -1721,55 +1748,6 @@ function VaccinationManagement() {
                 >
                   Thêm lịch tiêm chủng mới
                 </Button>
-
-                {/* � Nút debug VaccinatorID */}
-                <Button
-                  type="dashed"
-                  icon={<span>🔍</span>}
-                  onClick={() => {
-                    try {
-                      const currentUser = JSON.parse(
-                        localStorage.getItem("user") || "{}"
-                      );
-                      console.log("🔍 Debug - localStorage user:", currentUser);
-                      const userID =
-                        currentUser.username || currentUser.userID || currentUser.id || "nurse";
-                      message.info(`VaccinatorID sẽ sử dụng: ${userID}`);
-                    } catch (e) {
-                      console.log("❌ Lỗi đọc localStorage:", e);
-                      message.error("Không đọc được user từ localStorage");
-                    }
-                  }}
-                  style={{
-                    borderColor: "#722ed1",
-                    color: "#722ed1",
-                    fontWeight: "600",
-                    borderRadius: "8px",
-                  }}
-                  size="middle"
-                >
-                  Debug VaccinatorID
-                </Button>
-
-                {/* �🔄 Nút refresh để test */}
-                <Button
-                  icon={<span>🔄</span>}
-                  onClick={() => {
-                    console.log("🔄 Manual refresh clicked!");
-                    fetchSubmissions();
-                  }}
-                  style={{
-                    borderRadius: "8px",
-                    background:
-                      "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
-                    borderColor: "#3b82f6",
-                    color: "white",
-                    fontWeight: "600",
-                  }}
-                  size="middle"
-                >
-                  Refresh Data
-                </Button>
               </div>
             </div>
           }
@@ -1937,18 +1915,15 @@ function VaccinationManagement() {
                 </Descriptions.Item>
                 <Descriptions.Item label="Tên vaccine" span={2}>
                   <Text strong style={{ color: "#722ed1" }}>
-                    {selectedSubmission.vaccineName}
+                    {selectedSubmission.vaccineName} - <strong>ID :</strong>
+                    {""}
+                    {selectedSubmission.vaccineID}
                   </Text>
                 </Descriptions.Item>
-                <Descriptions.Item label="Loại vaccine">
+                <Descriptions.Item label="Số lần tiêm">
                   {selectedSubmission.vaccinationType}
                 </Descriptions.Item>
-                <Descriptions.Item label="Ngày lên lịch">
-                  {selectedSubmission.scheduledDate}
-                </Descriptions.Item>
-                <Descriptions.Item label="Ghi chú tiêm chủng" span={2}>
-                  {selectedSubmission.administrationNotes}
-                </Descriptions.Item>
+
                 <Descriptions.Item label="Ngày gửi" span={2}>
                   {dayjs(selectedSubmission.submissionDate).format(
                     "DD/MM/YYYY HH:mm"
@@ -2042,81 +2017,151 @@ function VaccinationManagement() {
         {/* Modal thêm vaccine mới */}
         <Modal
           title={
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "16px",
+                padding: "8px 0",
+              }}
+            >
               <div
                 style={{
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "12px",
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "16px",
                   background:
                     "linear-gradient(135deg, #10b981 0%, #059669 100%)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  boxShadow: "0 4px 12px rgba(16, 185, 129, 0.2)",
+                  boxShadow: "0 6px 16px rgba(16, 185, 129, 0.3)",
+                  border: "2px solid rgba(255,255,255,0.2)",
                 }}
               >
-                <span style={{ fontSize: "20px" }}> 💉 </span>
+                <span style={{ fontSize: "24px" }}> 💉 </span>
               </div>
-              <Text strong style={{ fontSize: "18px" }}>
-                Tạo yêu cầu tiêm chủng
-              </Text>
+              <div>
+                <Text
+                  strong
+                  style={{
+                    fontSize: "20px",
+                    color: "#1f2937",
+                    display: "block",
+                    marginBottom: "4px",
+                  }}
+                >
+                  Tạo yêu cầu tiêm chủng
+                </Text>
+                <Text
+                  style={{
+                    fontSize: "14px",
+                    color: "#6b7280",
+                    fontWeight: "400",
+                  }}
+                >
+                  Tạo lịch tiêm vaccine cho học sinh hoặc cả lớp
+                </Text>
+              </div>
             </div>
           }
           open={createModalVisible}
           onCancel={() => setCreateModalVisible(false)}
           onOk={() => createForm.submit()}
-          okText="Thêm vaccine"
-          cancelText="Hủy"
-          width={600}
+          okText="Tạo yêu cầu tiêm chủng"
+          cancelText="Hủy bỏ"
+          width={650}
+          okButtonProps={{
+            style: {
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              borderColor: "#10b981",
+              borderRadius: "8px",
+              fontWeight: "600",
+              height: "40px",
+              fontSize: "14px",
+            },
+          }}
+          cancelButtonProps={{
+            style: {
+              borderRadius: "8px",
+              height: "40px",
+              fontSize: "14px",
+            },
+          }}
         >
           <Form
             form={createForm}
             layout="vertical"
             onFinish={handleCreateVaccine}
+            style={{ marginTop: "24px" }}
+            requiredMark="optional"
           >
             {/* Chọn loại tạo yêu cầu */}
             <Form.Item
-              label="Loại yêu cầu tiêm chủng"
+              label={
+                <span
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "600",
+                    color: "#374151",
+                  }}
+                >
+                  🎯 Loại yêu cầu tiêm chủng
+                </span>
+              }
               name="createType"
               rules={[
                 { required: true, message: "Vui lòng chọn loại yêu cầu!" },
               ]}
               initialValue="student"
+              style={{ marginBottom: "24px" }}
             >
-              <Radio.Group style={{ width: "100%" }}>
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Radio.Button
-                      value="student"
-                      style={{
-                        width: "100%",
-                        textAlign: "center",
-                        height: "40px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      👤 Cho 1 học sinh
-                    </Radio.Button>
-                  </Col>
-                  <Col span={12}>
-                    <Radio.Button
-                      value="class"
-                      style={{
-                        width: "100%",
-                        textAlign: "center",
-                        height: "40px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      🏫 Cho cả lớp
-                    </Radio.Button>
-                  </Col>
-                </Row>
+              <Radio.Group
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  gap: "12px",
+                }}
+                size="large"
+              >
+                <Radio.Button
+                  value="student"
+                  style={{
+                    flex: 1,
+                    textAlign: "center",
+                    height: "48px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    border: "2px solid #e5e7eb",
+                    background:
+                      "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
+                  }}
+                >
+                  👤 Cho 1 học sinh
+                </Radio.Button>
+                <Radio.Button
+                  value="class"
+                  style={{
+                    flex: 1,
+                    textAlign: "center",
+                    height: "48px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    border: "2px solid #e5e7eb",
+                    background:
+                      "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
+                  }}
+                >
+                  🏫 Cho cả lớp
+                </Radio.Button>
               </Radio.Group>
             </Form.Item>
 
@@ -2163,81 +2208,89 @@ function VaccinationManagement() {
             </Form.Item>
 
             <Form.Item
-              label="ID Vaccine"
+              label={
+                <span
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "600",
+                    color: "#374151",
+                  }}
+                >
+                  🆔 ID Vaccine
+                </span>
+              }
               name="vaccineId"
               rules={[{ required: true, message: "Vui lòng nhập ID vaccine!" }]}
               initialValue="1"
+              style={{ marginBottom: "20px" }}
             >
-              <Input placeholder="Nhập ID vaccine (mặc định: 1)..." />
+              <Input
+                placeholder="Nhập ID vaccine (mặc định: 1)..."
+                size="large"
+                style={{
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  padding: "12px 16px",
+                }}
+              />
             </Form.Item>
 
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  label="Số liều"
-                  name="dose"
-                  rules={[
-                    { required: true, message: "Vui lòng nhập số liều!" },
-                  ]}
-                  initialValue="1"
-                >
-                  <Input placeholder="Nhập số liều (vd: 1, 2, 3)..." />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Ngày lên lịch"
-                  name="scheduledDate"
-                  rules={[
-                    { required: true, message: "Vui lòng chọn ngày tiêm!" },
-                  ]}
-                >
-                  <DatePicker
-                    style={{ width: "100%" }}
-                    placeholder="Chọn ngày tiêm..."
-                    format="DD/MM/YYYY"
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
             <Form.Item
-              label="Ghi chú tiêm chủng"
+              label={
+                <span
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "600",
+                    color: "#374151",
+                  }}
+                >
+                  💊 Số liều
+                </span>
+              }
+              name="dose"
+              rules={[{ required: true, message: "Vui lòng nhập số liều!" }]}
+              initialValue="1"
+              style={{ marginBottom: "20px" }}
+            >
+              <Input
+                placeholder="Nhập số liều (vd: 1, 2, 3)..."
+                size="large"
+                style={{
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  padding: "12px 16px",
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              label={
+                <span
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "600",
+                    color: "#374151",
+                  }}
+                >
+                  📝 Ghi chú tiêm chủng
+                </span>
+              }
               name="administrationNotes"
               rules={[{ required: true, message: "Vui lòng nhập ghi chú!" }]}
+              style={{ marginBottom: "24px" }}
             >
-              <TextArea rows={3} placeholder="Nhập ghi chú tiêm chủng..." />
-            </Form.Item>
-            <Form.Item
-              label="Hình ảnh vaccine"
-              name="image"
-              valuePropName="fileList"
-              getValueFromEvent={(e) =>
-                Array.isArray(e) ? e : e && e.fileList
-              }
-            >
-              <Upload
-                listType="picture-card"
-                beforeUpload={() => false}
-                multiple
-                maxCount={5}
-                accept="image/*"
-                showUploadList={{
-                  showPreviewIcon: true,
-                  showRemoveIcon: true,
-                  showDownloadIcon: false,
+              <TextArea
+                rows={4}
+                placeholder="Nhập ghi chú tiêm chủng chi tiết..."
+                size="large"
+                style={{
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  resize: "none",
                 }}
-              >
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "24px", marginBottom: "8px" }}>
-                    📷
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#666" }}>
-                    Chọn ảnh
-                    <br />
-                    (tối đa 5 ảnh)
-                  </div>
-                </div>
-              </Upload>
+                showCount
+                maxLength={500}
+              />
             </Form.Item>
           </Form>
         </Modal>
@@ -2339,51 +2392,83 @@ function VaccinationManagement() {
         >
           <Form form={editForm} layout="vertical" onFinish={handleEditSubmit}>
             <Form.Item
-              label="Tên vaccine"
-              name="vaccineName"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên vaccine!" },
-              ]}
+              label={
+                <span
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "600",
+                    color: "#374151",
+                  }}
+                >
+                  ID Vaccine
+                </span>
+              }
+              name="vaccineId"
+              rules={[{ required: true, message: "Vui lòng nhập ID vaccine!" }]}
+              style={{ marginBottom: "20px" }}
             >
-              <Input placeholder="Nhập tên vaccine..." />
+              <Input
+                placeholder="Nhập ID vaccine (mặc định: 1)..."
+                size="large"
+                style={{
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  padding: "12px 16px",
+                }}
+              />
             </Form.Item>
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  label="Loại vaccine"
-                  name="vaccinationType"
-                  rules={[
-                    { required: true, message: "Vui lòng nhập loại vaccine!" },
-                  ]}
-                >
-                  <Input placeholder="Nhập loại vaccine..." />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Ngày lên lịch"
-                  name="scheduledDate"
-                  rules={[
-                    { required: true, message: "Vui lòng chọn ngày tiêm!" },
-                  ]}
-                >
-                  <DatePicker
-                    style={{ width: "100%" }}
-                    placeholder="Chọn ngày tiêm..."
-                    format="DD/MM/YYYY"
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
+
             <Form.Item
-              label="Ghi chú tiêm chủng"
-              name="administrationNotes"
-              rules={[{ required: true, message: "Vui lòng nhập ghi chú!" }]}
+              label={
+                <span
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "600",
+                    color: "#374151",
+                  }}
+                >
+                  Số liều
+                </span>
+              }
+              name="dose"
+              rules={[{ required: true, message: "Vui lòng nhập số liều!" }]}
+              style={{ marginBottom: "20px" }}
             >
-              <TextArea rows={3} placeholder="Nhập ghi chú tiêm chủng..." />
+              <Input
+                placeholder="Nhập số liều (vd: 1, 2, 3)..."
+                size="large"
+                style={{
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  padding: "12px 16px",
+                }}
+              />
             </Form.Item>
-            <Form.Item label="Ghi chú" name="notes">
-              <TextArea rows={3} placeholder="Nhập ghi chú..." />
+
+            <Form.Item
+              label={
+                <span
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "600",
+                    color: "#374151",
+                  }}
+                >
+                  📝 Ghi chú
+                </span>
+              }
+              name="notes"
+              style={{ marginBottom: "20px" }}
+            >
+              <TextArea
+                rows={4}
+                placeholder="Nhập ghi chú tiêm chủng (tùy chọn)..."
+                style={{
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  resize: "none",
+                }}
+              />
             </Form.Item>
           </Form>
         </Modal>

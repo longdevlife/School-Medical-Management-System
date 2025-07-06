@@ -307,6 +307,13 @@ namespace Sever.Controllers
                 return NotFound("Không tìm thấy tiêm chủng nào đang chờ xác nhận.");
             return Ok(result);
         }
+        [HttpGet("vaccine/getByStudentId/{studentId}")]
+        public async Task<IActionResult> GetVaccineByStudentId(string studentId)
+        {
+            var result = await _vaccinationService.GetVaccineByStudentIDAsync(studentId);
+            return Ok(result);
+        }
+
 
         [HttpGet("healthProfile/getByStudent/{studentId}")]
         public async Task<IActionResult> GetHealthProfile(string studentId)

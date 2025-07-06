@@ -2029,6 +2029,28 @@
         }
       }
     },
+    "/api/nurse/vaccine/getByStudentId/{studentId}": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/nurse/healthProfile/getByStudent/{studentId}": {
       "get": {
         "tags": [
@@ -3219,6 +3241,22 @@
             "format": "int32"
           },
           "vaccinatorID": {
+            "type": "string",
+            "nullable": true
+          },
+          "class": {
+            "type": "string",
+            "nullable": true
+          },
+          "studentName": {
+            "type": "string",
+            "nullable": true
+          },
+          "vaccinatorName": {
+            "type": "string",
+            "nullable": true
+          },
+          "vaccineName": {
             "type": "string",
             "nullable": true
           }

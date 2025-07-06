@@ -24,6 +24,10 @@ namespace Sever.Service
           6. Update vaccine after vaccination + Notify to nurse // (nếu có)
           7. Get all vaccination follow history by their studentID 
         */
+       
+
+        //thêm tên học sinh, lớp, vaccinatorname,sửa date
+
 
         Task<VaccinationRecord> CreateVaccinationRecordByStudentIDAsync(CreateVaccination dto, string userName);
         Task<List<VaccinationRecord>> CreateVaccinationRecordByClassIDAsync(CreateVaccination dto, string userName);
@@ -32,6 +36,7 @@ namespace Sever.Service
         Task<List<VaccineReponse>> GetAllVaccineRecordAsync();
         Task<bool> ConfirmVaccination(string id);
         Task<bool> DeniedVaccination(string id);
+        Task<List<VaccineReponse>> GetVaccineByStudentIDAsync(string studentId);
         Task<List<VaccineReponse>> GetVaccineDeniedAsync();
         Task<List<VaccineReponse>> GetVaccineConfirmAsync();
         Task<List<VaccineReponse>> GetVaccineNotResponseAsync();
@@ -69,7 +74,6 @@ namespace Sever.Service
             string newId = await _vaccinationRepository.GetCurrentVaccinationRecordID();
             var student = await _studentProfileRepository.GetStudentProfileByStudentId(dto.StudentID);
 
-
             var record = new VaccinationRecord
             {
                 RecordID = newId,
@@ -79,7 +83,8 @@ namespace Sever.Service
                 Notes = dto.Notes,
                 NurseID = userId,
                 VaccinatedAt = dto.VaccinatedAt,
-                Status = "Chờ xác nhận"
+                Status = "Chờ xác nhận",
+                DateTime = DateTime.UtcNow.AddHours(7),
             };
 
             await _vaccinationRepository.CreateVaccinationAsync(record);
@@ -112,7 +117,8 @@ namespace Sever.Service
                         NurseID = userId,
                         DateTime = DateTime.UtcNow.AddHours(7),
                         VaccinatedAt = dto.VaccinatedAt,
-                        Status = "Chờ xác nhận"
+                        Status = "Chờ xác nhận",
+
                     };
                     await _vaccinationRepository.CreateVaccinationAsync(record);
                     await _notificationService.SendVaccinationNotificationAsync(student, record.VaccinatedAt);
@@ -244,7 +250,11 @@ namespace Sever.Service
                     StudentID = e.StudentID,
                     NurseID = e.NurseID,
                     VaccineID = e.VaccineID,
-                    VaccinatorID = e.VaccinatorID
+                    VaccinatorID = e.VaccinatorID,
+                    Class = e.StudentProfile?.Class,
+                    StudentName = e.StudentProfile?.StudentName,
+                    VaccinatorName = e.Vaccinator?.Name,
+                    VaccineName = e.Vaccine?.VaccineName,
                 });
             }
             return responses;
@@ -282,7 +292,9 @@ namespace Sever.Service
                     StudentID = e.StudentID,
                     NurseID = e.NurseID,
                     VaccineID = e.VaccineID,
-                    VaccinatorID = e.VaccinatorID
+                    Class = e.StudentProfile?.Class,
+                    StudentName = e.StudentProfile?.StudentName,
+                    VaccineName = e.Vaccine?.VaccineName,
                 });
             }
             return responses;
@@ -308,7 +320,10 @@ namespace Sever.Service
                     StudentID = e.StudentID,
                     NurseID = e.NurseID,
                     VaccineID = e.VaccineID,
-                    VaccinatorID = e.VaccinatorID
+                    VaccinatorID = e.VaccinatorID,
+                    Class = e.StudentProfile?.Class,
+                    StudentName = e.StudentProfile?.StudentName,
+                    VaccineName = e.Vaccine?.VaccineName,
                 });
             }
             return responses;
@@ -334,7 +349,40 @@ namespace Sever.Service
                     StudentID = e.StudentID,
                     NurseID = e.NurseID,
                     VaccineID = e.VaccineID,
-                    VaccinatorID = e.VaccinatorID
+                    VaccinatorID = e.VaccinatorID,
+                    Class = e.StudentProfile?.Class,
+                    StudentName = e.StudentProfile?.StudentName,
+                    VaccineName = e.Vaccine?.VaccineName,
+                });
+            }
+            return responses;
+        }
+
+        public async Task<List<VaccineReponse>> GetVaccineByStudentIDAsync(string studentId)
+        {
+            var vaccineRecords = await _vaccinationRepository.GetVaccineByStudentIdAsync(studentId);
+
+            List<VaccineReponse> responses = new List<VaccineReponse>();
+            foreach (var e in vaccineRecords)
+            {
+                responses.Add(new VaccineReponse
+                {
+                    RecordID = e.RecordID,
+                    Dose = e.Dose,
+                    DateTime = e.DateTime,
+                    Notes = e.Notes,
+                    Status = e.Status,
+                    VaccinatedAt = e.VaccinatedAt,
+                    FollowUpNotes = e.FollowUpNotes,
+                    FollowUpDate = e.FollowUpDate,
+                    StudentID = e.StudentID,
+                    NurseID = e.NurseID,
+                    VaccineID = e.VaccineID,
+                    VaccinatorID = e.VaccinatorID,
+                    Class = e.StudentProfile?.Class,
+                    StudentName = e.StudentProfile?.StudentName,
+                    VaccinatorName = e.Vaccinator?.Name,
+                    VaccineName = e.Vaccine?.VaccineName,
                 });
             }
             return responses;
@@ -371,7 +419,11 @@ namespace Sever.Service
                 StudentID = e.StudentID,
                 NurseID = e.NurseID,
                 VaccineID = e.VaccineID,
-                VaccinatorID = e.VaccinatorID
+                VaccinatorID = e.VaccinatorID,
+                Class = e.StudentProfile?.Class,
+                StudentName = e.StudentProfile?.StudentName,
+                VaccinatorName = e.Vaccinator?.Name,
+                VaccineName = e.Vaccine?.VaccineName,
             }).ToList();
 
             return responses;
@@ -396,5 +448,6 @@ namespace Sever.Service
         {
             return await _vaccinationRepository.CountNotResponseVaccinesAsync(fromDate, toDate);
         }
+
     }
 }

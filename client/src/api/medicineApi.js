@@ -29,7 +29,6 @@ const medicineApi = {
       console.log("🔄 API Update - Medicine ID:", medicineId);
       console.log("🔄 API Update - Raw Data:", updateData);
 
-      // ✅ QUAY LẠI FormData như Postman test thành công
       const formData = new FormData();
       Object.keys(updateData).forEach((key) => {
         if (updateData[key] !== null && updateData[key] !== undefined) {

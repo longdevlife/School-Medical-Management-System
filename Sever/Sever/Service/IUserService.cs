@@ -46,7 +46,7 @@ namespace Sever.Service
                 UserID = await _userRepository.NextId(),
                 UserName = userRequest.UserName,
                 PasswordHash = userRequest.Password,
-
+                Email = userRequest.Email,
             };
             user.RoleID = userRequest.RoleName switch
             {

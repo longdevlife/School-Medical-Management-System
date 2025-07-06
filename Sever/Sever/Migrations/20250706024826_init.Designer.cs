@@ -12,7 +12,7 @@ using Sever.Context;
 namespace Sever.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250706022951_init")]
+    [Migration("20250706024826_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -580,6 +580,7 @@ namespace Sever.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")

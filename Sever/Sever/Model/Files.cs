@@ -28,5 +28,8 @@ namespace Sever.Model
         public string? MedicineID { get; set; }
         [ForeignKey("MedicineID")]
         public Medicine Medicine { get; set; }
+        public string? StudentID { get; set; }
+        [ForeignKey("StudentID")]
+        public StudentProfile StudentProfile { get; set; }
     }
 }

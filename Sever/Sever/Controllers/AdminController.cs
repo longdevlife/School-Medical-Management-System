@@ -228,7 +228,7 @@ namespace Sever.Controllers
             }
         }
         [HttpPut("active-account")]
-        public async Task<IActionResult> ActivateAccount([FromBody]string username)
+        public async Task<IActionResult> ActivateAccount([FromBody] string username)
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -236,7 +236,7 @@ namespace Sever.Controllers
             }
             try
             {
-                var user = await _userService.ActivativeAccountasync(username);  
+                var user = await _userService.ActivativeAccountasync(username);
                 return Ok(new { message = "Kích hoạt tài khoản thành công" });
             }
             catch
@@ -245,7 +245,7 @@ namespace Sever.Controllers
             }
         }
         [HttpGet("get-student-info-by-parent")]
-        public async Task<IActionResult> GetStudentInfoByParent([FromBody]string username)
+        public async Task<IActionResult> GetStudentInfoByParent([FromBody] string username)
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -287,6 +287,79 @@ namespace Sever.Controllers
             catch (Exception ex)
             {
                 return BadRequest(new { message = $"Tạo hồ sơ học sinh thất bại: {ex.Message}" });
+            }
+        }
+        [HttpDelete("delete-student-profile/{studentId}")]
+        public async Task<IActionResult> DeleteStudentProfile(string studentId)
+        {
+            if (string.IsNullOrEmpty(studentId))
+            {
+                return BadRequest(new { message = "Mã học sinh không được để trống" });
+            }
+            try
+            {
+                var result = await _studentService.DeleteStudentProfile(studentId);
+                if (result)
+                {
+                    return Ok(new { message = "Xóa hồ sơ học sinh thành công" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Không tìm thấy hồ sơ học sinh để xóa" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Xóa hồ sơ học sinh thất bại: {ex.Message}" });
+            }
+        }
+        [HttpGet("get-student-info-by-parentID/{parentId}")]
+        public async Task<IActionResult> GetStudentInfoByParentID(string parentId)
+        {
+            if (string.IsNullOrEmpty(parentId))
+            {
+                return BadRequest(new { message = "ID phụ huynh không được để trống" });
+            }
+            try
+            {
+                var studentProfiles = await _studentService.GetStudentProfilesByParentAsync(parentId);
+                if (studentProfiles == null || studentProfiles.Count == 0)
+                {
+                    return NotFound(new { message = "Không tìm thấy thông tin học sinh cho phụ huynh này." });
+                }
+                return Ok(studentProfiles);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Lỗi khi lấy thông tin học sinh: {ex.Message}" });
+            }
+        }
+        [HttpPut("update-student-profile")]
+        public async Task<IActionResult> UpdateStudentProfile([FromForm] UpdateStudentRequest updateStudentRequest)
+        {
+            if (updateStudentRequest == null || string.IsNullOrEmpty(updateStudentRequest.StudentID))
+            {
+                return BadRequest(new { message = "Thông tin học sinh không được để trống" });
+            }
+            try
+            {
+                var result = await _studentService.UpdateStudentProfile(updateStudentRequest);
+                if (result)
+                {
+                    return Ok(new { message = "Cập nhật hồ sơ học sinh thành công" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Không tìm thấy hồ sơ học sinh để cập nhật" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = $"Cập nhật hồ sơ học sinh thất bại: {ex.Message}",
+                    inner = ex.InnerException?.Message
+                });
             }
         }
     }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Sever.Migrations
 {
     /// <inheritdoc />
-    public partial class cddd : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -207,7 +207,7 @@ namespace Sever.Migrations
                     RelationName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Nationality = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Ethnicity = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Birthday = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Birthday = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Sex = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ParentID = table.Column<string>(type: "nvarchar(450)", nullable: false)
@@ -465,7 +465,8 @@ namespace Sever.Migrations
                     MedicalEventID = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     NewsID = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     SchoolID = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    MedicineID = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    MedicineID = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    StudentID = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -490,6 +491,11 @@ namespace Sever.Migrations
                         column: x => x.SchoolID,
                         principalTable: "SchoolInfo",
                         principalColumn: "SchoolID");
+                    table.ForeignKey(
+                        name: "FK_Files_StudentProfile_StudentID",
+                        column: x => x.StudentID,
+                        principalTable: "StudentProfile",
+                        principalColumn: "StudentID");
                 });
 
             migrationBuilder.CreateIndex(
@@ -516,6 +522,11 @@ namespace Sever.Migrations
                 name: "IX_Files_SchoolID",
                 table: "Files",
                 column: "SchoolID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Files_StudentID",
+                table: "Files",
+                column: "StudentID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ForgotPasswordToken_UserId",

@@ -27,6 +27,7 @@ namespace Sever.Service
         Task<List<Files>> GetImageByNewsIdAsync(string id);
         Task<bool> DeleteFileAsync(string imageLink);
         Task<List<CreateStudentRequest>> ReadStudentFromExcelAsync(IFormFile file);
+        Task<ImageResponse> UploadStudentAvataAsync(IFormFile file, string id);
     }
     public class FilesSevice : IFilesService
     {
@@ -233,6 +234,44 @@ namespace Sever.Service
             {
                 Url = uploadResult.SecureUrl.AbsoluteUri,
                 UploadedAt = DateTime.UtcNow
+            };
+        }
+
+        public async Task<ImageResponse> UploadStudentAvataAsync(IFormFile file, string id)
+        {
+            if (file == null || file.Length == 0)
+                throw new ArgumentException("File is empty");
+
+            using var stream = file.OpenReadStream();
+
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(file.FileName, stream),
+                Folder = "img"
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
+                throw new Exception("Image upload failed");
+
+            var image = new Files
+            {
+                FileName = file.FileName,
+                FileType = "Gift",
+                FileLink = uploadResult.SecureUrl.AbsoluteUri,
+                UploadDate = DateTime.UtcNow,
+                IsActive = true,
+                StudentID = id
+            };
+
+            await _fileRepository.AddAsync(image);
+            await _fileRepository.SaveChangesAsync();
+
+            return new ImageResponse
+            {
+                Url = image.FileLink,
+                UploadedAt = image.UploadDate
             };
         }
 

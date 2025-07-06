@@ -37,6 +37,7 @@ import Vaccine from "./pages/vaccinations/Vaccine";
 import VaccineDetail from "./pages/vaccinations/VaccineDetail";
 import HealthCheckup from "./pages/healthRecord/HealthCheckup";
 import MedicineManagement from "./pages/medicineParent/MedicineManagement";
+import DeclareHealthProfile from "./pages/decleareParent/DeclareHealthProfile";
 
 
 import Login from "./pages/Login";
@@ -131,6 +132,7 @@ function App() {
             <Route path="vaccinations/:id" element={<VaccineDetail />} />
             <Route path="health-result" element={<HealthCheckup />} />
             <Route path="send-medicine" element={<MedicineManagement />} />
+            <Route path="declare-health" element={<DeclareHealthProfile />} />
           </Route>{" "}
           {/* Redirect root to home page */}
           <Route path="/" element={<Navigate to="/login" replace />} />

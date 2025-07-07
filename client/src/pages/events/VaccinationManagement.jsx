@@ -77,6 +77,10 @@ function VaccinationManagement() {
         let status = "pending";
         if (item.status) {
           const backendStatus = item.status.trim();
+          console.log(
+            `📊 Backend status: "${backendStatus}" → Frontend status mapping...`
+          );
+
           switch (backendStatus) {
             case "Đã chấp nhận":
             case "Đã xác nhận":
@@ -86,12 +90,15 @@ function VaccinationManagement() {
               status = "approved";
               break;
             case "Đã tiêm":
+            case "Đã tiêm xong":
+            case "Hoàn tất tiêm":
               status = "injected";
               break;
             case "Đang tiêm":
               status = "injected";
               break;
             case "Đang theo dõi":
+            case "Theo dõi":
               status = "monitoring";
               break;
             case "Từ chối":
@@ -99,14 +106,25 @@ function VaccinationManagement() {
               status = "rejected";
               break;
             case "Hoàn thành":
+            case "Hoàn tất":
               status = "completed";
               break;
             case "Chờ xác nhận":
+            case "Chờ phản hồi":
               status = "pending";
               break;
             default:
+              console.warn(
+                `⚠️ Unknown backend status: "${backendStatus}", defaulting to pending`
+              );
               status = "pending";
           }
+
+          console.log(`✅ "${backendStatus}" → "${status}"`);
+        } else {
+          console.log(
+            `⚠️ No status found for record ${item.recordID}, defaulting to pending`
+          );
         }
 
         return {
@@ -236,7 +254,6 @@ function VaccinationManagement() {
     }
   };
 
-  // Cập nhật tiến độ tiêm chủng theo workflow mới
   const handleUpdateProgress = (submission) => {
     setSelectedSubmission(submission);
 
@@ -280,7 +297,6 @@ function VaccinationManagement() {
           backendStatus = "Chờ tiêm";
       }
 
-      // Kiểm tra ID hợp lệ trước khi gọi API
       if (
         !selectedSubmission.id ||
         selectedSubmission.id.toString().startsWith("TEST_")
@@ -289,69 +305,53 @@ function VaccinationManagement() {
         return;
       }
 
-      // Workflow: Chọn API dựa trên status hiện tại
       if (
         ["confirmed", "approved"].includes(selectedSubmission.status) &&
         values.newStatus === "injected"
       ) {
-        // confirmed/approved → injected: Dùng updateByRecordID
+        // confirmed/approved → injected: Nút "Thực hiện tiêm" - Dùng updateAfterByRecordID
+
         const updateData = {
-          Dose: selectedSubmission.dose || 1,
           DateTime: values.administrationTime
             ? dayjs(values.administrationTime).format("YYYY-MM-DD HH:mm:ss")
             : dayjs().format("YYYY-MM-DD HH:mm:ss"),
-          Notes: values.progressNotes || "",
-          Status: backendStatus,
-          VaccinatedAt: values.administrationTime
-            ? dayjs(values.administrationTime).format("YYYY-MM-DD HH:mm:ss")
-            : dayjs().format("YYYY-MM-DD HH:mm:ss"),
-          StudentID: selectedSubmission.studentId, // ✅ String theo API spec
-          VaccineID: selectedSubmission.vaccineID || 1, // ✅ Number cho parseInt trong API
-          // ✅ Thêm VaccinatorID từ localStorage
-          VaccinatorID: (() => {
-            try {
-              const currentUser = JSON.parse(
-                localStorage.getItem("user") || "{}"
-              );
-              const userID =
-                currentUser.userID ||
-                currentUser.id ||
-                currentUser.userId ||
-                "1"; // Default nurse ID number
-              console.log("✅ VaccinatorID cho update progress:", userID);
-              return parseInt(userID) || 1; // Convert to number
-            } catch (e) {
-              console.log("⚠️ Fallback VaccinatorID = 1");
-              return 1;
-            }
-          })(),
+          Status: backendStatus, // "Đã tiêm"
+          FollowUpNotes: values.progressNotes || "",
+          FollowUpDate: "", // Trống vì chưa hoàn thành
+          StudentID: selectedSubmission.studentId,
         };
 
         console.log(
-          "🚀 Update Progress (updateByRecordID) - Data gửi lên API:",
+          "🚀 Thực hiện tiêm (approved→injected) - updateAfterByRecordID format chuẩn:",
           updateData
         );
-        console.log("🔍 ClassID được gửi:", updateData.ClassID);
+        console.log("📝 Form values:", values);
+        console.log("🆔 Record ID:", selectedSubmission.id);
+        console.log("🔄 Expected status change: approved → injected");
+        console.log("📅 Administration time:", values.administrationTime);
+        console.log("🏥 Backend status to send:", backendStatus);
 
-        // ✅ Debug VaccinatorID từ localStorage
-        try {
-          const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-          console.log("👤 Current User from localStorage:", currentUser);
-          console.log(
-            "🆔 UserID sẽ làm VaccinatorID:",
-            currentUser.userID || currentUser.id || currentUser.userId || "1"
-          );
-        } catch (e) {
-          console.log(
-            "⚠️ Không đọc được user từ localStorage, dùng VaccinatorID = 1"
-          );
-        }
-        const updateResponse = await vaccineApi.nurse.updateByRecordID(
+        const updateResponse = await vaccineApi.nurse.updateAfterByRecordID(
           selectedSubmission.id,
           updateData
         );
-        console.log("✅ Update Response:", updateResponse);
+        console.log("✅ Injection Update Response:", updateResponse);
         console.log("✅ Update Response Data:", updateResponse.data);
+
+        // Kiểm tra response để xem backend có trả về status mới không
+        if (updateResponse.data) {
+          console.log("📋 Response status:", updateResponse.data.status);
+          console.log("📋 Response message:", updateResponse.data.message);
+        }
+
+        // Log để debug trạng thái
+        console.log(
+          "🔄 Status transition:",
+          selectedSubmission.status,
+          "→",
+          values.newStatus
+        );
+        console.log("🎯 Expected backend status:", backendStatus);
       } else if (
         ["injected", "monitoring"].includes(selectedSubmission.status)
       ) {
@@ -382,50 +382,94 @@ function VaccinationManagement() {
         console.log("✅ UpdateAfter Response:", updateAfterResponse);
         console.log("✅ UpdateAfter Response Data:", updateAfterResponse.data);
       } else {
-        // Fallback: Dùng updateByRecordID cho các case khác
-        const updateData = {
-          Dose: selectedSubmission.dose || 1, // ✅ Number cho parseInt trong API
-          DateTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-          Notes: values.progressNotes || "",
-          Status: backendStatus,
-          StudentID: selectedSubmission.studentId, // ✅ String theo API spec
-          VaccineID: selectedSubmission.vaccineID || 1, // ✅ Number cho parseInt trong API
-          // ✅ Thêm VaccinatorID từ localStorage cho fallback
-          VaccinatorID: (() => {
-            try {
-              const currentUser = JSON.parse(
-                localStorage.getItem("user") || "{}"
-              );
-              const userID =
-                currentUser.userID ||
-                currentUser.id ||
-                currentUser.userId ||
-                "1"; // Default nurse ID number
-              console.log("✅ VaccinatorID cho fallback:", userID);
-              return parseInt(userID) || 1; // Convert to number
-            } catch (e) {
-              console.log("⚠️ Fallback VaccinatorID = 1");
-              return 1;
-            }
-          })(),
-        };
-
+        // Fallback case cho các trường hợp khác
         console.log(
-          "🚀 Update Progress (fallback updateByRecordID) - Data gửi lên API:",
-          updateData
+          "🔄 Fallback case - Status transition:",
+          selectedSubmission.status,
+          "→",
+          values.newStatus
         );
-        console.log("🔍 ClassID được gửi (fallback):", updateData.ClassID);
-        const fallbackResponse = await vaccineApi.nurse.updateByRecordID(
-          selectedSubmission.id,
-          updateData
-        );
-        console.log("✅ Fallback Response:", fallbackResponse);
-        console.log("✅ Fallback Response Data:", fallbackResponse.data);
+
+        // Lấy nurseID (vaccinatorID) từ localStorage hoặc data
+        let nurseID;
+        try {
+          const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+          nurseID =
+            currentUser.userID ||
+            currentUser.id ||
+            currentUser.userId ||
+            selectedSubmission.nurseID ||
+            selectedSubmission.nurseid ||
+            selectedSubmission.nurseId ||
+            selectedSubmission.verifiedBy ||
+            "U0004"; // Default nurse ID
+
+          console.log("👤 NurseID (VaccinatorID) for fallback:", nurseID);
+        } catch (e) {
+          nurseID = "U0004"; // Fallback
+          console.log("⚠️ Using fallback NurseID:", nurseID);
+        }
+
+        // Quyết định API endpoint dựa trên workflow
+        const isConfirmationWorkflow =
+          selectedSubmission.status === "pending" &&
+          (values.newStatus === "confirmed" || values.newStatus === "rejected");
+
+        if (isConfirmationWorkflow) {
+          // Tab "Chờ xác nhận": pending → confirmed/rejected - Dùng updateByRecordID
+          const updateData = {
+            dose: parseInt(selectedSubmission.dose) || 1,
+            vaccineId: parseInt(selectedSubmission.vaccineID) || 1,
+            vaccinatedAt: values.administrationTime
+              ? dayjs(values.administrationTime).format("YYYY-MM-DD")
+              : dayjs().format("YYYY-MM-DD"),
+            vaccinatorID: nurseID,
+            notes: values.progressNotes || "",
+          };
+
+          console.log(
+            "🚀 Fallback updateByRecordID (Confirmation) - Data:",
+            updateData
+          );
+
+          const fallbackResponse = await vaccineApi.nurse.updateByRecordID(
+            selectedSubmission.id,
+            updateData
+          );
+          console.log(
+            "✅ Fallback updateByRecordID Response:",
+            fallbackResponse
+          );
+        } else {
+          // Tất cả các thao tác khác - Dùng updateAfterByRecordID
+          const updateData = {
+            dose: parseInt(selectedSubmission.dose) || 1,
+            vaccineId: parseInt(selectedSubmission.vaccineID) || 1,
+            vaccinatedAt: values.administrationTime
+              ? dayjs(values.administrationTime).format("YYYY-MM-DD")
+              : dayjs().format("YYYY-MM-DD"),
+            vaccinatorID: nurseID,
+            notes: values.progressNotes || "",
+          };
+
+          console.log(
+            "🚀 Fallback updateAfterByRecordID (Other) - Data:",
+            updateData
+          );
+
+          const fallbackResponse = await vaccineApi.nurse.updateAfterByRecordID(
+            selectedSubmission.id,
+            updateData
+          );
+          console.log(
+            "✅ Fallback updateAfterByRecordID Response:",
+            fallbackResponse
+          );
+        }
       }
 
       console.log("🔄 Bắt đầu fetch lại dữ liệu sau khi update...");
 
-      // Thêm delay nhỏ để đảm bảo backend đã update xong
       setTimeout(async () => {
         await fetchSubmissions();
         console.log("✅ Hoàn thành fetch dữ liệu mới với delay");
@@ -460,7 +504,6 @@ function VaccinationManagement() {
     }
   };
 
-  // chỉnh sửa vaccine (UI) - backend vẫn dùng medicine API
   const handleEdit = (submission) => {
     setSelectedSubmission(submission);
 
@@ -521,7 +564,6 @@ function VaccinationManagement() {
         return;
       }
 
-      // Chuẩn bị dữ liệu theo spec backend - CHỈ GỬI CÁC TRƯỜNG CẦN THIẾT
       const updateData = {
         dose: parseInt(values.dose) || parseInt(selectedSubmission.dose) || 1, // Number - từ form hoặc data hiện tại
         vaccineId:
@@ -534,9 +576,6 @@ function VaccinationManagement() {
         vaccinatorID: nurseID, // String NurseID - giữ nguyên format "U0004"
         notes: values.notes || "", // String - tùy chọn
       };
-
-      // KHÔNG gửi các trường không cần thiết: dateTime, status, name, studentId
-      // Backend sẽ tự động cập nhật name khi thay đổi vaccineId
 
       console.log(
         "🚀 Edit Submit - Data gửi lên API (CHỈ CÁC TRƯỜNG CẦN THIẾT):",
@@ -737,7 +776,7 @@ function VaccinationManagement() {
       ),
     },
     {
-      title: "Ngày gửi",
+      title: "Ngày thực hiện",
       dataIndex: "submissionDate",
       key: "submissionDate",
       width: 100,
@@ -2047,7 +2086,7 @@ function VaccinationManagement() {
                   style={{
                     fontSize: "20px",
                     color: "#1f2937",
-                    display: "block",
+                    display: "flex",
                     marginBottom: "4px",
                   }}
                 >

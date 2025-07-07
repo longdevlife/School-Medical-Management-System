@@ -10,7 +10,7 @@ import {
   HeartOutlined,
   AlertOutlined,
 } from "@ant-design/icons";
-import "./SidebarStyles.css";
+
 
 const { Sider } = Layout;
 
@@ -46,10 +46,6 @@ function SidebarParent({ collapsed }) {
       icon: <MedicineBoxOutlined />,
       label: "Tiêm chủng",
       children: [
-        {
-          key: `${basePath}/vaccinations/history`,
-          label: "Lịch sử tiêm chủng",
-        },
         {
           key: `${basePath}/vaccinations/results`,
           label: "Kết quả tiêm chủng",

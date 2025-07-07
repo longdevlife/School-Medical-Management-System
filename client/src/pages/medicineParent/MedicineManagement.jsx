@@ -1378,7 +1378,7 @@ const MedicineManagement = () => {
       title: 'Trạng thái',
       dataIndex: 'Status',
       key: 'Status',
-      width: 110, // ✅ Giảm từ 120 xuống 110
+      width: 110, 
       render: (status) => {
         const normalizedStatus = normalizeStatus(status);
         return (
@@ -1688,7 +1688,8 @@ const MedicineManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" 
+>
       {/* Header */}
       <div
         style={{

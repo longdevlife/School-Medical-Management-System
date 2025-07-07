@@ -33,8 +33,8 @@ import ParentLayout from "./components/Layout/parent/ParentLayout";
 import StudentProfile from "./pages/studentProfile/StudentProfile";
 import ParentProfile from "./pages/parent/ParentProfile";
 import MedicalEvent from "./pages/eventMedical/MedicalEvent";
-import Vaccine from "./pages/vaccinations/Vaccine";
-import VaccineDetail from "./pages/vaccinations/VaccineDetail";
+import VaccineManagement from "./pages/vaccinationsParent/VaccineManagement";
+import VaccineRequest  from "./pages/vaccinationsParent/VaccineRequest";
 import HealthCheckup from "./pages/healthRecord/HealthCheckup";
 import MedicineManagement from "./pages/medicineParent/MedicineManagement";
 import DeclareHealthProfile from "./pages/decleareParent/DeclareHealthProfile";
@@ -128,8 +128,8 @@ function App() {
             <Route path="profile-student" element={<StudentProfile />} />
             <Route path="profile" element={<ParentProfile />} />
             <Route path="medical-events" element={<MedicalEvent />} />
-            <Route path="vaccinations" element={<Vaccine />} />
-            <Route path="vaccinations/:id" element={<VaccineDetail />} />
+            <Route path="vaccinations/results" element={<VaccineManagement />} />
+            <Route path="vaccinations/requirements" element={<VaccineRequest />} />
             <Route path="health-result" element={<HealthCheckup />} />
             <Route path="send-medicine" element={<MedicineManagement />} />
             <Route path="declare-health" element={<DeclareHealthProfile />} />

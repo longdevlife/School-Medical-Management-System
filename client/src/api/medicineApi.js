@@ -59,14 +59,11 @@ const medicineApi = {
   parent: {
     // Backend sẽ trả về TẤT CẢ medicines của parent, frontend sẽ filter
     getMedicinesByParentId: () => {
-      console.log(`🚀 Parent API - Đang lấy TẤT CẢ thuốc của parent`);
       return axiosClient.get(`/parent/medicine/getByParentId`);
     },
     
     // POST - Tạo medicine mới
     createMedicine: (data) => {
-      console.log("🚀 Parent API - Đang tạo thuốc mới:", data);
-      
       const formData = new FormData();
       
       // Thêm các trường bắt buộc
@@ -98,7 +95,6 @@ const medicineApi = {
     // Backend cho phép update các thuốc có trạng thái chưa xử lý theo MedicineID
     updateMedicine: (data) => {
       const medicineId = data.MedicineID;
-      console.log("🚀 Parent API - Đang cập nhật thuốc ID:", medicineId, data);
       
       if (!medicineId) {
         throw new Error("MedicineID là bắt buộc để cập nhật thuốc");

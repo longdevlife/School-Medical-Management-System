@@ -390,7 +390,7 @@ function VaccinationManagement() {
           values.newStatus
         );
 
-        // Lấy nurseID (vaccinatorID) từ localStorage hoặc data
+    
         let nurseID;
         try {
           const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -441,7 +441,6 @@ function VaccinationManagement() {
             fallbackResponse
           );
         } else {
-          // Tất cả các thao tác khác - Dùng updateAfterByRecordID
           const updateData = {
             dose: parseInt(selectedSubmission.dose) || 1,
             vaccineId: parseInt(selectedSubmission.vaccineID) || 1,
@@ -548,7 +547,7 @@ function VaccinationManagement() {
         return;
       }
 
-      // Kiểm tra format nurseID hợp lệ
+
       if (!nurseID || (typeof nurseID === "string" && nurseID.trim() === "")) {
         message.error("NurseID không hợp lệ! Hiện tại: " + nurseID);
         console.error("❌ Invalid NurseID:", nurseID);

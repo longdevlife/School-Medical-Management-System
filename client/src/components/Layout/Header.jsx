@@ -190,7 +190,9 @@ function AppHeader({ collapsed, setCollapsed }) {
           <button
             onClick={() => navigate("/home")}
             className="flex items-center text-gray-700 hover:text-blue-600 transition-all duration-200 font-medium whitespace-nowrap"
-            style={{ marginLeft: "17px" }}
+            style={{ marginLeft: "17px", outline: "none", boxShadow: "none" }}
+            tabIndex={0}
+            onMouseDown={e => e.preventDefault()}
           >
             <HomeOutlined className="mr-2" />
             Trang chủ
@@ -199,7 +201,9 @@ function AppHeader({ collapsed, setCollapsed }) {
           <button
             onClick={() => navigate("/tin-tuc")}
             className="flex items-center text-gray-700 hover:text-blue-600 transition-all duration-200 font-medium whitespace-nowrap"
-            style={{ margin: "33px" }}
+            style={{ margin: "33px", outline: "none", boxShadow: "none" }}
+            tabIndex={0}
+            onMouseDown={e => e.preventDefault()}
           >
             <FileTextOutlined className="mr-2" />
             Tin tức
@@ -208,7 +212,9 @@ function AppHeader({ collapsed, setCollapsed }) {
           <button
             onClick={() => navigate("/gioi-thieu")}
             className="flex items-center text-gray-700 hover:text-blue-600 transition-all duration-200 font-medium whitespace-nowrap"
-            style={{ margin: "0px" }}
+            style={{ margin: "0px", outline: "none", boxShadow: "none" }}
+            tabIndex={0}
+            onMouseDown={e => e.preventDefault()}
           >
             <InfoCircleOutlined className="mr-2" />
             Giới thiệu
@@ -253,7 +259,12 @@ function AppHeader({ collapsed, setCollapsed }) {
             arrow
             trigger={["click"]}
           >
-            <div className="flex items-center space-x-2 cursor-pointer px-3 py-2 hover:bg-gray-50 rounded-lg transition-all duration-200">
+            <div
+              className="flex items-center space-x-2 cursor-pointer px-3 py-2 rounded-lg transition-all duration-200"
+              style={{ background: "none", outline: "none" }}
+              tabIndex={0}
+              onMouseDown={e => e.preventDefault()}
+            >
               <Avatar icon={<UserOutlined />} className="bg-blue-500" />
               <span className="text-gray-700 font-medium whitespace-nowrap">
                 Xin chào, {currentUser?.username || userRole}

@@ -173,242 +173,237 @@ function AdminDashboard() {
   };
 
   return (
-    <div style={{ 
-      padding: '40px', 
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-      minHeight: '100vh' 
-    }}>
-      {/* Header */}
-      <div style={{ 
-        marginBottom: '40px', 
-        textAlign: 'center',
-        background: 'rgba(255,255,255,0.95)',
-        padding: '30px',
-        borderRadius: '20px',
-        backdropFilter: 'blur(10px)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
-      }}>
-        <TrophyOutlined style={{ fontSize: '48px', color: '#f59e0b', marginBottom: '16px' }} />
-        <Title level={1} style={{ 
-          color: '#1e293b', 
-          fontWeight: 'bold',
-          margin: '0 0 8px 0',
-          fontSize: '2.5rem'
-        }}>
-          🏆 Admin Dashboard
-        </Title>
-        <Text style={{ 
-          fontSize: '18px',
-          color: '#64748b',
-          fontWeight: 500
-        }}>
-          Hệ thống quản lý toàn diện
-        </Text>
-        <Divider style={{ margin: '20px 0 0 0' }} />
+    <div className="p-0 sm:p-8 bg-gradient-to-br from-blue-200 via-white to-blue-100 min-h-screen flex flex-col items-center">
+      <div className="w-full max-w-7xl">
+        {/* Header tinh tế hơn */}
+        <div className="mb-14 flex items-center gap-8">
+          <div className="relative">
+            <div className="bg-gradient-to-br from-blue-400 to-blue-700 rounded-full p-7 shadow-2xl flex items-center justify-center border-4 border-white animate-fade-in">
+              <TrophyOutlined className="text-white text-5xl drop-shadow-xl" />
+            </div>
+            <span className="absolute -bottom-3 -right-3 bg-white rounded-full px-3 py-1 text-xs text-blue-700 font-bold shadow border border-blue-100 select-none tracking-wide" style={{letterSpacing: 1}}>ADMIN</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Title level={2} className="text-blue-900 mb-0 font-black tracking-widest drop-shadow-xl leading-tight" style={{letterSpacing: 2}}>Admin Dashboard</Title>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="w-2 h-2 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 animate-pulse shadow"></span>
+              <Text type="secondary" className="text-lg font-medium text-gray-600 italic tracking-wide">Hệ thống quản lý toàn diện</Text>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Stats Cards */}
+        <Row gutter={[32, 32]} justify="center" style={{ marginBottom: '40px' }}>
+          <Col xs={24} sm={12} lg={6}>
+            <Card
+              style={{
+                ...cardStyle,
+                background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
+                color: 'white',
+              }}
+              className="hover-card"
+            >
+              <Statistic
+                title={<span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '16px', fontWeight: 600 }}>👥 Tổng người dùng</span>}
+                value={stats.totalUsers}
+                prefix={<UserOutlined style={{ color: '#fbbf24' }} />}
+                valueStyle={{ color: '#ffffff', fontWeight: 700, fontSize: '32px' }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card
+              style={{
+                ...cardStyle,
+                background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+                color: 'white',
+              }}
+              className="hover-card"
+            >
+              <Statistic
+                title={<span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '16px', fontWeight: 600 }}>✅ Đang hoạt động</span>}
+                value={stats.activeAccounts}
+                prefix={<SettingOutlined style={{ color: '#fbbf24' }} />}
+                valueStyle={{ color: '#ffffff', fontWeight: 700, fontSize: '32px' }}
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Role Distribution Cards */}
+        <Row gutter={[24, 24]} justify="center" style={{ marginBottom: '40px' }}>
+          <Col xs={24} sm={12} md={8}>
+            <Card
+              style={{
+                ...cardStyle,
+                background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+                border: '2px solid #3b82f6'
+              }}
+              className="hover-card"
+            >
+              <Statistic
+                title={<span style={{ color: '#1e40af', fontSize: '16px', fontWeight: 600 }}>👑 Admin</span>}
+                value={stats.adminCount}
+                prefix={<CrownOutlined style={{ color: '#dc2626', fontSize: '24px' }} />}
+                valueStyle={{ color: '#1e40af', fontWeight: 700, fontSize: '28px' }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Card
+              style={{
+                ...cardStyle,
+                background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+                border: '2px solid #3b82f6'
+              }}
+              className="hover-card"
+            >
+              <Statistic
+                title={<span style={{ color: '#1e40af', fontSize: '16px', fontWeight: 600 }}>🏥 Nurse + Manager</span>}
+                value={stats.nurseManagerCount}
+                prefix={<MedicineBoxOutlined style={{ color: '#10b981', fontSize: '24px' }} />}
+                valueStyle={{ color: '#1e40af', fontWeight: 700, fontSize: '28px' }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Card
+              style={{
+                ...cardStyle,
+                background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+                border: '2px solid #3b82f6'
+              }}
+              className="hover-card"
+            >
+              <Statistic
+                title={<span style={{ color: '#1e40af', fontSize: '16px', fontWeight: 600 }}>👨‍👩‍👧‍👦 Parent</span>}
+                value={stats.parentCount}
+                prefix={<UserSwitchOutlined style={{ color: '#7c3aed', fontSize: '24px' }} />}
+                valueStyle={{ color: '#1e40af', fontWeight: 700, fontSize: '28px' }}
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Charts Row */}
+        <Row gutter={[32, 32]} justify="center">
+          <Col xs={24} lg={12}>
+            <Card
+              title={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.3)',
+                  }}>
+                    <span style={{ color: 'white', fontSize: '16px' }}>🥧</span>
+                  </div>
+                  <div>
+                    <span style={{ 
+                      fontWeight: 'bold', 
+                      fontSize: '18px', 
+                      color: '#1e293b',
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      display: 'block',
+                    }}>
+                      Biểu đồ tròn
+                    </span>
+                    <span style={{ 
+                      color: '#64748b',
+                      fontSize: '12px',
+                      fontWeight: 500,
+                    }}>
+                      Phân bố theo tỷ lệ
+                    </span>
+                  </div>
+                </div>
+              }
+              className="rounded-3xl shadow-2xl border-blue-200"
+              style={{ 
+                background: 'rgba(255,255,255,0.95)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(59, 130, 246, 0.2)',
+              }}
+              styles={{ 
+                body: { 
+                  padding: '24px',
+                  background: 'linear-gradient(135deg, #f8faff 0%, #ffffff 100%)',
+                  borderRadius: '0 0 24px 24px'
+                }
+              }}
+            >
+              <Pie {...pieConfig} />
+            </Card>
+          </Col>
+          <Col xs={24} lg={12}>
+            <Card
+              title={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.3)',
+                  }}>
+                    <span style={{ color: 'white', fontSize: '16px' }}>🔺</span>
+                  </div>
+                  <div>
+                    <span style={{ 
+                      fontWeight: 'bold', 
+                      fontSize: '18px', 
+                      color: '#1e293b',
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      display: 'block',
+                    }}>
+                      Biểu đồ phân cấp
+                    </span>
+                    <span style={{ 
+                      color: '#64748b',
+                      fontSize: '12px',
+                      fontWeight: 500,
+                    }}>
+                      Phân bố theo cấp bậc
+                    </span>
+                  </div>
+                </div>
+              }
+              className="rounded-3xl shadow-2xl border-blue-200"
+              style={{ 
+                background: 'rgba(255,255,255,0.95)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(59, 130, 246, 0.2)',
+              }}
+              styles={{ 
+                body: { 
+                  padding: '24px',
+                  background: 'linear-gradient(135deg, #f8faff 0%, #ffffff 100%)',
+                  borderRadius: '0 0 24px 24px'
+                }
+              }}
+            >
+              <Funnel {...funnelConfig} />
+            </Card>
+          </Col>
+        </Row>
       </div>
 
-      {/* Main Stats Cards */}
-      <Row gutter={[32, 32]} justify="center" style={{ marginBottom: '40px' }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card
-            style={{
-              ...cardStyle,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-            }}
-            className="hover-card"
-          >
-            <Statistic
-              title={<span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '16px', fontWeight: 600 }}>👥 Tổng người dùng</span>}
-              value={stats.totalUsers}
-              prefix={<UserOutlined style={{ color: '#fbbf24' }} />}
-              valueStyle={{ color: '#ffffff', fontWeight: 700, fontSize: '32px' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card
-            style={{
-              ...cardStyle,
-              background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-              color: 'white',
-            }}
-            className="hover-card"
-          >
-            <Statistic
-              title={<span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '16px', fontWeight: 600 }}>✅ Đang hoạt động</span>}
-              value={stats.activeAccounts}
-              prefix={<SettingOutlined style={{ color: '#fbbf24' }} />}
-              valueStyle={{ color: '#ffffff', fontWeight: 700, fontSize: '32px' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Role Distribution Cards */}
-      <Row gutter={[24, 24]} justify="center" style={{ marginBottom: '40px' }}>
-        <Col xs={24} sm={12} md={8}>
-          <Card
-            style={{
-              ...cardStyle,
-              background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
-            }}
-            className="hover-card"
-          >
-            <Statistic
-              title={<span style={{ color: '#be185d', fontSize: '16px', fontWeight: 600 }}>👑 Admin</span>}
-              value={stats.adminCount}
-              prefix={<CrownOutlined style={{ color: '#dc2626', fontSize: '24px' }} />}
-              valueStyle={{ color: '#be185d', fontWeight: 700, fontSize: '28px' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={8}>
-          <Card
-            style={{
-              ...cardStyle,
-              background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-            }}
-            className="hover-card"
-          >
-            <Statistic
-              title={<span style={{ color: '#0e7490', fontSize: '16px', fontWeight: 600 }}>🏥 Nurse + Manager</span>}
-              value={stats.nurseManagerCount}
-              prefix={<MedicineBoxOutlined style={{ color: '#0e7490', fontSize: '24px' }} />}
-              valueStyle={{ color: '#0e7490', fontWeight: 700, fontSize: '28px' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={8}>
-          <Card
-            style={{
-              ...cardStyle,
-              background: 'linear-gradient(135deg, #d299c2 0%, #fef9d3 100%)',
-            }}
-            className="hover-card"
-          >
-            <Statistic
-              title={<span style={{ color: '#7c3aed', fontSize: '16px', fontWeight: 600 }}>👨‍👩‍👧‍👦 Parent</span>}
-              value={stats.parentCount}
-              prefix={<UserSwitchOutlined style={{ color: '#7c3aed', fontSize: '24px' }} />}
-              valueStyle={{ color: '#7c3aed', fontWeight: 700, fontSize: '28px' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Charts Row */}
-      <Row gutter={[32, 32]} justify="center">
-        <Col xs={24} lg={12}>
-          <Card
-            title={
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 6px 16px rgba(102, 126, 234, 0.3)',
-                }}>
-                  <span style={{ color: 'white', fontSize: '16px' }}>🥧</span>
-                </div>
-                <div>
-                  <span style={{ 
-                    fontWeight: 'bold', 
-                    fontSize: '18px', 
-                    color: '#1e293b',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    display: 'block',
-                  }}>
-                    Biểu đồ tròn
-                  </span>
-                  <span style={{ 
-                    color: '#64748b',
-                    fontSize: '12px',
-                    fontWeight: 500,
-                  }}>
-                    Phân bố theo tỷ lệ
-                  </span>
-                </div>
-              </div>
-            }
-            style={{ 
-              ...cardStyle,
-              background: 'rgba(255,255,255,0.98)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.2)',
-            }}
-            bodyStyle={{ 
-              padding: '24px',
-              background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
-            }}
-          >
-            <Pie {...pieConfig} />
-          </Card>
-        </Col>
-        <Col xs={24} lg={12}>
-          <Card
-            title={
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 6px 16px rgba(102, 126, 234, 0.3)',
-                }}>
-                  <span style={{ color: 'white', fontSize: '16px' }}>🔺</span>
-                </div>
-                <div>
-                  <span style={{ 
-                    fontWeight: 'bold', 
-                    fontSize: '18px', 
-                    color: '#1e293b',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    display: 'block',
-                  }}>
-                    Biểu đồ phân cấp
-                  </span>
-                  <span style={{ 
-                    color: '#64748b',
-                    fontSize: '12px',
-                    fontWeight: 500,
-                  }}>
-                    Phân bố theo cấp bậc
-                  </span>
-                </div>
-              </div>
-            }
-            style={{ 
-              ...cardStyle,
-              background: 'rgba(255,255,255,0.98)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.2)',
-            }}
-            bodyStyle={{ 
-              padding: '24px',
-              background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
-            }}
-          >
-            <Funnel {...funnelConfig} />
-          </Card>
-        </Col>
-      </Row>
-
-      <style jsx>{`
+      <style>{`
         .hover-card:hover {
           transform: translateY(-8px);
-          box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+          box-shadow: 0 16px 48px rgba(59, 130, 246, 0.3);
         }
         
         .hover-card {
@@ -420,4 +415,3 @@ function AdminDashboard() {
 }
 
 export default AdminDashboard;
-   

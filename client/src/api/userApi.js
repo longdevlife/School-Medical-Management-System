@@ -39,3 +39,29 @@ export const activeAccount = (userName) => {
     headers: { 'Content-Type': 'application/json' }
   });
 };
+
+// Create student profile
+export const createStudentProfile = async (studentData) => {
+  try {
+    console.log('Calling API /admin/create-student-profile with data:', studentData);
+    console.log('Data stringified:', JSON.stringify(studentData, null, 2));
+    
+    const response = await axiosClient.post('/admin/create-student-profile', studentData);
+    console.log('Create student profile success:', response);
+    return response;
+  } catch (error) {
+    console.error('Create student profile error:', error);
+    console.error('Error response:', error.response);
+    console.error('Error data:', error.response?.data);
+    console.error('Error status:', error.response?.status);
+    console.error('Error message:', error.message);
+    console.error('Error details:', error.response?.data?.errors);
+    
+    console.log('Failed request URL:', error.config?.url);
+    console.log('Failed request data:', JSON.stringify(error.config?.data, null, 2));
+    console.log('Failed request headers:', error.config?.headers);
+    
+    throw error;
+  }
+};
+

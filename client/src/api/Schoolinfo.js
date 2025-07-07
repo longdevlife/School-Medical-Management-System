@@ -14,35 +14,50 @@ export const getSchoolInfo = () => {
 };
 
 // Cập nhật thông tin trường học
-export const updateSchoolInfo = (params) => {
-  // Tạo query string từ params object
-  const queryParams = new URLSearchParams({
-    SchoolID: params.SchoolID || "school-001",
-    Name: params.Name || "",
-    Address: params.Address || "",
-    Hotline: params.Hotline || "",
-    Email: params.Email || ""
-  });
-
-  // Tạo FormData cho multipart request
-  const formData = new FormData();
-  
-  // Logo là bắt buộc, nếu không có thì tạo một file rỗng
-  if (params.Logo) {
-    formData.append('Logo', params.Logo);
-  } else {
-    // Tạo một file rỗng để tránh lỗi validation
-    const emptyFile = new File([''], 'empty.txt', { type: 'text/plain' });
-    formData.append('Logo', emptyFile);
+export const updateSchoolInfo = async (data) => {
+  try {
+    console.log('updateSchoolInfo called with data:', data);
+    
+    // Extract files and other parameters
+    const { Logo, LogoGifs, ...queryParams } = data;
+    
+    // Build query string
+    const queryString = new URLSearchParams(queryParams).toString();
+    const url = `/admin/update-school-info?${queryString}`;
+    
+    console.log('API call URL:', url);
+    
+    // Create FormData for file upload
+    const formData = new FormData();
+    
+    // Backend expects both Logo and LogoGifs fields
+    if (Logo) {
+      formData.append('Logo', Logo);
+      console.log('FormData Logo contents:', Logo);
+    } else {
+      const defaultBlob = new Blob(['default'], { type: 'text/plain' });
+      const defaultFile = new File([defaultBlob], 'default.txt', { type: 'text/plain' });
+      formData.append('Logo', defaultFile);
+    }
+    
+    if (LogoGifs) {
+      formData.append('LogoGifs', LogoGifs);
+      console.log('FormData LogoGifs contents:', LogoGifs);
+    } else {
+      const defaultBlob = new Blob(['default'], { type: 'text/plain' });
+      const defaultFile = new File([defaultBlob], 'default.txt', { type: 'text/plain' });
+      formData.append('LogoGifs', defaultFile);
+    }
+    
+    const response = await axiosClient.put(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('updateSchoolInfo error:', error);
+    throw error;
   }
-
-  const url = `/admin/update-school-info?${queryParams.toString()}`;
-  console.log("API call URL:", url);
-  console.log("FormData contents:", formData.get('Logo'));
-  
-  return axiosClient.put(url, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
 };

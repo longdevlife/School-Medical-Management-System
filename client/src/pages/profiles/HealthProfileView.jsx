@@ -33,6 +33,11 @@ function HealthProfileView() {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [classFilter, setClassFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
+  const [healthFilter, setHealthFilter] = useState("all"); // 🆕 Filter by health status
+
+  // List of classes for filter
+  const classes = ["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B"];
+  const healthStatuses = ["all", "allergy", "chronic", "tooth", "normal"]; // 🆕 Health filter options
 
   // API fetch data từ health profile endpoint
   const fetchHealthProfiles = async () => {
@@ -110,14 +115,36 @@ function HealthProfileView() {
   // Handle search function
   const handleSearch = () => {
     console.log("🔍 Searching for:", searchText);
+    console.log("🔍 Class filter:", classFilter);
+    console.log("🔍 Health filter:", healthFilter);
   };
 
-  // Filter logic for health profiles
+  // Enhanced filter logic for health profiles
   const filteredProfiles = healthProfiles.filter((profile) => {
     const matchesClass =
       classFilter === "all" || profile.studentClass === classFilter;
 
-    // Multi-field search: studentId, studentName, studentClass
+    // Health status filter
+    const matchesHealth = (() => {
+      switch (healthFilter) {
+        case "allergy":
+          return profile.allergyHistory !== "Không";
+        case "chronic":
+          return profile.chronicDiseases !== "Không";
+        case "tooth":
+          return profile.toothDecay !== "Không";
+        case "normal":
+          return (
+            profile.allergyHistory === "Không" &&
+            profile.chronicDiseases === "Không" &&
+            profile.toothDecay === "Không"
+          );
+        default:
+          return true;
+      }
+    })();
+
+    // Multi-field search: studentId, studentName, studentClass - Safe string conversion
     const search = searchText.trim().toLowerCase();
     const matchesSearch =
       !search ||
@@ -128,7 +155,7 @@ function HealthProfileView() {
       (profile.studentClass &&
         String(profile.studentClass).toLowerCase().includes(search));
 
-    return matchesClass && matchesSearch;
+    return matchesClass && matchesHealth && matchesSearch;
   });
 
   // Columns configuration for health profile table
@@ -232,9 +259,6 @@ function HealthProfileView() {
     },
   ];
 
-  // List of classes for filter
-  const classes = ["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B"];
-
   useEffect(() => {
     fetchHealthProfiles();
   }, []);
@@ -308,8 +332,8 @@ function HealthProfileView() {
                 </div>
 
                 <div>
-                   <Title
-                    lTitleevel={1}
+                  <Title
+                    level={1}
                     style={{
                       color: "white",
                       marginBottom: "8px",
@@ -409,7 +433,296 @@ function HealthProfileView() {
 
       {/* Main Content */}
       <div style={{ padding: "0 32px 32px" }}>
-        {/* Bộ lọc và tìm kiếm */}
+        {/* 📊 Thống kê hồ sơ sức khỏe */}
+        <Card
+          title={
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <div
+                style={{
+                  width: "50px",
+                  height: "50px",
+                  borderRadius: "16px",
+                  background:
+                    "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 8px 20px rgba(16, 185, 129, 0.3)",
+                  border: "2px solid rgba(255,255,255,0.2)",
+                }}
+              >
+                <Text style={{ color: "white", fontSize: "24px" }}>📊</Text>
+              </div>
+              <div>
+                <Text
+                  strong
+                  style={{
+                    fontSize: "18px",
+                    color: "#1e293b",
+                    display: "flex",
+                    marginBottom: "4px",
+                  }}
+                >
+                  Thống kê hồ sơ sức khỏe
+                </Text>
+                <Text
+                  style={{
+                    fontSize: "14px",
+                    color: "#64748b",
+                    fontWeight: "400",
+                  }}
+                >
+                  Tổng quan về tình trạng sức khỏe học sinh theo lớp
+                </Text>
+              </div>
+            </div>
+          }
+          style={{
+            marginBottom: "32px",
+            borderRadius: "20px",
+            border: "none",
+            background: "white",
+            boxShadow:
+              "0 20px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05)",
+          }}
+          bodyStyle={{ padding: "32px" }}
+        >
+          <Row gutter={[20, 20]} justify="center">
+            <Col xs={12} sm={8} md={6}>
+              <Card
+                hoverable
+                style={{
+                  borderRadius: "16px",
+                  border: "none",
+                  background:
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
+                  boxShadow: "0 10px 25px rgba(59, 130, 246, 0.2)",
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  cursor: "pointer",
+                }}
+                bodyStyle={{ padding: "20px" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 20px 40px rgba(59, 130, 246, 0.3)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow =
+                    "0 10px 25px rgba(59, 130, 246, 0.2)";
+                }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <div
+                    style={{
+                      fontSize: "40px",
+                      marginBottom: "12px",
+                      filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.1))",
+                    }}
+                  >
+                    📋
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "28px",
+                      fontWeight: "800",
+                      color: "#2563eb",
+                      marginBottom: "6px",
+                      textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    {healthProfiles.length}
+                  </div>
+                  <Text
+                    style={{
+                      fontSize: "13px",
+                      color: "#1e40af",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Tổng hồ sơ
+                  </Text>
+                </div>
+              </Card>
+            </Col>
+
+            <Col xs={12} sm={8} md={6}>
+              <Card
+                hoverable
+                style={{
+                  borderRadius: "16px",
+                  border: "none",
+                  background:
+                    "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                  boxShadow: "0 10px 25px rgba(245, 158, 11, 0.2)",
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  cursor: "pointer",
+                }}
+                bodyStyle={{ padding: "20px" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 20px 40px rgba(245, 158, 11, 0.3)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow =
+                    "0 10px 25px rgba(245, 158, 11, 0.2)";
+                }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <div
+                    style={{
+                      fontSize: "40px",
+                      marginBottom: "12px",
+                      filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.1))",
+                    }}
+                  >
+                    🤧
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "28px",
+                      fontWeight: "800",
+                      color: "#d97706",
+                      marginBottom: "6px",
+                      textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    {healthProfiles.filter(p => p.allergyHistory !== "Không").length}
+                  </div>
+                  <Text
+                    style={{
+                      fontSize: "13px",
+                      color: "#92400e",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Có dị ứng
+                  </Text>
+                </div>
+              </Card>
+            </Col>
+
+            <Col xs={12} sm={8} md={6}>
+              <Card
+                hoverable
+                style={{
+                  borderRadius: "16px",
+                  border: "none",
+                  background:
+                    "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+                  boxShadow: "0 10px 25px rgba(239, 68, 68, 0.2)",
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  cursor: "pointer",
+                }}
+                bodyStyle={{ padding: "20px" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 20px 40px rgba(239, 68, 68, 0.3)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow =
+                    "0 10px 25px rgba(239, 68, 68, 0.2)";
+                }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <div
+                    style={{
+                      fontSize: "40px",
+                      marginBottom: "12px",
+                      filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.1))",
+                    }}
+                  >
+                    🏥
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "28px",
+                      fontWeight: "800",
+                      color: "#ef4444",
+                      marginBottom: "6px",
+                      textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    {healthProfiles.filter(p => p.chronicDiseases !== "Không").length}
+                  </div>
+                  <Text
+                    style={{
+                      fontSize: "13px",
+                      color: "#dc2626",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Bệnh mạn tính
+                  </Text>
+                </div>
+              </Card>
+            </Col>
+
+            <Col xs={12} sm={8} md={6}>
+              <Card
+                hoverable
+                style={{
+                  borderRadius: "16px",
+                  border: "none",
+                  background:
+                    "linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)",
+                  boxShadow: "0 10px 25px rgba(147, 51, 234, 0.2)",
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  cursor: "pointer",
+                }}
+                bodyStyle={{ padding: "20px" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 20px 40px rgba(147, 51, 234, 0.3)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow =
+                    "0 10px 25px rgba(147, 51, 234, 0.2)";
+                }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <div
+                    style={{
+                      fontSize: "40px",
+                      marginBottom: "12px",
+                      filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.1))",
+                    }}
+                  >
+                    🦷
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "28px",
+                      fontWeight: "800",
+                      color: "#9333ea",
+                      marginBottom: "6px",
+                      textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    {healthProfiles.filter(p => p.toothDecay !== "Không").length}
+                  </div>
+                  <Text
+                    style={{
+                      fontSize: "13px",
+                      color: "#7c3aed",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Sâu răng
+                  </Text>
+                </div>
+              </Card>
+            </Col>
+          </Row>
+        </Card>
+
+        {/* 🎯 Bộ lọc và tìm kiếm */}
         <Card
           title={
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -427,7 +740,7 @@ function HealthProfileView() {
                   border: "2px solid rgba(59,130,246,0.12)",
                 }}
               >
-                <SearchOutlined style={{ color: "white", fontSize: "24px" }} />
+                <Text style={{ color: "white", fontSize: "24px" }}>🔍</Text>
               </div>
               <div>
                 <Text
@@ -448,7 +761,7 @@ function HealthProfileView() {
                     fontWeight: "400",
                   }}
                 >
-                  Lọc theo lớp học và tìm kiếm theo thông tin học sinh
+                  Lọc theo lớp học và tìm kiếm theo mã học sinh, tên học sinh
                 </Text>
               </div>
             </div>
@@ -461,100 +774,216 @@ function HealthProfileView() {
             boxShadow:
               "0 20px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05)",
           }}
-          bodyStyle={{ padding: "24px" }}
+          bodyStyle={{ padding: "0" }}
         >
-          <Row gutter={[12, 12]} align="middle">
-            <Col xs={24} sm={12} md={8}>
-              <div style={{ marginBottom: "6px" }}>
-                <Text
-                  strong
-                  style={{
-                    fontSize: "13px",
-                    color: "#b91c1c",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
+          <div
+            style={{
+              background: "#f8fafc",
+              padding: "24px 24px 16px 24px",
+              borderRadius: "20px",
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
+            }}
+          >
+            <Row gutter={[16, 16]} align="middle">
+              {/* Lớp học */}
+              <Col xs={24} sm={12} md={8} lg={5}>
+                <div style={{ marginBottom: "6px" }}>
+                  <Text
+                    strong
+                    style={{
+                      fontSize: "13px",
+                      color: "#b91c1c",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    <span style={{ fontSize: "16px" }}>🏫</span>{" "}
+                    <span>Lớp</span>
+                  </Text>
+                </div>
+                <Select
+                  placeholder="Chọn lớp"
+                  style={{ width: "100%" }}
+                  value={classFilter}
+                  onChange={setClassFilter}
+                  size="middle"
                 >
-                  <span style={{ fontSize: "16px" }}>🏫</span>{" "}
-                  <span>Lớp học</span>
-                </Text>
-              </div>
-              <Select
-                placeholder="Chọn lớp"
-                style={{ width: "50%" }}
-                value={classFilter}
-                onChange={setClassFilter}
-                size="middle"
-              >
-                <Option value="all">
-                  <span style={{ fontSize: "13px", color: "#666" }}>
-                    🎓 Tất cả lớp
-                  </span>
-                </Option>
-                {classes.map((cls) => (
-                  <Option key={cls} value={cls}>
-                    <span style={{ fontSize: "13px" }}>Lớp {cls}</span>
+                  <Option value="all">
+                    <span style={{ fontSize: "13px", color: "#666" }}>
+                      🎓 Tất cả
+                    </span>
                   </Option>
-                ))}
-              </Select>
-            </Col>
+                  {classes.map((cls) => (
+                    <Option key={cls} value={cls}>
+                      <span style={{ fontSize: "13px" }}>{cls}</span>
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
 
-            <Col xs={12} sm={2} md={13}>
-              <div style={{ marginBottom: "6px" }}>
-                <Text
-                  strong
-                  style={{
-                    fontSize: "13px",
-                    color: "#dc2626",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <UserOutlined style={{ fontSize: "16px" }} />
-                  <span>Tìm kiếm thông tin học sinh</span>
-                </Text>
-              </div>
-              <Input.Group compact style={{ display: "flex", width: "50%" }}>
-                <Input
-                  placeholder="Nhập mã học sinh, tên học sinh, lớp học..."
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  onPressEnter={handleSearch}
-                  style={{
-                    flex: 1,
-                    borderRadius: "8px 0 0 8px",
-                    fontSize: "13px",
-                    borderRight: "none",
-                    minWidth: 0,
-                  }}
+              {/* Tình trạng sức khỏe */}
+              <Col xs={24} sm={12} md={8} lg={5}>
+                <div style={{ marginBottom: "6px" }}>
+                  <Text
+                    strong
+                    style={{
+                      fontSize: "13px",
+                      color: "#059669",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    <span style={{ fontSize: "16px" }}>🏥</span>{" "}
+                    <span>Tình trạng</span>
+                  </Text>
+                </div>
+                <Select
+                  placeholder="Chọn tình trạng"
+                  style={{ width: "100%" }}
+                  value={healthFilter}
+                  onChange={setHealthFilter}
                   size="middle"
-                />
-                <Button
-                  type="primary"
+                >
+                  <Option value="all">
+                    <span style={{ fontSize: "13px", color: "#666" }}>
+                      📋 Tất cả
+                    </span>
+                  </Option>
+                  <Option value="allergy">
+                    <span style={{ fontSize: "13px" }}>
+                      🤧 Có dị ứng
+                    </span>
+                  </Option>
+                  <Option value="chronic">
+                    <span style={{ fontSize: "13px" }}>
+                      🏥 Bệnh mạn tính
+                    </span>
+                  </Option>
+                  <Option value="tooth">
+                    <span style={{ fontSize: "13px" }}>
+                      🦷 Sâu răng
+                    </span>
+                  </Option>
+                  <Option value="normal">
+                    <span style={{ fontSize: "13px" }}>
+                      ✅ Bình thường
+                    </span>
+                  </Option>
+                </Select>
+              </Col>
+
+              {/* Tìm kiếm */}
+              <Col xs={24} sm={24} md={8} lg={8}>
+                <div style={{ marginBottom: "6px" }}>
+                  <Text
+                    strong
+                    style={{
+                      fontSize: "13px",
+                      color: "#dc2626",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    <span style={{ fontSize: "16px" }}>👤</span>{" "}
+                    <span>Tìm kiếm</span>
+                  </Text>
+                </div>
+                <Input.Group compact style={{ display: "flex", width: "100%" }}>
+                  <Input
+                    placeholder="Nhập mã học sinh, tên, lớp..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    onPressEnter={handleSearch}
+                    style={{
+                      flex: 1,
+                      borderRadius: "8px 0 0 8px",
+                      fontSize: "13px",
+                      borderRight: "none",
+                      minWidth: 0,
+                    }}
+                    size="middle"
+                  />
+                  <Button
+                    type="primary"
+                    style={{
+                      width: "44px",
+                      minWidth: "44px",
+                      borderRadius: "0 8px 8px 0",
+                      background:
+                        "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
+                      borderColor: "#dc2626",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "14px",
+                      boxShadow: "0 2px 4px rgba(220, 38, 38, 0.2)",
+                      transition: "all 0.2s ease",
+                    }}
+                    size="middle"
+                    title="Tìm kiếm"
+                    onClick={handleSearch}
+                  >
+                    <span role="img" aria-label="search">
+                      🔍
+                    </span>
+                  </Button>
+                </Input.Group>
+              </Col>
+
+              {/* Cập nhật lúc */}
+              <Col xs={24} sm={24} md={24} lg={6}>
+                <div
                   style={{
-                    width: "44px",
-                    minWidth: "44px",
-                    borderRadius: "0 8px 8px 0",
-                    background:
-                      "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
-                    borderColor: "#dc2626",
                     display: "flex",
-                    alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "14px",
-                    boxShadow: "0 2px 4px rgba(220, 38, 38, 0.2)",
+                    alignItems: "center",
+                    height: "100%",
                   }}
-                  size="middle"
-                  title="Tìm kiếm"
-                  onClick={handleSearch}
                 >
-                  <SearchOutlined />
-                </Button>
-              </Input.Group>
-            </Col>
-          </Row>
+                  <div
+                    style={{
+                      padding: "14px 20px",
+                      background:
+                        "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
+                      borderRadius: "16px",
+                      border: "1px solid #bfdbfe",
+                      textAlign: "center",
+                      boxShadow: "0 3px 8px rgba(59, 130, 246, 0.12)",
+                      minWidth: "140px",
+                    }}
+                  >
+                    <div style={{ fontSize: "18px", marginBottom: "4px" }}>
+                      🕒
+                    </div>
+                    <Text
+                      style={{
+                        color: "#1e40af",
+                        fontSize: "12px",
+                        fontWeight: "600",
+                        display: "block",
+                      }}
+                    >
+                      Cập nhật lúc
+                    </Text>
+                    <div
+                      style={{
+                        fontSize: "13px",
+                        color: "#64748b",
+                        marginTop: "2px",
+                        fontWeight: "500",
+                      }}
+                    >
+                      {new Date().toLocaleTimeString("vi-VN")}
+                    </div>
+                  </div>
+                </div>
+              </Col>
+            </Row>
+          </div>
         </Card>
 
         {/* Bảng danh sách hồ sơ sức khỏe */}

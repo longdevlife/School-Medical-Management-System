@@ -1308,7 +1308,7 @@ function MedicationSubmission() {
           </Row>
         </Card>
 
-        {/* 🎯 Bộ lọc và tìm kiếm - ĐƯỢC DI CHUYỂN XUỐNG DƯỚI THỐNG KÊ */}
+        {/* 🎯 Bộ lọc và tìm kiếm */}
         <Card
           title={
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>

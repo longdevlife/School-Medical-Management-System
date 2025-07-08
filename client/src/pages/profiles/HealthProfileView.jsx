@@ -308,8 +308,8 @@ function HealthProfileView() {
                 </div>
 
                 <div>
-                  <Title
-                    level={1}
+                   <Title
+                    lTitleevel={1}
                     style={{
                       color: "white",
                       marginBottom: "8px",
@@ -318,9 +318,14 @@ function HealthProfileView() {
                       textShadow: "2px 2px 8px rgba(0,0,0,0.3)",
                       letterSpacing: "0.5px",
                       lineHeight: "1.2",
+                      background:
+                        "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
                     }}
                   >
-                    Hồ Sơ Sức Khỏe Học Sinh
+                    Hồ sơ sức khỏe học sinh
                   </Title>
                   <div
                     style={{

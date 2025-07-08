@@ -744,11 +744,11 @@ function MedicationSubmission() {
         padding: "0",
       }}
     >
-      {/* 🎨 Modern Enhanced Header with Navigation Feel */}
+      {/* 🎨 Tab Header */}
       <div
         style={{
           background:
-            "linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%)",
+            "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
           borderRadius: "0 0 32px 32px",
           padding: "40px 32px 48px",
           marginBottom: "40px",

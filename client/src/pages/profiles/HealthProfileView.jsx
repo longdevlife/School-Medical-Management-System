@@ -51,28 +51,28 @@ function HealthProfileView() {
           studentName: item.studentName || "Chưa có tên",
           studentClass: item.class || "Chưa có lớp",
           healthProfileID: item.healthProfileID,
-          
+
           // Thông tin sức khỏe
           allergyHistory: item.allergyHistory || "Không",
           chronicDiseases: item.chronicDiseases || "Không",
           pastSurgeries: item.pastSurgeries || 0,
           surgicalCause: item.surgicalCause || "Không",
           disabilities: item.disabilities || "Không",
-          
+
           // Thông số cơ thể
           height: item.height || 0,
           weight: item.weight || 0,
-          
+
           // Thị lực
           visionLeft: item.visionLeft || 10,
           visionRight: item.visionRight || 10,
-          
+
           // Răng miệng
           toothDecay: item.toothDecay || "Không",
-          
+
           // Vấn đề sức khỏe khác
           otherHealthIssues: item.otheHealthIssues || "Không",
-          
+
           // UI display fields
           createdDate: new Date().toISOString(),
           lastUpdated: new Date().toISOString(),
@@ -93,7 +93,9 @@ function HealthProfileView() {
       } else if (error.response?.status === 404) {
         message.error("Không tìm thấy dữ liệu hồ sơ sức khỏe.");
       } else {
-        message.error("Không thể tải danh sách hồ sơ sức khỏe. Vui lòng thử lại sau.");
+        message.error(
+          "Không thể tải danh sách hồ sơ sức khỏe. Vui lòng thử lại sau."
+        );
       }
     } finally {
       setLoading(false);
@@ -112,7 +114,8 @@ function HealthProfileView() {
 
   // Filter logic for health profiles
   const filteredProfiles = healthProfiles.filter((profile) => {
-    const matchesClass = classFilter === "all" || profile.studentClass === classFilter;
+    const matchesClass =
+      classFilter === "all" || profile.studentClass === classFilter;
 
     // Multi-field search: studentId, studentName, studentClass
     const search = searchText.trim().toLowerCase();
@@ -180,12 +183,18 @@ function HealthProfileView() {
       render: (_, record) => (
         <div>
           <div style={{ marginBottom: "4px" }}>
-            <Tag color={record.allergyHistory !== "Không" ? "orange" : "green"} size="small">
+            <Tag
+              color={record.allergyHistory !== "Không" ? "orange" : "green"}
+              size="small"
+            >
               🤧 Dị ứng: {record.allergyHistory}
             </Tag>
           </div>
           <div>
-            <Tag color={record.chronicDiseases !== "Không" ? "red" : "green"} size="small">
+            <Tag
+              color={record.chronicDiseases !== "Không" ? "red" : "green"}
+              size="small"
+            >
               🏥 Bệnh mạn tính: {record.chronicDiseases}
             </Tag>
           </div>
@@ -242,8 +251,7 @@ function HealthProfileView() {
       {/* Enhanced Header */}
       <div
         style={{
-          background:
-            "linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%)",
+          background: "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
           borderRadius: "0 0 32px 32px",
           padding: "40px 32px 48px",
           marginBottom: "40px",
@@ -450,7 +458,7 @@ function HealthProfileView() {
           }}
           bodyStyle={{ padding: "24px" }}
         >
-          <Row gutter={[16, 16]} align="middle">
+          <Row gutter={[12, 12]} align="middle">
             <Col xs={24} sm={12} md={8}>
               <div style={{ marginBottom: "6px" }}>
                 <Text
@@ -469,7 +477,7 @@ function HealthProfileView() {
               </div>
               <Select
                 placeholder="Chọn lớp"
-                style={{ width: "100%" }}
+                style={{ width: "50%" }}
                 value={classFilter}
                 onChange={setClassFilter}
                 size="middle"
@@ -487,7 +495,7 @@ function HealthProfileView() {
               </Select>
             </Col>
 
-            <Col xs={24} sm={12} md={16}>
+            <Col xs={12} sm={2} md={13}>
               <div style={{ marginBottom: "6px" }}>
                 <Text
                   strong
@@ -503,7 +511,7 @@ function HealthProfileView() {
                   <span>Tìm kiếm thông tin học sinh</span>
                 </Text>
               </div>
-              <Input.Group compact style={{ display: "flex", width: "100%" }}>
+              <Input.Group compact style={{ display: "flex", width: "50%" }}>
                 <Input
                   placeholder="Nhập mã học sinh, tên học sinh, lớp học..."
                   value={searchText}
@@ -685,12 +693,24 @@ function HealthProfileView() {
                 style={{ marginBottom: "24px" }}
               >
                 <Descriptions.Item label="Tiền sử dị ứng">
-                  <Tag color={selectedProfile.allergyHistory !== "Không" ? "orange" : "green"}>
+                  <Tag
+                    color={
+                      selectedProfile.allergyHistory !== "Không"
+                        ? "orange"
+                        : "green"
+                    }
+                  >
                     {selectedProfile.allergyHistory}
                   </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="Bệnh mạn tính">
-                  <Tag color={selectedProfile.chronicDiseases !== "Không" ? "red" : "green"}>
+                  <Tag
+                    color={
+                      selectedProfile.chronicDiseases !== "Không"
+                        ? "red"
+                        : "green"
+                    }
+                  >
                     {selectedProfile.chronicDiseases}
                   </Tag>
                 </Descriptions.Item>
@@ -701,12 +721,24 @@ function HealthProfileView() {
                   <Text>{selectedProfile.surgicalCause}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Khuyết tật">
-                  <Tag color={selectedProfile.disabilities !== "Không" ? "orange" : "green"}>
+                  <Tag
+                    color={
+                      selectedProfile.disabilities !== "Không"
+                        ? "orange"
+                        : "green"
+                    }
+                  >
                     {selectedProfile.disabilities}
                   </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="Tình trạng răng miệng">
-                  <Tag color={selectedProfile.toothDecay !== "Không" ? "orange" : "green"}>
+                  <Tag
+                    color={
+                      selectedProfile.toothDecay !== "Không"
+                        ? "orange"
+                        : "green"
+                    }
+                  >
                     {selectedProfile.toothDecay}
                   </Tag>
                 </Descriptions.Item>

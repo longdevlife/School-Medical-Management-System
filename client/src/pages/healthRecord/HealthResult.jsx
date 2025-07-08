@@ -23,21 +23,20 @@ import {
   ClockCircleOutlined,
   ExclamationCircleOutlined,
   CloseCircleOutlined,
-  SafetyCertificateOutlined,
+  HeartOutlined,
 } from '@ant-design/icons';
-import vaccineApi from '../../api/vaccineApi';
+import healthCheckupApi from '../../api/healthCheckApi';
 import studentApi from '../../api/studentApi';
 
 const { Text } = Typography;
 const { Option } = Select;
 
-
-const VaccineManagement = () => {
-  const [vaccines, setVaccines] = useState([]);
-  const [vaccinatedHistory, setVaccinatedHistory] = useState([]); // Lịch sử đã tiêm
+const HealthResult = () => {
+  const [healthCheckups, setHealthCheckups] = useState([]);
+  const [confirmedHistory, setConfirmedHistory] = useState([]); // Lịch sử đã xác nhận
   const [loading, setLoading] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
-  const [viewingVaccine, setViewingVaccine] = useState(null);
+  const [viewingCheckup, setViewingCheckup] = useState(null);
   const [activeTab, setActiveTab] = useState('waiting'); // Tab hiện tại
 
   // Student management states
@@ -47,15 +46,15 @@ const VaccineManagement = () => {
 
   // Component mount
   useEffect(() => {
-    console.log('🚀 VaccineManagement component mounting...');
+    console.log('🚀 HealthResult component mounting...');
     fetchStudents();
   }, []);
 
-  // Effect để tải vaccine khi selectedStudentId thay đổi
+  // Effect để tải health checkup khi selectedStudentId thay đổi
   useEffect(() => {
     if (selectedStudentId) {
       console.log('🔄 Học sinh đã thay đổi:', selectedStudentId);
-      fetchVaccineData();
+      fetchHealthCheckups();
     }
   }, [selectedStudentId]);
 
@@ -103,187 +102,168 @@ const VaccineManagement = () => {
     }
   };
 
-  const fetchVaccineData = async () => {
+  const fetchHealthCheckups = async () => {
     if (!selectedStudentId) {
-      console.log('⚠️ Chưa chọn học sinh, không tải vaccine');
+      console.log('⚠️ Chưa chọn học sinh, không tải health checkups');
       return;
     }
 
     try {
       setLoading(true);
-      console.log('🔄 Đang lấy danh sách vaccine từ server cho học sinh:', selectedStudentId);
+      console.log('🔄 Đang lấy danh sách health checkup cho học sinh:', selectedStudentId);
 
-      const response = await vaccineApi.parent.getVaccineByParentId();
-      console.log('✅ API getVaccineByParentId response:', response);
+      // Lấy thông tin user hiện tại để có parentId
+      const userInfoResponse = await healthCheckupApi.parent.getCurrentUserInfo();
+      const parentId = userInfoResponse?.data?.user?.userID;
 
-      const vaccineData = response.data || [];
+      if (!parentId) {
+        console.error('❌ Không tìm thấy parentId trong user info:', userInfoResponse?.data);
+        message.error('Không thể xác định thông tin phụ huynh');
+        return;
+      }
 
-      if (Array.isArray(vaccineData)) {
-        // Lọc vaccine theo học sinh đã chọn
-        const filteredVaccines = vaccineData.filter(vaccine => {
-          const match = vaccine.studentID && selectedStudentId &&
-            vaccine.studentID.toString().toLowerCase() === selectedStudentId.toString().toLowerCase();
+      console.log('👤 Parent ID:', parentId);
 
+      const response = await healthCheckupApi.parent.getHealthCheckupsByParentId(parentId);
+      console.log('✅ Health checkup response:', response);
+
+      const healthCheckupData = response.data || [];
+
+      if (Array.isArray(healthCheckupData)) {
+        // Lọc health checkup theo học sinh đã chọn
+        const filteredHealthCheckups = healthCheckupData.filter(item => {
+          const match = item.studentID && selectedStudentId &&
+            item.studentID.toString().toLowerCase() === selectedStudentId.toString().toLowerCase();
           return match;
         });
 
         // Chuẩn hóa dữ liệu
-        const normalizedVaccines = filteredVaccines.map(vaccine => ({
-          RecordID: vaccine.recordID,
-          StudentID: vaccine.studentID,
-          StudentName: vaccine.studentName,
-          Class: vaccine.class,
-          VaccineName: vaccine.vaccineName,
-          Dose: vaccine.dose,
-          VaccinatedAt: vaccine.vaccinatedAt,
-          Status: vaccine.status,
-          DateTime: vaccine.dateTime,
-          VaccinatorName: vaccine.vaccinatorName,
-          Notes: vaccine.notes,
-          FollowUpNotes: vaccine.followUpNotes,
-          FollowUpDate: vaccine.followUpDate,
-          VaccineID: vaccine.vaccineID,
-          VaccinatorID: vaccine.vaccinatorID,
-          NurseID: vaccine.nurseID,
-          ParentID: vaccine.parentID
+        const normalizedHealthCheckups = filteredHealthCheckups.map(item => ({
+          key: item.healthCheckUpID || item.HealthCheckUpID,
+          HealthCheckUpID: item.healthCheckUpID || item.HealthCheckUpID,
+          CheckDate: item.checkDate || item.CheckDate,
+          Height: item.height || item.Height,
+          Weight: item.weight || item.Weight,
+          BMI: item.bmi || item.BMI,
+          VisionLeft: item.visionLeft || item.VisionLeft,
+          VisionRight: item.visionRight || item.VisionRight,
+          BloodPressure: item.bloodPressure || item.BloodPressure,
+          Dental: item.dental || item.Dental,
+          Skin: item.skin || item.Skin,
+          Hearing: item.hearing || item.Hearing,
+          Respiration: item.respiration || item.Respiration,
+          Cardiovascular: item.cardiovascular || item.Cardiovascular,
+          Notes: item.notes || item.Notes,
+          Status: item.status || item.Status,
+          StudentID: item.studentID || item.StudentID,
+          StudentName: item.studentProfile?.studentName || item.StudentProfile?.StudentName || 'Học sinh',
+          CheckerName: item.checker?.fullName || item.Checker?.FullName || 'Chưa xác định'
         }));
 
-        // 🎯 Phân loại vaccine cho "Kết quả tiêm chủng"
-        // Tab "Chờ tiêm": Đã đồng ý nhưng chưa hoàn thành/từ chối
-        const waitingVaccines = normalizedVaccines.filter(vaccine => {
-          const status = vaccine.Status?.toLowerCase() || '';
+        // 🎯 Phân loại health checkup cho "Kết quả khám sức khỏe"
+        // Tab "Chờ xác nhận": Những health checkup chưa được phụ huynh xác nhận
+        const waitingHealthCheckups = normalizedHealthCheckups.filter(item => {
+          const status = item.Status?.toLowerCase() || '';
           return (
-            status === 'confirmed' ||       // Đã đồng ý, chờ tiêm
-            status === 'đã xác nhận' ||     // Đã đồng ý, chờ tiêm
-            status === 'approved' ||        // Nurse đã chuẩn bị tiêm
-            status === 'injected' ||        // Đã tiêm, đang theo dõi
-            status === 'vaccinated' ||      // Đã tiêm, đang theo dõi
-            status === 'đã tiêm' ||         // Đã tiêm, đang theo dõi
-            status === 'monitoring' ||      // Đang theo dõi sau tiêm
-            status === 'đang theo dõi'      // Đang theo dõi sau tiêm (tiếng Việt)
+            status === 'pending' ||           // Chờ xác nhận
+            status === 'chờ xác nhận' ||     // Chờ xác nhận (tiếng Việt)
+            status === 'not response' ||      // Chưa phản hồi
+            status === 'chưa phản hồi' ||    // Chưa phản hồi (tiếng Việt)
+            status === 'waiting' ||           // Đang chờ
+            status === 'new' ||               // Mới
+            status === 'created'              // Vừa tạo
           );
         });
 
-        // Tab "Lịch sử tiêm": Chỉ những vaccine đã hoàn thành hoặc từ chối
-        const completedVaccines = normalizedVaccines.filter(vaccine => {
-          const status = vaccine.Status?.toLowerCase() || '';
+        // Tab "Lịch sử": Những health checkup đã được xử lý (xác nhận hoặc từ chối)
+        const processedHealthCheckups = normalizedHealthCheckups.filter(item => {
+          const status = item.Status?.toLowerCase() || '';
           return (
-            status === 'completed' ||       // Hoàn thành toàn bộ
-            status === 'hoàn thành' ||      // Hoàn thành toàn bộ
-            status === 'finish' ||          // Hoàn thành (variant)
-            status === 'finished' ||        // Hoàn thành (variant)
-            status === 'done' ||            // Hoàn thành (variant)
-            status === 'success' ||         // Hoàn thành (variant)
-            status === 'successful' ||      // Hoàn thành (variant)
-            status === 'denied' ||          // Đã từ chối
-            status === 'từ chối' ||         // Từ chối
-            status === 'đã từ chối' ||      // Đã từ chối (từ backend)
-            status === 'rejected' ||        // Đã từ chối (variant)
-            status === 'cancel' ||          // Đã hủy
-            status === 'cancelled'          // Đã hủy
+            status === 'confirmed' ||         // Đã xác nhận
+            status === 'đã xác nhận' ||      // Đã xác nhận (tiếng Việt)
+            status === 'approved' ||          // Đã duyệt
+            status === 'completed' ||         // Hoàn thành
+            status === 'hoàn thành' ||       // Hoàn thành (tiếng Việt)
+            status === 'denied' ||            // Đã từ chối
+            status === 'từ chối' ||          // Từ chối (tiếng Việt)
+            status === 'đã từ chối' ||       // Đã từ chối (tiếng Việt)
+            status === 'rejected' ||          // Đã từ chối
+            status === 'cancelled'            // Đã hủy
           );
         });
 
-        console.log('📋 Vaccine đã lọc theo học sinh:', filteredVaccines);
-        console.log('🔍 Checking status của từng vaccine:');
-        filteredVaccines.forEach((vaccine, index) => {
-          console.log(`  ${index}: recordID=${vaccine.recordID}, status="${vaccine.status}" (type: ${typeof vaccine.status})`);
-        });
+        console.log('📋 Health checkup đã lọc theo học sinh:', filteredHealthCheckups);
+        console.log('📊 Phân loại health checkup:');
+        console.log('  - Chờ xác nhận (waitingHealthCheckups):', waitingHealthCheckups.map(v => `${v.HealthCheckUpID}:${v.Status}`));
+        console.log('  - Lịch sử (processedHealthCheckups):', processedHealthCheckups.map(v => `${v.HealthCheckUpID}:${v.Status}`));
 
-        console.log('🔍 Checking normalized vaccine status:');
-        normalizedVaccines.forEach((vaccine, index) => {
-          console.log(`  ${index}: recordID=${vaccine.RecordID}, Status="${vaccine.Status}" (type: ${typeof vaccine.Status})`);
-        });
+        setHealthCheckups(waitingHealthCheckups);
+        setConfirmedHistory(processedHealthCheckups);
 
-        console.log('📊 Phân loại vaccine:');
-        console.log('  - Chờ tiêm (waitingVaccines):', waitingVaccines.map(v => `${v.RecordID}:${v.Status}`));
-        console.log('  - Lịch sử (completedVaccines):', completedVaccines.map(v => `${v.RecordID}:${v.Status}`));
-
-        // Liệt kê tất cả status unique để debug
-        const allOriginalStatuses = [...new Set(filteredVaccines.map(v => v.status))];
-        const allNormalizedStatuses = [...new Set(normalizedVaccines.map(v => v.Status))];
-        console.log('🏷️ Tất cả status gốc có trong data:', allOriginalStatuses);
-        console.log('🏷️ Tất cả status normalized có trong data:', allNormalizedStatuses);
-
-        // 🚨 SPECIAL DEBUG: Tìm vaccines mà nurse đã mark là hoàn thành
-        console.log('🚨 DEBUGGING NURSE COMPLETION STATUS:');
-        filteredVaccines.forEach((vaccine, index) => {
-          const originalStatus = (vaccine.status || '').toLowerCase();
-          const isLikelyCompleted = originalStatus.includes('hoàn') ||
-            originalStatus.includes('completed') ||
-            originalStatus.includes('finish') ||
-            originalStatus.includes('done') ||
-            originalStatus.includes('success');
-          if (isLikelyCompleted) {
-            console.log(`  🎯 FOUND COMPLETION: recordID=${vaccine.recordID}, original="${vaccine.status}", normalized="${vaccine.Status}"`);
-          }
-        });
-
-        // Test case-insensitive matching
-        console.log('🧪 Testing case-insensitive filters:');
-        normalizedVaccines.forEach((vaccine, index) => {
-          const status = (vaccine.Status || '').toLowerCase();
-          const isWaiting = (
-            status === 'confirmed' ||
-            status === 'đã xác nhận' ||
-            status === 'approved' ||
-            status === 'injected' ||
-            status === 'vaccinated' ||
-            status === 'đã tiêm' ||
-            status === 'monitoring' ||
-            status === 'đang theo dõi'
-          );
-          const isCompleted = (
-            status === 'completed' ||
-            status === 'hoàn thành' ||
-            status === 'finish' ||
-            status === 'finished' ||
-            status === 'done' ||
-            status === 'success' ||
-            status === 'successful' ||
-            status === 'denied' ||
-            status === 'từ chối' ||
-            status === 'đã từ chối' ||      // Đã từ chối (từ backend)
-            status === 'rejected' ||
-            status === 'cancel' ||
-            status === 'cancelled'
-          );
-          console.log(`  ${index}: recordID=${vaccine.RecordID}, status="${vaccine.Status}" → normalized="${status}" → isWaiting=${isWaiting}, isCompleted=${isCompleted}`);
-        });
-
-        setVaccines(waitingVaccines);
-        setVaccinatedHistory(completedVaccines);
-
+        console.log(`✅ Đã tải ${normalizedHealthCheckups.length} health checkup records`);
       } else {
-        console.warn('⚠️ Dữ liệu vaccine không phải array:', vaccineData);
-        setVaccines([]);
-        setVaccinatedHistory([]);
+        console.warn('⚠️ Dữ liệu health checkup không hợp lệ:', healthCheckupData);
+        setHealthCheckups([]);
+        setConfirmedHistory([]);
       }
     } catch (error) {
-      console.error('❌ Lỗi khi lấy dữ liệu vaccine:', error);
-      message.error('Không thể tải danh sách tiêm chủng. Vui lòng thử lại!');
-      setVaccines([]);
-      setVaccinatedHistory([]);
+      console.error('❌ Lỗi khi lấy danh sách health checkup:', error);
+      message.error('Không thể tải danh sách khám sức khỏe. Vui lòng thử lại!');
+      setHealthCheckups([]);
+      setConfirmedHistory([]);
     } finally {
       setLoading(false);
     }
   };
 
-
   // ==================== HANDLER FUNCTIONS ====================
 
   const handleViewDetail = (record) => {
-    console.log('👁️ Viewing vaccine detail:', record);
-    setViewingVaccine(record);
+    console.log('👁️ Viewing health checkup detail:', record);
+    setViewingCheckup(record);
     setIsDetailModalVisible(true);
   };
 
   const handleRefresh = () => {
     console.log('🔄 Refreshing data...');
     if (selectedStudentId) {
-      fetchVaccineData();
+      fetchHealthCheckups();
     } else {
       fetchStudents();
+    }
+  };
+
+  // ==================== RENDER FUNCTIONS ====================
+
+  const handleConfirmHealthCheckup = async (healthCheckupId) => {
+    try {
+      console.log('🔄 Đang xác nhận health checkup:', healthCheckupId);
+      
+      await healthCheckupApi.parent.confirmHealthCheckup({
+        HeathCheckUpID: healthCheckupId
+      });
+      
+      message.success('Đã xác nhận lịch khám sức khỏe');
+      fetchHealthCheckups(); // Reload data
+    } catch (error) {
+      console.error('❌ Lỗi khi xác nhận:', error);
+      message.error('Không thể xác nhận lịch khám. Vui lòng thử lại!');
+    }
+  };
+
+  const handleDenyHealthCheckup = async (healthCheckupId) => {
+    try {
+      console.log('🔄 Đang từ chối health checkup:', healthCheckupId);
+      
+      await healthCheckupApi.parent.denyHealthCheckup({
+        HeathCheckUpID: healthCheckupId
+      });
+      
+      message.success('Đã từ chối lịch khám sức khỏe');
+      fetchHealthCheckups(); // Reload data
+    } catch (error) {
+      console.error('❌ Lỗi khi từ chối:', error);
+      message.error('Không thể từ chối lịch khám. Vui lòng thử lại!');
     }
   };
 
@@ -303,45 +283,45 @@ const VaccineManagement = () => {
         icon: <ClockCircleOutlined />,
         text: 'Chờ xác nhận'
       },
-      'confirmed': {
+      'not response': {
+        color: 'default',
+        icon: <ExclamationCircleOutlined />,
+        text: 'Chưa phản hồi'
+      },
+      'chưa phản hồi': {
+        color: 'default',
+        icon: <ExclamationCircleOutlined />,
+        text: 'Chưa phản hồi'
+      },
+      'waiting': {
+        color: 'orange',
+        icon: <ClockCircleOutlined />,
+        text: 'Đang chờ'
+      },
+      'new': {
         color: 'blue',
+        icon: <ClockCircleOutlined />,
+        text: 'Mới'
+      },
+      'created': {
+        color: 'blue',
+        icon: <ClockCircleOutlined />,
+        text: 'Vừa tạo'
+      },
+      'confirmed': {
+        color: 'green',
         icon: <CheckCircleOutlined />,
-        text: 'Đã đồng ý - Chờ tiêm'
+        text: 'Đã xác nhận'
       },
       'đã xác nhận': {
-        color: 'blue',
+        color: 'green',
         icon: <CheckCircleOutlined />,
-        text: 'Đã đồng ý - Chờ tiêm'
+        text: 'Đã xác nhận'
       },
       'approved': {
-        color: 'purple',
+        color: 'green',
         icon: <CheckCircleOutlined />,
-        text: 'Chuẩn bị tiêm'
-      },
-      'injected': {
-        color: 'cyan',
-        icon: <SafetyCertificateOutlined />,
-        text: 'Đã tiêm - Đang theo dõi'
-      },
-      'vaccinated': {
-        color: 'cyan',
-        icon: <SafetyCertificateOutlined />,
-        text: 'Đã tiêm - Đang theo dõi'
-      },
-      'đã tiêm': {
-        color: 'cyan',
-        icon: <SafetyCertificateOutlined />,
-        text: 'Đã tiêm - Đang theo dõi'
-      },
-      'monitoring': {
-        color: 'geekblue',
-        icon: <SafetyCertificateOutlined />,
-        text: 'Đang theo dõi'
-      },
-      'đang theo dõi': {
-        color: 'geekblue',
-        icon: <SafetyCertificateOutlined />,
-        text: 'Đang theo dõi'
+        text: 'Đã duyệt'
       },
       'completed': {
         color: 'green',
@@ -349,31 +329,6 @@ const VaccineManagement = () => {
         text: 'Hoàn thành'
       },
       'hoàn thành': {
-        color: 'green',
-        icon: <CheckCircleOutlined />,
-        text: 'Hoàn thành'
-      },
-      'finish': {
-        color: 'green',
-        icon: <CheckCircleOutlined />,
-        text: 'Hoàn thành'
-      },
-      'finished': {
-        color: 'green',
-        icon: <CheckCircleOutlined />,
-        text: 'Hoàn thành'
-      },
-      'done': {
-        color: 'green',
-        icon: <CheckCircleOutlined />,
-        text: 'Hoàn thành'
-      },
-      'success': {
-        color: 'green',
-        icon: <CheckCircleOutlined />,
-        text: 'Hoàn thành'
-      },
-      'successful': {
         color: 'green',
         icon: <CheckCircleOutlined />,
         text: 'Hoàn thành'
@@ -450,50 +405,19 @@ const VaccineManagement = () => {
 
   // ==================== TABLE COLUMNS ====================
 
-  // Columns cho tab "Chờ tiêm"
+  // Columns cho tab "Chờ xác nhận"
   const waitingColumns = [
     {
-      title: 'Mã tiêm',
-      dataIndex: 'RecordID',
-      key: 'RecordID',
+      title: 'Mã khám',
+      dataIndex: 'HealthCheckUpID',
+      key: 'HealthCheckUpID',
       width: 120,
       render: (text) => <Text strong className="text-blue-600 text-xs">{text || 'N/A'}</Text>,
     },
     {
-      title: 'Tên học sinh',
-      key: 'student',
-      width: 200,
-      render: (_, record) => (
-        <div>
-          <div><Text className="font-medium text-xs text-blue-500">{record.StudentName || 'Chưa có tên'}</Text></div>
-          <div>
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-              Lớp: {record.Class || 'Chưa phân lớp'}
-            </Text>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: 'Loại vaccine',
-      dataIndex: 'VaccineName',
-      key: 'VaccineName',
-      width: 150,
-      render: (text, record) => (
-        <div >
-          <div className="font-medium text-purple-700 text-xs">{text || 'Chưa xác định'}</div>
-          <div>
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-              Liều: {record.Dose || 'Chưa xác định'}
-            </Text>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: 'Ngày dự kiến tiêm',
-      dataIndex: 'VaccinatedAt',
-      key: 'VaccinatedAt',
+      title: 'Ngày khám',
+      dataIndex: 'CheckDate',
+      key: 'CheckDate',
       width: 140,
       render: (date) => (
         <div className="text-center">
@@ -510,10 +434,152 @@ const VaccineManagement = () => {
       ),
     },
     {
+      title: 'Chiều cao',
+      dataIndex: 'Height',
+      key: 'Height',
+      width: 90,
+      render: (height) => (
+        <Text strong className="text-purple-700 text-xs">
+          {height ? `${height} cm` : 'Chưa đo'}
+        </Text>
+      ),
+    },
+    {
+      title: 'Cân nặng',
+      dataIndex: 'Weight',
+      key: 'Weight',
+      width: 90,
+      render: (weight) => (
+        <Text strong className="text-blue-700 text-xs">
+          {weight ? `${weight} kg` : 'Chưa đo'}
+        </Text>
+      ),
+    },
+    {
+      title: 'BMI',
+      dataIndex: 'BMI',
+      key: 'BMI',
+      width: 80,
+      render: (bmi) => (
+        <Text strong className="text-green-700 text-xs">
+          {bmi ? bmi.toFixed(1) : 'Chưa tính'}
+        </Text>
+      ),
+    },
+    {
       title: 'Trạng thái',
       dataIndex: 'Status',
       key: 'Status',
       width: 150,
+      render: (status) => getStatusTag(status),
+    },
+    {
+      title: 'Thao tác',
+      key: 'action',
+      width: 180,
+      render: (_, record) => {
+        const status = (record.Status || '').toLowerCase();
+        const isPending = (
+          status === 'pending' ||
+          status === 'chờ xác nhận' ||
+          status === 'not response' ||
+          status === 'chưa phản hồi' ||
+          status === 'waiting' ||
+          status === 'new' ||
+          status === 'created'
+        );
+
+        if (isPending) {
+          return (
+            <div style={{ display: 'flex', gap: 4, flexDirection: 'column' }}>
+              <Button
+                type="primary"
+                size="small"
+                icon={<CheckCircleOutlined />}
+                onClick={() => handleConfirmHealthCheckup(record.HealthCheckUpID)}
+                style={{ fontSize: '11px', height: '24px' }}
+              >
+                Xác nhận
+              </Button>
+              <Button
+                danger
+                size="small"
+                icon={<CloseCircleOutlined />}
+                onClick={() => handleDenyHealthCheckup(record.HealthCheckUpID)}
+                style={{ fontSize: '11px', height: '24px' }}
+              >
+                Từ chối
+              </Button>
+            </div>
+          );
+        }
+
+        return (
+          <div style={{ display: 'flex', gap: 4, flexDirection: 'column' }}>
+            <Tooltip title="Xem chi tiết">
+              <Button
+                type="default"
+                icon={<EyeOutlined />}
+                size="small"
+                onClick={() => handleViewDetail(record)}
+                style={{ color: "blue", fontSize: '11px', height: '24px' }}
+              >
+                Chi tiết
+              </Button>
+            </Tooltip>
+            <Text type="secondary" style={{ fontSize: '10px', textAlign: 'center' }}>Đã xử lý</Text>
+          </div>
+        );
+      },
+    },
+  ];
+
+  // Columns cho lịch sử đã xử lý
+  const historyColumns = [
+    {
+      title: 'Mã khám',
+      dataIndex: 'HealthCheckUpID',
+      key: 'HealthCheckUpID',
+      width: 120,
+      render: (text) => <Text strong className="text-blue-500 text-xs">{text || 'N/A'}</Text>,
+    },
+    {
+      title: 'Ngày khám',
+      dataIndex: 'CheckDate',
+      key: 'CheckDate',
+      width: 120,
+      render: (text) => (
+        <Text className="text-xs font-medium" style={{ color: "black" }}>
+          {formatDate(text)}
+        </Text>
+      ),
+    },
+    {
+      title: 'Chiều cao',
+      dataIndex: 'Height',
+      key: 'Height',
+      width: 80,
+      render: (height) => <Text strong className="text-blue-500 text-xs">{height ? `${height} cm` : 'N/A'}</Text>,
+    },
+    {
+      title: 'Cân nặng',
+      dataIndex: 'Weight',
+      key: 'Weight',
+      width: 80,
+      render: (weight) => <Text strong className="text-green-500 text-xs">{weight ? `${weight} kg` : 'N/A'}</Text>,
+    },
+    {
+      title: 'BMI',
+      dataIndex: 'BMI',
+      key: 'BMI',
+      width: 80,
+      render: (bmi) => <Text strong className="text-purple-500 text-xs">{bmi ? bmi.toFixed(1) : 'N/A'}</Text>,
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'Status',
+      key: 'Status',
+      width: 140,
       render: (status) => getStatusTag(status),
     },
     {
@@ -527,78 +593,7 @@ const VaccineManagement = () => {
             icon={<EyeOutlined />}
             size="small"
             onClick={() => handleViewDetail(record)}
-            style={{ color: "blue" }}
-          >
-            Chi tiết
-          </Button>
-        </Tooltip>
-      ),
-    },
-  ];    // Columns cho lịch sử đã tiêm
-  const historyColumns = [
-    {
-      title: 'Mã tiêm',
-      dataIndex: 'RecordID',
-      key: 'RecordID',
-      width: 120,
-      render: (text) => <Text strong className="text-blue-500 text-xs">{text || 'N/A'}</Text>,
-    },
-    {
-      title: 'Loại vaccine',
-      dataIndex: 'VaccineName',
-      key: 'VaccineName',
-      width: 150,
-      render: (_, record) => (
-        <div>
-          <div><Text className="font-medium text-purple-700 text-xs">{record.VaccineName || 'Chưa xác định'}</Text></div>
-        </div>
-      ),
-    },
-    {
-      title: 'Liều',
-      dataIndex: 'Dose',
-      key: 'Dose',
-      width: 80,
-      render: (dose) => <Text strong className="text-blue-500 text-xs">Liều {dose || 1}</Text>,
-    },
-    {
-      title: 'Ngày tiêm dự kiến',
-      dataIndex: 'VaccinatedAt',
-      key: 'VaccinatedAt',
-      width: 120,
-      render: (text) => (
-        <Text className="text-xs font-medium" style={{ color: "black" }}>
-          {formatDate(text)}
-        </Text>
-      ),
-    },
-    {
-      title: 'Người thực hiện',
-      dataIndex: 'VaccinatorName',
-      key: 'VaccinatorName',
-      width: 150,
-      render: (text) => <Text>{text || 'Chưa xác định'}</Text>,
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'Status',
-      key: 'Status',
-      width: 140,
-      render: (status) => getStatusTag(status), // Hiển thị đúng trạng thái thay vì cố định "Đã tiêm"
-    },
-    {
-      title: 'Thao tác',
-      key: 'action',
-      width: 100,
-      render: (_, record) => (
-        <Tooltip title="Xem chi tiết">
-          <Button
-            type="default"
-            icon={<EyeOutlined />}
-            size="small"
-            onClick={() => handleViewDetail(record)}
-            stype={{color:"blue"}}
-            
+            style={{color:"blue"}}
           >
             Chi tiết
           </Button>
@@ -632,17 +627,17 @@ const VaccineManagement = () => {
               width: 80,
               height: 80,
               borderRadius: 24,
-              background: "linear-gradient(135deg, #d1f4f9 0%, #80d0c7 100%)",
+              background: "linear-gradient(135deg, #d1f2eb 0%, #80e5d1 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               boxShadow:
-                "0 8px 24px rgba(128,208,199,0.25), inset 0 2px 4px rgba(255,255,255,0.3)",
+                "0 8px 24px rgba(128,229,209,0.25), inset 0 2px 4px rgba(255,255,255,0.3)",
               border: "2px solid rgba(255,255,255,0.4)",
               backdropFilter: "blur(2px)",
             }}
           >
-            <span style={{ fontSize: 44, filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.13))" }}>💉</span>
+            <span style={{ fontSize: 44, filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.13))" }}>🏥</span>
           </div>
           {/* Title + Subtitle */}
           <div>
@@ -656,7 +651,7 @@ const VaccineManagement = () => {
                 marginBottom: 8
               }}
             >
-              Quản lý tiêm chủng
+              Khám sức khỏe
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div
@@ -676,7 +671,7 @@ const VaccineManagement = () => {
                   textShadow: "1px 1px 3px rgba(0,0,0,0.10)"
                 }}
               >
-                Chăm sóc sức khỏe toàn diện cho trẻ
+                Theo dõi và quản lý kết quả khám sức khỏe định kỳ
               </span>
             </div>
           </div>
@@ -692,14 +687,14 @@ const VaccineManagement = () => {
               minWidth: 90,
               textAlign: "center",
               color: "#fff",
-              boxShadow: "0 2px 8px rgba(22,160,133,0.12)"
+              boxShadow: "0 2px 8px rgba(16,185,129,0.12)"
             }}
           >
             <div style={{ fontSize: 26, marginBottom: 4 }}>
               <span role="img" aria-label="list">📋</span>
             </div>
-            <div style={{ fontSize: 22, fontWeight: 700 }}>{vaccines.length + vaccinatedHistory.length}</div>
-            <div style={{ fontSize: 13, opacity: 0.85 }}>Tổng số vaccine</div>
+            <div style={{ fontSize: 22, fontWeight: 700 }}>{healthCheckups.length + confirmedHistory.length}</div>
+            <div style={{ fontSize: 13, opacity: 0.85 }}>Tổng lần khám</div>
           </div>
           {/* Ngày hôm nay */}
           <div
@@ -710,7 +705,7 @@ const VaccineManagement = () => {
               minWidth: 110,
               textAlign: "center",
               color: "#fff",
-              boxShadow: "0 2px 8px rgba(22,160,133,0.12)"
+              boxShadow: "0 2px 8px rgba(16,185,129,0.12)"
             }}
           >
             <div style={{ fontSize: 26, marginBottom: 4 }}>
@@ -723,7 +718,6 @@ const VaccineManagement = () => {
           </div>
         </div>
       </div>
-
 
       {/* Statistics Cards */}
       {selectedStudentId && (
@@ -760,14 +754,14 @@ const VaccineManagement = () => {
                         color: "white",
                         fontSize: 20,
                         textShadow: "0 2px 4px rgba(0,0,0,0.2)"
-                      }}>💉</span>
+                      }}>🏥</span>
                     </div>
                     <div>
                       <Text strong style={{ fontSize: 16, color: "#1e293b" }}>
-                        Thống kê trạng thái tiêm chủng
+                        Thống kê trạng thái khám sức khỏe
                       </Text>
                       <div style={{ fontSize: 13, color: "#64748b" }}>
-                        Tổng quan về các vaccine theo trạng thái xử lý
+                        Tổng quan về các lần khám theo trạng thái xử lý
                       </div>
                     </div>
                   </div>
@@ -790,9 +784,9 @@ const VaccineManagement = () => {
                         marginBottom: 8,
                         textShadow: "0 2px 4px rgba(0,0,0,0.1)",
                         filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
-                      }}>💉</div>
-                      <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{vaccines.length + vaccinatedHistory.length}</div>
-                      <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Tổng vaccine</div>
+                      }}>🏥</div>
+                      <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{healthCheckups.length + confirmedHistory.length}</div>
+                      <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Tổng lần khám</div>
                     </div>
                   </Col>
                   <Col xs={12} md={5}>
@@ -812,8 +806,8 @@ const VaccineManagement = () => {
                         textShadow: "0 2px 4px rgba(0,0,0,0.1)",
                         filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
                       }}>🕛</div>
-                      <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{vaccines.length}</div>
-                      <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Chờ tiêm</div>
+                      <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{healthCheckups.length}</div>
+                      <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Chờ xác nhận</div>
                     </div>
                   </Col>
                   <Col xs={12} md={5}>
@@ -834,20 +828,18 @@ const VaccineManagement = () => {
                         filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
                       }}>✔️</div>
                       <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>
-                        {vaccinatedHistory.filter(v => {
+                        {confirmedHistory.filter(v => {
                           const status = (v.Status || '').toLowerCase();
                           return (
+                            status === 'confirmed' ||
+                            status === 'đã xác nhận' ||
+                            status === 'approved' ||
                             status === 'completed' ||
-                            status === 'hoàn thành' ||
-                            status === 'finish' ||
-                            status === 'finished' ||
-                            status === 'done' ||
-                            status === 'success' ||
-                            status === 'successful'
+                            status === 'hoàn thành'
                           );
                         }).length}
                       </div>
-                      <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Hoàn thành</div>
+                      <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Đã xác nhận</div>
                     </div>
                   </Col>
                   <Col xs={12} md={5}>
@@ -868,14 +860,13 @@ const VaccineManagement = () => {
                         filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
                       }}>❌</div>
                       <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>
-                        {vaccinatedHistory.filter(v => {
+                        {confirmedHistory.filter(v => {
                           const status = (v.Status || '').toLowerCase();
                           return (
                             status === 'denied' ||
                             status === 'từ chối' ||
                             status === 'đã từ chối' ||
                             status === 'rejected' ||
-                            status === 'cancel' ||
                             status === 'cancelled'
                           );
                         }).length}
@@ -883,16 +874,12 @@ const VaccineManagement = () => {
                       <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Từ chối</div>
                     </div>
                   </Col>
-
                 </Row>
               </Card>
             </Col>
           </Row>
         </div>
       )}
-
-
-
 
       {/* Main Content with Tabs */}
       <Card
@@ -916,7 +903,7 @@ const VaccineManagement = () => {
                     marginBottom: "4px",
                   }}
                 >
-                  Danh sách tiêm chủng vaccine
+                  Danh sách khám sức khỏe
                 </Text>
                 <Text
                   style={{
@@ -925,20 +912,18 @@ const VaccineManagement = () => {
                     fontWeight: "400",
                   }}
                 >
-                  Quản lý và theo dõi tình trạng tiêm chủng vaccine của học sinh
+                  Quản lý và theo dõi kết quả khám sức khỏe định kỳ của học sinh
                 </Text>
-
               </div>
-
             </div>
             <div
               style={{
-                width: "300px", // Giảm kích thước ô chọn học sinh
-                marginLeft: "auto", // Đẩy ô về phía bên trái
+                width: "300px",
+                marginLeft: "auto",
               }}
             >
               <Select
-                placeholder="Chọn học sinh để xem thông tin tiêm chủng"
+                placeholder="Chọn học sinh để xem thông tin khám sức khỏe"
                 style={{ width: "100%" }}
                 value={selectedStudentId}
                 onChange={(value) => setSelectedStudentId(value)}
@@ -972,8 +957,8 @@ const VaccineManagement = () => {
           background: "white",
           boxShadow:
             "0 20px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05)",
-          maxWidth: "1200px", // giảm chiều rộng
-          margin: "0 auto", // Căn giữa nội dung
+          maxWidth: "1200px",
+          margin: "0 auto",
         }}
         bodyStyle={{ padding: "0" }}
       >
@@ -984,7 +969,7 @@ const VaccineManagement = () => {
               description={
                 <div>
                   <Text style={{ fontSize: '16px', color: '#8c8c8c' }}>
-                    Vui lòng chọn học sinh để xem thông tin tiêm chủng
+                    Vui lòng chọn học sinh để xem thông tin khám sức khỏe
                   </Text>
                   <br />
                   <Text style={{ fontSize: '14px', color: '#bfbfbf' }}>
@@ -1006,22 +991,22 @@ const VaccineManagement = () => {
                 key: 'waiting',
                 label: (
                   <span style={{ fontSize: "16px", fontWeight: "600" }}>
-                    ⏳ Chờ tiêm ({vaccines.length})
+                    ⏳ Chờ xác nhận ({healthCheckups.length})
                   </span>
                 ),
                 children: (
                   <Table
                     columns={waitingColumns}
-                    dataSource={vaccines}
-                    rowKey="RecordID"
+                    dataSource={healthCheckups}
+                    rowKey="HealthCheckUpID"
                     loading={loading}
                     pagination={{
-                      total: vaccines.length,
+                      total: healthCheckups.length,
                       pageSize: 10,
                       showSizeChanger: true,
                       showQuickJumper: true,
                       showTotal: (total, range) =>
-                        `${range[0]}-${range[1]} của ${total} bản ghi chờ tiêm`,
+                        `${range[0]}-${range[1]} của ${total} lần khám chờ xác nhận`,
                     }}
                     locale={{
                       emptyText: (
@@ -1030,11 +1015,11 @@ const VaccineManagement = () => {
                           description={
                             <div>
                               <Text style={{ fontSize: '16px', color: '#8c8c8c' }}>
-                                Không có vaccine nào đang chờ tiêm
+                                Không có lần khám nào đang chờ xác nhận
                               </Text>
                               <br />
                               <Text style={{ fontSize: '14px', color: '#bfbfbf' }}>
-                                Tất cả vaccine đã được hoàn thành hoặc từ chối
+                                Tất cả lần khám đã được xử lý
                               </Text>
                             </div>
                           }
@@ -1050,22 +1035,22 @@ const VaccineManagement = () => {
                 key: 'history',
                 label: (
                   <span style={{ fontSize: "16px", fontWeight: "600" }}>
-                    📋 Lịch sử tiêm ({vaccinatedHistory.length})
+                    📋 Lịch sử khám ({confirmedHistory.length})
                   </span>
                 ),
                 children: (
                   <Table
                     columns={historyColumns}
-                    dataSource={vaccinatedHistory}
-                    rowKey="RecordID"
+                    dataSource={confirmedHistory}
+                    rowKey="HealthCheckUpID"
                     loading={loading}
                     pagination={{
-                      total: vaccinatedHistory.length,
+                      total: confirmedHistory.length,
                       pageSize: 10,
                       showSizeChanger: true,
                       showQuickJumper: true,
                       showTotal: (total, range) =>
-                        `${range[0]}-${range[1]} của ${total} bản ghi lịch sử`,
+                        `${range[0]}-${range[1]} của ${total} lần khám trong lịch sử`,
                     }}
                     locale={{
                       emptyText: (
@@ -1074,7 +1059,7 @@ const VaccineManagement = () => {
                           description={
                             <div>
                               <Text style={{ fontSize: '16px', color: '#8c8c8c' }}>
-                                Chưa có lịch sử tiêm chủng
+                                Chưa có lịch sử khám sức khỏe
                               </Text>
                               <br />
                               <Text style={{ fontSize: '14px', color: '#bfbfbf' }}>
@@ -1099,14 +1084,14 @@ const VaccineManagement = () => {
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <SafetyCertificateOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
-            Chi tiết tiêm chủng
+            <HeartOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
+            Chi tiết khám sức khỏe
           </div>
         }
         open={isDetailModalVisible}
         onCancel={() => {
           setIsDetailModalVisible(false);
-          setViewingVaccine(null);
+          setViewingCheckup(null);
         }}
         footer={[
           <Button key="close" onClick={() => setIsDetailModalVisible(false)}>
@@ -1115,81 +1100,127 @@ const VaccineManagement = () => {
         ]}
         width={900}
       >
-        {viewingVaccine && (
+        {viewingCheckup && (
           <div>
             {/* Main Information */}
             <Card title="Thông tin chính" size="small" style={{ marginBottom: '16px' }}>
               <Descriptions bordered column={2} size="small">
-                <Descriptions.Item label="Mã vaccine" span={1}>
-                  <Text style={{ fontSize: '14px' }}>{viewingVaccine.RecordID}</Text>
+                <Descriptions.Item label="Mã khám" span={1}>
+                  <Text style={{ fontSize: '14px' }}>{viewingCheckup.HealthCheckUpID}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Trạng thái" span={1}>
-                  {getStatusTag(viewingVaccine.Status)}
+                  {getStatusTag(viewingCheckup.Status)}
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Tên học sinh" span={1}>
-                  <Text style={{ fontSize: '14px' }}>{viewingVaccine.StudentName || 'Chưa có tên'}</Text>
+                  <Text style={{ fontSize: '14px' }}>{viewingCheckup.StudentName || 'Chưa có tên'}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Mã học sinh" span={1}>
-                  <Text>{viewingVaccine.StudentID}</Text>
+                  <Text>{viewingCheckup.StudentID}</Text>
                 </Descriptions.Item>
 
-                <Descriptions.Item label="Lớp" span={1}>
-                  <Text>{viewingVaccine.Class || 'Chưa phân lớp'}</Text>
-                </Descriptions.Item>
-                <Descriptions.Item label="Loại vaccine" span={1}>
-                  <Text style={{ fontSize: '14px', color: 'text-grey-700' }}>
-                    {viewingVaccine.VaccineName || 'Chưa xác định'}
-                  </Text>
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Liều lượng" span={1}>
-                  <Text style={{ fontSize: '14px', color: 'text-grey-700' }}>
-                    Liều {viewingVaccine.Dose || 'Chưa xác định'}
-                  </Text>
-                </Descriptions.Item>
-                <Descriptions.Item label="Ngày tiêm" span={1}>
+                <Descriptions.Item label="Ngày khám" span={1}>
                   <Text style={{ fontSize: '14px' }}>
-                    {formatDate(viewingVaccine.VaccinatedAt)}
+                    {formatDate(viewingCheckup.CheckDate)}
                   </Text>
                 </Descriptions.Item>
               </Descriptions>
             </Card>
 
-            {/* Additional Information */}
-            <Card title="Thông tin bổ sung" size="small" style={{ marginBottom: '16px' }}>
+            {/* Health Measurements */}
+            <Card title="Thông số sức khỏe" size="small" style={{ marginBottom: '16px' }}>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Descriptions bordered column={1} size="small">
+                    <Descriptions.Item label="Chiều cao">
+                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.Height ? `${viewingCheckup.Height} cm` : 'Chưa đo'}</Text>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Cân nặng">
+                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.Weight ? `${viewingCheckup.Weight} kg` : 'Chưa đo'}</Text>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="BMI">
+                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.BMI ? viewingCheckup.BMI.toFixed(1) : 'Chưa tính'}</Text>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Huyết áp">
+                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.BloodPressure ? `${viewingCheckup.BloodPressure} mmHg` : 'Chưa đo'}</Text>
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Col>
+                <Col span={12}>
+                  <Descriptions bordered column={1} size="small">
+                    <Descriptions.Item label="Thị lực mắt trái">
+                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.VisionLeft ? `${viewingCheckup.VisionLeft}/10` : 'Chưa kiểm tra'}</Text>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Thị lực mắt phải">
+                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.VisionRight ? `${viewingCheckup.VisionRight}/10` : 'Chưa kiểm tra'}</Text>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Răng miệng">
+                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.Dental || 'Chưa kiểm tra'}</Text>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Da liễu">
+                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.Skin || 'Chưa kiểm tra'}</Text>
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Col>
+              </Row>
+            </Card>
+
+            {/* Additional Checkups */}
+            <Card title="Khám chuyên khoa" size="small" style={{ marginBottom: '16px' }}>
               <Descriptions bordered column={1} size="small">
-                <Descriptions.Item label="Thời gian tạo yêu cầu">
-                  <Text style={{ fontSize: '13px' }}>{formatDateTime(viewingVaccine.DateTime)}</Text>
+                <Descriptions.Item label="Tai mũi họng">
+                  <Text style={{ fontSize: '13px' }}>{viewingCheckup.Hearing || 'Chưa kiểm tra'}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Hô hấp">
+                  <Text style={{ fontSize: '13px' }}>{viewingCheckup.Respiration || 'Chưa kiểm tra'}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Tim mạch">
+                  <Text style={{ fontSize: '13px' }}>{viewingCheckup.Cardiovascular || 'Chưa kiểm tra'}</Text>
                 </Descriptions.Item>
 
-                {viewingVaccine.VaccinatorName && (
-                  <Descriptions.Item label="Người thực hiện tiêm">
-                    <Text style={{ fontSize: '13px' }}>{viewingVaccine.VaccinatorName}</Text>
-                  </Descriptions.Item>
-                )}
-
-                {viewingVaccine.Notes && (
-                  <Descriptions.Item label="Ghi chú từ y tá">
-                    <Text style={{ fontSize: '13px', fontStyle: 'italic' }}>{viewingVaccine.Notes}</Text>
-                  </Descriptions.Item>
-                )}
-
-                {viewingVaccine.FollowUpNotes && (
-                  <Descriptions.Item label="Ghi chú theo dõi">
-                    <Text style={{ fontSize: '13px', fontStyle: 'italic' }}>{viewingVaccine.FollowUpNotes}</Text>
-                  </Descriptions.Item>
-                )}
-
-                {viewingVaccine.FollowUpDate && (
-                  <Descriptions.Item label="Ngày theo dõi">
-                    <Text style={{ fontSize: '13px' }}>{formatDate(viewingVaccine.FollowUpDate)}</Text>
+                {viewingCheckup.Notes && (
+                  <Descriptions.Item label="Ghi chú của bác sĩ">
+                    <Text style={{ fontSize: '13px', fontStyle: 'italic' }}>{viewingCheckup.Notes}</Text>
                   </Descriptions.Item>
                 )}
               </Descriptions>
             </Card>
 
-
+            {/* Actions for pending checkups */}
+            {(viewingCheckup.Status === 'Pending' || viewingCheckup.Status === 'Not Response' || 
+              viewingCheckup.Status === 'pending' || viewingCheckup.Status === 'chờ xác nhận' ||
+              viewingCheckup.Status === 'not response' || viewingCheckup.Status === 'chưa phản hồi') && (
+              <Card title="Thao tác" size="small">
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Button
+                      type="primary"
+                      icon={<CheckCircleOutlined />}
+                      block
+                      onClick={() => {
+                        handleConfirmHealthCheckup(viewingCheckup.HealthCheckUpID);
+                        setIsDetailModalVisible(false);
+                      }}
+                    >
+                      Xác nhận khám sức khỏe
+                    </Button>
+                  </Col>
+                  <Col span={12}>
+                    <Button
+                      danger
+                      icon={<CloseCircleOutlined />}
+                      block
+                      onClick={() => {
+                        handleDenyHealthCheckup(viewingCheckup.HealthCheckUpID);
+                        setIsDetailModalVisible(false);
+                      }}
+                    >
+                      Từ chối khám sức khỏe
+                    </Button>
+                  </Col>
+                </Row>
+              </Card>
+            )}
           </div>
         )}
       </Modal>
@@ -1197,4 +1228,4 @@ const VaccineManagement = () => {
   );
 };
 
-export default VaccineManagement;
+export default HealthResult;

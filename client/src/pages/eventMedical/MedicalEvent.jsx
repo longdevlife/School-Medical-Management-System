@@ -493,7 +493,7 @@ const MedicalEvent = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ padding: '0px', background: "linear-gradient(135deg, rgb(248, 250, 252) 0%, rgb(226, 232, 240) 50%, rgb(241,245,249) 100%)" }}>
       {/* Header */}
       <div
         style={{

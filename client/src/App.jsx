@@ -35,7 +35,7 @@ import ParentProfile from "./pages/parent/ParentProfile";
 import MedicalEvent from "./pages/eventMedical/MedicalEvent";
 import VaccineManagement from "./pages/vaccinationsParent/VaccineManagement";
 import VaccineRequest  from "./pages/vaccinationsParent/VaccineRequest";
-import HealthCheckup from "./pages/healthRecord/HealthCheckup";
+import HealthResult from "./pages/healthRecord/HealthResult";
 import MedicineManagement from "./pages/medicineParent/MedicineManagement";
 import DeclareHealthProfile from "./pages/decleareParent/DeclareHealthProfile";
 
@@ -44,6 +44,7 @@ import Login from "./pages/Login";
 import HomePage from "./pages/home/HomePage";
 import AboutPage from "./pages/home/AboutPage";
 import NewsPage from "./pages/home/NewsPage";
+
 
 
 
@@ -126,11 +127,11 @@ function App() {
 
           <Route index element={<ParentProfile />} />
             <Route path="profile-student" element={<StudentProfile />} />
-            <Route path="profile" element={<ParentProfile />} />
+            <Route path="profileParent" element={<ParentProfile />} />
             <Route path="medical-events" element={<MedicalEvent />} />
             <Route path="vaccinations/results" element={<VaccineManagement />} />
             <Route path="vaccinations/requirements" element={<VaccineRequest />} />
-            <Route path="health-result" element={<HealthCheckup />} />
+            <Route path="health-result" element={<HealthResult />} />
             <Route path="send-medicine" element={<MedicineManagement />} />
             <Route path="declare-health" element={<DeclareHealthProfile />} />
           </Route>{" "}

@@ -646,7 +646,7 @@ const DeclareHealthProfile = () => {
                           <Form.Item
                             label={
                               <span style={{ fontWeight: 600, color: "#374151" }}>
-                                Chiều cao (m)
+                                Chiều cao (cm)
                               </span>
                             }
                             name="height"
@@ -661,8 +661,8 @@ const DeclareHealthProfile = () => {
                               max={250}
                               step={0.1}
                               placeholder="VD: 120.5"
-                              formatter={value => `${value} `}
-                              parser={value => value.replace('m', '')}
+                              formatter={value => `${value} cm`}
+                              parser={value => value.replace('cm', '')}
                             />
                           </Form.Item>
                         </Col>
@@ -686,7 +686,7 @@ const DeclareHealthProfile = () => {
                               max={200}
                               step={0.1}
                               placeholder="VD: 25.5"
-                              formatter={value => `${value}`}
+                              formatter={value => `${value} kg`}
                               parser={value => value.replace(' kg', '')}
                             />
                           </Form.Item>

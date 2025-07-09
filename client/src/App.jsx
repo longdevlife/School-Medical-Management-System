@@ -36,6 +36,7 @@ import MedicalEvent from "./pages/eventMedical/MedicalEvent";
 import VaccineManagement from "./pages/vaccinationsParent/VaccineManagement";
 import VaccineRequest  from "./pages/vaccinationsParent/VaccineRequest";
 import HealthResult from "./pages/healthRecord/HealthResult";
+import Appointment from "./pages/healthRecord/Appointment";
 import MedicineManagement from "./pages/medicineParent/MedicineManagement";
 import DeclareHealthProfile from "./pages/decleareParent/DeclareHealthProfile";
 
@@ -133,6 +134,7 @@ function App() {
             <Route path="vaccinations/results" element={<VaccineManagement />} />
             <Route path="vaccinations/requirements" element={<VaccineRequest />} />
             <Route path="health-result" element={<HealthResult />} />
+            <Route path="health-offer" element={<Appointment />} />
             <Route path="send-medicine" element={<MedicineManagement />} />
             <Route path="declare-health" element={<DeclareHealthProfile />} />
           </Route>{" "}

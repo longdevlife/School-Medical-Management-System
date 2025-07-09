@@ -23,6 +23,7 @@ namespace Sever.Service
         Task<List<GetHealthCheckup>> GetHealthCheckUpsNotResponseAsync();
         Task<bool> ConfirmHealCheckup(string id);
         Task<bool> DeniedHealCheckup(string id);
+        Task<bool> WaitingHealthCheckUp(string id);
         Task<int> CountHealthCheckUpByDate(DateTime fromDate, DateTime toDate);
         Task<int> CountConfirmHealthCheckUpByDate(DateTime fromDate, DateTime toDate);
         Task<int> CountDeniedHealthCheckUpByDate(DateTime fromDate, DateTime toDate);
@@ -159,7 +160,7 @@ namespace Sever.Service
                 CheckerID = healthCheck.CheckerID,
                 ParentID = healthCheck.ParentID
             };
-            
+
             return getHealthCheck;
         }
         public async Task<List<GetHealthCheckup>> GetAllHealthCheckupsAsync()
@@ -224,7 +225,7 @@ namespace Sever.Service
         public async Task<List<GetHealthCheckup>> GetHealthCheckupsByYearAsync(int year)
         {
             List<GetHealthCheckup> listHealthCheckUps = new List<GetHealthCheckup>();
-            var listHealthCheckUp =  await _healthCheckupRepository.GetHealthCheckupsByYearAsync(year);
+            var listHealthCheckUp = await _healthCheckupRepository.GetHealthCheckupsByYearAsync(year);
             if (listHealthCheckUp == null)
             {
                 throw new KeyNotFoundException("Không tìm thấy hồ sơ sức khỏe cho năm này.");
@@ -394,6 +395,12 @@ namespace Sever.Service
         {
             var healthCheckUp = await _healthCheckupRepository.GetHealthCheckupByIdAsync(id);
             return await _healthCheckupRepository.UpdateStatus(healthCheckUp, "Đã Từ Chối");
+        }
+
+        public async Task<bool> WaitingHealthCheckUp(string id)
+        {
+            var healthCheckUp = await _healthCheckupRepository.GetHealthCheckupByIdAsync(id);
+            return await _healthCheckupRepository.UpdateStatus(healthCheckUp, "Chờ khám");
         }
 
         public async Task<List<GetHealthCheckup>> GetHealthCheckupsByStudentIdAsync(string studentId)

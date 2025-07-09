@@ -359,5 +359,29 @@ namespace Sever.Controllers
                 return BadRequest("Lỗi Khi lấy danh sách khám sức khỏe" + ex.Message);
             }
         }
+        [HttpPut("update-waiting-status-health-check-up/{Id}")]
+        public async Task<IActionResult> UpdateWaitingStatusHealthCheckUp(string Id)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(Id))
+                {
+                    return BadRequest("Thiếu thông tin khám sức khỏe.");
+                }
+                var result = await _healthCheckUpService.WaitingHealthCheckUp(Id);
+                if (result)
+                {
+                    return Ok("Cập nhật trạng thái chờ thành công.");
+                }
+                else
+                {
+                    return BadRequest("Cập nhật trạng thái chờ không thành công.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Lỗi khi cập nhật trạng thái chờ: " + ex.Message);
+            }
+        }
     }
 }

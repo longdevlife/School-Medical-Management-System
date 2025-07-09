@@ -2152,6 +2152,27 @@
         }
       }
     },
+    "/api/nurse/update-waiting-status-health-check-up": {
+      "put": {
+        "tags": [
+          "Nurse"
+        ],
+        "parameters": [
+          {
+            "name": "Id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/parent/medicine/create": {
       "post": {
         "tags": [

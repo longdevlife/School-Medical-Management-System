@@ -310,6 +310,22 @@
   },
   {
     "ContainingType": "Sever.Controllers.AuthController",
+    "Method": "ChangePassword",
+    "RelativePath": "api/auth/change-password",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "changePasswordRequest",
+        "Type": "Sever.DTO.Authentication.ChangePasswordRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AuthController",
     "Method": "ForgotPassword",
     "RelativePath": "api/auth/forgot-password",
     "HttpMethod": "POST",

@@ -10,7 +10,7 @@ export const authApi = {
 
   refreshToken: (token) => {
     // POST request với token cũ để lấy token mới
-    return axiosClient.post("/Auth/refresh", { refreshToken: token });
+    return axiosClient.post("/auth/refresh", { refreshToken: token });
   },
 
   logout: () => {

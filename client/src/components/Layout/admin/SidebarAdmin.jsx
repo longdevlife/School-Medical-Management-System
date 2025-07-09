@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import { Layout, Menu } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -10,10 +10,9 @@ import "./SidebarStyles.css";
 
 const { Sider } = Layout;
 
-function SidebarAdmin({ collapsed, setCollapsed }) {
+function SidebarAdmin({ collapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const hoverTimeout = useRef(null);
 
   const menuItems = [
     {
@@ -37,16 +36,6 @@ function SidebarAdmin({ collapsed, setCollapsed }) {
     navigate(key);
   };
 
-  const handleMouseEnter = () => {
-    clearTimeout(hoverTimeout.current);
-    hoverTimeout.current = setTimeout(() => setCollapsed(false), 100);
-  };
-
-  const handleMouseLeave = () => {
-    clearTimeout(hoverTimeout.current);
-    hoverTimeout.current = setTimeout(() => setCollapsed(true), 300);
-  };
-
   return (
     <Sider
       trigger={null}
@@ -63,10 +52,8 @@ function SidebarAdmin({ collapsed, setCollapsed }) {
         height: "100vh",
         zIndex: 1000,
       }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
-       <div className="logoContainer flex justify-center items-center h-24">
+      <div className="logoContainer flex justify-center items-center h-24">
         <img
           src="/SchoolMedical.gif"
           alt="School Medical Logo"

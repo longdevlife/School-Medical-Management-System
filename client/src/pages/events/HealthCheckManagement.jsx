@@ -369,31 +369,31 @@ function HealthCheckManagement() {
   const getStatusColor = (status) => {
     switch (status) {
       case "pending":
-        return "warning"; 
+        return "warning";
       case "confirmed":
-        return "blue"; 
+        return "blue";
       case "rejected":
-        return "error"; 
+        return "error";
       case "waiting-checkup":
-        return "processing"; 
+        return "processing";
       case "in-progress":
-        return "cyan"; 
+        return "cyan";
       case "completed":
-        return "success"; 
+        return "success";
       case "recheck":
-        return "orange"; 
+        return "orange";
       case "cancelled":
-        return "error";     
+        return "error";
       case "scheduled":
-        return "purple"; 
+        return "purple";
       case "appointment-pending":
-        return "warning"; 
+        return "warning";
       case "appointment-confirmed":
-        return "green"; 
+        return "green";
       case "appointment-rejected":
-        return "red"; 
+        return "red";
       case "attended":
-        return "success"; 
+        return "success";
       default:
         return "default";
     }
@@ -850,9 +850,16 @@ function HealthCheckManagement() {
                     fontSize: "36px",
                     fontWeight: "800",
                     textShadow: "2px 2px 8px rgba(0,0,0,0.3)",
+                    letterSpacing: "0.5px",
+                    lineHeight: "1.2",
+                    background:
+                      "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
                   }}
                 >
-                  Quản Lý Khám Sức Khỏe
+                  Khám sức khỏe tổng quát
                 </Title>
                 <Text
                   style={{
@@ -910,16 +917,60 @@ function HealthCheckManagement() {
       {/* Main Content */}
       <div style={{ padding: "0 32px 32px" }}>
         {/* Thống kê */}
+        {/* 📊 Thống kê trạng thái đơn tiêm chủng */}
         <Card
           title={
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <HeartOutlined style={{ fontSize: "24px", color: "#ef4444" }} />
-              <Text strong style={{ fontSize: "18px" }}>
-                Thống kê sức khỏe học sinh
-              </Text>
+              <div
+                style={{
+                  width: "50px",
+                  height: "50px",
+                  borderRadius: "16px",
+                  background:
+                    "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 8px 20px rgba(16, 185, 129, 0.3)",
+                  border: "2px solid rgba(255,255,255,0.2)",
+                  minWidth: "25px",
+                }}
+              >
+                <Text style={{ color: "white", fontSize: "24px" }}> ❤️ </Text>
+              </div>
+              <div>
+                <Text
+                  strong
+                  style={{
+                    fontSize: "18px",
+                    color: "#1e293b",
+                    display: "flex",
+                    marginBottom: "4px",
+                  }}
+                >
+                  Thống kê khám sức khỏe
+                </Text>
+                <Text
+                  style={{
+                    fontSize: "14px",
+                    color: "#64748b",
+                    fontWeight: "400",
+                  }}
+                >
+                  Tổng quan về các lịch khảm sức khỏe
+                </Text>
+              </div>
             </div>
           }
-          style={{ marginBottom: "32px", borderRadius: "20px" }}
+          style={{
+            marginBottom: "32px",
+            borderRadius: "20px",
+            border: "none",
+            background: "white",
+            boxShadow:
+              "0 20px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05)",
+          }}
+          bodyStyle={{ padding: "16px" }}
         >
           <Row gutter={[20, 20]}>
             <Col xs={12} sm={6}>
@@ -1292,27 +1343,45 @@ function HealthCheckManagement() {
                 alignItems: "center",
               }}
             >
-              <div>
+              <div className="flex gap-5">
                 <div
                   style={{
-                    fontSize: "20px",
-                    fontWeight: "700",
-                    color: "#1f2937",
+                    width: "50px",
+                    height: "50px",
+                    borderRadius: "16px",
+                    background:
+                      "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
                     display: "flex",
-                    marginBottom: "4px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 8px 20px rgba(124, 58, 237, 0.3)",
+                    border: "2px solid rgba(255,255,255,0.2)",
                   }}
                 >
-                  Quản lý khám sức khỏe học sinh
+                  <Text style={{ color: "white", fontSize: "24px" }}>📋</Text>
                 </div>
-                <Text
-                  style={{
-                    fontSize: "14px",
-                    color: "#64748b",
-                    fontWeight: "400",
-                  }}
-                >
-                  Quản lý hồ sơ khám sức khỏe định kỳ và lịch hẹn khám
-                </Text>
+                <div>
+                  <Text
+                    strong
+                    style={{
+                      fontSize: "18px",
+                      color: "#1e293b",
+                      display: "flex",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    Danh sách khám sức khỏe
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: "14px",
+                      color: "#64748b",
+                      fontWeight: "400",
+                    }}
+                  >
+                    Quản lý và theo dõi lịch khám sức khỏe học sinh
+                  </Text>
+                </div>
               </div>
               <div
                 style={{ display: "flex", alignItems: "center", gap: "12px" }}

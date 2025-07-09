@@ -20,7 +20,6 @@ import NurseManagerLayout from "./components/Layout/nursemanager/NurseManagerLay
 import NurseDashboard from "./pages/nurses/NurseDashboard";
 import HealthProfileView from "./pages/profiles/HealthProfileView";
 import MedicationSubmission from "./pages/medications/MedicationSubmission";
-import MedicineEquipmentManagement from "./pages/medicines/MedicineEquipmentManagement";
 import NewsManagement from "./pages/news/NewsManagement";
 import VaccinationManagement from "./pages/events/VaccinationManagement";
 import HealthCheckManagement from "./pages/events/HealthCheckManagement";
@@ -37,9 +36,14 @@ import MedicalEvent from "./pages/eventMedical/MedicalEvent";
 import Vaccine from "./pages/vaccinations/Vaccine";
 import VaccineDetail from "./pages/vaccinations/VaccineDetail";
 import HealthCheckup from "./pages/healthRecord/HealthCheckup";
+import MedicineManagement from "./pages/medicineParent/MedicineManagement";
 
 import Login from "./pages/Login";
 import HomePage from "./pages/home/HomePage";
+import AboutPage from "./pages/home/AboutPage";
+import NewsPage from "./pages/home/NewsPage";
+import SettingUser from "./pages/settings/SettingUser";
+
 
 function App() {
   return (
@@ -49,8 +53,8 @@ function App() {
           {" "}
           {/* Public Routes */}
           <Route path="/home" element={<HomePage />} />
-          <Route path="/gioi-thieu" element={<NewsManagement/>} />
-          <Route path="/tin-tuc" element={<NewsManagement/>} />
+          <Route path="/gioi-thieu" element={<AboutPage/>} />
+          <Route path="/tin-tuc" element={<NewsPage/>} />
           <Route path="/login" element={<Login />} />
           
           {/* Admin layout */}
@@ -76,10 +80,7 @@ function App() {
               path="medication-submission"
               element={<MedicationSubmission />}
             />
-            <Route
-              path="medicine-equipment"
-              element={<MedicineEquipmentManagement />}
-            />
+         
             <Route
               path="medical-events/vaccination"
               element={<VaccinationManagement />}
@@ -92,7 +93,7 @@ function App() {
               path="medical-events/accidents"
               element={<AccidentManagement />}
             />
-            <Route path="settings" element={<Settings />} />
+            <Route path="settings" element={<SettingUser />} />
           </Route>
           {/* Manager Routes */}
           <Route
@@ -109,7 +110,7 @@ function App() {
             <Route path="news-management" element={<NewsManagement />} />
             <Route path="reports" element={<Reports />} />
             <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
-            <Route path="settings" element={<Settings />} />
+            <Route path="settings" element={<SettingUser />} />
           </Route>
           {/*Parent Route*/}
           <Route
@@ -120,16 +121,20 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<ParentProfile />} />
+
+          <Route index element={<ParentProfile />} />
             <Route path="profile-student" element={<StudentProfile />} />
             <Route path="profile" element={<ParentProfile />} />
             <Route path="events" element={<MedicalEvent />} />
+            <Route path="medical-events" element={<MedicalEvent />} />
             <Route path="vaccinations" element={<Vaccine />} />
             <Route path="vaccinations/:id" element={<VaccineDetail />} />
             <Route path="health-result" element={<HealthCheckup />} />
+            <Route path="send-medicine" element={<MedicineManagement />} />
+             <Route path="settings" element={<SettingUser />} />
           </Route>{" "}
           {/* Redirect root to home page */}
-          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </ConfigProvider>

@@ -1,0 +1,86 @@
+import React from "react";
+import { Layout, Menu } from "antd";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  DashboardOutlined,
+  UserOutlined,
+  SettingOutlined,
+} from "@ant-design/icons";
+import "./SidebarStyles.css";
+
+const { Sider } = Layout;
+
+function SidebarAdmin({ collapsed }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const menuItems = [
+    {
+      key: "/admin/dashboard",
+      icon: <DashboardOutlined />,
+      label: "Dashboard",
+    },
+    {
+      key: "/admin/accounts",
+      icon: <UserOutlined />,
+      label: "Tài khoản",
+    },
+    {
+      key: "/admin/settings",
+      icon: <SettingOutlined />,
+      label: "Cài đặt",
+    },
+  ];
+
+  const handleMenuClick = ({ key }) => {
+    navigate(key);
+  };
+
+  return (
+    <Sider
+      trigger={null}
+      collapsible
+      collapsed={collapsed}
+      collapsedWidth={80}
+      theme="dark"
+      className="sidebar"
+      style={{
+        position: "fixed",
+        left: 0,
+        top: 0,
+        bottom: 0,
+        height: "100vh",
+        zIndex: 1000,
+      }}
+    >
+      <div className="logoContainer flex justify-center items-center h-24">
+        <img
+          src="/SchoolMedical.gif"
+          alt="School Medical Logo"
+          style={{
+            height: collapsed ? "5500px" : "5500px",
+            width: collapsed ? "auto" : "auto",
+            maxWidth: "95%",
+            objectFit: "contain",
+            margin: "0 auto",
+            display: "block",
+          }}
+        />
+      </div>
+
+      <div className="sidebar-menu-wrapper">
+        <Menu
+          theme="dark"
+          mode="inline"
+          inlineCollapsed={collapsed}
+          selectedKeys={[location.pathname]}
+          items={menuItems}
+          onClick={handleMenuClick}
+          className="sidebar-menu"
+        />
+      </div>
+    </Sider>
+  );
+}
+
+export default SidebarAdmin;

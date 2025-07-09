@@ -1,0 +1,41 @@
+{
+  "json.validate.enable": false,
+  "json.schemaDownload.enable": false,
+  "json.schemas": [],
+  "json.format.enable": false,
+  "css.validate": false,
+  "scss.validate": false,
+  "less.validate": false,
+  "html.validate.styles": false,
+  "html.validate.scripts": false,
+  "emmet.showSuggestionsAsSnippets": true,
+  "emmet.triggerExpansionOnTab": true,
+  "tailwindCSS.includeLanguages": {
+    "css": "css",
+    "scss": "scss",
+    "sass": "sass",
+    "html": "html",
+    "javascript": "javascript",
+    "javascriptreact": "javascript",
+    "typescript": "typescript",
+    "typescriptreact": "typescript"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    "tw`([^`]*)",
+    "tw=\"([^\"]*)",
+    "tw={\"([^\"}]*)",
+    "tw\\.\\w+`([^`]*)",
+    "tw\\(.*?\\)`([^`]*)"
+  ],
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "css.customData": [".vscode/css_custom_data.json"],
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "workbench.colorCustomizations": {
+    "editorError.foreground": "#00000000",
+    "editorWarning.foreground": "#00000000"
+  }
+}

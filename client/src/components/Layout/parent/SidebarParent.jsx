@@ -41,7 +41,7 @@ function SidebarParent({ collapsed }) {
           label: "Kết quả sức khỏe",
         },
         {
-          key: `${basePath}/health/offer`,
+          key: `${basePath}/health-offer`,
           label: "Tư vấn sức khỏe",
         },
       ],

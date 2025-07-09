@@ -5,6 +5,49 @@
     "version": "1.0"
   },
   "paths": {
+    "/api/admin/get-admin-info": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/update-admin-info": {
+      "put": {
+        "tags": [
+          "Admin"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/admin/create-accounts": {
       "post": {
         "tags": [
@@ -574,19 +617,72 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/MedicineStatusUpdate"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicineStatusUpdate"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MedicineStatusUpdate"
+                "type": "object",
+                "properties": {
+                  "MedicineName": {
+                    "type": "string"
+                  },
+                  "Quantity": {
+                    "type": "string"
+                  },
+                  "Dosage": {
+                    "type": "string"
+                  },
+                  "Instructions": {
+                    "type": "string"
+                  },
+                  "SentDate": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "Notes": {
+                    "type": "string"
+                  },
+                  "Image": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  },
+                  "Status": {
+                    "type": "string"
+                  },
+                  "StudentID": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "MedicineName": {
+                  "style": "form"
+                },
+                "Quantity": {
+                  "style": "form"
+                },
+                "Dosage": {
+                  "style": "form"
+                },
+                "Instructions": {
+                  "style": "form"
+                },
+                "SentDate": {
+                  "style": "form"
+                },
+                "Notes": {
+                  "style": "form"
+                },
+                "Image": {
+                  "style": "form"
+                },
+                "Status": {
+                  "style": "form"
+                },
+                "StudentID": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -787,23 +883,30 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MedicineStatusUpdate"
+                "$ref": "#/components/schemas/MedicineUpdateDTO"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/MedicineStatusUpdate"
+                "$ref": "#/components/schemas/MedicineUpdateDTO"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/MedicineStatusUpdate"
+                "$ref": "#/components/schemas/MedicineUpdateDTO"
               }
             }
           }
@@ -832,49 +935,6 @@
         "tags": [
           "School"
         ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/user/get-user-info": {
-      "get": {
-        "tags": [
-          "User"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/user/update-user-info": {
-      "put": {
-        "tags": [
-          "User"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserRequest"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "OK"
@@ -1062,7 +1122,7 @@
         },
         "additionalProperties": false
       },
-      "MedicineStatusUpdate": {
+      "MedicineUpdateDTO": {
         "type": "object",
         "properties": {
           "medicineName": {
@@ -1098,15 +1158,11 @@
             },
             "nullable": true
           },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
           "studentID": {
             "type": "string",
             "nullable": true
           },
-          "parentID": {
+          "nurseID": {
             "type": "string",
             "nullable": true
           }

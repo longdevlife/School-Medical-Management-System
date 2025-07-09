@@ -14,6 +14,8 @@ namespace Sever.DTO.MedicalEvent
         public string? NurseID { get; set; }
         public List<string>? StudentID { get; set; }
         public IFormFile? File { get; set; }
+        public string Class { get; set; }
+        public string StudentName { get; set; }
 
     }
 }

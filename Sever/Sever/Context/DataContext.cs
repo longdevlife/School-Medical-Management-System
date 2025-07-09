@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+
 using Sever.Model;
 
 namespace Sever.Context
@@ -38,7 +39,7 @@ namespace Sever.Context
 
             #region Notify
             modelBuilder.Entity<Notify>()
-                .HasKey(n => new { n.UserID});
+                .HasKey(n => new { n.NotifyID});
 
             modelBuilder.Entity<Notify>()
                 .HasOne(n => n.User)
@@ -85,13 +86,25 @@ namespace Sever.Context
                 .WithMany(u => u.Medicine)
                 .HasForeignKey(m => m.ParentID)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Medicine>()
+               .HasOne(m => m.StudentProfile)
+               .WithMany()
+               .HasForeignKey(m => m.StudentID)
+               .OnDelete(DeleteBehavior.Restrict);
             #endregion
 
             #region VaccinationRecord
+
             modelBuilder.Entity<VaccinationRecord>()
-                .HasOne(vr => vr.Vaccinator)
-                .WithMany(u => u.VaccinationRecord)
-                .HasForeignKey(vr => vr.VaccinatorID)
+                 .HasOne(v => v.Vaccinator)
+                 .WithMany(u => u.VaccinatorVaccinationRecord)
+                 .HasForeignKey(v => v.VaccinatorID)
+                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<VaccinationRecord>()
+                .HasOne(v => v.Nurse)
+                .WithMany(u => u.NurseVaccinationRecord)
+                .HasForeignKey(v => v.NurseID)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<VaccinationRecord>()
@@ -139,7 +152,6 @@ namespace Sever.Context
             #region Files
 
             #endregion
-
 
         }
 

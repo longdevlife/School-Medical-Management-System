@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sever.Context;
+using Sever.DTO.Medicine;
 using Sever.Model;
 using Sever.Utilities;
 
@@ -11,9 +12,10 @@ namespace Sever.Repository
         Task UpdateMedicineAsync(Medicine medicine);
         Task<string> GetCurrentMedicineID();
         Task<Medicine> GetMedicineByIdAsync(string medicineId);
-        Task<List<Medicine>> GetMedicineByParentIdAsync(string studentId);
-        //Task<List<Medicine>> GetMedicineByNurseIdAsync(string nurseId);
-
+        Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId);
+        Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId);
+        Task<List<Medicine>> GetAllMedicinesAsync();
+        Task<int> CountMedicinesAsync(DateTime fromDate, DateTime toDate);
     }
 
     public class MedicineRepository : IMedicineRepository
@@ -47,19 +49,13 @@ namespace Sever.Repository
             return result;
         }
 
-        //public async Task<List<Medicine>> GetMedicineByNurseIdAsync(string nurseId)
-        //{
-        //    return await _context.Medicine
-        //        .Where(n => n.NurseID == nurseId)
-        //        .ToListAsync();
-        //}
-
-        public async Task<List<Medicine>> GetMedicineByParentIdAsync(string studentId)
-        {
-            return await _context.Medicine
-                .Where(n =>  n.StudentID == studentId )
-                .ToListAsync();
-        }
+            public async Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId)
+            {
+                return await _context.Medicine
+                    .Include(m => m.StudentProfile)
+                    .Where(n => n.StudentID == studentId)
+                    .ToListAsync();
+            }
 
         public async Task<string> GetCurrentMedicineID()
         {
@@ -85,5 +81,23 @@ namespace Sever.Repository
             return newId;
         }
 
+        public async Task<List<StudentProfile>> GetStudentsByParentIdAsync(string parentId)
+        {
+            return await _context.StudentProfile
+                                 .Where(s => s.ParentID == parentId)
+                                 .ToListAsync();
+        }
+
+        public async Task<List<Medicine>> GetAllMedicinesAsync()
+        {
+            return await _context.Medicine
+                                 .Include(m => m.StudentProfile)
+                                 .ToListAsync();
+        }
+
+        public async Task<int> CountMedicinesAsync(DateTime fromDate, DateTime toDate)
+        {
+            return await _context.Medicine.Where(m => m.SentDate >= fromDate && m.SentDate <= toDate).CountAsync();
+        }
     }
 }

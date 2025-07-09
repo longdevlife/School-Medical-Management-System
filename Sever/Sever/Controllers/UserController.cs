@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Sever.DTO.User;
 using Sever.Service;
@@ -8,15 +9,16 @@ namespace Sever.Controllers
     [Authorize]
     [Route("api/user")]
     [ApiController]
-    public class UserController : Controller
+    public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
         public UserController(IUserService userService)
         {
             _userService = userService;
         }
+
         [HttpGet("get-user-info")]
-        public async Task<IActionResult> GetManagerInfo()
+        public async Task<IActionResult> GetUserInfo()
         {
             string username = User.Identity?.Name;
 
@@ -29,10 +31,14 @@ namespace Sever.Controllers
             {
                 var user = await _userService.GetUserAsyc(username);
 
+                if(user == null)
+                {
+                    return BadRequest("Khong tim thay thong tin  nguoi dung");
+                }
                 return Ok(new
                 {
                     user,
-                    message = "Lấy thông tin manager thành công"
+                    message = "Lấy thông tin người dùng thành công"
                 });
             }
             catch
@@ -40,7 +46,6 @@ namespace Sever.Controllers
                 return BadRequest(new { message = "Không tìm thấy thông tin người dùng" });
             }
         }
-
         [HttpPut("update-user-info")]
         public async Task<IActionResult> UpdatemanagerAccount(UpdateUserRequest userRequest)
         {

@@ -25,6 +25,7 @@ namespace Sever.Service
 
         Task<string> SendForgotPasswordEmailAsync(string usernameOrEmail, string resetUrlBase);
         Task<bool> ResetPasswordAsync(string token, string newPassword);
+        Task<bool> ChangePassworAsync(string username, string oldPass, string newPass);
     }
 
     public class AuthService : IAuthService
@@ -242,6 +243,20 @@ namespace Sever.Service
 
             return true;
 
+        }
+
+        public async Task<bool> ChangePassworAsync(string username, string oldPass, string newPass)
+        {
+            var user = await _userRepository.GetUserByUsernameAsync(username);
+            var hasher = new PasswordHasher<User>();
+            var verifyResult = hasher.VerifyHashedPassword(user, user.PasswordHash, oldPass);
+            if (verifyResult != PasswordVerificationResult.Success)
+            {
+                return false;
+            }
+            user.PasswordHash = hasher.HashPassword(user, newPass);
+            var result = await _userRepository.UpdateUserAsync(user);
+            return result;
         }
     }
 }

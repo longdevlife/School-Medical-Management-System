@@ -12,7 +12,7 @@ namespace Sever.Model
         [Required]
         public string PasswordHash { get; set; }
         public string? Name { get; set; }
-        public string? Email { get; set; }
+        public string Email { get; set; }
         public string? Phone { get; set; }
         public Boolean IsActive { get; set; } = true;
         public string RoleID { get; set; }
@@ -20,7 +20,8 @@ namespace Sever.Model
         public Role Role { get; set; }
         public List<StudentProfile> StudentProfile { get; set; }
         public List<MedicalEvent> MedicalEvent { get; set; }
-        public List<VaccinationRecord> VaccinationRecord { get; set; }
+        public List<VaccinationRecord> NurseVaccinationRecord { get; set; }
+        public List<VaccinationRecord> VaccinatorVaccinationRecord { get; set; }
         public List<Medicine> Medicine { get; set; }
         public List<HealthCheckUp> NurseHealthCheckUp { get; set; }
         public List<Notify> Notify { get; set; }

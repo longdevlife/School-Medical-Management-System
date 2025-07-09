@@ -42,6 +42,7 @@ import Login from "./pages/Login";
 import HomePage from "./pages/home/HomePage";
 import AboutPage from "./pages/home/AboutPage";
 import NewsPage from "./pages/home/NewsPage";
+import SettingUser from "./pages/settings/SettingUser";
 
 
 function App() {
@@ -92,7 +93,7 @@ function App() {
               path="medical-events/accidents"
               element={<AccidentManagement />}
             />
-            <Route path="settings" element={<Settings />} />
+            <Route path="settings" element={<SettingUser />} />
           </Route>
           {/* Manager Routes */}
           <Route
@@ -109,7 +110,7 @@ function App() {
             <Route path="news-management" element={<NewsManagement />} />
             <Route path="reports" element={<Reports />} />
             <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
-            <Route path="settings" element={<Settings />} />
+            <Route path="settings" element={<SettingUser />} />
           </Route>
           {/*Parent Route*/}
           <Route
@@ -130,7 +131,7 @@ function App() {
             <Route path="vaccinations/:id" element={<VaccineDetail />} />
             <Route path="health-result" element={<HealthCheckup />} />
             <Route path="send-medicine" element={<MedicineManagement />} />
-           
+             <Route path="settings" element={<SettingUser />} />
           </Route>{" "}
           {/* Redirect root to home page */}
           <Route path="/" element={<Navigate to="/login" replace />} />

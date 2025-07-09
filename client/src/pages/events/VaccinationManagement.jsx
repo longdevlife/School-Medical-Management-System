@@ -390,7 +390,6 @@ function VaccinationManagement() {
           values.newStatus
         );
 
-    
         let nurseID;
         try {
           const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -546,7 +545,6 @@ function VaccinationManagement() {
         );
         return;
       }
-
 
       if (!nurseID || (typeof nurseID === "string" && nurseID.trim() === "")) {
         message.error("NurseID không hợp lệ! Hiện tại: " + nurseID);

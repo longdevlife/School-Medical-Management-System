@@ -58,7 +58,10 @@ namespace Sever.Repository
 
         public async Task<List<HealthProfile>> GetAllAsync()
         {
-            return await _context.HealthProfile.ToListAsync();
+
+            return await _context.HealthProfile
+                .Include(r => r.StudentProfile)
+                .ToListAsync();
         }
 
     }

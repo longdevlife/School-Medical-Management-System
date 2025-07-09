@@ -247,7 +247,7 @@ namespace Sever.Controllers
         public async Task<IActionResult> GetHeathProfilesByParentID()
         {
             var username = User.Identity?.Name;
-            var result = await _medicalEventService.GetMedicialEventByParentAsync(username);
+            var result = await _healthProfileService.GetHealthProfileByParentIdAsync(username);
             return Ok(result);
         }
 

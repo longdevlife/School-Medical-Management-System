@@ -415,6 +415,137 @@
         }
       }
     },
+    "/api/admin/delete-student-profile/{studentId}": {
+      "delete": {
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/get-student-info-by-parentID/{parentId}": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "parentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/update-student-profile": {
+      "put": {
+        "tags": [
+          "Admin"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "StudentID": {
+                    "type": "string"
+                  },
+                  "StudentName": {
+                    "type": "string"
+                  },
+                  "Class": {
+                    "type": "string"
+                  },
+                  "StudentAvata": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "RelationName": {
+                    "type": "string"
+                  },
+                  "Nationality": {
+                    "type": "string"
+                  },
+                  "Ethnicity": {
+                    "type": "string"
+                  },
+                  "Birthday": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "Sex": {
+                    "type": "string"
+                  },
+                  "Location": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "StudentID": {
+                  "style": "form"
+                },
+                "StudentName": {
+                  "style": "form"
+                },
+                "Class": {
+                  "style": "form"
+                },
+                "StudentAvata": {
+                  "style": "form"
+                },
+                "RelationName": {
+                  "style": "form"
+                },
+                "Nationality": {
+                  "style": "form"
+                },
+                "Ethnicity": {
+                  "style": "form"
+                },
+                "Birthday": {
+                  "style": "form"
+                },
+                "Sex": {
+                  "style": "form"
+                },
+                "Location": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/auth/login": {
       "post": {
         "tags": [
@@ -590,6 +721,37 @@
             "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/auth/change-password": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
               }
             }
           }
@@ -1978,6 +2140,18 @@
         }
       }
     },
+    "/api/nurse/get-all-health-check-up": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/parent/medicine/create": {
       "post": {
         "tags": [
@@ -2634,6 +2808,20 @@
   },
   "components": {
     "schemas": {
+      "ChangePasswordRequest": {
+        "type": "object",
+        "properties": {
+          "oldPass": {
+            "type": "string",
+            "nullable": true
+          },
+          "newPass": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateAppointment": {
         "type": "object",
         "properties": {
@@ -2690,7 +2878,8 @@
           },
           "birthday": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "sex": {
             "type": "string",

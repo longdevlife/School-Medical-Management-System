@@ -32,7 +32,7 @@ namespace Sever.Controllers
             IMedicalEventService medicalEventService,
             IHealthCheckUpService healthCheckUpService,
             IAppointmentService appointmentService,
-            IVaccinationService vaccinationService, 
+            IVaccinationService vaccinationService,
             IHealthProfileService healthProfileService)
         {
             _medicineService = medicineService;
@@ -135,7 +135,7 @@ namespace Sever.Controllers
         }
 
         [HttpPost("create-health-check-up-by-class")]
-        public async Task<IActionResult> CreateHealthCheckUpByClass([FromForm]string classId,[FromForm] DateTime dateCheckUp)
+        public async Task<IActionResult> CreateHealthCheckUpByClass([FromForm] string classId, [FromForm] DateTime dateCheckUp)
         {
             var username = User.Identity?.Name;
             if (string.IsNullOrEmpty(username))
@@ -168,7 +168,7 @@ namespace Sever.Controllers
         }
 
         [HttpGet("get-health-check-up-by-year/{year}")]
-        public async Task<IActionResult> GetHealthCheckupsByYear( int year)
+        public async Task<IActionResult> GetHealthCheckupsByYear(int year)
         {
             var username = User.Identity?.Name;
             if (string.IsNullOrEmpty(username))
@@ -271,7 +271,7 @@ namespace Sever.Controllers
             var result = await _vaccinationService.GetAllVaccineRecordAsync();
             return Ok(result);
         }
-        
+
         [HttpGet("vaccine/getConfirm")]
         public async Task<IActionResult> GetConfirmVaccine()
         {
@@ -339,6 +339,25 @@ namespace Sever.Controllers
             var result = await _healthProfileService.GetAllHealthProfilesAsync();
             return Ok(result);
         }
-
+        [HttpGet("get-all-health-check-up")]
+        public async Task<IActionResult> GetAllHealthCheckUp()
+        {
+            try
+            {
+                var healthCheckup = await _healthCheckUpService.GetAllHealthCheckupsAsync();
+                if (healthCheckup != null)
+                {
+                    return Ok(healthCheckup);
+                }
+                else
+                {
+                    return NotFound("Lấy danh sách khám sức khỏe thất bại.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Lỗi Khi lấy danh sách khám sức khỏe" + ex.Message);
+            }
+        }
     }
 }

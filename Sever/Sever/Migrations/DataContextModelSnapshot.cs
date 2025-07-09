@@ -94,6 +94,9 @@ namespace Sever.Migrations
                     b.Property<string>("SchoolID")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("StudentID")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime>("UploadDate")
                         .HasColumnType("datetime2");
 
@@ -106,6 +109,8 @@ namespace Sever.Migrations
                     b.HasIndex("NewsID");
 
                     b.HasIndex("SchoolID");
+
+                    b.HasIndex("StudentID");
 
                     b.ToTable("Files");
                 });
@@ -521,7 +526,7 @@ namespace Sever.Migrations
                     b.Property<string>("StudentID")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("Birthday")
+                    b.Property<DateTime?>("Birthday")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Class")
@@ -572,6 +577,7 @@ namespace Sever.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
@@ -712,6 +718,10 @@ namespace Sever.Migrations
                         .WithMany()
                         .HasForeignKey("SchoolID");
 
+                    b.HasOne("Sever.Model.StudentProfile", "StudentProfile")
+                        .WithMany()
+                        .HasForeignKey("StudentID");
+
                     b.Navigation("MedicalEvent");
 
                     b.Navigation("Medicine");
@@ -719,6 +729,8 @@ namespace Sever.Migrations
                     b.Navigation("News");
 
                     b.Navigation("SchoolInfo");
+
+                    b.Navigation("StudentProfile");
                 });
 
             modelBuilder.Entity("Sever.Model.ForgotPasswordToken", b =>
@@ -759,13 +771,13 @@ namespace Sever.Migrations
 
             modelBuilder.Entity("Sever.Model.HealthProfile", b =>
                 {
-                    b.HasOne("Sever.Model.StudentProfile", "Student")
+                    b.HasOne("Sever.Model.StudentProfile", "StudentProfile")
                         .WithMany("HealthProfiles")
                         .HasForeignKey("StudentID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Student");
+                    b.Navigation("StudentProfile");
                 });
 
             modelBuilder.Entity("Sever.Model.MedicalEvent", b =>

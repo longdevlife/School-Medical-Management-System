@@ -10,6 +10,8 @@ namespace Sever.Service
         Task<GetStudentInfoRequest> SearchStudentProfileAsync(string info);
         Task<List<GetStudentInfoRequest>> GetStudentProfilesByParentAsync(string parent);
         Task<bool> CreateStudent(CreateStudentRequest createStudentRequests);
+        Task<bool> DeleteStudentProfile(string studentId);
+        Task<bool> UpdateStudentProfile(UpdateStudentRequest updateStudentRequest);
     }
 
     public class StudentService : IStudentService
@@ -17,13 +19,16 @@ namespace Sever.Service
         private readonly IStudentProfileRepository _studentProfileRepository;
         private readonly IUserRepository _userRepository;
         private readonly IHealthProfileRepository _healthProfileRepository;
+        private readonly IFilesService _filesService;
         public StudentService(IStudentProfileRepository studentProfileRepository,
                             IUserRepository userRepository,
-                            IHealthProfileRepository healthProfileRepository)
+                            IHealthProfileRepository healthProfileRepository,
+                            IFilesService filesService)
         {
             _studentProfileRepository = studentProfileRepository;
             _userRepository = userRepository;
             _healthProfileRepository = healthProfileRepository;
+            _filesService = filesService;
         }
         public async Task<GetStudentInfoRequest> SearchStudentProfileAsync(string info)
         {
@@ -54,12 +59,12 @@ namespace Sever.Service
             }
         }
 
-        public async Task<List<GetStudentInfoRequest>> GetStudentProfilesByParentAsync(string parent)
+        public async Task<List<GetStudentInfoRequest>> GetStudentProfilesByParentAsync(string parentID)
         {
             List<GetStudentInfoRequest> studentInfoList = new List<GetStudentInfoRequest>();
             try
             {
-                var studentProfiles = await _studentProfileRepository.GetStudentProfileByParentId(parent);
+                var studentProfiles = await _studentProfileRepository.GetStudentProfileByParentId(parentID);
                 foreach (var student in studentProfiles)
                 {
                     studentInfoList.Add(new GetStudentInfoRequest
@@ -76,7 +81,7 @@ namespace Sever.Service
                         ParentEmail = student.Parent.Email,
                         Nationality = student.Nationality,
                         Sex = student.Sex,
-                        ParentPhone = student.Parent.Phone, 
+                        ParentPhone = student.Parent.Phone,
                     });
                 }
                 return studentInfoList;
@@ -115,5 +120,63 @@ namespace Sever.Service
                 StudentID = student.StudentID,
             });
         }
+        public async Task<bool> DeleteStudentProfile(string studentId)
+        {
+            var studentProfile = await _studentProfileRepository.GetStudentProfileByStudentId(studentId);
+            if (studentProfile == null)
+            {
+                throw new KeyNotFoundException("Học sinh không tồn tại");
+            }
+            return await _studentProfileRepository.DeleteStudentProfile(studentProfile);
+        }
+
+        public async Task<bool> UpdateStudentProfile(UpdateStudentRequest updateStudentRequest)
+        {
+            var studentProfile = await _studentProfileRepository.GetStudentProfileByStudentId(updateStudentRequest.StudentID);
+            if (studentProfile == null)
+            {
+                throw new KeyNotFoundException("Học sinh không tồn tại");
+            }
+            if (updateStudentRequest.StudentName != null)
+            {
+                studentProfile.StudentName = updateStudentRequest.StudentName;
+            }
+            if (updateStudentRequest.Class != null)
+            {
+                studentProfile.Class = updateStudentRequest.Class;
+            }
+            if (updateStudentRequest.RelationName != null)
+            {
+                studentProfile.RelationName = updateStudentRequest.RelationName;
+            }
+            if (updateStudentRequest.Nationality != null)
+            {
+                studentProfile.Nationality = updateStudentRequest.Nationality;
+            }
+            if (updateStudentRequest.Ethnicity != null)
+            {
+                studentProfile.Ethnicity = updateStudentRequest.Ethnicity;
+            }
+            if (updateStudentRequest.Birthday != null)
+            {
+                studentProfile.Birthday = updateStudentRequest.Birthday;
+            }
+            if (updateStudentRequest.Sex != null)
+            {
+                studentProfile.Sex = updateStudentRequest.Sex;
+            }
+            if (updateStudentRequest.Location != null)
+            {
+                studentProfile.Location = updateStudentRequest.Location;
+            }
+            if (updateStudentRequest.StudentAvata != null)
+            {
+                var avata = await _filesService.UploadStudentAvataAsync(updateStudentRequest.StudentAvata, studentProfile.StudentID);
+                studentProfile.StudentAvata = avata.Url;
+            }
+            var result = await _studentProfileRepository.UpdateStudentProfile(studentProfile);
+            return result;
+        }
+
     }
 }

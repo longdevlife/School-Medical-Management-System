@@ -12,6 +12,8 @@ namespace Sever.Repository
         Task<StudentProfile> GetStudentProfileByStudentId(string info);
         Task<List<StudentProfile>> GetStudentProfilesByClassIdAsync(string classId);
         Task<bool> CreateStudentProfile(StudentProfile student);
+        Task<bool> DeleteStudentProfile(StudentProfile student);
+        Task<bool> UpdateStudentProfile(StudentProfile student);
         Task<string> NextId();
     }
     public class StudentProfileRepository : IStudentProfileRepository
@@ -77,6 +79,17 @@ namespace Sever.Repository
             string nextID = GenerateID.GenerateNextId(currentUser?.StudentID, "ST", 4);
             return nextID;
         }
+        public async Task<bool> DeleteStudentProfile(StudentProfile student)
+        {
+            _context.StudentProfile.Remove(student);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+        public async Task<bool> UpdateStudentProfile(StudentProfile student)
+        {
+            _context.StudentProfile.Update(student);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
     }
-
 }

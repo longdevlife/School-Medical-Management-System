@@ -8,7 +8,7 @@
         public string Class { get; set; }
         public string Nationality { get; set; }
         public string Ethnicity { get; set; }
-        public DateTime Birthday { get; set; }
+        public DateTime? Birthday { get; set; }
         public string Sex { get; set; }
         public string Location { get; set; }
         public string? ParentName { get; set; }

@@ -65,6 +65,22 @@
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "DeleteStudentProfile",
+    "RelativePath": "api/admin/delete-student-profile/{studentId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "studentId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
     "Method": "DeleteAccount",
     "RelativePath": "api/admin/delete-user",
     "HttpMethod": "DELETE",
@@ -99,6 +115,22 @@
     "Parameters": [
       {
         "Name": "username",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "GetStudentInfoByParentID",
+    "RelativePath": "api/admin/get-student-info-by-parentID/{parentId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "parentId",
         "Type": "System.String",
         "IsRequired": true
       }
@@ -201,6 +233,67 @@
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "UpdateStudentProfile",
+    "RelativePath": "api/admin/update-student-profile",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "StudentID",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "StudentName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Class",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "StudentAvata",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      },
+      {
+        "Name": "RelationName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Nationality",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Ethnicity",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Birthday",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Sex",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Location",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
     "Method": "UpdateUserAccount",
     "RelativePath": "api/admin/update-user-info",
     "HttpMethod": "PUT",
@@ -210,6 +303,22 @@
       {
         "Name": "userRequest",
         "Type": "Sever.DTO.User.UpdateUserRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AuthController",
+    "Method": "ChangePassword",
+    "RelativePath": "api/auth/change-password",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "changePasswordRequest",
+        "Type": "Sever.DTO.Authentication.ChangePasswordRequest",
         "IsRequired": true
       }
     ],
@@ -661,6 +770,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetAllHealthCheckUp",
+    "RelativePath": "api/nurse/get-all-health-check-up",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

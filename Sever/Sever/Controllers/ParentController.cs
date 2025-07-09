@@ -250,6 +250,16 @@ namespace Sever.Controllers
             var result = await _healthProfileService.GetHealthProfileByParentIdAsync(username);
             return Ok(result);
         }
-
+        [HttpGet("get-appointment-by-student-id/{StudentID}")]
+        public async Task<IActionResult> GetAppointmentByStudentId(string StudentID)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Người dùng chưa được cấp quyền.");
+            }
+            var appointments = await _appointmentService.GetAppointmentByStudentId(StudentID);
+            return Ok(appointments);
+        }
     }
 }

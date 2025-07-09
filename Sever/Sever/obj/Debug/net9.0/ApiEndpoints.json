@@ -1419,6 +1419,22 @@
   },
   {
     "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "GetAppointmentByStudentId",
+    "RelativePath": "api/parent/get-appointment-by-student-id/{StudentID}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "StudentID",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
     "Method": "GetStudentInfoByParent",
     "RelativePath": "api/parent/get-student-info-by-parent",
     "HttpMethod": "GET",

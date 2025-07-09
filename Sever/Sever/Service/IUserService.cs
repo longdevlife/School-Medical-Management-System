@@ -15,14 +15,19 @@ namespace Sever.Service
         Task<User> CreateUserAsyc(CreateUserRequest userRequest);
         Task<bool> UpdateUserAsync(UpdateUserRequest userRequest, string userName);
         Task<bool> DeleteUserByUserNameAsync(DeleteUserRequest username);
+        Task<List<GetUser>> GetAllUserAsync();
+        Task<List<GetUser>?> SearchUserAsync(string key);
+        Task<bool> ActivativeAccountasync(string userName);
     }
 
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
+        private readonly IStudentProfileRepository _studentProfileRepository;
+        public UserService(IUserRepository userRepository, IStudentProfileRepository studentProfileRepository)
         {
             _userRepository = userRepository;
+            _studentProfileRepository = studentProfileRepository;
         }
         public async Task<User> GetUserAsyc(string username)
         {
@@ -36,13 +41,19 @@ namespace Sever.Service
         public async Task<User> CreateUserAsyc(CreateUserRequest userRequest)
         {
             var passwordHasher = new PasswordHasher<User>();
-            var currentUserID = _userRepository.GetCurrentUserID().ToString();
             var user = new User
             {
-                UserID = GenerateID.GenerateNextId(currentUserID, "U", 4),
+                UserID = await _userRepository.NextId(),
                 UserName = userRequest.UserName,
                 PasswordHash = userRequest.Password,
-                RoleID = userRequest.RoleID
+                Email = userRequest.Email,
+            };
+            user.RoleID = userRequest.RoleName switch
+            {
+                "Parent" => "1",
+                "Nurse" => "2",
+                "Manager" => "3",
+                _ => throw new ArgumentException("Vai trò không hợp lệ", nameof(userRequest.RoleName))
             };
             user.PasswordHash = passwordHasher.HashPassword(user, user.PasswordHash);
             return await _userRepository.CreateAsync(user);
@@ -54,7 +65,7 @@ namespace Sever.Service
             if (user == null)
                 return false;
             var passwordHasher = new PasswordHasher<User>();
-            if(!string.IsNullOrEmpty(userRequest.Password))
+            if (!string.IsNullOrEmpty(userRequest.Password))
             {
                 user.PasswordHash = passwordHasher.HashPassword(user, userRequest.Password);
             }
@@ -84,6 +95,58 @@ namespace Sever.Service
             var result = await _userRepository.DeleteAccountByUserAsync(user);
             return result;
         }
+        public async Task<List<GetUser>> GetAllUserAsync()
+        {
+            var users = await _userRepository.GetAllUser();
+            List<GetUser> userDtos = new List<GetUser>();
+            if (users == null || users.Count == 0)
+            {
+                throw new Exception("No users found");
+            }
+            foreach (var user in users)
+            {
+                var userDto = new GetUser
+                {
+                    UserID = user.UserID,
+                    UserName = user.UserName,
+                    IsActive = user.IsActive,
+                    RoleName = user.Role.RoleName
+                };
+                userDtos.Add(userDto);
+            }
+            return userDtos;
+        }
+        public async Task<List<GetUser>?> SearchUserAsync(string key)
+        {
+            var users = await _userRepository.SearchUser(key);
+            if (users == null || users.Count == 0)
+            {
+                throw new Exception("No users found with the provided key");
+            }
 
+            var userDtos = new List<GetUser>();
+            foreach (var user in users)
+            {
+                var userDto = new GetUser
+                {
+                    UserID = user.UserID,
+                    UserName = user.UserName,
+                    IsActive = user.IsActive,
+                    RoleName = user.Role.RoleName
+                };
+                userDtos.Add(userDto);
+            }
+            return userDtos;
+        }
+
+        public async Task<bool> ActivativeAccountasync(string userName)
+        {
+            if (userName == null)
+            {
+                throw new Exception("UserName không được bỏ trống");
+            }
+            var result = await _userRepository.ActivativeUserAsync(userName);
+            return result;
+        }
     }
 }

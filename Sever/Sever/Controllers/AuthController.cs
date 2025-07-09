@@ -77,6 +77,31 @@ namespace Sever.Controllers
             if (!result) return BadRequest(new { message = "Token không hợp lệ hoặc đã hết hạn" });
             return Ok(new { message = "Đổi mật khẩu thành công" });
         }
-        
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequest changePasswordRequest)
+        {
+            string username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                return NotFound("Không tìm thấy người dùng để đổi mật khẩu");
+            }
+            try
+            {
+                var result = await _authService.ChangePassworAsync(username, changePasswordRequest.oldPass, changePasswordRequest.newPass);
+                if (result)
+                {
+                    return Ok(new { message = "Thay đổi mật khẩu thành công" });
+                }
+                else
+                {
+                    return BadRequest("Thay đổi mật khẩu thất bại");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Lỗi khi thay đổi mật khẩu" + ex.Message);
+            }
+        }
     }
 }

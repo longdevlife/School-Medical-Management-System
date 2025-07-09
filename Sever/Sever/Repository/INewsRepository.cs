@@ -13,7 +13,7 @@ namespace Sever.Repository
         Task<List<News>> GetAllNewsAsync();
         Task<List<News>> GetNewsByUserIdAsync(string userId);
         Task<News> GetNewsByIdAsync(string id);
-        Task<string> GetCurrentNewsID(string id);
+        Task<string> GetNewID();
     }
     public class NewsRepository : INewsRepository
     {
@@ -70,12 +70,12 @@ namespace Sever.Repository
                 return null;
             return result;
         }
-        public async Task<string> GetCurrentNewsID(string id)
+        public async Task<string> GetNewID()
         {
             var crurrentNews = await _context.News.OrderByDescending(n => n.NewsID).FirstOrDefaultAsync();
             if(crurrentNews == null)
             {
-                throw new ArgumentException("Tải News ID thất bại");
+                return "NW0001";
             }
             string result = GenerateID.GenerateNextId(crurrentNews.NewsID, "NW", 4);
             return result;

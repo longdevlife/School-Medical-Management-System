@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Sever.DTO.SchoolInfo;
+using Sever.DTO.Student;
 using Sever.DTO.User;
 using Sever.Service;
 using System.Security.Claims;
@@ -17,15 +18,17 @@ namespace Sever.Controllers
         private readonly IUserService _userService;
         private readonly IFilesService _filesService;
         private readonly ISchoolInfoService _schoolInfoService;
+        private readonly IStudentService _studentService;
         public AdminController(IUserService userService,
                                IFilesService filesService,
-                               ISchoolInfoService schoolInfoService)
+                               ISchoolInfoService schoolInfoService,
+                               IStudentService studentService)
         {
             _userService = userService;
             _filesService = filesService;
             _schoolInfoService = schoolInfoService;
+            _studentService = studentService;
         }
-
 
         [HttpPost("create-accounts")]
         public async Task<IActionResult> CreateAccounts(List<CreateUserRequest> users)
@@ -141,6 +144,222 @@ namespace Sever.Controllers
             catch
             {
                 return BadRequest(new { message = "Cập nhật thông tin trường học thất bại" });
+            }
+        }
+
+        [HttpGet("get-all-account")]
+        public async Task<IActionResult> GetAllAccount()
+        {
+            try
+            {
+                var users = await _userService.GetAllUserAsync();
+                if (users == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy người dùng nào" });
+                }
+                return Ok(users);
+            }
+            catch
+            {
+                return BadRequest(new { message = "Lấy danh sách người dùng thất bại" });
+            }
+        }
+        [HttpGet("search-user/{key}")]
+        public async Task<IActionResult> SearchUser(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                return BadRequest(new { message = "Từ khóa tìm kiếm không được để trống" });
+            }
+            try
+            {
+                var users = await _userService.SearchUserAsync(key);
+                if (users == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy người dùng nào" });
+                }
+                return Ok(users);
+            }
+            catch
+            {
+                return BadRequest(new { message = "Tìm kiếm người dùng thất bại" });
+            }
+        }
+        [HttpPost("get-students-from-file")]
+        public async Task<IActionResult> GetStudentsFromFile(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("File không hợp lệ");
+
+            var users = await _filesService.ReadStudentFromExcelAsync(file);
+
+            return Ok(users);
+        }
+
+        [HttpPost("create-list-student")]
+        public async Task<IActionResult> CreateListStudent(List<CreateStudentRequest> students)
+        {
+            if (students == null || students.Count == 0)
+            {
+                return BadRequest(new { message = "Danh sách học sinh không được để trống" });
+            }
+            try
+            {
+                var results = new List<string>();
+                foreach (var student in students)
+                {
+                    try
+                    {
+                        await _studentService.CreateStudent(student);
+                        results.Add($"Tạo học sinh '{student.StudentName}' thành công");
+                    }
+                    catch (Exception ex)
+                    {
+                        results.Add($"Tạo học sinh '{student.StudentName}' thất bại");
+                        results.Add($"Tạo học sinh '{student.StudentName}' thất bại: {ex.Message}");
+
+                    }
+                }
+                return Ok(new { messages = results });
+            }
+            catch
+            {
+                return BadRequest(new { message = "Tạo học sinh thất bại" });
+            }
+        }
+        [HttpPut("active-account")]
+        public async Task<IActionResult> ActivateAccount([FromBody] string username)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                return BadRequest(new { message = "Tên người dùng không được để trống" });
+            }
+            try
+            {
+                var user = await _userService.ActivativeAccountasync(username);
+                return Ok(new { message = "Kích hoạt tài khoản thành công" });
+            }
+            catch
+            {
+                return BadRequest(new { message = "Kích hoạt tài khoản thất bại" });
+            }
+        }
+        [HttpGet("get-student-info-by-parent")]
+        public async Task<IActionResult> GetStudentInfoByParent([FromBody] string username)
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Tên tài khoản người dùng không hợp lệ");
+            }
+            var parent = await _userService.GetUserAsyc(username);
+            if (parent == null)
+            {
+                return BadRequest(new { message = "Không tìm thấy thông tin phụ huynh." });
+            }
+
+            var student = await _studentService.GetStudentProfilesByParentAsync(parent.UserID);
+            if (student == null)
+            {
+                return NotFound(new { message = "Không tìm thấy thông tin học sinh." });
+            }
+            return Ok(student);
+
+        }
+        [HttpPost("create-student-profile")]
+        public async Task<IActionResult> CreateStudentProfile([FromBody] CreateStudentRequest createStudentRequest)
+        {
+            if (createStudentRequest == null)
+            {
+                return BadRequest(new { message = "Thông tin học sinh không được để trống" });
+            }
+            try
+            {
+                var result = await _studentService.CreateStudent(createStudentRequest);
+                if (result)
+                {
+                    return Ok(new { message = "Tạo hồ sơ học sinh thành công" });
+                }
+                else
+                {
+                    return BadRequest(new { message = "Tạo hồ sơ học sinh thất bại" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Tạo hồ sơ học sinh thất bại: {ex.Message}" });
+            }
+        }
+        [HttpDelete("delete-student-profile/{studentId}")]
+        public async Task<IActionResult> DeleteStudentProfile(string studentId)
+        {
+            if (string.IsNullOrEmpty(studentId))
+            {
+                return BadRequest(new { message = "Mã học sinh không được để trống" });
+            }
+            try
+            {
+                var result = await _studentService.DeleteStudentProfile(studentId);
+                if (result)
+                {
+                    return Ok(new { message = "Xóa hồ sơ học sinh thành công" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Không tìm thấy hồ sơ học sinh để xóa" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Xóa hồ sơ học sinh thất bại: {ex.Message}" });
+            }
+        }
+        [HttpGet("get-student-info-by-parentID/{parentId}")]
+        public async Task<IActionResult> GetStudentInfoByParentID(string parentId)
+        {
+            if (string.IsNullOrEmpty(parentId))
+            {
+                return BadRequest(new { message = "ID phụ huynh không được để trống" });
+            }
+            try
+            {
+                var studentProfiles = await _studentService.GetStudentProfilesByParentAsync(parentId);
+                if (studentProfiles == null || studentProfiles.Count == 0)
+                {
+                    return NotFound(new { message = "Không tìm thấy thông tin học sinh cho phụ huynh này." });
+                }
+                return Ok(studentProfiles);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Lỗi khi lấy thông tin học sinh: {ex.Message}" });
+            }
+        }
+        [HttpPut("update-student-profile")]
+        public async Task<IActionResult> UpdateStudentProfile([FromForm] UpdateStudentRequest updateStudentRequest)
+        {
+            if (updateStudentRequest == null || string.IsNullOrEmpty(updateStudentRequest.StudentID))
+            {
+                return BadRequest(new { message = "Thông tin học sinh không được để trống" });
+            }
+            try
+            {
+                var result = await _studentService.UpdateStudentProfile(updateStudentRequest);
+                if (result)
+                {
+                    return Ok(new { message = "Cập nhật hồ sơ học sinh thành công" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Không tìm thấy hồ sơ học sinh để cập nhật" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = $"Cập nhật hồ sơ học sinh thất bại: {ex.Message}",
+                    inner = ex.InnerException?.Message
+                });
             }
         }
     }

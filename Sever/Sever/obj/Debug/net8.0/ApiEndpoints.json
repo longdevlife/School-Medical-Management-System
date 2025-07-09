@@ -33,6 +33,16 @@
   },
   {
     "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "GetManagerInfo",
+    "RelativePath": "api/admin/get-admin-info",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
     "Method": "GetUsersFromFile",
     "RelativePath": "api/admin/get-users-from-file",
     "HttpMethod": "POST",
@@ -43,6 +53,22 @@
         "Name": "file",
         "Type": "Microsoft.AspNetCore.Http.IFormFile",
         "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.AdminController",
+    "Method": "UpdatemanagerAccount",
+    "RelativePath": "api/admin/update-admin-info",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userRequest",
+        "Type": "Sever.DTO.User.UpdateUserRequest",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
@@ -404,9 +430,49 @@
         "IsRequired": true
       },
       {
-        "Name": "dto",
-        "Type": "Sever.DTO.Medicine.MedicineStatusUpdate",
-        "IsRequired": true
+        "Name": "MedicineName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Quantity",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Dosage",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Instructions",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SentDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Notes",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Image",
+        "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "StudentID",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -452,8 +518,13 @@
       },
       {
         "Name": "dto",
-        "Type": "Sever.DTO.Medicine.MedicineStatusUpdate",
+        "Type": "Sever.DTO.SendMedicine.MedicineUpdateDTO",
         "IsRequired": true
+      },
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -466,32 +537,6 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.UserController",
-    "Method": "GetManagerInfo",
-    "RelativePath": "api/user/get-user-info",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Sever.Controllers.UserController",
-    "Method": "UpdatemanagerAccount",
-    "RelativePath": "api/user/update-user-info",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "userRequest",
-        "Type": "Sever.DTO.User.UpdateUserRequest",
-        "IsRequired": true
-      }
-    ],
     "ReturnTypes": []
   },
   {

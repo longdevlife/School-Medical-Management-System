@@ -12,14 +12,15 @@ namespace Sever.Model
         public byte? PastSurgeries { get; set; }
         public string? SurgicalCause { get; set; }
         public string? Disabilities { get; set; }
-        public string? Height { get; set; }
-        public string? VisionLeft { get; set; }
-        public string? VisionRight { get; set; }
+        public float? Height { get; set; }
+        public float? Weight { get; set; }
+        public int? VisionLeft { get; set; }
+        public int? VisionRight { get; set; }
         public string? ToothDecay { get; set; }
         public string? OtheHealthIssues { get; set; }
         public string StudentID { get; set; }
         [ForeignKey("StudentID")]
-        public StudentProfile Student { get; set; }
+        public StudentProfile StudentProfile { get; set; }
 
     }
 }

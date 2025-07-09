@@ -4,7 +4,6 @@ import {
   Form, 
   Input, 
   Button, 
-  Switch, 
   Select, 
   Space, 
   message, 
@@ -17,10 +16,11 @@ import {
 import { 
   SettingOutlined, 
   HomeOutlined, 
-  GlobalOutlined,
+  UserOutlined,
   UploadOutlined
 } from "@ant-design/icons";
 import { updateSchoolInfo, getSchoolInfo } from "../../api/Schoolinfo";
+import SettingUser from "./SettingUser";
 
 const { Title, Text } = Typography;
 
@@ -239,7 +239,7 @@ function Settings() {
                     name="logo"
                     listType="picture"
                     maxCount={1}
-                    beforeUpload={() => false} // Không upload tự động
+                    beforeUpload={() => false}
                     onChange={handleLogoUpload}
                   >
                     <Button icon={<UploadOutlined />} size="large">
@@ -274,85 +274,14 @@ function Settings() {
       key: '2',
       label: (
         <span>
-          <GlobalOutlined />
-          Giao diện
+          <UserOutlined />
+          Cài đặt người dùng
         </span>
       ),
       children: (
-        <Card 
-          title={
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <GlobalOutlined style={{ color: '#667eea' }} />
-              <span>Cài đặt giao diện</span>
-            </div>
-          }
-          style={{ borderRadius: '16px' }}
-        >
-          <Form
-            layout="vertical"
-            initialValues={{
-              language: "vi",
-              theme: "light",
-              dateFormat: "DD/MM/YYYY",
-              timeFormat: "24h"
-            }}
-            onFinish={(values) => {
-              console.log("Interface settings:", values);
-              message.success("Đã lưu cài đặt giao diện!");
-            }}
-          >
-            <Row gutter={24}>
-              <Col xs={24} md={12}>
-                <Form.Item label="Ngôn ngữ" name="language">
-                  <Select size="large">
-                    <Select.Option value="vi">🇻🇳 Tiếng Việt</Select.Option>
-                    <Select.Option value="en">🇺🇸 English</Select.Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={12}>
-                <Form.Item label="Giao diện" name="theme">
-                  <Select size="large">
-                    <Select.Option value="light">☀️ Sáng</Select.Option>
-                    <Select.Option value="dark">🌙 Tối</Select.Option>
-                    <Select.Option value="auto">🔄 Tự động</Select.Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={24}>
-              <Col xs={24} md={12}>
-                <Form.Item label="Định dạng ngày" name="dateFormat">
-                  <Select size="large">
-                    <Select.Option value="DD/MM/YYYY">DD/MM/YYYY</Select.Option>
-                    <Select.Option value="MM/DD/YYYY">MM/DD/YYYY</Select.Option>
-                    <Select.Option value="YYYY-MM-DD">YYYY-MM-DD</Select.Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={12}>
-                <Form.Item label="Định dạng thời gian" name="timeFormat">
-                  <Select size="large">
-                    <Select.Option value="24h">24 giờ</Select.Option>
-                    <Select.Option value="12h">12 giờ (AM/PM)</Select.Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Form.Item>
-              <Button 
-                type="primary" 
-                htmlType="submit"
-                size="large"
-                style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
-              >
-                Áp dụng
-              </Button>
-            </Form.Item>
-          </Form>
-        </Card>
+        <div style={{ margin: '-24px', minHeight: '600px' }}>
+          <SettingUser />
+        </div>
       )
     }
   ];
@@ -372,7 +301,7 @@ function Settings() {
             <Title level={2} className="text-blue-900 mb-0 font-black tracking-widest drop-shadow-xl leading-tight" style={{letterSpacing: 2}}>Cài Đặt Hệ Thống</Title>
             <div className="flex items-center gap-2 mt-1">
               <span className="w-2 h-2 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 animate-pulse shadow"></span>
-              <Text type="secondary" className="text-lg font-medium text-gray-600 italic tracking-wide">Quản lý thông tin trường học và cấu hình giao diện</Text>
+              <Text type="secondary" className="text-lg font-medium text-gray-600 italic tracking-wide">Quản lý thông tin trường học và tài khoản người dùng</Text>
             </div>
           </div>
         </div>
@@ -386,14 +315,18 @@ function Settings() {
               ...item,
               children: (
                 <div className="p-6">
-                  {React.cloneElement(item.children, {
-                    style: { 
-                      borderRadius: '24px',
-                      border: 'none',
-                      boxShadow: '0 8px 32px rgba(59, 130, 246, 0.1)',
-                      background: 'linear-gradient(135deg, #f8faff 0%, #f1f5ff 100%)'
-                    }
-                  })}
+                  {item.key === '2' ? (
+                    item.children
+                  ) : (
+                    React.cloneElement(item.children, {
+                      style: { 
+                        borderRadius: '24px',
+                        border: 'none',
+                        boxShadow: '0 8px 32px rgba(59, 130, 246, 0.1)',
+                        background: 'linear-gradient(135deg, #f8faff 0%, #f1f5ff 100%)'
+                      }
+                    })
+                  )}
                 </div>
               )
             }))}
@@ -412,4 +345,4 @@ function Settings() {
 }
 
 export default Settings;
-
+   

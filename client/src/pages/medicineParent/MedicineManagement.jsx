@@ -1378,7 +1378,7 @@ const MedicineManagement = () => {
       title: 'Trạng thái',
       dataIndex: 'Status',
       key: 'Status',
-      width: 110, // ✅ Giảm từ 120 xuống 110
+      width: 110, 
       render: (status) => {
         const normalizedStatus = normalizeStatus(status);
         return (
@@ -1510,16 +1510,8 @@ const MedicineManagement = () => {
     }
   }, [selectedStudentId]);
 
-  // Tự động fetch medicines khi danh sách students thay đổi
-  // ❌ REMOVE: Loại bỏ useEffect này để tránh duplicate calls
-  // useEffect(() => {
-  //   if (students.length > 0 && navigator.onLine) {
-  //     console.log('📚 Danh sách học sinh đã có, tự động fetch medicines');
-  //     fetchMedicinesFromServer();
-  //   }
-  // }, [students.length]);
 
-  // 🆕 Theo dõi khi students đã được initialized để fetch medicines
+  //  Theo dõi khi students đã được initialized để fetch medicines
   useEffect(() => {
     if (studentsInitialized && students.length > 0) {
       console.log('✅ Students đã initialized, bắt đầu fetch medicines từ server');
@@ -1688,7 +1680,7 @@ const MedicineManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ padding: '0px', background: "linear-gradient(135deg, rgb(248, 250, 252) 0%, rgb(226, 232, 240) 50%, rgb(241,245,249) 100%)" }}>
       {/* Header */}
       <div
         style={{

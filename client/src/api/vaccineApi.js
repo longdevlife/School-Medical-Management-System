@@ -118,6 +118,34 @@ const vaccineApi = {
       );
     },
   },
+
+
+  
+  parent: {
+    // Lấy thông tin tiêm chủng theo parent ID
+    getVaccineByParentId: () => {
+      return axiosClient.get("/parent/vaccine/getParentId");
+    },
+
+    // Xác nhận đồng ý tiêm chủng
+    confirmVaccination: (data) => {
+      return axiosClient.put("/parent/vaccine/confirm", data, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    },
+
+    // Từ chối tiêm chủng
+    denyVaccination: (data) => {
+      return axiosClient.put("/parent/vaccine/denied", data, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    },
+  },
 };
 
 export default vaccineApi;
+

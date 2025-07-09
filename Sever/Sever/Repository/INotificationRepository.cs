@@ -40,7 +40,7 @@ namespace Sever.Repository.Interfaces
             string newId;
             if (lastNotify == null)
             {
-                newId = "No0001";
+                newId = "NT0001";
             }
             else
             {

@@ -1166,11 +1166,6 @@
         "IsRequired": false
       },
       {
-        "Name": "DateTime",
-        "Type": "System.DateTime",
-        "IsRequired": false
-      },
-      {
         "Name": "Notes",
         "Type": "System.String",
         "IsRequired": false

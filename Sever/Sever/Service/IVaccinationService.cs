@@ -26,7 +26,6 @@ namespace Sever.Service
         */
        
 
-        //thêm tên học sinh, lớp, vaccinatorname,sửa date
 
 
         Task<VaccinationRecord> CreateVaccinationRecordByStudentIDAsync(CreateVaccination dto, string userName);

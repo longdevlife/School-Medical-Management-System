@@ -1721,10 +1721,6 @@
                     "type": "integer",
                     "format": "int32"
                   },
-                  "DateTime": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
                   "Notes": {
                     "type": "string"
                   },
@@ -1749,9 +1745,6 @@
               },
               "encoding": {
                 "Dose": {
-                  "style": "form"
-                },
-                "DateTime": {
                   "style": "form"
                 },
                 "Notes": {

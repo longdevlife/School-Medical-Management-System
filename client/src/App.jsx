@@ -33,20 +33,16 @@ import ParentLayout from "./components/Layout/parent/ParentLayout";
 import StudentProfile from "./pages/studentProfile/StudentProfile";
 import ParentProfile from "./pages/parent/ParentProfile";
 import MedicalEvent from "./pages/eventMedical/MedicalEvent";
-import VaccineManagement from "./pages/vaccinationsParent/VaccineManagement";
-import VaccineRequest  from "./pages/vaccinationsParent/VaccineRequest";
-import HealthResult from "./pages/healthRecord/HealthResult";
+import Vaccine from "./pages/vaccinations/Vaccine";
+import VaccineDetail from "./pages/vaccinations/VaccineDetail";
+import HealthCheckup from "./pages/healthRecord/HealthCheckup";
 import MedicineManagement from "./pages/medicineParent/MedicineManagement";
-import DeclareHealthProfile from "./pages/decleareParent/DeclareHealthProfile";
-
-
 
 import Login from "./pages/Login";
 import HomePage from "./pages/home/HomePage";
 import AboutPage from "./pages/home/AboutPage";
 import NewsPage from "./pages/home/NewsPage";
-
-
+import SettingUser from "./pages/settings/SettingUser";
 
 
 function App() {
@@ -97,7 +93,7 @@ function App() {
               path="medical-events/accidents"
               element={<AccidentManagement />}
             />
-            <Route path="settings" element={<Settings />} />
+            <Route path="settings" element={<SettingUser />} />
           </Route>
           {/* Manager Routes */}
           <Route
@@ -114,7 +110,7 @@ function App() {
             <Route path="news-management" element={<NewsManagement />} />
             <Route path="reports" element={<Reports />} />
             <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
-            <Route path="settings" element={<Settings />} />
+            <Route path="settings" element={<SettingUser />} />
           </Route>
           {/*Parent Route*/}
           <Route
@@ -128,13 +124,14 @@ function App() {
 
           <Route index element={<ParentProfile />} />
             <Route path="profile-student" element={<StudentProfile />} />
-            <Route path="profileParent" element={<ParentProfile />} />
+            <Route path="profile" element={<ParentProfile />} />
+            <Route path="events" element={<MedicalEvent />} />
             <Route path="medical-events" element={<MedicalEvent />} />
-            <Route path="vaccinations/results" element={<VaccineManagement />} />
-            <Route path="vaccinations/requirements" element={<VaccineRequest />} />
-            <Route path="health-result" element={<HealthResult />} />
+            <Route path="vaccinations" element={<Vaccine />} />
+            <Route path="vaccinations/:id" element={<VaccineDetail />} />
+            <Route path="health-result" element={<HealthCheckup />} />
             <Route path="send-medicine" element={<MedicineManagement />} />
-            <Route path="declare-health" element={<DeclareHealthProfile />} />
+             <Route path="settings" element={<SettingUser />} />
           </Route>{" "}
           {/* Redirect root to home page */}
           <Route path="/" element={<Navigate to="/login" replace />} />

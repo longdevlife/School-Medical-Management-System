@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Card, Avatar, Spin, message, Button, Modal, Select, Tabs } from 'antd';
+import { Typography, Card, Avatar, Spin, message, Button, Modal, Select, Tabs, Upload } from 'antd';
 import { 
   UserOutlined, 
   CalendarOutlined, 
@@ -8,8 +8,12 @@ import {
   IdcardOutlined,
   TeamOutlined,
   GlobalOutlined,
-  EditOutlined
-} from '@ant-design/icons';
+  CameraOutlined,
+  ManOutlined,
+  MailOutlined
+ } from '@ant-design/icons';
+import studentApi from '../../api/studentApi';
+import { MdMarkEmailRead, MdReportGmailerrorred } from 'react-icons/md';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -21,55 +25,62 @@ const StudentProfile = () => {
   const [currentStudent, setCurrentStudent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [avatarLoading, setAvatarLoading] = useState({});
 
-  // Mock data - thay thế bằng API call thực tế
+  // Fetch students data from API
   useEffect(() => {
-    // Giả lập API call để lấy danh sách con của phụ huynh
-    setLoading(true);
-    setTimeout(() => {
-      const studentsData = [
-        {
-          StudentID: "ST001",
-          StudentName: "Lê Văn Bình",
-          Class: "2E",
-          StudentAvata: null,
-          RelationName: "Nguyễn Thị Hạnh",
-          Nationality: "Việt Nam",
-          Ethnicity: "Kinh",
-          Birthday: "2018-09-22T00:00:00",
-          Sex: "Nam",
-          Location: "Liên Phường, Quận 9, TP Thủ Đức, TP Hồ Chí Minh",
-          Parent: {
-            UserName: "Nguyễn Thị Hạnh",
-            Email: "nguyenthihanh@gmail.com",
-            PhoneNumber: "0836438321"
-          }
-        },
-        {
-          StudentID: "ST002",
-          StudentName: "Lê Thị Cẩm Ly",
-          Class: "4A",
-          StudentAvata: null,
-          RelationName: "Nguyễn Thị Hạnh",
-          Nationality: "Việt Nam",
-          Ethnicity: "Kinh",
-          Birthday: "2016-03-15T00:00:00",
-          Sex: "Nữ",
-          Location: "Liên Phường, Quận 9, TP Thủ Đức, TP Hồ Chí Minh",
-          Parent: {
-            UserName: "Nguyễn Thị Hạnh",
-            Email: "nguyenthihanh@gmail.com",
-            PhoneNumber: "0836438321"
-          }
-        }
-      ];
-      
-      setStudentsData(studentsData);
-      setSelectedStudentId(studentsData[0]?.StudentID || '');
-      setCurrentStudent(studentsData[0] || null);
-      setLoading(false);
-    }, 1000);
+    fetchStudentsData();
   }, []);
+
+  const fetchStudentsData = async () => {
+    try {
+      setLoading(true);
+      console.log('🔄 Đang lấy danh sách học sinh của phụ huynh...');
+
+      const response = await studentApi.parent.getMyChildren();
+      console.log('✅ API getMyChildren response:', response);
+
+      const studentsData = response.data || [];
+
+      if (Array.isArray(studentsData) && studentsData.length > 0) {
+        // Chuẩn hóa dữ liệu từ API theo GetStudentInfoRequest DTO
+        const processedStudents = studentsData.map(student => ({
+          StudentID: student.studentID || student.StudentID,
+          StudentName: student.studentName || student.StudentName,
+          Class: student.class || student.Class,
+          StudentAvata: student.avatar || student.Avatar,
+          RelationName: student.relationName || student.RelationName,
+          Nationality: student.nationality || student.Nationality,
+          Ethnicity: student.ethnicity || student.Ethnicity,
+          Birthday: student.birthday || student.Birthday,
+          Sex: student.sex || student.Sex,
+          Location: student.location || student.Location,
+          Parent: {
+            UserName: student.parentName || student.ParentName,
+            Email: student.parentEmail || student.ParentEmail,
+            PhoneNumber: student.parentPhone || student.ParentPhone
+          }
+        }));
+
+        console.log('📋 Danh sách học sinh đã xử lý:', processedStudents);
+        setStudentsData(processedStudents);
+        setSelectedStudentId(processedStudents[0]?.StudentID || '');
+        setCurrentStudent(processedStudents[0] || null);
+
+        console.log(`✅ Đã tải ${processedStudents.length} học sinh`);
+      } else {
+        console.warn('⚠️ Không có dữ liệu học sinh hoặc dữ liệu không hợp lệ:', studentsData);
+        setStudentsData([]);
+        message.warning('Không tìm thấy thông tin học sinh');
+      }
+    } catch (error) {
+      console.error('❌ Lỗi khi lấy danh sách học sinh:', error);
+      message.error('Không thể tải thông tin học sinh. Vui lòng thử lại!');
+      setStudentsData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Xử lý khi chọn học sinh khác
   const handleStudentChange = (studentId) => {
@@ -83,13 +94,51 @@ const StudentProfile = () => {
     return new Date(dateString).toLocaleDateString('vi-VN');
   };
 
+  const getAvatarUrl = (avatarPath) => {
+    if (!avatarPath) return null;
+    
+    // Nếu đã là URL đầy đủ (bắt đầu bằng http)
+    if (avatarPath.startsWith('http')) {
+      return avatarPath;
+    }
+    
+    // Nếu là đường dẫn tương đối, thêm base URL của server
+    // Thay đổi URL này theo cấu hình server của bạn
+    const baseUrl = 'http://localhost:5000'; // hoặc URL API server của bạn
+    return `${baseUrl}/${avatarPath}`;
+  };
+
+  const handleAvatarError = (studentId) => {
+    console.warn(`❌ Không thể tải avatar cho học sinh ${studentId}`);
+    setAvatarLoading(prev => ({ ...prev, [studentId]: false }));
+  };
+
+  const StudentAvatar = ({ student, size = 24, className = "" }) => {
+    const [imageError, setImageError] = useState(false);
+    
+    return (
+      <Avatar 
+        size={size} 
+        src={!imageError ? getAvatarUrl(student.StudentAvata) : null}
+        icon={<UserOutlined />}
+        className={className}
+        onError={() => setImageError(true)}
+        style={{ 
+          backgroundColor: student.StudentAvata && !imageError ? 'transparent' : '#1890ff',
+          border: student.StudentAvata && !imageError ? '1px solid #d9d9d9' : 'none',
+          fontSize: size > 50 ? '48px' : undefined
+        }}
+      />
+    );
+  };
+
   const InfoRow = ({ icon, label, value, className = "" }) => (
-    <div className={`flex items-center py-4 px-6 border-b border-gray-200 hover:bg-gray-50 transition-colors ${className}`}>
-      <div className="flex items-center w-48 text-gray-600 font-medium">
-        {icon && <span className="mr-3 text-blue-500">{icon}</span>}
+    <div className={`flex items-center py-3 px-4 border-b border-gray-200 hover:bg-gray-50 transition-colors ${className}`}>
+      <div className="flex items-center w-36 text-gray-600 font-medium text-sm">
+        {icon && <span className="mr-2 text-blue-500">{icon}</span>}
         {label}
       </div>
-      <div className="flex-1 text-gray-800 font-medium">
+      <div className="flex-1 text-gray-800 font-medium text-sm break-words">
         {value || 'Chưa cập nhật'}
       </div>
     </div>
@@ -113,44 +162,7 @@ const StudentProfile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        
-        {/* Student Selection Header */}
-        <Card className="mb-6 shadow-lg border-0">
-          <div className="flex items-center justify-between">
-            <div>
-              <Title level={3} className="!mb-2">
-                Hồ sơ học sinh
-              </Title>
-              <Text type="secondary">
-                Chọn con để xem thông tin chi tiết
-              </Text>
-            </div>
-            <Select
-              value={selectedStudentId}
-              onChange={handleStudentChange}
-              style={{ width: 300 }}
-              size="large"
-              placeholder="Chọn con"
-            >
-              {studentsData.map(student => (
-                <Option key={student.StudentID} value={student.StudentID}>
-                  <div className="flex items-center">
-                    <Avatar 
-                      size={24} 
-                      src={student.StudentAvata} 
-                      icon={<UserOutlined />}
-                      className="mr-2"
-                    />
-                    <span className="font-medium">{student.StudentName}</span>
-                    <span className="text-gray-500 ml-2">- Lớp {student.Class}</span>
-                  </div>
-                </Option>
-              ))}
-            </Select>
-          </div>
-        </Card>
-
+      <div className="max-w-6xl mx-auto px-4" style={{ maxWidth: '77rem' }}>
         {/* Tabs cho multiple children - Alternative approach */}
         <Card className="mb-6 shadow-lg border-0">
           <Tabs 
@@ -164,10 +176,9 @@ const StudentProfile = () => {
                 key={student.StudentID}
                 tab={
                   <div className="flex items-center">
-                    <Avatar 
-                      size={24} 
-                      src={student.StudentAvata} 
-                      icon={<UserOutlined />}
+                    <StudentAvatar 
+                      student={student}
+                      size={24}
                       className="mr-2"
                     />
                     <span>{student.StudentName}</span>
@@ -183,61 +194,57 @@ const StudentProfile = () => {
         {currentStudent && (
           <>
             {/* Header Card */}
-            <Card className="mb-8 shadow-lg border-0 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 -mx-6 -mt-6 mb-6 px-6 py-8">
+            <Card className="mb-6 shadow-lg border-0 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-400 to-indigo-500 -mx-6 -mt-6 mb-6 px-6 py-8">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-6">
-                    <Avatar
-                      size={120}
-                      src={currentStudent.StudentAvata}
-                      icon={<UserOutlined />}
-                      className="border-4 border-white shadow-lg"
-                    />
+                    <div className="relative">
+                      <StudentAvatar 
+                        student={currentStudent}
+                        size={100}
+                        className="border-4 border-white shadow-lg"
+                      />
+                    </div>
                     <div className="text-white">
                       <Title level={2} className="!text-white !mb-2">
                         {currentStudent.StudentName}
                       </Title>
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <div className="flex items-center space-x-2">
-                          <IdcardOutlined />
+                          <IdcardOutlined className="text-blue-100" />
                           <Text className="text-blue-100">Mã HS: {currentStudent.StudentID}</Text>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <TeamOutlined />
+                          <TeamOutlined className="text-blue-100" />
                           <Text className="text-blue-100">Lớp: {currentStudent.Class}</Text>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <Button
-                    icon={<EditOutlined />}
-                    size="large"
-                    className="bg-white/20 border-white/30 text-white hover:bg-white/30"
-                    onClick={() => setIsEditModalVisible(true)}
-                  >
-                    Chỉnh sửa
-                  </Button>
+                  
                 </div>
               </div>
             </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Thông tin cá nhân */}
-              <Card 
-                title={
-                  <div className="flex items-center space-x-2">
-                    <UserOutlined className="text-blue-500" />
-                    <span>Thông tin cá nhân</span>
-                  </div>
-                }
-                className="shadow-lg border-0"
-                headStyle={{ 
-                  backgroundColor: '#f8fafc', 
-                  borderBottom: '2px solid #e2e8f0',
-                  fontSize: '16px',
-                  fontWeight: '600'
-                }}
-              >
+            {/* Thông tin học sinh - Gộp tất cả */}
+            <Card 
+              title={
+                <div className="flex items-center space-x-2">
+                  <UserOutlined className="text-blue-600" />
+                  <span className="text-gray-800 font-semibold">Thông tin học sinh</span>
+                </div>
+              }
+              className="mb-8 shadow-lg border-0"
+              headStyle={{ 
+                backgroundColor: '#f0f9ff', 
+                borderBottom: '2px solid #bae6fd',
+                fontSize: '18px',
+                fontWeight: '600'
+              }}
+              bodyStyle={{ padding: 0 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+                {/* Cột 1 - Thông tin cá nhân */}
                 <div className="space-y-0">
                   <InfoRow 
                     icon={<UserOutlined />}
@@ -259,34 +266,28 @@ const StudentProfile = () => {
                     label="Ngày sinh" 
                     value={formatDate(currentStudent.Birthday)} 
                   />
-                  <InfoRow 
+                  <InfoRow
+                    icon={<ManOutlined />}
                     label="Giới tính" 
                     value={currentStudent.Sex} 
-                    className="border-b-0"
+                  />
+                  <InfoRow 
+                    icon={<GlobalOutlined />}
+                    label="Quốc tịch" 
+                    value={currentStudent.Nationality} 
                   />
                 </div>
-              </Card>
 
-              {/* Thông tin gia đình */}
-              <Card 
-                title={
-                  <div className="flex items-center space-x-2">
-                    <TeamOutlined className="text-green-500" />
-                    <span>Thông tin gia đình</span>
-                  </div>
-                }
-                className="shadow-lg border-0"
-                headStyle={{ 
-                  backgroundColor: '#f8fafc', 
-                  borderBottom: '2px solid #e2e8f0',
-                  fontSize: '16px',
-                  fontWeight: '600'
-                }}
-              >
-                <div className="space-y-0">
+                {/* Cột 2 - Thông tin phụ huynh */}
+                <div className="space-y-0 md:border-l border-gray-200">
                   <InfoRow 
                     icon={<UserOutlined />}
                     label="Họ tên phụ huynh" 
+                    value={currentStudent.Parent?.UserName || currentStudent.RelationName} 
+                  />
+                  <InfoRow 
+                    icon={<TeamOutlined />}
+                    label="Mối quan hệ" 
                     value={currentStudent.RelationName} 
                   />
                   <InfoRow 
@@ -294,77 +295,25 @@ const StudentProfile = () => {
                     label="Số điện thoại" 
                     value={currentStudent.Parent?.PhoneNumber} 
                   />
-                  <InfoRow 
-                    label="Email" 
+                  <InfoRow
+                    icon={<MailOutlined />} 
+                    label="Email phụ huynh" 
                     value={currentStudent.Parent?.Email} 
                   />
                   <InfoRow 
-                    icon={<GlobalOutlined />}
-                    label="Quốc tịch" 
-                    value={currentStudent.Nationality} 
+                    icon={<EnvironmentOutlined />}
+                    label="Địa chỉ" 
+                    value={currentStudent.Location}
                   />
-                  <InfoRow 
+                   <InfoRow 
+                    icon={<GlobalOutlined />}
                     label="Dân tộc" 
                     value={currentStudent.Ethnicity} 
-                    className="border-b-0"
                   />
-                </div>
-              </Card>
-            </div>
-
-            {/* Địa chỉ */}
-            <Card 
-              title={
-                <div className="flex items-center space-x-2">
-                  <EnvironmentOutlined className="text-red-500" />
-                  <span>Địa chỉ liên hệ</span>
-                </div>
-              }
-              className="mt-8 shadow-lg border-0"
-              headStyle={{ 
-                backgroundColor: '#f8fafc', 
-                borderBottom: '2px solid #e2e8f0',
-                fontSize: '16px',
-                fontWeight: '600'
-              }}
-            >
-              <div className="py-4 px-2">
-                <div className="flex items-start space-x-3">
-                  <EnvironmentOutlined className="text-red-500 mt-1" />
-                  <Text className="text-gray-800 text-base leading-relaxed">
-                    {currentStudent.Location}
-                  </Text>
                 </div>
               </div>
             </Card>
 
-            {/* Statistics Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-              <Card className="text-center shadow-md border-0 bg-gradient-to-br from-blue-500 to-blue-600">
-                <div className="text-white">
-                  <div className="text-2xl font-bold">12</div>
-                  <div className="text-blue-100">Hồ sơ sức khỏe</div>
-                </div>
-              </Card>
-              <Card className="text-center shadow-md border-0 bg-gradient-to-br from-green-500 to-green-600">
-                <div className="text-white">
-                  <div className="text-2xl font-bold">8</div>
-                  <div className="text-green-100">Lần tiêm chủng</div>
-                </div>
-              </Card>
-              <Card className="text-center shadow-md border-0 bg-gradient-to-br from-purple-500 to-purple-600">
-                <div className="text-white">
-                  <div className="text-2xl font-bold">5</div>
-                  <div className="text-purple-100">Khám sức khỏe</div>
-                </div>
-              </Card>
-              <Card className="text-center shadow-md border-0 bg-gradient-to-br from-orange-500 to-orange-600">
-                <div className="text-white">
-                  <div className="text-2xl font-bold">2</div>
-                  <div className="text-orange-100">Sự kiện y tế</div>
-                </div>
-              </Card>
-            </div>
           </>
         )}
       </div>

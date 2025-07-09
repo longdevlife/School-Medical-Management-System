@@ -92,6 +92,14 @@ const medicalEventApi = {
       });
     },
   },
+  
+  parent: {
+    // GET - Lấy tất cả sự kiện y tế của học sinh thuộc phụ huynh đang đăng nhập
+    getMedicalEvents: () => {
+      return axiosClient.get('/parent/event/getByStudentId');
+    }
+  },
+
 };
 
 export default medicalEventApi;

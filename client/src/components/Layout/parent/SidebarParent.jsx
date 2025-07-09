@@ -3,14 +3,14 @@ import { Layout, Menu } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   UserOutlined,
-  CalendarOutlined,
   MedicineBoxOutlined,
   BarChartOutlined,
   SendOutlined,
   SettingOutlined,
   HeartOutlined,
+  AlertOutlined,
 } from "@ant-design/icons";
-import "./SidebarStyles.css";
+
 
 const { Sider } = Layout;
 
@@ -27,18 +27,28 @@ function SidebarParent({ collapsed }) {
       label: "Hồ sơ học sinh",
     },
     {
-      key: `${basePath}/health-profile`,
+      key: `${basePath}/declare-health`,
       icon: <HeartOutlined />,
-      label: "Hồ sơ sức khỏe",
+      label: "Khai báo sức khỏe",
     },
     {
-      key: `${basePath}/health-result`,
+      key: `${basePath}/health`,
       icon: <BarChartOutlined />,
-      label: "Kết quả sức khỏe",
+      label: "Hồ sơ sức khỏe",
+      children: [
+        {
+          key: `${basePath}/health-result`,
+          label: "Kết quả sức khỏe",
+        },
+        {
+          key: `${basePath}/health/offer`,
+          label: "Tư vấn sức khỏe",
+        },
+      ],
     },
     {
-      key: `${basePath}/events`,
-      icon: <CalendarOutlined />,
+      key: `${basePath}/medical-events`,
+      icon: <AlertOutlined />,
       label: "Sự kiện y tế",
     },
     {
@@ -46,10 +56,6 @@ function SidebarParent({ collapsed }) {
       icon: <MedicineBoxOutlined />,
       label: "Tiêm chủng",
       children: [
-        {
-          key: `${basePath}/vaccinations/history`,
-          label: "Lịch sử tiêm chủng",
-        },
         {
           key: `${basePath}/vaccinations/results`,
           label: "Kết quả tiêm chủng",
@@ -64,6 +70,11 @@ function SidebarParent({ collapsed }) {
       key: `${basePath}/send-medicine`,
       icon: <SendOutlined />,
       label: "Gửi thuốc",
+    },
+     {
+      key: `${basePath}/profileParent`,
+      icon: <UserOutlined />,
+      label: "Hồ sơ cá nhân",
     },
     {
       key: `${basePath}/setting`,

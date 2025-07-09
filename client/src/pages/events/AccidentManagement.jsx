@@ -476,8 +476,7 @@ export default function AccidentManagement() {
       {/* 🎨 Modern Enhanced Header with Navigation Feel */}
       <div
         style={{
-          background:
-            "linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%)",
+          background: "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
           borderRadius: "0 0 32px 32px",
           padding: "40px 32px 48px",
           marginBottom: "40px",
@@ -740,8 +739,11 @@ export default function AccidentManagement() {
             border: "1px solid rgba(255,255,255,0.8)",
           }}
         >
-          <Row gutter={[24, 16]}>
-            <Col xs={24} sm={12} md={6}>
+          <Row
+            gutter={[24, 16]}
+            style={{ textAlign: "center", justifyContent: "center" }}
+          >
+            <Col xs={24} sm={12} md={4}>
               <div
                 style={{
                   background:
@@ -777,7 +779,7 @@ export default function AccidentManagement() {
               </div>
             </Col>
 
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={4}>
               <div
                 style={{
                   background:
@@ -813,7 +815,7 @@ export default function AccidentManagement() {
               </div>
             </Col>
 
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={4}>
               <div
                 style={{
                   background:
@@ -849,7 +851,7 @@ export default function AccidentManagement() {
               </div>
             </Col>
 
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={4}>
               <div
                 style={{
                   background:

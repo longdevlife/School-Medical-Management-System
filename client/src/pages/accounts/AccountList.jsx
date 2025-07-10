@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import dayjs from 'dayjs';
 import {
   Card,
   Table,
@@ -35,11 +36,14 @@ import {
   updateUserInfo,
   deleteUser,
   getAllAccounts,
-  getUsersFromFile,
   activeAccount,
   createStudentProfile,
+  createListStudent,
+  getStudentsFromFile,
+  getUsersFromFile,
 } from "../../api/userApi";
 import axiosClient from "../../api/axiosClient";
+import studentApi from "../../api/studentApi";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -70,10 +74,13 @@ const UploadIcon = () => {
 
 function AccountList() {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
   const [searchText, setSearchText] = useState("");
   const [accounts, setAccounts] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [editingRecord, setEditingRecord] = useState(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
 
@@ -90,6 +97,19 @@ function AccountList() {
   // Pagination state for student list
   const [studentPage, setStudentPage] = useState(1);
   const [studentPageSize, setStudentPageSize] = useState(3);
+
+  // New state for edit student modal
+  const [editStudentModalVisible, setEditStudentModalVisible] = useState(false);
+  const [editStudentForm] = Form.useForm();
+  const [editingStudent, setEditingStudent] = useState(null);
+
+  // New state for file upload (only for edit student)
+  const [uploadedAvatarFile, setUploadedAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+
+  // New state for create student profile file upload
+  const [createAvatarFile, setCreateAvatarFile] = useState(null);
+  const [createAvatarPreview, setCreateAvatarPreview] = useState(null);
 
   // Lấy danh sách tài khoản từ API (full dữ liệu)
   const fetchAccounts = async () => {
@@ -118,55 +138,80 @@ function AccountList() {
 
   const handleAdd = () => {
     form.resetFields();
-    setEditingId(null);
     setIsModalVisible(true);
   };
 
   const handleEdit = (record) => {
-    console.log('Edit record:', record); // Log để kiểm tra dữ liệu khi bấm sửa
-    form.setFieldsValue(record);
-    setEditingId(record.userID);
-    setIsModalVisible(true);
+    console.log('Edit record:', record);
+    setEditingRecord(record);
+    editForm.setFieldsValue({
+      userID: record.userID,
+      userName: record.userName,
+      name: record.name || '',
+      email: record.email || '',
+      phone: record.phone || '',
+      roleName: record.roleName
+    });
+    setIsEditModalVisible(true);
   };
 
-  const handleModalOk = async () => {
+  const handleCreateOk = async () => {
     try {
       const values = await form.validateFields();
-      console.log('Giá trị form gửi lên update:', values);
-      if (editingId) {
-        // Gọi API update user - chỉ gửi các trường có giá trị, đúng tên trường backend yêu cầu (chữ thường)
-        const payload = {};
-        if (values.userName) payload.userName = values.userName;
-        // Chỉ update password nếu người dùng nhập mới
-        if (values.password && values.password.trim() !== '') {
-          payload.password = values.password;
-        }
-        if (values.name) payload.name = values.name;
-        if (values.email) payload.email = values.email;
-        if (values.phone) payload.phone = values.phone;
-        console.log('Payload gửi lên API updateUserInfo:', payload);
-        await updateUserInfo(payload);
-        message.success("Cập nhật tài khoản thành công!");
-      } else {
-        // Gửi lên API tạo tài khoản đúng định dạng backend yêu cầu
-        const payload = [{
-          userName: values.userName,
-          password: values.password,
-          roleName: values.roleName
-        }];
-        await createAccounts(payload);
-        message.success("Thêm tài khoản thành công!");
-      }
+      console.log('Creating new account with values:', values);
+      
+      const payload = [{
+        userName: values.userName,
+        password: values.password,
+        name: values.name || '',
+        email: values.email || '', 
+        phone: values.phone || '',
+        roleName: values.roleName
+      }];
+      
+      console.log('Create account payload:', payload);
+      await createAccounts(payload);
+      message.success("Thêm tài khoản thành công!");
+      
       setIsModalVisible(false);
       form.resetFields();
-      setEditingId(null);
-      await fetchAccounts(); // Đồng bộ lại danh sách
+      await fetchAccounts();
     } catch (err) {
-      // Hiển thị lỗi chi tiết nếu có
       if (err?.response?.data?.message) {
         message.error(err.response.data.message);
       } else {
-        message.error("Lưu tài khoản thất bại!");
+        message.error("Tạo tài khoản thất bại!");
+      }
+    }
+  };
+
+  const handleUpdateOk = async () => {
+    try {
+      const values = await editForm.validateFields();
+      console.log('Updating account with values:', values);
+      
+      const payload = {};
+      if (values.userName) payload.userName = values.userName;
+      if (values.password && values.password.trim() !== '') {
+        payload.password = values.password;
+      }
+      if (values.name) payload.name = values.name;
+      if (values.email) payload.email = values.email;
+      if (values.phone) payload.phone = values.phone;
+      
+      console.log('Update account payload:', payload);
+      await updateUserInfo(payload);
+      message.success("Cập nhật tài khoản thành công!");
+      
+      setIsEditModalVisible(false);
+      editForm.resetFields();
+      setEditingRecord(null);
+      await fetchAccounts();
+    } catch (err) {
+      if (err?.response?.data?.message) {
+        message.error(err.response.data.message);
+      } else {
+        message.error("Cập nhật tài khoản thất bại!");
       }
     }
   };
@@ -194,156 +239,65 @@ function AccountList() {
     setSearchText(value);
   };
 
-  // Function to fetch student information for parent
+  // Function to fetch student information for parent from database only
   const fetchStudentInfo = async (userName, userID) => {
     if (!userName && !userID) return;
     
     console.log('🔍 fetchStudentInfo called with userName:', userName, 'userID:', userID);
+    console.log('🎯 OBJECTIVE: Find ALL student profiles where ParentID == UserID');
+    console.log(`🎯 Search criteria: student.ParentID == "${userID}"`);
+    console.log('📋 Database: [SchoolMedicalManagement].[dbo].[StudentProfile]');
     setLoadingStudentInfo(true);
     
     try {
-      console.log('📡 Fetching student info for parent:', userName, 'with ID:', userID);
+      console.log('📡 Fetching student info from backend API...');
+      console.log(`📡 Using GET /api/admin/get-student-info-by-parentID/${userID}`);
       
-      // Since the API endpoint is not working, use mock data based on the database table you provided
-      // This is temporary until the backend API is implemented
-      console.log('⚠️ Using mock data since API endpoint is not available');
+      // Use the correct API endpoint
+      const response = await studentApi.parent.getStudentInfoByParent(userID);
+      console.log('📥 Correct API response:', response);
+      console.log('📊 Raw response data:', response.data);
       
-      let mockStudentData = [];
+      const studentData = Array.isArray(response.data) ? response.data : [];
       
-      // Mock data based on your database table for user U0010 (user4)
-      if (userID === 'U0010') {
-        mockStudentData = [
-          {
-            StudentID: 'ST0007',
-            StudentName: 'Pham Van G',
-            Class: '1A4',
-            StudentAvata: 'avatar7.png',
-            RelationName: 'Con trai',
-            Nationality: 'Vietnam',
-            Ethnicity: 'Kinh',
-            Birthday: '2015-07-18T00:00:00.0000000',
-            Sex: 'Nam',
-            Location: 'Can Tho',
-            ParentID: 'U0010'
-          },
-          {
-            StudentID: 'ST0008',
-            StudentName: 'Pham Thi H',
-            Class: '1A4',
-            StudentAvata: 'avatar8.png',
-            RelationName: 'Con gái',
-            Nationality: 'Vietnam',
-            Ethnicity: 'Kinh',
-            Birthday: '2017-04-25T00:00:00.0000000',
-            Sex: 'Nữ',
-            Location: 'Can Tho',
-            ParentID: 'U0010'
-          },
-          {
-            StudentID: 'ST0009',
-            StudentName: 'khoafcxcx',
-            Class: '1A1',
-            StudentAvata: null,
-            RelationName: 'Cha',
-            Nationality: 'Việt Nam',
-            Ethnicity: 'Kinh',
-            Birthday: '2025-07-23T17:00:00.0000000',
-            Sex: 'Male',
-            Location: 'dadxcxcxcxcx',
-            ParentID: 'U0010'
-          },
-          {
-            StudentID: 'ST0010',
-            StudentName: 'sasa',
-            Class: '1A1',
-            StudentAvata: null,
-            RelationName: 'Mẹ',
-            Nationality: 'Việt Nam',
-            Ethnicity: 'Kinh',
-            Birthday: '2025-07-23T17:00:00.0000000',
-            Sex: 'Nam',
-            Location: 'sdsd',
-            ParentID: 'U0010'
-          },
-          {
-            StudentID: 'ST0011',
-            StudentName: 'ada',
-            Class: '1A1',
-            StudentAvata: null,
-            RelationName: 'Con gái',
-            Nationality: 'Việt Nam',
-            Ethnicity: 'Kinh',
-            Birthday: '2025-07-23T17:00:00.0000000',
-            Sex: 'Nữ',
-            Location: 'ada',
-            ParentID: 'U0010'
-          }
-        ];
-      } else if (userID === 'U0007') {
-        // Mock data for user U0007 based on your database
-        mockStudentData = [
-          {
-            StudentID: 'ST0001',
-            StudentName: 'Nguyen Van A',
-            Class: '1A1',
-            StudentAvata: 'avatar1.png',
-            RelationName: 'Con trai',
-            Nationality: 'Vietnam',
-            Ethnicity: 'Kinh',
-            Birthday: '2015-05-10T00:00:00.0000000',
-            Sex: 'Nam',
-            Location: 'Hanoi',
-            ParentID: 'U0007'
-          },
-          {
-            StudentID: 'ST0002',
-            StudentName: 'Nguyen Thi B',
-            Class: '1A1',
-            StudentAvata: 'avatar2.png',
-            RelationName: 'Con gái',
-            Nationality: 'Vietnam',
-            Ethnicity: 'Kinh',
-            Birthday: '2017-08-15T00:00:00.0000000',
-            Sex: 'Nữ',
-            Location: 'Hanoi',
-            ParentID: 'U0007'
-          }
-        ];
-      }
-      
-      console.log('🎯 Mock student data loaded:', mockStudentData);
-      console.log('🔢 Number of students found:', mockStudentData.length);
-      
-      if (mockStudentData.length > 0) {
-        console.log('📋 Sample student object:', mockStudentData[0]);
-      }
-      
-      setStudentInfo(mockStudentData);
-      
-      // TODO: Replace this mock implementation with actual API call when backend is ready
-      /*
-      // Approach 1: Try with userID instead of userName
-      console.log('🔄 Trying approach 1: POST with userID');
-      try {
-        const response1 = await axiosClient.post('/admin/get-student-info-by-parent', 
-          JSON.stringify(userID),
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-        console.log('✅ Success with userID approach:', response1);
-        const studentData = Array.isArray(response1.data) ? response1.data : [];
+      if (studentData.length > 0) {
+        console.log(`🎯 DATABASE SUCCESS! Found ${studentData.length} students for ${userName}`);
+        console.log('🎯 Data source: [SchoolMedicalManagement].[dbo].[StudentProfile]');
+        console.log('🔍 Full student data structure:', studentData);
+        console.log('🔍 First student object keys:', Object.keys(studentData[0] || {}));
+        console.log('🔍 First student full object:', JSON.stringify(studentData[0], null, 2));
+        
+        // Validate StudentProfile table structure with flexible field mapping
+        studentData.forEach((student, index) => {
+          console.log(`📋 Student ${index + 1} full object:`, student);
+          
+          // Try different possible field name variations
+          const studentID = student.StudentID || student.studentID || student.id || student.ID;
+          const studentName = student.StudentName || student.studentName || student.name || student.Name;
+          const parentID = student.ParentID || student.parentID || student.parentId || student.ParentId;
+          
+          console.log(`📋 Student ${index + 1} (${studentID}): ${studentName}`);
+          console.log(`   ParentID variations checked:`);
+          console.log(`     student.ParentID: "${student.ParentID}"`);
+          console.log(`     student.parentID: "${student.parentID}"`);
+          console.log(`     student.parentId: "${student.parentId}"`);
+          console.log(`     student.ParentId: "${student.ParentId}"`);
+          console.log(`   Expected: "${userID}"`);
+          
+          const hasCorrectParentID = parentID === userID;
+          console.log(`   Match result: ${hasCorrectParentID ? '✅' : '❌'}`);
+        });
+        
         setStudentInfo(studentData);
-        return;
-      } catch (error1) {
-        console.log('❌ Approach 1 failed:', error1.response?.status);
+      } else {
+        console.log(`🚫 No students found for ParentID: ${userID}`);
+        setStudentInfo([]);
       }
-      */
       
     } catch (error) {
-      console.error('❌ Error in mock implementation:', error);
+      console.error('❌ Error fetching student info:', error);
+      console.error('📄 Error status:', error.response?.status);
+      console.error('📄 Error message:', error.message);
       setStudentInfo([]);
     } finally {
       setLoadingStudentInfo(false);
@@ -371,21 +325,350 @@ function AccountList() {
     }
   };
 
-  // Thêm hàm import tài khoản từ file
-  const handleImportAccounts = async (file) => {
-    try {
-      console.log('File to upload:', file);
-      console.log('File name:', file.name);
-      console.log('File type:', file.type);
-      console.log('File size:', file.size);
+  // Thêm hàm import tài khoản từ file - REMOVED
 
-      // Kiểm tra file có hợp lệ không
+  const handleCreateStudentProfile = (record) => {
+    setSelectedUserForProfile(record);
+    studentProfileForm.resetFields();
+    // No need to reset avatar states for create anymore
+    // Set initial values for form fields with default values
+    studentProfileForm.setFieldsValue({
+      nationality: "Việt Nam",
+      ethnicity: "Kinh"
+    });
+    setStudentProfileModalVisible(true);
+  };
+
+  // Handle file upload for edit student avatar
+  const handleAvatarUpload = (file) => {
+    console.log('📸 Edit avatar file selected:', file);
+    
+    // Validate file type
+    const isImage = file.type.startsWith('image/');
+    if (!isImage) {
+      message.error('Chỉ được chọn file ảnh!');
+      return false;
+    }
+    
+    // Validate file size (5MB max)
+    const isLt5M = file.size / 1024 / 1024 < 5;
+    if (!isLt5M) {
+      message.error('Ảnh phải nhỏ hơn 5MB!');
+      return false;
+    }
+    
+    setUploadedAvatarFile(file);
+    
+    // Create preview URL
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setAvatarPreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
+    
+    return false; // Prevent auto upload
+  };
+
+  // Handle edit student
+  const handleEditStudent = (student) => {
+    console.log('🔧 Editing student:', student);
+    console.log('🔧 Student avatar field:', student.avatar);
+    setEditingStudent(student);
+    
+    // Reset upload states
+    setUploadedAvatarFile(null);
+    setAvatarPreview(null);
+    
+    // Update field mapping based on actual API response
+    editStudentForm.setFieldsValue({
+      studentName: student.studentName || student.StudentName || student.name || '',
+      class: student.class || student.Class || student.className || '',
+      relationName: student.relationName || student.RelationName || student.relation || '',
+      nationality: student.nationality || student.Nationality || student.nation || '',
+      ethnicity: student.ethnicity || student.Ethnicity || student.ethnic || '',
+      birthday: (student.birthday || student.Birthday || student.birthDate) 
+        ? dayjs(student.birthday || student.Birthday || student.birthDate) 
+        : null,
+      sex: student.sex || student.Sex || student.gender || '',
+      location: student.location || student.Location || student.address || ''
+    });
+    
+    // Set existing avatar preview if available
+    const existingAvatar = student.avatar || student.StudentAvata || student.studentAvata;
+    if (existingAvatar) {
+      setAvatarPreview(existingAvatar);
+    }
+    
+    setEditStudentModalVisible(true);
+  };
+
+  // Handle update student
+  const handleUpdateStudent = async () => {
+    try {
+      const values = await editStudentForm.validateFields();
+      console.log('📝 Updating student with values:', values);
+      
+      // Prepare student data
+      const studentData = {
+        StudentID: editingStudent.studentID || editingStudent.StudentID || editingStudent.id,
+        StudentName: values.studentName,
+        Class: values.class,
+        RelationName: values.relationName,
+        Nationality: values.nationality,
+        Ethnicity: values.ethnicity,
+        Birthday: values.birthday ? values.birthday.toISOString() : null,
+        Sex: values.sex,
+        Location: values.location
+      };
+      
+      console.log('📤 Prepared student data:', studentData);
+      
+      // Always use FormData approach since backend expects multipart/form-data
+      const formData = new FormData();
+      Object.keys(studentData).forEach(key => {
+        formData.append(key, studentData[key] || '');
+      });
+      
+      // Handle avatar
+      if (uploadedAvatarFile) {
+        console.log('📸 Adding uploaded file to FormData');
+        formData.append('StudentAvata', uploadedAvatarFile);
+      } else {
+        console.log('📸 No new avatar file, sending empty StudentAvata');
+        formData.append('StudentAvata', '');
+      }
+      
+      console.log('📤 Sending FormData to API...');
+      
+      // Use the file upload method for consistency
+      await studentApi.parent.updateStudentProfileWithFile(formData);
+      
+      console.log('✅ Student updated successfully');
+      
+      message.success("Cập nhật thông tin học sinh thành công!");
+      setEditStudentModalVisible(false);
+      editStudentForm.resetFields();
+      setEditingStudent(null);
+      setUploadedAvatarFile(null);
+      setAvatarPreview(null);
+      
+      // Refresh student data
+      if (selectedAccount) {
+        await fetchStudentInfo(selectedAccount.userName, selectedAccount.userID);
+      }
+      
+    } catch (err) {
+      console.error('❌ Update student error:', err);
+      console.error('📄 Error details:', err.response?.data);
+      
+      let errorMessage = "Cập nhật thông tin học sinh thất bại!";
+      
+      if (err.response?.status === 400 && err.response?.data?.errors) {
+        console.error('📋 Validation errors breakdown:');
+        const errors = err.response.data.errors;
+        const errorMessages = Object.entries(errors).map(([field, messages]) => {
+          const messageArray = Array.isArray(messages) ? messages : [messages];
+          console.error(`  ❌ ${field}: ${messageArray.join(', ')}`);
+          return `${field}: ${messageArray.join(', ')}`;
+        });
+        errorMessage = `Lỗi validation: ${errorMessages.join('; ')}`;
+      } else if (err.response?.data?.title) {
+        errorMessage = err.response.data.title;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      
+      message.error(errorMessage);
+    }
+  };
+
+  const handleDeleteStudent = async (student) => {
+    try {
+      // Update field mapping based on console log: studentID, studentName
+      const studentId = student.studentID || student.StudentID || student.id;
+      const studentName = student.studentName || student.StudentName || student.name;
+      
+      console.log('🗑️ Deleting student:', studentId, studentName);
+      console.log('🔍 Full student object for delete:', student);
+      console.log('🔍 Available fields:', Object.keys(student));
+      
+      if (!studentId) {
+        console.error('❌ No valid student ID found in object:', student);
+        message.error("Không tìm thấy mã học sinh để xóa!");
+        return;
+      }
+      
+      // Log the exact API call
+      console.log(`📡 Making DELETE request to: /admin/delete-student-profile/${studentId}`);
+      
+      await studentApi.parent.deleteStudentProfile(studentId);
+      console.log('✅ Student deleted successfully');
+      
+      message.success(`Đã xóa học sinh ${studentName} thành công!`);
+      
+      // Reset selected student if it was the deleted one
+      if (selectedStudentDetail && 
+          (selectedStudentDetail.studentID || selectedStudentDetail.StudentID || selectedStudentDetail.id) === studentId) {
+        setSelectedStudentDetail(null);
+      }
+      
+      // Refresh student data
+      if (selectedAccount) {
+        await fetchStudentInfo(selectedAccount.userName, selectedAccount.userID);
+      }
+      
+    } catch (err) {
+      console.error('❌ Delete student error:', err);
+      console.error('📄 Error status:', err.response?.status);
+      console.error('📄 Error data:', err.response?.data);
+      console.error('📄 Error message:', err.response?.data?.message || err.message);
+      
+      let errorMessage = "Xóa học sinh thất bại!";
+      if (err.response?.status === 400) {
+        // Get more specific error from response
+        if (err.response.data?.message) {
+          errorMessage = `Lỗi 400: ${err.response.data.message}`;
+        } else if (typeof err.response.data === 'string') {
+          errorMessage = `Lỗi 400: ${err.response.data}`;
+        } else {
+          errorMessage = "Lỗi 400: Không thể xóa học sinh này. Có thể do ràng buộc dữ liệu.";
+        }
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      
+      message.error(errorMessage);
+    }
+  };
+
+  const handleStudentProfileModalOk = async () => {
+    try {
+      const values = await studentProfileForm.validateFields();
+      console.log('📋 Create student form values received:', values);
+
+      // Debug: Log validation errors details
+      console.log('🔍 Form values breakdown:');
+      console.log('  StudentName:', values.studentName);
+      console.log('  Class:', values.class);
+      console.log('  Birthday:', values.birthday);
+      console.log('  Sex:', values.sex);
+      console.log('  Location:', values.location);
+      console.log('  RelationName:', values.relationName);
+      console.log('  Nationality:', values.nationality);
+      console.log('  Ethnicity:', values.ethnicity);
+
+      // Validate required fields before sending
+      if (!values.studentName || values.studentName.trim() === '') {
+        message.error('Tên học sinh không được để trống!');
+        return;
+      }
+      
+      if (!values.class || values.class.trim() === '') {
+        message.error('Lớp học không được để trống!');
+        return;
+      }
+      
+      if (!values.birthday) {
+        message.error('Ngày sinh không được để trống!');
+        return;
+      }
+      
+      if (!values.sex) {
+        message.error('Giới tính không được để trống!');
+        return;
+      }
+      
+      if (!values.location || values.location.trim() === '') {
+        message.error('Địa chỉ không được để trống!');
+        return;
+      }
+
+      // Direct payload matching Swagger API schema exactly - NO wrapper
+      const studentData = {
+        studentName: values.studentName.trim(),
+        class: values.class.trim(),
+        studentAvata: null, // Null as allowed by API
+        relationName: values.relationName || "Con",
+        nationality: values.nationality.trim() || "Việt Nam",
+        ethnicity: values.ethnicity.trim() || "Kinh",
+        birthday: values.birthday.toISOString(),
+        sex: values.sex,
+        location: values.location.trim(),
+        parentUserName: selectedUserForProfile.userName
+      };
+
+      console.log('🔄 Create student data (direct Swagger schema):', studentData);
+      console.log('🔄 JSON stringify:', JSON.stringify(studentData, null, 2));
+
+      await createStudentProfile(studentData);
+      console.log('✅ Student profile saved successfully');
+
+      message.success("Tạo hồ sơ học sinh thành công!");
+      setStudentProfileModalVisible(false);
+      studentProfileForm.resetFields();
+      setSelectedUserForProfile(null);
+
+      if (selectedAccount && selectedAccount.userID === selectedUserForProfile.userID) {
+        console.log('🔄 Refreshing student data for parent:', selectedAccount.userName);
+        await fetchStudentInfo(selectedAccount.userName, selectedAccount.userID);
+      }
+
+    } catch (err) {
+      console.error('❌ Create student profile error:', err);
+      
+      // Enhanced error logging
+      if (err.response) {
+        console.error('🔍 Response status:', err.response.status);
+        console.error('🔍 Response data:', err.response.data);
+        console.error('🔍 Response headers:', err.response.headers);
+        console.error('🔍 Full error object:', JSON.stringify(err.response.data, null, 2));
+        
+        // Log validation errors in detail
+        if (err.response.data?.errors) {
+          console.error('📋 Detailed validation errors:');
+          Object.entries(err.response.data.errors).forEach(([field, messages]) => {
+            const messageArray = Array.isArray(messages) ? messages : [messages];
+            console.error(`  ❌ ${field}:`, messageArray);
+          });
+        }
+        
+        let errorMessage = "Tạo hồ sơ học sinh thất bại!";
+        
+        if (err.response.status === 400 && err.response.data?.errors) {
+          // Parse validation errors từ .NET API
+          const errors = err.response.data.errors;
+          const errorFields = Object.keys(errors);
+          const errorMessages = errorFields.map(field => {
+            const fieldErrors = errors[field];
+            return `${field}: ${Array.isArray(fieldErrors) ? fieldErrors.join(', ') : fieldErrors}`;
+          });
+          errorMessage = `Lỗi validation: ${errorMessages.join('; ')}`;
+        } else if (err.response.data?.title) {
+          errorMessage = err.response.data.title;
+        } else if (err.response.data?.message) {
+          errorMessage = err.response.data.message;
+        } else if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        }
+        
+        message.error(errorMessage);
+      } else {
+        console.error('🔍 Network or other error:', err.message);
+        message.error("Kết nối đến máy chủ thất bại!");
+      }
+    }
+  };
+
+  // Import students from file (create student profiles based on existing usernames)
+  const handleImportStudents = async (file) => {
+    try {
+      console.log('📁 Student file to upload:', file);
+
       if (!file) {
         message.error("Vui lòng chọn file!");
         return;
       }
 
-      // Kiểm tra định dạng file
       const allowedTypes = [
         'application/json',
         'text/csv',
@@ -398,183 +681,283 @@ function AccountList() {
         return;
       }
 
-      message.loading({ content: 'Đang import tài khoản...', key: 'import' });
+      message.loading({ content: 'Đang import hồ sơ học sinh...', key: 'importStudents' });
 
-      // Gọi trực tiếp bằng axiosClient để debug
-      const formData = new FormData();
-      formData.append('file', file);
+      const response = await getStudentsFromFile(file);
       
-      console.log('Calling API directly with FormData...');
+      console.log('✅ Import students response:', response);
+      console.log('📊 Imported students data:', response.data);
       
-      const response = await axiosClient.post('/admin/get-users-from-file', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        console.log('🔍 Analyzing imported students...');
+        
+        // Extract unique parent usernames from imported students
+        const parentUserNames = [...new Set(
+          response.data
+            .map(student => student.parentUserName || student.ParentUserName || student.parent_user_name)
+            .filter(parentName => parentName && parentName.trim() !== '')
+        )];
+        
+        console.log('👥 Parent usernames in file:', parentUserNames);
+        
+        // Check which parent accounts exist
+        const existingParentAccounts = accounts.filter(account => 
+          parentUserNames.includes(account.userName) && account.roleName === 'Parent'
+        );
+        
+        const existingParentUserNames = existingParentAccounts.map(account => account.userName);
+        const missingParentUserNames = parentUserNames.filter(name => !existingParentUserNames.includes(name));
+        
+        console.log('✅ Existing parent accounts:', existingParentUserNames);
+        console.log('❌ Missing parent accounts:', missingParentUserNames);
+        
+        if (missingParentUserNames.length > 0) {
+          message.error({
+            content: `Các tài khoản phụ huynh chưa tồn tại: ${missingParentUserNames.join(', ')}. Vui lòng tạo tài khoản trước khi import học sinh!`,
+            key: 'importStudents'
+          });
+          return;
+        }
+
+        // Transform imported data theo API schema mới - không có parentID
+        const studentProfilesData = response.data.map(student => {
+          console.log('🔄 Transforming student theo API mới:', student);
+          
+          const parentUserName = student.parentUserName || student.ParentUserName || student.parent_user_name;
+          const parentAccount = existingParentAccounts.find(account => 
+            account.userName === parentUserName
+          );
+          
+          if (!parentAccount) {
+            console.error(`❌ Parent account not found for: ${parentUserName}`);
+            return null;
+          }
+          
+          return {
+            studentName: student.studentName || student.StudentName || student.name || student.Name,
+            class: student.class || student.Class || student.className || student.ClassName,
+            studentAvata: student.studentAvata || student.StudentAvata || student.avatar || student.Avatar || null,
+            relationName: student.relationName || student.RelationName || student.relation || student.Relation || 'Con',
+            nationality: student.nationality || student.Nationality || student.nation || student.Nation || 'Việt Nam',
+            ethnicity: student.ethnicity || student.Ethnicity || student.ethnic || student.Ethnic || 'Kinh',
+            birthday: student.birthday || student.Birthday || student.birthDate || student.BirthDate || student.dateOfBirth || student.DateOfBirth || new Date().toISOString(),
+            sex: student.sex || student.Sex || student.gender || student.Gender || student.sexType || student.SexType,
+            location: student.location || student.Location || student.address || student.Address || student.place || student.Place,
+            parentUserName: parentUserName
+          };
+        }).filter(student => student !== null);
+
+        console.log('📦 Transformed student profiles theo API mới:', studentProfilesData);
+        
+        // Validate required fields theo API mới
+        const validStudentData = studentProfilesData.filter(student => {
+          const isValid = student.studentName && 
+                         student.class && 
+                         student.sex && 
+                         student.location && 
+                         student.parentUserName;
+          
+          if (!isValid) {
+            console.warn('⚠️ Invalid student data:', student);
+          }
+          
+          return isValid;
+        });
+        
+        console.log(`✅ Valid students: ${validStudentData.length}/${studentProfilesData.length}`);
+        
+        if (validStudentData.length > 0) {
+          // Save via API với schema mới
+          await createListStudent(validStudentData);
+          console.log('✅ Student profiles saved successfully với API mới');
+          
+          message.success({ 
+            content: `Import thành công ${validStudentData.length} hồ sơ học sinh!`, 
+            key: 'importStudents' 
+          });
+        } else {
+          message.warning({ 
+            content: "Không có dữ liệu học sinh hợp lệ!", 
+            key: 'importStudents' 
+          });
+        }
+        
+      } else {
+        message.warning({ 
+          content: "File được xử lý nhưng không có dữ liệu học sinh nào được trả về!", 
+          key: 'importStudents' 
+        });
+      }
       
-      console.log('Import response:', response);
-      
-      message.success({ content: "Import tài khoản thành công!", key: 'import' });
+      // Always refresh accounts list
       await fetchAccounts();
-    } catch (err) {
-      console.error('Import error:', err);
-      console.error('Error response:', err.response);
-      console.error('Error status:', err.response?.status);
-      console.error('Error data:', err.response?.data);
       
-      let errorMessage = "Import tài khoản thất bại!";
+    } catch (err) {
+      console.error('❌ Import students error:', err);
+      console.error('📄 Error response:', err.response);
+      
+      let errorMessage = "Import hồ sơ học sinh thất bại!";
       if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err.response?.status === 400) {
-        errorMessage = "Định dạng file không hợp lệ hoặc file bị lỗi!";
+        errorMessage = "Định dạng file không hợp lệ hoặc dữ liệu thiếu thông tin bắt buộc!";
+      } else if (err.message) {
+        errorMessage = `Lỗi: ${err.message}`;
       }
       
       message.error({ 
         content: errorMessage, 
-        key: 'import' 
+        key: 'importStudents' 
       });
     }
   };
 
-  const handleCreateStudentProfile = (record) => {
-    setSelectedUserForProfile(record);
-    studentProfileForm.resetFields();
-    // Set initial values for form fields with default values
-    studentProfileForm.setFieldsValue({
-      nationality: "Việt Nam",
-      ethnicity: "Kinh"
-    });
-    setStudentProfileModalVisible(true);
-  };
-
-  const handleStudentProfileModalOk = async () => {
+  // Import users from file (only create accounts)
+  const handleImportUsers = async (file) => {
     try {
-      const values = await studentProfileForm.validateFields();
-      console.log('📋 Form values received:', values);
-      
-      // Check each individual value before creating the object
-      console.log('🔍 Individual field checks:');
-      console.log('  studentName:', values.studentName, '(type:', typeof values.studentName, ')');
-      console.log('  class:', values.class, '(type:', typeof values.class, ')');
-      console.log('  sex:', values.sex, '(type:', typeof values.sex, ')');
-      console.log('  location:', values.location, '(type:', typeof values.location, ')');
-      console.log('  relationName:', values.relationName, '(type:', typeof values.relationName, ')');
-      console.log('  nationality:', values.nationality, '(type:', typeof values.nationality, ')');
-      console.log('  ethnicity:', values.ethnicity, '(type:', typeof values.ethnicity, ')');
-      console.log('  studentAvata:', values.studentAvata, '(type:', typeof values.studentAvata, ')');
-      console.log('  birthday:', values.birthday, '(type:', typeof values.birthday, ')');
-      console.log('  selectedUserForProfile.userName:', selectedUserForProfile.userName, '(type:', typeof selectedUserForProfile.userName, ')');
-      
-      // Create the student data object with the exact field names the API expects
-      const studentData = {
-        StudentName: values.studentName,
-        Class: values.class,
-        StudentAvata: values.studentAvata || null,
-        RelationName: values.relationName,
-        Nationality: values.nationality,
-        Ethnicity: values.ethnicity,
-        Birthday: values.birthday ? values.birthday.toISOString() : null,
-        Sex: values.sex,
-        Location: values.location,
-        parentUserName: selectedUserForProfile.userName
-      };
-      
-      console.log('🔄 Student data with the correct case mix:', studentData);
-      
-      // Check each field in the final object
-      console.log('🔍 Final object field checks:');
-      Object.entries(studentData).forEach(([key, value]) => {
-        console.log(`  ${key}:`, value, '(type:', typeof value, ', length:', value?.length || 'N/A', ')');
-      });
-      
-      // Try sending the data directly without wrapper first
-      console.log('📦 Trying direct payload (no wrapper):', JSON.stringify(studentData, null, 2));
-      
-      try {
-        // Call API to create student profile - try direct object first
-        await createStudentProfile(studentData);
-      } catch (directError) {
-        console.warn('🔄 Direct approach failed, trying with wrapper...');
-        
-        // If direct approach fails, try with wrapper
-        const studentProfileData = {
-          createStudentRequest: studentData
-        };
-        
-        console.log('📦 Trying wrapped payload:', JSON.stringify(studentProfileData, null, 2));
-        await createStudentProfile(studentProfileData);
+      console.log('📁 User file to upload:', file);
+      console.log('📄 File name:', file.name);
+      console.log('📊 File type:', file.type);
+      console.log('📏 File size:', file.size);
+
+      if (!file) {
+        message.error("Vui lòng chọn file!");
+        return;
       }
+
+      const allowedTypes = [
+        'application/json',
+        'text/csv',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      ];
       
-      message.success("Tạo hồ sơ học sinh thành công!");
-      setStudentProfileModalVisible(false);
-      studentProfileForm.resetFields();
-      setSelectedUserForProfile(null);
-    } catch (err) {
-      console.error('❌ Create student profile error:', err);
-      console.error('📊 Error object details:', {
-        message: err.message,
-        status: err.response?.status,
-        statusText: err.response?.statusText,
-        data: err.response?.data,
-        config: err.config
-      });
+      if (!allowedTypes.includes(file.type) && !file.name.match(/\.(json|csv|xlsx|xls)$/i)) {
+        message.error("Chỉ chấp nhận file JSON, CSV, XLS, XLSX!");
+        return;
+      }
+
+      message.loading({ content: 'Đang import tài khoản người dùng...', key: 'importUsers' });
+
+      const response = await getUsersFromFile(file);
       
-      // Enhanced error logging
-      if (err.response) {
-        console.error('🔍 Response status:', err.response.status);
-        console.error('🔍 Response headers:', err.response.headers);
-        console.error('🔍 Response data structure:', err.response.data);
-        console.error('🔍 Response data type:', typeof err.response.data);
+      console.log('✅ Import users response:', response);
+      console.log('📊 Imported users data:', response.data);
+      
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        console.log('🔍 Analyzing imported users...');
         
-        // Log specific error fields if available
-        if (err.response.data?.errors) {
-          console.error('📋 Validation errors details:', err.response.data.errors);
-          console.error('🔎 Error keys:', Object.keys(err.response.data.errors));
+        // Log each imported user to see the structure
+        response.data.forEach((user, index) => {
+          console.log(`👤 User ${index + 1}:`, user);
+          console.log(`🔑 User ${index + 1} keys:`, Object.keys(user));
+        });
+        
+        // Transform user data for account creation với đầy đủ thông tin
+        const userAccountsData = response.data.map(user => {
+          console.log('🔄 Transforming user for account creation:', user);
           
-          // Log each error field individually
-          Object.entries(err.response.data.errors).forEach(([field, errors]) => {
-            console.error(`❗ Field "${field}" errors:`, errors);
+          return {
+            userName: user.userName || user.UserName || user.username || user.user || '',
+            password: user.password || user.Password || '12345', // Default password
+            name: user.name || user.Name || user.fullName || user.FullName || '', // Trường name
+            email: user.email || user.Email || user.mail || user.Mail || '', // Trường email
+            phone: user.phone || user.Phone || user.phoneNumber || user.PhoneNumber || '', // Trường phone (có thể empty)
+            roleName: user.roleName || user.RoleName || user.role || user.Role || 'Parent' // Default to Parent
+          };
+        });
+
+        console.log('📦 Transformed user accounts data với đầy đủ thông tin:', userAccountsData);
+        
+        // Filter valid user data - kiểm tra các trường bắt buộc
+        const validUsersData = userAccountsData.filter(user => {
+          const isValid = user.userName && 
+                         user.password && 
+                         user.name && 
+                         user.email && 
+                         user.roleName;
+          
+          if (!isValid) {
+            console.warn('⚠️ Invalid user data - thiếu thông tin bắt buộc:', user);
+            console.warn('   userName:', user.userName ? '✅' : '❌ MISSING');
+            console.warn('   password:', user.password ? '✅' : '❌ MISSING');
+            console.warn('   name:', user.name ? '✅' : '❌ MISSING');
+            console.warn('   email:', user.email ? '✅' : '❌ MISSING');
+            console.warn('   phone:', user.phone ? '✅' : '⚠️ EMPTY (allowed)');
+            console.warn('   roleName:', user.roleName ? '✅' : '❌ MISSING');
+          } else {
+            console.log('✅ Valid user data:', {
+              userName: user.userName,
+              name: user.name,
+              email: user.email,
+              phone: user.phone || 'EMPTY',
+              roleName: user.roleName
+            });
+          }
+          
+          return isValid;
+        });
+        
+        console.log(`✅ Valid users after filtering: ${validUsersData.length}/${userAccountsData.length}`);
+        
+        if (validUsersData.length > 0) {
+          console.log('📤 Sending payload to createAccounts API:', validUsersData);
+          
+          // Create user accounts với đầy đủ thông tin theo API schema
+          await createAccounts(validUsersData);
+          
+          message.success({ 
+            content: `Import thành công ${validUsersData.length} tài khoản người dùng!`, 
+            key: 'importUsers' 
+          });
+        } else {
+          message.warning({ 
+            content: "Không có dữ liệu người dùng hợp lệ để tạo tài khoản! Vui lòng kiểm tra các trường: UserName, Password, Name, Email, Role", 
+            key: 'importUsers' 
           });
         }
         
-        // Extract detailed error message if available
-        let errorMessage = "Tạo hồ sơ học sinh thất bại!";
-        
-        if (typeof err.response.data === 'string') {
-          errorMessage = err.response.data;
-        } else if (err.response.data?.message) {
-          errorMessage = err.response.data.message;
-        } else if (err.response.data?.error) {
-          errorMessage = err.response.data.error;
-        } else if (err.response.data?.errors) {
-          if (typeof err.response.data.errors === 'string') {
-            errorMessage = err.response.data.errors;
-          } else {
-            // Check for specific validation error paths
-            const errors = err.response.data.errors;
-            if (errors.createStudentRequest) {
-              const requestErrors = Array.isArray(errors.createStudentRequest) 
-                ? errors.createStudentRequest.join(', ') 
-                : errors.createStudentRequest;
-              errorMessage = `Lỗi dữ liệu: ${requestErrors}`;
-            } else if (errors['$.studentAvata']) {
-              const avatarErrors = Array.isArray(errors['$.studentAvata']) 
-                ? errors['$.studentAvata'].join(', ') 
-                : errors['$.studentAvata'];
-              errorMessage = `Lỗi ảnh đại diện: ${avatarErrors}`;
-            } else {
-              const errorDetails = Object.entries(errors)
-                .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
-                .join('; ');
-              errorMessage = `Lỗi dữ liệu: ${errorDetails}`;
-            }
-          }
-        }
-        
-        message.error(errorMessage);
       } else {
-        message.error("Kết nối đến máy chủ thất bại!");
+        message.warning({ 
+          content: "File được xử lý nhưng không có dữ liệu người dùng nào được trả về!", 
+          key: 'importUsers' 
+        });
       }
+      
+      // Refresh accounts list
+      await fetchAccounts();
+      
+    } catch (err) {
+      console.error('❌ Import users error:', err);
+      console.error('📄 Error response:', err.response);
+      console.error('📄 Error data:', err.response?.data);
+      
+      let errorMessage = "Import tài khoản người dùng thất bại!";
+      
+      if (err.response?.status === 400) {
+        console.error('🔍 400 Bad Request - có thể do:');
+        console.error('   1. Thiếu trường bắt buộc (userName, password, name, email)');
+        console.error('   2. Email format không hợp lệ');
+        console.error('   3. Trường phone empty (nếu required)');
+        console.error('   4. Role không tồn tại trong hệ thống');
+        
+        if (err.response.data?.message) {
+          errorMessage = `Lỗi validation: ${err.response.data.message}`;
+        } else if (typeof err.response.data === 'string') {
+          errorMessage = `Lỗi từ server: ${err.response.data}`;
+        } else {
+          errorMessage = "Dữ liệu không hợp lệ! Vui lòng kiểm tra: UserName, Password, Name, Email, Role";
+        }
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = `Lỗi: ${err.message}`;
+      }
+      
+      message.error({ 
+        content: errorMessage, 
+        key: 'importUsers' 
+      });
     }
   };
 
@@ -702,8 +1085,12 @@ function AccountList() {
               <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd} className="rounded-2xl shadow-xl bg-gradient-to-r from-blue-500 to-blue-700 hover:scale-105 hover:from-blue-600 hover:to-blue-800 transition-all duration-200 font-bold px-8 py-2 text-lg" size="large">
                 Thêm tài khoản
               </Button>
-              <label className="inline-flex items-center cursor-pointer bg-blue-50 border border-blue-200 rounded-2xl px-5 py-2 ml-2 hover:bg-blue-100 transition gap-2 shadow-md">
-                <span className="text-blue-600 font-semibold flex items-center gap-1"><UploadIcon />Import File</span>
+
+              {/* Import Users File */}
+              <label className="inline-flex items-center cursor-pointer bg-blue-50 border border-blue-200 rounded-2xl px-5 py-2 hover:bg-blue-100 transition gap-2 shadow-md">
+                <span className="text-blue-600 font-semibold flex items-center gap-1">
+                  <UserOutlined />Import Users
+                </span>
                 <input
                   type="file"
                   accept=".json,.csv,.xlsx,.xls"
@@ -711,9 +1098,27 @@ function AccountList() {
                   onChange={e => {
                     const file = e.target.files[0];
                     if (file) {
-                      handleImportAccounts(file);
+                      handleImportUsers(file);
                     }
-                    // Reset input để có thể chọn cùng file lần nữa
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+
+              {/* Import Students File */}
+              <label className="inline-flex items-center cursor-pointer bg-green-50 border border-green-200 rounded-2xl px-5 py-2 hover:bg-green-100 transition gap-2 shadow-md">
+                <span className="text-green-600 font-semibold flex items-center gap-1">
+                  <UserAddOutlined />Import Students
+                </span>
+                <input
+                  type="file"
+                  accept=".json,.csv,.xlsx,.xls"
+                  style={{ display: "none" }}
+                  onChange={e => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      handleImportStudents(file);
+                    }
                     e.target.value = '';
                   }}
                 />
@@ -733,18 +1138,17 @@ function AccountList() {
             rowClassName={() => 'hover:bg-blue-100 transition-all duration-150'}
           />
         </Card>
-        {/* Modal Thêm/Sửa */}
+        {/* Modal Thêm tài khoản */}
         <Modal
-          title={<span className="font-extrabold text-blue-700 text-xl">{editingId ? "Chỉnh sửa tài khoản" : "Thêm tài khoản mới"}</span>}
+          title={<span className="font-extrabold text-blue-700 text-xl">Thêm tài khoản mới</span>}
           open={isModalVisible}
-          onOk={handleModalOk}
+          onOk={handleCreateOk}
           onCancel={() => {
             setIsModalVisible(false);
             form.resetFields();
-            setEditingId(null);
           }}
-          width={editingId ? 700 : 500}
-          okText={editingId ? "Cập nhật" : "Tạo mới"}
+          width={700}
+          okText="Tạo mới"
           cancelText="Hủy"
           className="rounded-3xl"
           styles={{ 
@@ -756,84 +1160,159 @@ function AccountList() {
           }}
         >
           <Form form={form} layout="vertical" className="space-y-3">
-            {editingId && (
-              <Form.Item
-                name="userID"
-                label={<span className="font-bold">Mã người dùng</span>}
-                rules={[{ required: true, message: "Vui lòng nhập mã người dùng" }]}
-              >
-                <Input disabled className="rounded-2xl text-base" />
-              </Form.Item>
-            )}
-            <Form.Item
-              name="userName"
-              label={<span className="font-bold">Tên đăng nhập</span>}
-              rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập" }]}
-            >
-              <Input className="rounded-2xl text-base" />
-            </Form.Item>
-            <Form.Item
-              name="password"
-              label={<span className="font-bold">Mật khẩu</span>}
-              rules={[{ required: !editingId, message: "Vui lòng nhập mật khẩu" }]}
-            >
-              <Input.Password 
-                className="rounded-2xl text-base" 
-                placeholder={editingId ? "Để trống nếu không muốn thay đổi mật khẩu" : "Nhập mật khẩu"}
-              />
-            </Form.Item>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="userName"
+                  label={<span className="font-bold">Tên đăng nhập</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập" }]}
+                >
+                  <Input className="rounded-2xl text-base" placeholder="Nhập tên đăng nhập" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="password"
+                  label={<span className="font-bold">Mật khẩu</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
+                >
+                  <Input.Password 
+                    className="rounded-2xl text-base" 
+                    placeholder="Nhập mật khẩu"
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
             
-            {/* Chỉ hiển thị các trường bổ sung khi edit */}
-            {editingId && (
-              <>
-                <Form.Item
-                  name="name"
-                  label={<span className="font-bold">Họ tên</span>}
-                  rules={[{ required: false, message: "Vui lòng nhập họ tên" }]}
-                >
-                  <Input className="rounded-2xl text-base" placeholder="Nhập họ tên đầy đủ" />
-                </Form.Item>
-                <Form.Item
-                  name="email"
-                  label={<span className="font-bold">Email</span>}
-                  rules={[
-                    { required: false, message: "Vui lòng nhập email" },
-                    { type: 'email', message: 'Email không hợp lệ' }
-                  ]}
-                >
-                  <Input className="rounded-2xl text-base" placeholder="Nhập địa chỉ email" />
-                </Form.Item>
-                <Form.Item
-                  name="phone"
-                  label={<span className="font-bold">Số điện thoại</span>}
-                  rules={[
-                    { required: false, message: "Vui lòng nhập số điện thoại" },
-                    { pattern: /^[0-9]{10,11}$/, message: 'Số điện thoại phải có 10-11 chữ số' }
-                  ]}
-                >
-                  <Input className="rounded-2xl text-base" placeholder="Nhập số điện thoại" />
-                </Form.Item>
-              </>
-            )}
-            
-            {!editingId && (
-              <Form.Item
-                name="roleName"
-                label={<span className="font-bold">Vai trò</span>}
-                rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
-              >
-                <Select placeholder="Chọn vai trò" className="rounded-2xl text-base">
-                  <Option value="Nurse">Nurse</Option>
-                  <Option value="Parent">Parent</Option>
-                </Select>
-              </Form.Item>
-            )}
+
+            <Form.Item
+              name="email"
+              label={<span className="font-bold">Email</span>}
+              rules={[
+                { required: true, message: "Vui lòng nhập email" },
+                { type: 'email', message: 'Email không hợp lệ' }
+              ]}
+            >
+              <Input className="rounded-2xl text-base" placeholder="Nhập địa chỉ email" />
+            </Form.Item>
+
+       
+
+            <Form.Item
+              name="roleName"
+              label={<span className="font-bold">Vai trò</span>}
+              rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
+            >
+              <Select placeholder="Chọn vai trò" className="rounded-2xl text-base">
+          
+                <Option value="Manager">Manager</Option>
+                <Option value="Nurse">Nurse</Option>
+                <Option value="Parent">Parent</Option>
+              </Select>
+            </Form.Item>
           </Form>
         </Modal>
 
-        {/* New Modal for Student Profile */}
+        {/* Edit Account Modal */}
         <Modal
-          title={<span className="font-extrabold text-blue-700 text-xl">Tạo hồ sơ học sinh</span>}
+          title={<span className="font-extrabold text-blue-700 text-xl">Chỉnh sửa tài khoản</span>}
+          open={isEditModalVisible}
+          onOk={handleUpdateOk}
+          onCancel={() => {
+            setIsEditModalVisible(false);
+            editForm.resetFields();
+            setEditingRecord(null);
+          }}
+          width={700}
+          okText="Cập nhật"
+          cancelText="Hủy"
+          className="rounded-3xl"
+          styles={{ 
+            body: { 
+              borderRadius: 32, 
+              padding: 40, 
+              background: 'linear-gradient(135deg,#e0eaff 60%,#f0f6ff 100%)'  
+            } 
+          }}
+        >
+          <Form form={editForm} layout="vertical" className="space-y-3">
+            <Form.Item
+              name="userID"
+              label={<span className="font-bold">Mã người dùng</span>}
+            >
+              <Input disabled className="rounded-2xl text-base bg-gray-100" />
+            </Form.Item>
+            
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="userName"
+                  label={<span className="font-bold">Tên đăng nhập</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập" }]}
+                >
+                  <Input className="rounded-2xl text-base" placeholder="Nhập tên đăng nhập" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="password"
+                  label={<span className="font-bold">Mật khẩu mới</span>}
+                >
+                  <Input.Password 
+                    className="rounded-2xl text-base" 
+                    placeholder="Để trống nếu không muốn thay đổi"
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Form.Item
+              name="name"
+              label={<span className="font-bold">Họ tên đầy đủ</span>}
+              rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
+            >
+              <Input className="rounded-2xl text-base" placeholder="Nhập họ tên đầy đủ" />
+            </Form.Item>
+
+            <Form.Item
+              name="email"
+              label={<span className="font-bold">Email</span>}
+              rules={[
+                { required: true, message: "Vui lòng nhập email" },
+                { type: 'email', message: 'Email không hợp lệ' }
+              ]}
+            >
+              <Input className="rounded-2xl text-base" placeholder="Nhập địa chỉ email" />
+            </Form.Item>
+
+            <Form.Item
+              name="phone"
+              label={<span className="font-bold">Số điện thoại</span>}
+              rules={[
+                { pattern: /^[0-9+\-\s()]+$/, message: "Số điện thoại không hợp lệ" }
+              ]}
+            >
+              <Input className="rounded-2xl text-base" placeholder="Nhập số điện thoại (không bắt buộc)" />
+            </Form.Item>
+
+            <Form.Item
+              name="roleName"
+              label={<span className="font-bold">Vai trò</span>}
+            >
+              <Select disabled className="rounded-2xl text-base">
+                <Option value="Admin">Admin</Option>
+                <Option value="Manager">Manager</Option>
+                <Option value="Nurse">Nurse</Option>
+                <Option value="Parent">Parent</Option>
+              </Select>
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        {/* Create Student Profile Modal */}
+        <Modal
+          title={<span className="font-extrabold text-green-700 text-xl">Tạo hồ sơ học sinh</span>}
           open={studentProfileModalVisible}
           onOk={handleStudentProfileModalOk}
           onCancel={() => {
@@ -849,7 +1328,7 @@ function AccountList() {
             body: { 
               borderRadius: 32, 
               padding: 40, 
-              background: 'linear-gradient(135deg,#e0eaff 60%,#f0f6ff 100%)' 
+              background: 'linear-gradient(135deg,#d4ffd4 60%,#a8e6a8 100%)' 
             } 
           }}
         >
@@ -944,21 +1423,13 @@ function AccountList() {
             </Row>
 
             <Row gutter={16}>
-              <Col span={12}>
+              <Col span={24}>
                 <Form.Item
                   name="ethnicity"
                   label={<span className="font-bold">Dân tộc</span>}
                   rules={[{ required: true, message: "Vui lòng nhập dân tộc" }]}
                 >
                   <Input className="rounded-2xl text-base" placeholder="Nhập dân tộc" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="studentAvata"
-                  label={<span className="font-bold">Ảnh đại diện (URL)</span>}
-                >
-                  <Input className="rounded-2xl text-base" placeholder="Nhập URL ảnh đại diện (không bắt buộc)" />
                 </Form.Item>
               </Col>
             </Row>
@@ -1037,9 +1508,10 @@ function AccountList() {
                             .slice((studentPage - 1) * studentPageSize, studentPage * studentPageSize)
                             .map((student, index) => (
                               <Card 
-                                key={student.StudentID || index} 
+                                key={student.StudentID || student.studentID || student.id || index} 
                                 className={`cursor-pointer transition-all duration-300 hover:shadow-lg border-2 transform hover:-translate-y-1 ${
-                                  selectedStudentDetail?.StudentID === student.StudentID 
+                                  (selectedStudentDetail?.StudentID || selectedStudentDetail?.studentID || selectedStudentDetail?.id) === 
+                                  (student.StudentID || student.studentID || student.id)
                                     ? 'bg-gradient-to-r from-blue-100 to-blue-200 border-blue-500 shadow-lg scale-[1.02] ring-2 ring-blue-300' 
                                     : 'bg-white border-gray-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:border-blue-300'
                                 }`}
@@ -1049,22 +1521,61 @@ function AccountList() {
                                 <div className="flex items-center justify-between p-2">
                                   <div className="flex-1 min-w-0">
                                     <Text className={`font-semibold block truncate text-sm ${
-                                      selectedStudentDetail?.StudentID === student.StudentID 
+                                      (selectedStudentDetail?.StudentID || selectedStudentDetail?.studentID || selectedStudentDetail?.id) === 
+                                      (student.StudentID || student.studentID || student.id)
                                         ? 'text-blue-900' 
                                         : 'text-blue-800'
                                     }`}>
-                                      {student.StudentName || 'N/A'}
+                                      {student.StudentName || student.studentName || student.name || 'N/A'}
                                     </Text>
                                     <Text className="text-gray-600 text-xs">
-                                      Lớp: {student.Class || 'N/A'}
+                                      Lớp: {student.Class || student.class || student.className || 'N/A'}
                                     </Text>
                                   </div>
-                                  <div className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                    selectedStudentDetail?.StudentID === student.StudentID
-                                      ? 'text-blue-700 bg-blue-200'
-                                      : 'text-gray-500 bg-gray-100'
-                                  }`}>
-                                    {student.StudentID}
+                                  <div className="flex items-center gap-1">
+                                    <div className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                      (selectedStudentDetail?.StudentID || selectedStudentDetail?.studentID || selectedStudentDetail?.id) === 
+                                      (student.StudentID || student.studentID || student.id)
+                                        ? 'text-blue-700 bg-blue-200'
+                                        : 'text-gray-500 bg-gray-100'
+                                    }`}>
+                                      {student.StudentID || student.studentID || student.id || 'N/A'}
+                                    </div>
+                                    
+                                    {/* Action buttons */}
+                                    <div className="flex gap-1 ml-2">
+                                      <Button
+                                        type="text"
+                                        size="small"
+                                        icon={<EditOutlined />}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleEditStudent(student);
+                                        }}
+                                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                                        title="Chỉnh sửa"
+                                      />
+                                      <Popconfirm
+                                        title="Xóa học sinh này?"
+                                        description={`Bạn có chắc chắn muốn xóa học sinh ${student.StudentName || student.studentName || student.name}?`}
+                                        onConfirm={(e) => {
+                                          e?.stopPropagation();
+                                          handleDeleteStudent(student);
+                                        }}
+                                        okText="Xóa"
+                                        cancelText="Hủy"
+                                        okButtonProps={{ danger: true }}
+                                      >
+                                        <Button
+                                          type="text"
+                                          size="small"
+                                          icon={<DeleteOutlined />}
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                                          title="Xóa"
+                                        />
+                                      </Popconfirm>
+                                    </div>
                                   </div>
                                 </div>
                               </Card>
@@ -1101,10 +1612,10 @@ function AccountList() {
                             <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300 shadow-lg">
                               <div className="mb-4 text-center">
                                 <Title level={5} className="text-blue-800 mb-1">
-                                  {selectedStudentDetail.StudentName}
+                                  {selectedStudentDetail.StudentName || selectedStudentDetail.studentName || selectedStudentDetail.name || 'N/A'}
                                 </Title>
                                 <Text className="text-gray-600 text-sm">
-                                  {selectedStudentDetail.StudentID} - Lớp {selectedStudentDetail.Class}
+                                  {selectedStudentDetail.StudentID || selectedStudentDetail.studentID || selectedStudentDetail.id || 'N/A'} - Lớp {selectedStudentDetail.Class || selectedStudentDetail.class || selectedStudentDetail.className || 'N/A'}
                                 </Text>
                               </div>
                               <Descriptions 
@@ -1127,33 +1638,35 @@ function AccountList() {
                                 }}
                               >
                                 <Descriptions.Item label="Giới tính">
-                                  <span className="text-gray-800">{selectedStudentDetail.Sex || 'N/A'}</span>
+                                  <span className="text-gray-800">{selectedStudentDetail.Sex || selectedStudentDetail.sex || selectedStudentDetail.gender || 'N/A'}</span>
                                 </Descriptions.Item>
                                 <Descriptions.Item label="Ngày sinh">
                                   <span className="text-gray-800">
-                                    {selectedStudentDetail.Birthday ? new Date(selectedStudentDetail.Birthday).toLocaleDateString('vi-VN') : 'N/A'}
+                                    {(selectedStudentDetail.Birthday || selectedStudentDetail.birthday || selectedStudentDetail.birthDate) 
+                                      ? new Date(selectedStudentDetail.Birthday || selectedStudentDetail.birthday || selectedStudentDetail.birthDate).toLocaleDateString('vi-VN') 
+                                      : 'N/A'}
                                   </span>
                                 </Descriptions.Item>
                                 <Descriptions.Item label="Địa chỉ">
-                                  <span className="text-gray-800">{selectedStudentDetail.Location || 'N/A'}</span>
+                                  <span className="text-gray-800">{selectedStudentDetail.Location || selectedStudentDetail.location || selectedStudentDetail.address || 'N/A'}</span>
                                 </Descriptions.Item>
                                 <Descriptions.Item label="Quan hệ">
-                                  <span className="text-gray-800">{selectedStudentDetail.RelationName || 'N/A'}</span>
+                                  <span className="text-gray-800">{selectedStudentDetail.RelationName || selectedStudentDetail.relationName || selectedStudentDetail.relation || 'N/A'}</span>
                                 </Descriptions.Item>
                                 <Descriptions.Item label="Quốc tịch">
-                                  <span className="text-gray-800">{selectedStudentDetail.Nationality || 'N/A'}</span>
+                                  <span className="text-gray-800">{selectedStudentDetail.Nationality || selectedStudentDetail.nationality || selectedStudentDetail.nation || 'N/A'}</span>
                                 </Descriptions.Item>
                                 <Descriptions.Item label="Dân tộc">
-                                  <span className="text-gray-800">{selectedStudentDetail.Ethnicity || 'N/A'}</span>
+                                  <span className="text-gray-800">{selectedStudentDetail.Ethnicity || selectedStudentDetail.ethnicity || selectedStudentDetail.ethnic || 'N/A'}</span>
                                 </Descriptions.Item>
-                                {selectedStudentDetail.StudentAvata && (
+                                {(selectedStudentDetail.StudentAvata || selectedStudentDetail.studentAvata || selectedStudentDetail.avatar) && (
                                   <Descriptions.Item label="Ảnh đại diện">
-                                    <span className="text-gray-800">{selectedStudentDetail.StudentAvata}</span>
+                                    <span className="text-gray-800">{selectedStudentDetail.StudentAvata || selectedStudentDetail.studentAvata || selectedStudentDetail.avatar}</span>
                                   </Descriptions.Item>
                                 )}
                                 {selectedAccount.roleName === "Admin" && (
                                   <Descriptions.Item label="Parent ID">
-                                    <span className="text-gray-800">{selectedStudentDetail.ParentID || 'N/A'}</span>
+                                    <span className="text-gray-800">{selectedStudentDetail.ParentID || selectedStudentDetail.parentID || selectedStudentDetail.parentId || 'N/A'}</span>
                                   </Descriptions.Item>
                                 )}
                               </Descriptions>
@@ -1172,12 +1685,31 @@ function AccountList() {
                     </div>
                   ) : (
                     <div className="text-center py-8 text-gray-500">
-                      <p>
-                        {selectedAccount.roleName === "Admin" 
-                          ? "Không tìm thấy thông tin học sinh nào cho user này."
-                          : "Chưa có thông tin học sinh nào được tạo cho phụ huynh này."
-                        }
-                      </p>
+                      <div className="mb-4">
+                        <UserOutlined className="text-6xl text-gray-300 mb-4" />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-lg font-medium">
+                          {selectedAccount.roleName === "Admin" 
+                            ? `Không tìm thấy học sinh nào có ParentID = "${selectedAccount.userID}" trong database.`
+                            : `Chưa có học sinh nào có ParentID = "${selectedAccount.userID}" cho tài khoản này.`
+                          }
+                        </p>
+                    
+                        {selectedAccount.roleName === "Parent" && (
+                          <div className="mt-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                            <p className="text-sm text-green-700 mb-2">
+                              💡 <strong>Hướng dẫn tạo học sinh:</strong>
+                            </p>
+                            <ul className="text-sm text-green-600 space-y-1">
+                              <li>• Nhấn nút <strong>"Tạo hồ sơ học sinh"</strong> ở cột thao tác</li>
+                              <li>• Hoặc sử dụng <strong>"Import Students"</strong> để import từ file Excel</li>
+                              <li>• Học sinh được tạo sẽ có ParentID = "{selectedAccount.userID}"</li>
+                              <li>• Dữ liệu sẽ được lưu vào database và hiển thị ngay lập tức</li>
+                            </ul>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1185,9 +1717,189 @@ function AccountList() {
             </div>
           )}
         </Modal>
+
+        {/* Edit Student Modal */}
+        <Modal
+          title={<span className="font-extrabold text-orange-700 text-xl">Chỉnh sửa thông tin học sinh</span>}
+          open={editStudentModalVisible}
+          onOk={handleUpdateStudent}
+          onCancel={() => {
+            setEditStudentModalVisible(false);
+            editStudentForm.resetFields();
+            setEditingStudent(null);
+            setUploadedAvatarFile(null);
+            setAvatarPreview(null);
+          }}
+          width={700}
+          okText="Cập nhật"
+          cancelText="Hủy"
+          className="rounded-3xl"
+          styles={{ 
+            body: { 
+              borderRadius: 32, 
+              padding: 40, 
+              background: 'linear-gradient(135deg,#ffeaa7 60%,#fab1a0 100%)' 
+            } 
+          }}
+        >
+          <Form 
+            form={editStudentForm} 
+            layout="vertical" 
+            className="space-y-3"
+          >
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="studentName"
+                  label={<span className="font-bold">Tên học sinh</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập tên học sinh" }]}
+                >
+                  <Input className="rounded-2xl text-base" placeholder="Nhập tên học sinh" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="class"
+                  label={<span className="font-bold">Lớp học</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập lớp học" }]}
+                >
+                  <Input className="rounded-2xl text-base" placeholder="Nhập lớp học" />
+                </Form.Item>
+              </Col>
+            </Row>
+            
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="birthday"
+                  label={<span className="font-bold">Ngày sinh</span>}
+                  rules={[{ required: true, message: "Vui lòng chọn ngày sinh" }]}
+                >
+                  <DatePicker 
+                    className="rounded-2xl text-base w-full" 
+                    placeholder="Chọn ngày sinh"
+                    format="DD/MM/YYYY"
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="sex"
+                  label={<span className="font-bold">Giới tính</span>}
+                  rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
+                >
+                  <Select placeholder="Chọn giới tính" className="rounded-2xl text-base">
+                    <Option value="Nam">Nam</Option>
+                    <Option value="Nữ">Nữ</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Form.Item
+              name="location"
+              label={<span className="font-bold">Địa chỉ</span>}
+              rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
+            >
+              <Input className="rounded-2xl text-base" placeholder="Nhập địa chỉ" />
+            </Form.Item>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="relationName"
+                  label={<span className="font-bold">Quan hệ với phụ huynh</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập quan hệ" }]}
+                >
+                  <Select placeholder="Chọn quan hệ" className="rounded-2xl text-base">
+                    <Option value="Con trai">Con trai</Option>
+                    <Option value="Con gái">Con gái</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="nationality"
+                  label={<span className="font-bold">Quốc tịch</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập quốc tịch" }]}
+                >
+                  <Input className="rounded-2xl text-base" placeholder="Nhập quốc tịch" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="ethnicity"
+                  label={<span className="font-bold">Dân tộc</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập dân tộc" }]}
+                >
+                  <Input className="rounded-2xl text-base" placeholder="Nhập dân tộc" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label={<span className="font-bold">Ảnh đại diện</span>}
+                >
+                  <div className="space-y-3">
+                    {/* File Upload Option Only for Edit */}
+                    <div>
+                      <label className="inline-flex items-center cursor-pointer bg-orange-50 border border-orange-200 rounded-2xl px-4 py-2 hover:bg-orange-100 transition gap-2 shadow-sm w-full justify-center">
+                        <span className="text-orange-600 font-medium flex items-center gap-2">
+                          📸 Chọn ảnh mới từ máy tính
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: "none" }}
+                                                   onChange={(e) => {
+                            const file = e.target.files[0];
+                                                       if (file) {
+                              handleAvatarUpload(file);
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                    
+                    {/* Avatar Preview */}
+                    {avatarPreview && (
+                      <div className="flex justify-center">
+                        <div className="relative">
+                          <img 
+                            src={avatarPreview} 
+                            alt="Avatar preview" 
+                            className="w-20 h-20 rounded-full object-cover border-2 border-orange-200"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUploadedAvatarFile(null);
+                              setAvatarPreview(null);
+                            }}
+                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Helper text */}
+                    <div className="text-center text-gray-500 text-xs">
+                      Chấp nhận: JPG, PNG, GIF. Tối đa 5MB
+                    </div>
+                  </div>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
       </div>
     </div>
   );
 }
 
 export default AccountList;
+   

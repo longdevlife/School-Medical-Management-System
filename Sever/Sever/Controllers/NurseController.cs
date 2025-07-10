@@ -8,6 +8,7 @@ using Sever.DTO.MedicalEvent;
 using Sever.DTO.Medicine;
 using Sever.DTO.SendMedicine;
 using Sever.DTO.Vaccination;
+using Sever.Model;
 using Sever.Service;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -381,6 +382,26 @@ namespace Sever.Controllers
             catch (Exception ex)
             {
                 return BadRequest("Lỗi khi cập nhật trạng thái chờ: " + ex.Message);
+            }
+        }
+        [HttpGet("get-all-appointment")]
+        public async Task<IActionResult> GetAllAppointmentAsync()
+        {
+            try
+            {
+                var results = await _appointmentService.GetAllAppointmentAsync();
+                if (results != null)
+                {
+                    return Ok(results);
+                }
+                else
+                {
+                    return NotFound("Không có danh sách cuộc hẹn nào được lưu trữ");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Tải cuộc hẹn thất bại" + ex.Message);
             }
         }
     }

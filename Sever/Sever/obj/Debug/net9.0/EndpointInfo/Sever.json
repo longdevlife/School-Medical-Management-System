@@ -2152,7 +2152,7 @@
         }
       }
     },
-    "/api/nurse/update-waiting-status-health-check-up": {
+    "/api/nurse/update-waiting-status-health-check-up/{Id}": {
       "put": {
         "tags": [
           "Nurse"
@@ -2160,11 +2160,24 @@
         "parameters": [
           {
             "name": "Id",
-            "in": "query",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "string"
             }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/get-all-appointment": {
+      "get": {
+        "tags": [
+          "Nurse"
         ],
         "responses": {
           "200": {

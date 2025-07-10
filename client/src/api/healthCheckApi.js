@@ -7,7 +7,7 @@ const healthCheckApi = {
       return axiosClient.get("nurse/get-all-health-check-up");
     },
 
-    // Tạo yêu cầu khám sức khỏe theo lớp 
+    // Tạo yêu cầu khám sức khỏe theo lớp
     createByClass: (data) => {
       const formData = new FormData();
 
@@ -56,7 +56,7 @@ const healthCheckApi = {
       if (data.Notes) formData.append("Notes", data.Notes);
       if (data.Status) formData.append("Status", data.Status);
 
-      // CheckerID 
+      // CheckerID
       if (data.CheckerID) {
         formData.append("CheckerID", String(data.CheckerID));
       } else {
@@ -87,7 +87,7 @@ const healthCheckApi = {
       });
     },
 
-    // Cập nhật health check 
+    // Cập nhật health check
     update: (healthCheckId, data) => {
       const updateData = {
         healthCheckId: String(healthCheckId),
@@ -106,9 +106,9 @@ const healthCheckApi = {
         skin: data.Skin || undefined,
         hearing: data.Hearing || undefined,
         respiration: data.Respiration || undefined,
-        ardiovascular: data.Cardiovascular || undefined, 
+        ardiovascular: data.Cardiovascular || undefined,
         notes: data.Notes || undefined,
-        status: data.Status || undefined, 
+        status: data.Status || undefined,
       };
 
       // Loại bỏ các field undefined
@@ -127,7 +127,7 @@ const healthCheckApi = {
       });
     },
 
-    // tạo lịch hẹn khám sức khỏe 
+    // tạo lịch hẹn khám sức khỏe
     createAppointment: (data) => {
       const appointmentData = {
         dateTime:
@@ -201,6 +201,9 @@ const healthCheckApi = {
           "Content-Type": "application/json",
         },
       });
+    },
+    getAllApointment: () => {
+      return axiosClient.get("nurse/get-all-appointment");
     },
   },
 

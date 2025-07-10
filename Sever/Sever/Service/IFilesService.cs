@@ -8,6 +8,7 @@ using Sever.DTO.Student;
 using Sever.DTO.User;
 using Sever.Model;
 using Sever.Repository;
+using Sever.Repository.Interfaces;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace Sever.Service
@@ -36,7 +37,8 @@ namespace Sever.Service
         private readonly DataContext _context;
         private readonly IUserRepository _userRepository;
         private readonly IMedicineRepository _medicineRepository;
-        public FilesSevice(IFilesRepository repository, IConfiguration config, DataContext context, IUserRepository userRepository, IMedicineRepository medicineRepository)
+        private readonly IMedicalEventRepository _medicalEventRepository;
+        public FilesSevice(IFilesRepository repository, IConfiguration config, DataContext context, IUserRepository userRepository, IMedicineRepository medicineRepository, IMedicalEventRepository medicalEventRepository)
         {
             _fileRepository = repository;
             var account = new Account(
@@ -47,7 +49,8 @@ namespace Sever.Service
             _cloudinary = new Cloudinary(account);
             _context = context;
             _userRepository = userRepository;
-            _medicineRepository = medicineRepository;
+            _medicineRepository = medicineRepository; 
+            _medicalEventRepository = medicalEventRepository;
         }
 
         public async Task<ImageResponse> UploadSchoolLogoByAsync(IFormFile file, string id)
@@ -144,6 +147,14 @@ namespace Sever.Service
             if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
                 throw new Exception("Image upload failed");
 
+            var medicalEvent = await _medicalEventRepository.GetMedicalEventByIdAsync(id);
+            if (medicalEvent == null)
+                throw new Exception("Medical Event not found");
+
+            var firstDetail = medicalEvent.MedicalEventDetail.FirstOrDefault();
+            if (firstDetail == null)
+                throw new Exception("No detail found for this event");
+
             var image = new Files
             {
                 FileName = file.FileName,
@@ -151,7 +162,9 @@ namespace Sever.Service
                 FileLink = uploadResult.SecureUrl.AbsoluteUri,
                 UploadDate = DateTime.UtcNow,
                 IsActive = true,
-                MedicalEventID = id
+                MedicalEventID = id,
+                StudentID = firstDetail.StudentID 
+
             };
             await _fileRepository.AddAsync(image);
             await _fileRepository.SaveChangesAsync();

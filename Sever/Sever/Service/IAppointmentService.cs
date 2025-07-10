@@ -52,6 +52,7 @@ namespace Sever.Service
                     Status = result.Status,
                     Notes = result.Notes,
                     HealthCheckUpID = healthCheck.HealthCheckUpID,
+                    StudentID = student.StudentID
                 });
             }
             return appointments;
@@ -70,6 +71,7 @@ namespace Sever.Service
             if (app == null) throw new ArgumentException("No appointment found for the specified ID.");
             app.Notes = appointment.Notes;
             app.Status = "Đã Tham Gia";
+            await _appointmentRepository.UpdateAppointmentByIdAsync(app);
             return true;
         }
         public async Task<bool> GetConfirmAppointment()

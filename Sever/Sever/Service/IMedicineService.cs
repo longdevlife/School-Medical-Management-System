@@ -178,7 +178,6 @@ namespace Sever.Service
                 {
                     await _filesService.DeleteFileAsync(img.FileLink);
                 }
-
                 foreach (var img in updateDto.Image)
                 {
                     try
@@ -191,7 +190,6 @@ namespace Sever.Service
                     }
                 }
             }
-
             await _medicineRepository.UpdateMedicineAsync(medicine);
             await _notificationService.MedicineNotificationForAllNurses(
                 medicine,
@@ -200,6 +198,7 @@ namespace Sever.Service
 
             return true;
         }
+
         public async Task<bool> AddImageByParentIDAsync(MedicineUpdateDTO updateDto, string userName)
         {
 
@@ -322,7 +321,6 @@ namespace Sever.Service
                 }
             }
             await _notificationService.MedicineNotificationForParent(medicine, $"Đơn thuốc đã được cập nhật bởi y tá với trạng thái '{medicine.Status}'.");
-
             return true;
         }
 
@@ -357,7 +355,6 @@ namespace Sever.Service
             }
             await _medicineRepository.UpdateMedicineAsync(medicine);
             await _notificationService.MedicineNotificationForParent(medicine, $"Đơn thuốc đã được cập nhật bởi y tá với trạng thái '{medicine.Status}'.");
-
             return true;
         }
 

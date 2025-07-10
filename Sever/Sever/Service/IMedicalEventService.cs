@@ -194,6 +194,16 @@ namespace Sever.Service
             string studentName = null;
             string studentClass = null;
 
+            var imageList = medicalEvent.File?.Select(f => new ImageResponse
+            {
+                Id = f.FileID,
+                FileName = f.FileName,
+                FileType = f.FileType,
+                Url = f.FileLink,
+                UploadedAt = f.UploadDate
+            }).ToList();
+
+
             if (!string.IsNullOrEmpty(studentId))
             {
                 var student = await _studentProfileRepository.GetStudentProfileByStudentId(studentId);
@@ -212,7 +222,9 @@ namespace Sever.Service
                 NurseID = medicalEvent.NurseID,
                 StudentID = medicalEvent.MedicalEventDetail?.Select(d => d.StudentID).ToList(),
                 StudentName = studentName,
-                Class = studentClass
+                Class = studentClass,
+                Image = imageList
+
             };
         }
 
@@ -231,8 +243,19 @@ namespace Sever.Service
             foreach (var student in studentList)
             {
                 var medicalEvent = await _medicalEventRepository.GetMedicalEventByStudentIdAsync(student.StudentID);
+
+
                 foreach (var e in medicalEvent)
                 {
+                    var imageList = e.File.Select(f => new ImageResponse
+                    {
+                        Id = f.FileID,
+                        FileName = f.FileName,
+                        FileType = f.FileType,
+                        Url = f.FileLink,
+                        UploadedAt = f.UploadDate
+                    }).ToList();
+
                     response.Add(new MedicalEventResponse
                     {
                         MedicalEventID = e.MedicalEventID,
@@ -244,7 +267,8 @@ namespace Sever.Service
                         NurseID = e.NurseID,
                         StudentID = e.MedicalEventDetail.Select(d => d.StudentID).ToList(),
                         StudentName = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.StudentName,
-                        Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class
+                        Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class,
+                        Image = imageList
                     });
                 }
             }
@@ -258,6 +282,15 @@ namespace Sever.Service
 
             foreach (var e in medical)
             {
+                var imageList = e.File.Select(f => new ImageResponse
+                {
+                    Id = f.FileID,
+                    FileName = f.FileName,
+                    FileType = f.FileType,
+                    Url = f.FileLink,
+                    UploadedAt = f.UploadDate
+                }).ToList();
+
                 response.Add(new MedicalEventResponse
                 {
                     MedicalEventID = e.MedicalEventID,
@@ -269,7 +302,8 @@ namespace Sever.Service
                     NurseID = e.NurseID,
                     StudentID = e.MedicalEventDetail.Select(d => d.StudentID).ToList(),
                     StudentName = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.StudentName,
-                    Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class
+                    Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class,
+                    Image = imageList
                 });
             }
             return response;
@@ -283,6 +317,15 @@ namespace Sever.Service
 
             foreach (var e in medicalEvents)
             {
+                var imageList = e.File.Select(f => new ImageResponse
+                {
+                    Id = f.FileID,
+                    FileName = f.FileName,
+                    FileType = f.FileType,
+                    Url = f.FileLink,
+                    UploadedAt = f.UploadDate
+                }).ToList();
+
                 response.Add(new MedicalEventResponse
                 {
                     MedicalEventID = e.MedicalEventID,
@@ -294,7 +337,8 @@ namespace Sever.Service
                     NurseID = e.NurseID,
                     StudentID = e.MedicalEventDetail?.Select(d => d.StudentID).ToList(),
                     StudentName = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.StudentName,
-                    Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class
+                    Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class,
+                    Image = imageList
                 });
             }
             return response;

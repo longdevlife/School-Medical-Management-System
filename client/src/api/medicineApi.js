@@ -64,34 +64,78 @@ const medicineApi = {
     
     // POST - Tạo medicine mới
     createMedicine: (data) => {
+      console.log('🚀 medicineApi.createMedicine called with data:', {
+        ...data,
+        ImagesCount: data.Images?.length || 0,
+        StudentID: data.StudentID
+      });
+
+      // Validate required fields
+      if (!data.MedicineName?.trim()) {
+        throw new Error("MedicineName is required");
+      }
+      if (!data.Quantity?.trim()) {
+        throw new Error("Quantity is required");
+      }
+      if (!data.Dosage?.trim()) {
+        throw new Error("Dosage is required");
+      }
+      if (!data.StudentID?.trim()) {
+        throw new Error("StudentID is required");
+      }
+
       const formData = new FormData();
       
       // Thêm các trường bắt buộc
-      formData.append("MedicineName", data.MedicineName);
-      formData.append("Quantity", data.Quantity);
-      formData.append("Dosage", data.Dosage);
-      formData.append("StudentID", data.StudentID);
+      formData.append("MedicineName", data.MedicineName.trim());
+      formData.append("Quantity", data.Quantity.trim());
+      formData.append("Dosage", data.Dosage.trim());
+      formData.append("StudentID", data.StudentID.trim());
       
       // Thêm các trường tùy chọn
-      if (data.Instructions !== undefined) formData.append("Instructions", data.Instructions);
-      if (data.Notes !== undefined) formData.append("Notes", data.Notes);
-      
-      // Xử lý hình ảnh - đảm bảo khớp với định dạng API của nurse
-      if (data.Images && Array.isArray(data.Images) && data.Images.length > 0) {
-        data.Images.forEach(file => {
-          formData.append("Image", file);
-        });
-      } else if (data.Image) {
-        formData.append("Image", data.Image);
+      if (data.Instructions !== undefined) {
+        formData.append("Instructions", data.Instructions.trim() || "");
+      }
+      if (data.Notes !== undefined) {
+        formData.append("Notes", data.Notes.trim() || "");
       }
       
+      // Debug FormData trước khi gửi
+      console.log('📋 FormData contents:');
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+        } else {
+          console.log(`${key}: ${value}`);
+        }
+      }
+      
+      // ✅ Xử lý hình ảnh - Backend nhận IFormFile[] Image
+      if (data.Images && Array.isArray(data.Images) && data.Images.length > 0) {
+        console.log('🖼️ Adding images to FormData:', data.Images.length);
+        data.Images.forEach((file, index) => {
+          if (file instanceof File) {
+            formData.append("Image", file);
+            console.log(`📎 Added Image[${index}]: ${file.name} (${file.size} bytes)`);
+          } else {
+            console.warn(`⚠️ Invalid image at index ${index}:`, file);
+          }
+        });
+      } else if (data.Image && data.Image instanceof File) {
+        formData.append("Image", data.Image);
+        console.log('📎 Added single Image:', data.Image.name);
+      } else {
+        console.log('📷 No images to upload');
+      }
+      
+      console.log('🚀 Sending POST request to /parent/medicine/create');
       return axiosClient.post("/parent/medicine/create", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 30000
       });
     },
     
-    // PUT - Cập nhật medicine - Phụ huynh KHÔNG được phép cập nhật Status
+
     // Backend cho phép update các thuốc có trạng thái chưa xử lý theo MedicineID
     updateMedicine: (data) => {
       const medicineId = data.MedicineID;
@@ -121,7 +165,6 @@ const medicineApi = {
         formData.append("Image", data.Image);
       }
       
-      // KHÔNG gửi Status - Phụ huynh không được phép thay đổi trạng thái
       
       // api/parent/medicine/update
       return axiosClient.put(`/parent/medicine/update`, formData, {

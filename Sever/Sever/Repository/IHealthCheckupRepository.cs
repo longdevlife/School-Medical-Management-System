@@ -24,7 +24,6 @@ namespace Sever.Repository
         Task<int> CountConfirmHealthCheckUpsAsync(DateTime fromDate, DateTime toDate);
         Task<int> CountDeninedHealthCheckUpsAsync(DateTime fromDate, DateTime toDate);
         Task<int> CountNotResponseHealthCheckUpsAsync(DateTime fromDate, DateTime toDate);
-
     }
 
     public class HealthCheckupRepository : IHealthCheckupRepository

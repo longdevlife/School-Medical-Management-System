@@ -1089,6 +1089,22 @@
   },
   {
     "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "UpdateWaitingStatusHealthCheckUp",
+    "RelativePath": "api/nurse/update-waiting-status-health-check-up",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Id",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
     "Method": "CreateVaccinationByClassID",
     "RelativePath": "api/nurse/vaccine/createByClassID",
     "HttpMethod": "POST",
@@ -1411,6 +1427,22 @@
     "Parameters": [
       {
         "Name": "parentId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "GetAppointmentByStudentId",
+    "RelativePath": "api/parent/get-appointment-by-student-id/{StudentID}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "StudentID",
         "Type": "System.String",
         "IsRequired": true
       }

@@ -3,10 +3,6 @@
   "WorkspaceRootPath": "D:\\FPTU\\Semester_5\\SWP391\\Project\\fasdf\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\FPTU\\Semester_5\\SWP391\\Project\\fasdf\\Sever\\Sever\\Sever.csproj.user||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Sever\\Sever\\Sever.csproj.user||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\FPTU\\Semester_5\\SWP391\\Project\\fasdf\\Sever\\Sever\\Controllers\\NurseController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Sever\\Sever\\Controllers\\NurseController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -71,32 +67,19 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Sever.csproj.user",
-              "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\fasdf\\Sever\\Sever\\Sever.csproj.user",
-              "RelativeDocumentMoniker": "Sever\\Sever\\Sever.csproj.user",
-              "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\fasdf\\Sever\\Sever\\Sever.csproj.user",
-              "RelativeToolTip": "Sever\\Sever\\Sever.csproj.user",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003464|",
-              "WhenOpened": "2025-07-09T03:04:37.794Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
               "Title": "NurseController.cs",
               "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\fasdf\\Sever\\Sever\\Controllers\\NurseController.cs",
               "RelativeDocumentMoniker": "Sever\\Sever\\Controllers\\NurseController.cs",
               "ToolTip": "D:\\FPTU\\Semester_5\\SWP391\\Project\\fasdf\\Sever\\Sever\\Controllers\\NurseController.cs",
               "RelativeToolTip": "Sever\\Sever\\Controllers\\NurseController.cs",
-              "ViewState": "AgIAAEQBAAAAAAAAAAAAAGkBAAAFAAAAAAAAAA==",
+              "ViewState": "AgIAAD8AAAAAAAAAAAAAABQAAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-09T02:57:02.869Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "AuthController.cs",
               "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\fasdf\\Sever\\Sever\\Controllers\\AuthController.cs",
               "RelativeDocumentMoniker": "Sever\\Sever\\Controllers\\AuthController.cs",
@@ -109,7 +92,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
               "Title": "IUserRepository.cs",
               "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\fasdf\\Sever\\Sever\\Repository\\IUserRepository.cs",
               "RelativeDocumentMoniker": "Sever\\Sever\\Repository\\IUserRepository.cs",
@@ -122,7 +105,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 4,
               "Title": "AdminController.cs",
               "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\fasdf\\Sever\\Sever\\Controllers\\AdminController.cs",
               "RelativeDocumentMoniker": "Sever\\Sever\\Controllers\\AdminController.cs",
@@ -135,7 +118,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 5,
               "Title": "DataContext.cs",
               "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\fasdf\\Sever\\Sever\\Context\\DataContext.cs",
               "RelativeDocumentMoniker": "Sever\\Sever\\Context\\DataContext.cs",
@@ -147,7 +130,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 6,
               "Title": "IUserService.cs",
               "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\fasdf\\Sever\\Sever\\Service\\IUserService.cs",
               "RelativeDocumentMoniker": "Sever\\Sever\\Service\\IUserService.cs",
@@ -159,7 +142,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 7,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\fasdf\\Sever\\Sever\\Program.cs",
               "RelativeDocumentMoniker": "Sever\\Sever\\Program.cs",
@@ -171,7 +154,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 3,
               "Title": "Sever.csproj",
               "DocumentMoniker": "D:\\FPTU\\Semester_5\\SWP391\\Project\\fasdf\\Sever\\Sever\\Sever.csproj",
               "RelativeDocumentMoniker": "Sever\\Sever\\Sever.csproj",

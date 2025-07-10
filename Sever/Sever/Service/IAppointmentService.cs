@@ -14,17 +14,21 @@ namespace Sever.Service
         Task<bool> GetConfirmAppointment();
         Task<bool> ConfirmAppointMent(UpdateAppointment dto);
         Task<bool> DeniedAppointMent(UpdateAppointment dto);
+        Task<List<Appointment>> GetAppointmentByStudentId(string Id);
     }
 
     public class AppointmentService : IAppointmentService
     {
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly INotificationService _notificationService;
+        private readonly IHealthCheckupRepository _healthCheckupRepository;
         public AppointmentService(IAppointmentRepository appointmentRepository,
-                                    INotificationService notificationService)
+                                    INotificationService notificationService,
+                                    IHealthCheckupRepository healthCheckupRepository)
         {
             _appointmentRepository = appointmentRepository;
             _notificationService = notificationService;
+            _healthCheckupRepository = healthCheckupRepository;
         }
         public async Task<List<Appointment>> GetAllAppointmentAsync()
         {
@@ -80,6 +84,26 @@ namespace Sever.Service
             await _appointmentRepository.CreateAppointment(appointment);
             await _notificationService.AppointmentNotify(appointment);
             return true;
+        }
+
+        public async Task<List<Appointment>> GetAppointmentByStudentId(string Id)
+        {
+            var studenAppointments = new List<Appointment>();
+            var healthCheckUps = await _healthCheckupRepository.GetHealthCheckupsByStudentIdAsync(Id);
+            if (healthCheckUps == null || !healthCheckUps.Any())
+            {
+                throw new ArgumentException("No health checkups found for the specified student ID.");
+            }
+            foreach (var healthCheck in healthCheckUps)
+            {
+                var appointments = await _appointmentRepository.GetAppointmentByHealCheckupAsync(healthCheck.HealthCheckUpID);
+                if(appointments == null)
+                {
+                    throw new ArgumentException("No appointments found for the specified health checkup ID.");
+                }
+                studenAppointments.Add(appointments);
+            }
+            return studenAppointments;
         }
     }
 }

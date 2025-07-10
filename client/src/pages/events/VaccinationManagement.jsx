@@ -82,6 +82,7 @@ function VaccinationManagement() {
           );
 
           switch (backendStatus) {
+            case "Đã xác nhận":
             case "đã xác nhận":
               status = "confirmed";
               break;

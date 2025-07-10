@@ -35,7 +35,8 @@ namespace Sever.Service
         private readonly Cloudinary _cloudinary;
         private readonly DataContext _context;
         private readonly IUserRepository _userRepository;
-        public FilesSevice(IFilesRepository repository, IConfiguration config, DataContext context, IUserRepository userRepository)
+        private readonly IMedicineRepository _medicineRepository;
+        public FilesSevice(IFilesRepository repository, IConfiguration config, DataContext context, IUserRepository userRepository, IMedicineRepository medicineRepository)
         {
             _fileRepository = repository;
             var account = new Account(
@@ -46,6 +47,7 @@ namespace Sever.Service
             _cloudinary = new Cloudinary(account);
             _context = context;
             _userRepository = userRepository;
+            _medicineRepository = medicineRepository;
         }
 
         public async Task<ImageResponse> UploadSchoolLogoByAsync(IFormFile file, string id)
@@ -216,6 +218,9 @@ namespace Sever.Service
             if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
                 throw new Exception("Image upload failed");
 
+            var medicine = await _medicineRepository.GetMedicineByIdAsync(id);
+            if (medicine == null)
+                throw new Exception("Medicine not found");
 
             var image = new Files
             {
@@ -224,7 +229,8 @@ namespace Sever.Service
                 FileLink = uploadResult.SecureUrl.AbsoluteUri,
                 UploadDate = DateTime.UtcNow,
                 IsActive = true,
-                MedicineID = id
+                MedicineID = id, 
+                StudentID = medicine.StudentID,
             };
 
             await _fileRepository.AddAsync(image);

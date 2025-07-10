@@ -12,8 +12,8 @@ using Sever.Context;
 namespace Sever.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250706024826_init")]
-    partial class init
+    [Migration("20250710060208_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

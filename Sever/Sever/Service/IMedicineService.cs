@@ -369,7 +369,17 @@ namespace Sever.Service
                 foreach (var e in medicine)
                 {
 
-                    response.Add(new MedicineResponse
+                var imageList = e.File.Select(f => new ImageResponse
+                {
+                    Id = f.FileID,
+                    FileName = f.FileName,
+                    FileType = f.FileType,
+                    Url = f.FileLink,         
+                    UploadedAt = f.UploadDate
+                }).ToList();
+
+
+                response.Add(new MedicineResponse
                     {
                         MedicineID = e.MedicineID,
                         SentDate = e.SentDate,
@@ -384,8 +394,9 @@ namespace Sever.Service
                         Status = e.Status,
                         Class = e.StudentProfile.Class,
                         StudentName = e.StudentProfile.StudentName,
+                        Image = imageList              
 
-                    });
+                });
                 }
                 return response;
         }
@@ -398,7 +409,16 @@ namespace Sever.Service
                 List<MedicineResponse> response = new List<MedicineResponse>();
                 foreach (var e in medicines)
                 {
-                    response.Add(new MedicineResponse
+                var imageList = e.File.Select(f => new ImageResponse
+                {
+                    Id = f.FileID,
+                    FileName = f.FileName,
+                    FileType = f.FileType,
+                    Url = f.FileLink,
+                    UploadedAt = f.UploadDate
+                }).ToList();
+
+                response.Add(new MedicineResponse
                     {
                         MedicineID = e.MedicineID,
                         SentDate = e.SentDate,
@@ -412,8 +432,11 @@ namespace Sever.Service
                         StudentID = e.StudentID,
                         Status = e.Status, 
                         Class = e.StudentProfile.Class,
-                        StudentName = e.StudentProfile.StudentName
-                    });
+                        StudentName = e.StudentProfile.StudentName,
+                        Image = imageList
+
+
+                });
                 }
                 return response;
         }
@@ -430,30 +453,43 @@ namespace Sever.Service
 
                 var response = new List<MedicineResponse>();
 
-                foreach (var student in studentList)
+            foreach (var student in studentList)
+            {
+                var medicines = await _medicineRepository.GetMedicineByStudentIdAsync(student.StudentID);
+                foreach (var e in medicines)
                 {
-                    var medicines = await _medicineRepository.GetMedicineByStudentIdAsync(student.StudentID);
-                    foreach (var e in medicines)
-                    {
-                        response.Add(new MedicineResponse
+                    var imageList = e.File != null
+                        ? e.File.Select(f => new ImageResponse
                         {
-                            MedicineID = e.MedicineID,
-                            SentDate = e.SentDate,
-                            MedicineName = e.MedicineName,
-                            Quantity = e.Quantity,
-                            Dosage = e.Dosage,
-                            Instructions = e.Instructions,
-                            Notes = e.Notes,
-                            NurseID = e.NurseID,
-                            ParentID = e.ParentID,
-                            StudentID = e.StudentID,
-                            Class = student.Class,
-                            StudentName = student.StudentName,
-                            Status = e.Status
-                        });
-                    }
+                            Id = f.FileID,
+                            FileName = f.FileName,
+                            FileType = f.FileType,
+                            Url = f.FileLink,
+                            UploadedAt = f.UploadDate
+                        }).ToList()
+                        : new List<ImageResponse>();
+
+                    response.Add(new MedicineResponse
+                    {
+                        MedicineID = e.MedicineID,
+                        SentDate = e.SentDate,
+                        MedicineName = e.MedicineName,
+                        Quantity = e.Quantity,
+                        Dosage = e.Dosage,
+                        Instructions = e.Instructions,
+                        Notes = e.Notes,
+                        NurseID = e.NurseID,
+                        ParentID = e.ParentID,
+                        StudentID = e.StudentID,
+                        Class = student.Class,
+                        StudentName = student.StudentName,
+                        Status = e.Status,
+                        Image = imageList
+                    });
                 }
-                return response;
+            }
+
+            return response;
         }
 
         public async Task<int> TotalMedicinesAsync(DateTime fromDate, DateTime toDate)

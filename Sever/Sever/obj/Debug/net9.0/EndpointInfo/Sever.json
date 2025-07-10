@@ -2152,7 +2152,7 @@
         }
       }
     },
-    "/api/nurse/update-waiting-status-health-check-up": {
+    "/api/nurse/update-waiting-status-health-check-up/{Id}": {
       "put": {
         "tags": [
           "Nurse"
@@ -2160,7 +2160,8 @@
         "parameters": [
           {
             "name": "Id",
-            "in": "query",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -3186,6 +3187,10 @@
             "nullable": true
           },
           "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
             "type": "string",
             "nullable": true
           }

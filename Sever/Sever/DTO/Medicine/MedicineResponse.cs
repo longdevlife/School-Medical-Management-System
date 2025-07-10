@@ -1,4 +1,5 @@
-﻿using Sever.Model;
+﻿using Sever.DTO.File;
+using Sever.Model;
 
 namespace Sever.DTO.Medicine
 {
@@ -11,7 +12,7 @@ namespace Sever.DTO.Medicine
         public string? Instructions { get; set; }
         public DateTime? SentDate { get; set; }
         public string? Notes { get; set; }
-        public List<IFormFile>? Image { get; set; }
+        public List<ImageResponse>? Image { get; set; }
         public string? StudentID { get; set; }
         public string? Class { get; set; }
         public string? StudentName { get; set; }

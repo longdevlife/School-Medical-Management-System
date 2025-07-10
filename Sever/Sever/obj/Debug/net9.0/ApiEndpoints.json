@@ -774,6 +774,16 @@
   },
   {
     "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetAllAppointmentAsync",
+    "RelativePath": "api/nurse/get-all-appointment",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
     "Method": "GetAllHealthCheckUp",
     "RelativePath": "api/nurse/get-all-health-check-up",
     "HttpMethod": "GET",

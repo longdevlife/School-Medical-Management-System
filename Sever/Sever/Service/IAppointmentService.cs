@@ -6,7 +6,7 @@ namespace Sever.Service
 {
     public interface IAppointmentService
     {
-        Task<List<Appointment>> GetAllAppointmentAsync();
+        Task<List<GetAppointment>> GetAllAppointmentAsync();
         Task<bool> CreateAppointmentAsync(CreateAppointment appointment);
         Task<Appointment> GetAppointmentByIdAsync(string id);
         Task<Appointment> GetAppointmentByHealCheckupAsync(string healthCheckUpId);
@@ -22,17 +22,39 @@ namespace Sever.Service
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly INotificationService _notificationService;
         private readonly IHealthCheckupRepository _healthCheckupRepository;
+        private readonly IStudentProfileRepository _studentProfileRepository;
         public AppointmentService(IAppointmentRepository appointmentRepository,
                                     INotificationService notificationService,
-                                    IHealthCheckupRepository healthCheckupRepository)
+                                    IHealthCheckupRepository healthCheckupRepository,
+                                    IStudentProfileRepository studentProfileRepository)
         {
             _appointmentRepository = appointmentRepository;
             _notificationService = notificationService;
             _healthCheckupRepository = healthCheckupRepository;
+            _studentProfileRepository = studentProfileRepository;
         }
-        public async Task<List<Appointment>> GetAllAppointmentAsync()
+        public async Task<List<GetAppointment>> GetAllAppointmentAsync()
         {
-            return await _appointmentRepository.GetAllAppointmentAsync();
+            var appointments = new List<GetAppointment>();
+            var results = await _appointmentRepository.GetAllAppointmentAsync();
+            foreach (var result in results)
+            {
+                var healthCheck = await _healthCheckupRepository.GetHealthCheckUpByIdAsync(result.HealthCheckUpID);
+                var student = await _studentProfileRepository.GetStudentProfileByStudentId(healthCheck.StudentID);
+                appointments.Add(new GetAppointment
+                {
+                    AppointmentID = result.AppointmentID,
+                    StudentName = student.StudentName,
+                    ClasseName = student.Class,
+                    DateTime = result.DateTime,
+                    Location = result.Location,
+                    Reason = result.Reason,
+                    Status = result.Status,
+                    Notes = result.Notes,
+                    HealthCheckUpID = healthCheck.HealthCheckUpID,
+                });
+            }
+            return appointments;
         }
         public async Task<Appointment> GetAppointmentByIdAsync(string id)
         {
@@ -97,7 +119,7 @@ namespace Sever.Service
             foreach (var healthCheck in healthCheckUps)
             {
                 var appointments = await _appointmentRepository.GetAppointmentByHealCheckupAsync(healthCheck.HealthCheckUpID);
-                if(appointments == null)
+                if (appointments == null)
                 {
                     throw new ArgumentException("No appointments found for the specified health checkup ID.");
                 }

@@ -38,14 +38,12 @@ import VaccineDetail from "./pages/vaccinations/VaccineDetail";
 import HealthCheckup from "./pages/healthRecord/HealthCheckup";
 import MedicineManagement from "./pages/medicineParent/MedicineManagement";
 
-
 import Login from "./pages/Login";
 import HomePage from "./pages/home/HomePage";
 import AboutPage from "./pages/home/AboutPage";
 import NewsPage from "./pages/home/NewsPage";
 
-
-
+// l
 function App() {
   return (
     <ConfigProvider>
@@ -54,10 +52,9 @@ function App() {
           {" "}
           {/* Public Routes */}
           <Route path="/home" element={<HomePage />} />
-          <Route path="/gioi-thieu" element={<AboutPage/>} />
-          <Route path="/tin-tuc" element={<NewsPage/>} />
+          <Route path="/gioi-thieu" element={<AboutPage />} />
+          <Route path="/tin-tuc" element={<NewsPage />} />
           <Route path="/login" element={<Login />} />
-          
           {/* Admin layout */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
@@ -81,7 +78,7 @@ function App() {
               path="medication-submission"
               element={<MedicationSubmission />}
             />
-         
+
             <Route
               path="medical-events/vaccination"
               element={<VaccinationManagement />}
@@ -122,8 +119,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-
-          <Route index element={<ParentProfile />} />
+            <Route index element={<ParentProfile />} />
             <Route path="profile-student" element={<StudentProfile />} />
             <Route path="profile" element={<ParentProfile />} />
             <Route path="medical-events" element={<MedicalEvent />} />

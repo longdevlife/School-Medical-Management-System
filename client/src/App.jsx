@@ -33,17 +33,17 @@ import ParentLayout from "./components/Layout/parent/ParentLayout";
 import StudentProfile from "./pages/studentProfile/StudentProfile";
 import ParentProfile from "./pages/parent/ParentProfile";
 import MedicalEvent from "./pages/eventMedical/MedicalEvent";
-import Vaccine from "./pages/vaccinations/Vaccine";
-import VaccineDetail from "./pages/vaccinations/VaccineDetail";
-import HealthCheckup from "./pages/healthRecord/HealthCheckup";
+import VaccineManagement from "./pages/vaccinationsParent/VaccineManagement";
+import VaccineRequest from "./pages/vaccinationsParent/VaccineRequest";
+import HealthResult from "./pages/healthRecord/HealthResult";
 import MedicineManagement from "./pages/medicineParent/MedicineManagement";
+import DeclareHealthProfile from "./pages/decleareParent/DeclareHealthProfile";
 
 import Login from "./pages/Login";
 import HomePage from "./pages/home/HomePage";
 import AboutPage from "./pages/home/AboutPage";
 import NewsPage from "./pages/home/NewsPage";
 import SettingUser from "./pages/settings/SettingUser";
-
 
 function App() {
   return (
@@ -53,10 +53,9 @@ function App() {
           {" "}
           {/* Public Routes */}
           <Route path="/home" element={<HomePage />} />
-          <Route path="/gioi-thieu" element={<AboutPage/>} />
-          <Route path="/tin-tuc" element={<NewsPage/>} />
+          <Route path="/gioi-thieu" element={<AboutPage />} />
+          <Route path="/tin-tuc" element={<NewsPage />} />
           <Route path="/login" element={<Login />} />
-          
           {/* Admin layout */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
@@ -80,7 +79,7 @@ function App() {
               path="medication-submission"
               element={<MedicationSubmission />}
             />
-         
+
             <Route
               path="medical-events/vaccination"
               element={<VaccinationManagement />}
@@ -121,17 +120,21 @@ function App() {
               </ProtectedRoute>
             }
           >
-
-          <Route index element={<ParentProfile />} />
+            <Route index element={<ParentProfile />} />
             <Route path="profile-student" element={<StudentProfile />} />
-            <Route path="profile" element={<ParentProfile />} />
-            <Route path="events" element={<MedicalEvent />} />
+            <Route path="profileParent" element={<ParentProfile />} />
             <Route path="medical-events" element={<MedicalEvent />} />
-            <Route path="vaccinations" element={<Vaccine />} />
-            <Route path="vaccinations/:id" element={<VaccineDetail />} />
-            <Route path="health-result" element={<HealthCheckup />} />
+            <Route
+              path="vaccinations/results"
+              element={<VaccineManagement />}
+            />
+            <Route
+              path="vaccinations/requirements"
+              element={<VaccineRequest />}
+            />
+            <Route path="health-result" element={<HealthResult />} />
             <Route path="send-medicine" element={<MedicineManagement />} />
-             <Route path="settings" element={<SettingUser />} />
+            <Route path="declare-health" element={<DeclareHealthProfile />} />
           </Route>{" "}
           {/* Redirect root to home page */}
           <Route path="/" element={<Navigate to="/login" replace />} />

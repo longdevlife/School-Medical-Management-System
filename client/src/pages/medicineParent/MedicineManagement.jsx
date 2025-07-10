@@ -264,8 +264,18 @@ const MedicineManagement = () => {
           Instructions: medicine.Instructions || '',
           Notes: medicine.Notes || '',
           StudentID: medicine.StudentID,
-          // Không gửi Images vì URL đã được tạo local và không thể gửi lên server
         };
+
+        // ✅ Thêm ảnh nếu có file gốc được lưu
+        if (medicine._originalFiles && medicine._originalFiles.length > 0) {
+          syncData.Images = medicine._originalFiles;
+          console.log('�️ Found original files to sync:', medicine._originalFiles.length);
+        }
+
+        console.log('�🔍 Sync data prepared:', {
+          ...syncData,
+          ImagesCount: syncData.Images?.length || 0
+        });
 
         // Nếu là thuốc mới (tạm thời)
         if (medicine._isTemp) {
@@ -421,7 +431,8 @@ const MedicineManagement = () => {
       'Dosage': 'Liều lượng',
       'Instructions': 'Hướng dẫn sử dụng',
       'Notes': 'Ghi chú',
-      'Status': 'Trạng thái'
+      'Status': 'Trạng thái',
+      'Images': 'Hình ảnh thuốc'
     };
     return fieldNames[fieldName] || fieldName;
   };
@@ -844,22 +855,72 @@ const MedicineManagement = () => {
       }
 
       // Chuẩn hóa dữ liệu từ server
-      const processedServerMedicines = allMedicines.map(medicine => ({
-        MedicineID: medicine.medicineID || medicine.MedicineID,
-        MedicineName: medicine.medicineName || medicine.MedicineName,
-        Quantity: medicine.quantity || medicine.Quantity,
-        Dosage: medicine.dosage || medicine.Dosage,
-        Instructions: medicine.instructions || medicine.Instructions || '',
-        Notes: medicine.notes || medicine.Notes || '',
-        Status: normalizeStatus(medicine.status || medicine.Status || 'Chờ xử lý'),
-        SentDate: medicine.sentDate || medicine.SentDate || medicine.createdAt,
-        StudentID: medicine.studentID || medicine.StudentID || medicine.student_id,
-        NurseID: medicine.nurseID || medicine.NurseID || null,
-        ParentID: medicine.parentID || medicine.ParentID || null,
-        Images: medicine.image ? [medicine.image] : medicine.images || medicine.Images || [],
-        _fromServer: true,
-        _serverFetchedAt: new Date().toISOString()
-      }));
+      const processedServerMedicines = allMedicines.map(medicine => {
+        console.log('🔍 Processing medicine from server:', {
+          id: medicine.medicineID || medicine.MedicineID,
+          name: medicine.medicineName || medicine.MedicineName,
+          File: medicine.File,
+          files: medicine.files,
+          Images: medicine.Images,
+          images: medicine.images,
+          Image: medicine.Image,
+          image: medicine.image
+        });
+
+        // ✅ Xử lý ảnh từ nhiều nguồn có thể có - ưu tiên File array
+        let processedImages = [];
+        let fileArray = [];
+
+        if (medicine.File && Array.isArray(medicine.File) && medicine.File.length > 0) {
+          // Backend trả về File array với FileLink
+          fileArray = medicine.File;
+          processedImages = medicine.File
+            .map(file => file.FileLink || file.fileLink || file.url)
+            .filter(Boolean);
+          console.log('✅ Found images from File array:', processedImages);
+        } else if (medicine.files && Array.isArray(medicine.files) && medicine.files.length > 0) {
+          fileArray = medicine.files;
+          processedImages = medicine.files
+            .map(file => file.FileLink || file.fileLink || file.url)
+            .filter(Boolean);
+          console.log('✅ Found images from files array:', processedImages);
+        } else if (medicine.Images && Array.isArray(medicine.Images) && medicine.Images.length > 0) {
+          processedImages = medicine.Images.filter(Boolean);
+          console.log('✅ Found images from Images array:', processedImages);
+        } else if (medicine.images && Array.isArray(medicine.images) && medicine.images.length > 0) {
+          processedImages = medicine.images.filter(Boolean);
+          console.log('✅ Found images from images array:', processedImages);
+        } else if (medicine.Image && Array.isArray(medicine.Image) && medicine.Image.length > 0) {
+          processedImages = medicine.Image.filter(Boolean);
+          console.log('✅ Found images from Image array:', processedImages);
+        } else if (medicine.image && Array.isArray(medicine.image) && medicine.image.length > 0) {
+          processedImages = medicine.image.filter(Boolean);
+          console.log('✅ Found images from image array:', processedImages);
+        } else if (medicine.image && typeof medicine.image === 'string') {
+          processedImages = [medicine.image];
+          console.log('✅ Found single image string:', processedImages);
+        } else {
+          console.log('❌ No images found for medicine:', medicine.medicineID || medicine.MedicineID);
+        }
+
+        return {
+          MedicineID: medicine.medicineID || medicine.MedicineID,
+          MedicineName: medicine.medicineName || medicine.MedicineName,
+          Quantity: medicine.quantity || medicine.Quantity,
+          Dosage: medicine.dosage || medicine.Dosage,
+          Instructions: medicine.instructions || medicine.Instructions || '',
+          Notes: medicine.notes || medicine.Notes || '',
+          Status: normalizeStatus(medicine.status || medicine.Status || 'Chờ xử lý'),
+          SentDate: medicine.sentDate || medicine.SentDate || medicine.createdAt,
+          StudentID: medicine.studentID || medicine.StudentID || medicine.student_id,
+          NurseID: medicine.nurseID || medicine.NurseID || null,
+          ParentID: medicine.parentID || medicine.ParentID || null,
+          Images: processedImages, // Mảng URL ảnh để hiển thị
+          File: fileArray, // Mảng File objects từ backend để dùng trong edit
+          _fromServer: true,
+          _serverFetchedAt: new Date().toISOString()
+        };
+      });
 
       // Kiểm tra trạng thái sau khi chuẩn hóa
       const statusCounts = {};
@@ -1008,13 +1069,95 @@ const MedicineManagement = () => {
       Notes: record.Notes || ''
     });
 
-    setFileList([]);
+    // ✅ Load ảnh cũ vào fileList để hiển thị trong form edit
+    const existingImages = [];
+
+    // Tìm ảnh từ nhiều nguồn có thể có từ backend
+    let medicineImages = [];
+
+    console.log('🔍 Loading existing images for edit:', {
+      medicineId: record.MedicineID,
+      File: record.File,
+      files: record.files,
+      Images: record.Images,
+      images: record.images,
+      Image: record.Image,
+      image: record.image
+    });
+
+    // ✅ Ưu tiên lấy từ File array (chính xác nhất từ backend)
+    if (record.File && Array.isArray(record.File) && record.File.length > 0) {
+      medicineImages = record.File
+        .map(file => file.FileLink || file.fileLink || file.url)
+        .filter(Boolean);
+      console.log('✅ Found images from File array for edit:', medicineImages);
+    } else if (record.files && Array.isArray(record.files) && record.files.length > 0) {
+      medicineImages = record.files
+        .map(file => file.FileLink || file.fileLink || file.url)
+        .filter(Boolean);
+      console.log('✅ Found images from files array for edit:', medicineImages);
+    } else if (record.Images && Array.isArray(record.Images) && record.Images.length > 0) {
+      medicineImages = record.Images.filter(Boolean);
+      console.log('✅ Found images from Images array for edit:', medicineImages);
+    } else if (record.images && Array.isArray(record.images) && record.images.length > 0) {
+      medicineImages = record.images.filter(Boolean);
+      console.log('✅ Found images from images array for edit:', medicineImages);
+    } else if (record.Image && Array.isArray(record.Image) && record.Image.length > 0) {
+      medicineImages = record.Image.filter(Boolean);
+      console.log('✅ Found images from Image array for edit:', medicineImages);
+    } else if (record.image && Array.isArray(record.image) && record.image.length > 0) {
+      medicineImages = record.image.filter(Boolean);
+      console.log('✅ Found images from image array for edit:', medicineImages);
+    } else if (record.image && typeof record.image === 'string') {
+      medicineImages = [record.image];
+      console.log('✅ Found single image string for edit:', medicineImages);
+    } else if (record.Image && typeof record.Image === 'string') {
+      medicineImages = [record.Image];
+      console.log('✅ Found single Image string for edit:', medicineImages);
+    } else if (record.imageUrl && typeof record.imageUrl === 'string') {
+      medicineImages = [record.imageUrl];
+      console.log('✅ Found imageUrl for edit:', medicineImages);
+    } else {
+      console.log('❌ No images found for editing medicine:', record.MedicineID);
+    }
+
+    // Chuyển đổi ảnh thành format cho Upload component
+    if (medicineImages.length > 0) {
+      medicineImages.forEach((img, index) => {
+        let imageUrl;
+        if (typeof img === 'string') {
+          if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:')) {
+            imageUrl = img;
+          } else {
+            // ✅ Sử dụng HTTPS như backend
+            const baseUrl = 'https://localhost:7040';
+            const cleanImg = img.startsWith('/') ? img : `/${img}`;
+            imageUrl = `${baseUrl}${cleanImg}`;
+          }
+
+          existingImages.push({
+            uid: `existing-${index}`,
+            name: `medicine-image-${index + 1}.jpg`,
+            status: 'done',
+            url: imageUrl,
+            thumbUrl: imageUrl, // Quan trọng: để hiển thị preview
+            response: { url: imageUrl }, // Để component Upload hiểu đây là ảnh đã upload
+            isExisting: true // Flag để phân biệt ảnh cũ và ảnh mới
+          });
+        }
+      });
+    }
+
+    setFileList(existingImages);
     setIsModalVisible(true);
 
     console.log('✅ Edit form populated with data:', {
       name: record.MedicineName,
       quantity: record.Quantity,
-      dosage: record.Dosage
+      dosage: record.Dosage,
+      existingImages: existingImages.length,
+      medicineImages: medicineImages,
+      fileList: existingImages
     });
   };
 
@@ -1038,7 +1181,27 @@ const MedicineManagement = () => {
       }
 
       // Xử lý hình ảnh từ fileList
-      const images = fileList.map(file => file.originFileObj).filter(Boolean);
+      const newImages = fileList
+        .filter(file => !file.isExisting) // Chỉ lấy ảnh mới (không phải ảnh cũ)
+        .map(file => file.originFileObj)
+        .filter(Boolean);
+
+      const existingImages = fileList
+        .filter(file => file.isExisting) // Chỉ lấy ảnh cũ
+        .map(file => file.url || file.thumbUrl)
+        .filter(Boolean);
+
+      console.log('🖼️ Image processing:', {
+        totalFiles: fileList.length,
+        newImages: newImages.length,
+        existingImages: existingImages.length,
+        fileListDetails: fileList.map(f => ({
+          name: f.name,
+          isExisting: f.isExisting,
+          hasOriginFile: !!f.originFileObj,
+          url: f.url
+        }))
+      });
 
       // Chuẩn bị dữ liệu chung
       const medicineData = {
@@ -1048,7 +1211,7 @@ const MedicineManagement = () => {
         Instructions: values.Instructions?.trim() || '',
         Notes: values.Notes?.trim() || '',
         StudentID: selectedStudentId,
-        Images: images
+        Images: newImages // Chỉ gửi ảnh mới khi tạo thuốc
       };
 
       // Xử lý trường hợp cập nhật
@@ -1056,23 +1219,41 @@ const MedicineManagement = () => {
         console.log('Đang cập nhật thuốc:', editingMedicine.MedicineID);
 
         // Lưu lịch sử thay đổi
+        const oldImageCount = editingMedicine.File?.length || editingMedicine.Images?.length || 0;
+        const newImageCount = newImages.length + existingImages.length;
+        const hasImageChange = newImages.length > 0 || oldImageCount !== newImageCount;
+
         const historyEntry = {
           action: 'UPDATE',
+          hasImageUpdate: hasImageChange,
           previousData: {
             MedicineName: editingMedicine.MedicineName,
             Quantity: editingMedicine.Quantity,
             Dosage: editingMedicine.Dosage,
             Instructions: editingMedicine.Instructions,
-            Notes: editingMedicine.Notes
+            Notes: editingMedicine.Notes,
+            ImageCount: oldImageCount
           },
           newData: {
             MedicineName: medicineData.MedicineName,
             Quantity: medicineData.Quantity,
             Dosage: medicineData.Dosage,
             Instructions: medicineData.Instructions,
-            Notes: medicineData.Notes
+            Notes: medicineData.Notes,
+            ImageCount: newImageCount
           },
-          changedFields: getChangedFields(editingMedicine, medicineData),
+          changedFields: (() => {
+            const changes = getChangedFields(editingMedicine, medicineData);
+            // Thêm thông tin về ảnh nếu có thay đổi
+            if (hasImageChange) {
+              changes.push({
+                field: 'Images',
+                from: oldImageCount > 0 ? `${oldImageCount} ảnh` : 'Không có ảnh',
+                to: newImageCount > 0 ? `${newImageCount} ảnh` : 'Không có ảnh'
+              });
+            }
+            return changes;
+          })(),
           updatedBy: 'Parent'
         };
 
@@ -1088,9 +1269,13 @@ const MedicineManagement = () => {
           Instructions: medicineData.Instructions,
           Notes: medicineData.Notes,
           // Giữ nguyên Status: editingMedicine.Status
-          Images: images.length > 0
-            ? images.map(file => URL.createObjectURL(file))
-            : editingMedicine.Images || [],
+          // Xử lý ảnh: kết hợp ảnh cũ và ảnh mới
+          Images: [...existingImages, ...newImages.map(file => URL.createObjectURL(file))],
+          File: [...(editingMedicine.File || []), ...newImages.map((file, index) => ({
+            FileLink: URL.createObjectURL(file),
+            FileName: file.name,
+            FileType: file.type
+          }))],
           // ✅ Đánh dấu cần đồng bộ khi update
           _pendingSync: true,
           _lastUpdateAttempt: new Date().toISOString()
@@ -1112,7 +1297,8 @@ const MedicineManagement = () => {
         try {
           const apiData = {
             MedicineID: editingMedicine.MedicineID,
-            ...medicineData
+            ...medicineData,
+            Images: newImages // Chỉ gửi ảnh mới cho API update
           };
 
           console.log('Gửi dữ liệu cập nhật lên server:', apiData);
@@ -1180,75 +1366,167 @@ const MedicineManagement = () => {
       else {
         console.log('Đang tạo thuốc mới');
 
+        // ✅ Kiểm tra: nếu có ảnh thì bắt buộc phải online
+        if (newImages.length > 0 && !navigator.onLine) {
+          message.error('Không thể tạo thuốc với ảnh khi offline. Vui lòng kiểm tra kết nối internet.');
+          return;
+        }
+
         // Tạo ID tạm thời duy nhất cho thuốc mới
         const tempId = `MED_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        // Tạo đối tượng thuốc mới với ID tạm thời và trạng thái "Chờ xử lý"
-        const newMedicine = {
-          MedicineID: tempId,
-          ...medicineData,
-          Status: 'Chờ xử lý', // Trạng thái mặc định cho yêu cầu mới
-          Images: images.map(file => URL.createObjectURL(file)),
-          SentDate: new Date().toISOString(),
-          NurseID: null,
-          ParentID: null,
-          _isTemp: true, // Đánh dấu là thuốc tạm thời chưa đồng bộ
-          _pendingSync: true, // Đánh dấu cần đồng bộ
-          _createdAt: new Date().toISOString() // Thời gian tạo offline
-        };
+        // Nếu online, gọi API ngay
+        if (navigator.onLine) {
+          try {
+            console.log('🌐 Online - Gửi thuốc trực tiếp lên server');
+            console.log('📋 Medicine data being sent:', {
+              MedicineName: medicineData.MedicineName,
+              Quantity: medicineData.Quantity,
+              Dosage: medicineData.Dosage,
+              Instructions: medicineData.Instructions,
+              Notes: medicineData.Notes,
+              StudentID: medicineData.StudentID,
+              ImagesCount: medicineData.Images?.length || 0,
+              ImageTypes: medicineData.Images?.map(img => img?.type) || []
+            });
 
-        // Thêm vào state local trước để UI phản hồi ngay lập tức
-        setMedicines(prevMedicines => {
-          const updatedMedicines = [...prevMedicines, newMedicine];
-          saveMedicinesToStorage(updatedMedicines);
-          return updatedMedicines;
-        });
-
-        message.loading('Đang tạo yêu cầu thuốc...', 1);
-
-        // Gọi API để tạo trên server
-        try {
-          console.log('Gửi dữ liệu tạo thuốc lên server:', medicineData);
-          const createResponse = await medicineApi.parent.createMedicine(medicineData);
-          console.log('Kết quả tạo thuốc từ server:', createResponse);
-
-          if (createResponse?.data?.medicineID || createResponse?.data?.MedicineID) {
-            const realId = createResponse.data.medicineID || createResponse.data.MedicineID;
-            const serverStatus = createResponse.data.status || createResponse.data.Status || 'Chờ xử lý';
-            const serverDate = createResponse.data.sentDate || createResponse.data.SentDate || newMedicine.SentDate;
-
-            console.log('Nhận được ID thuốc từ server:', realId);
-
-            // Cập nhật ID thật từ server và xóa các flag tạm thời
-            setMedicines(prevMedicines => {
-              const updatedMedicines = prevMedicines.map(med => {
-                if (med.MedicineID === tempId) {
-                  return {
-                    ...med,
-                    MedicineID: realId,
-                    Status: normalizeStatus(serverStatus),
-                    SentDate: serverDate,
-                    _isTemp: false,
-                    _pendingSync: false
-                  };
-                }
-                return med;
+            // ✅ Validation trước khi gửi
+            if (!medicineData.StudentID?.trim()) {
+              throw new Error('StudentID không được để trống');
+            }
+            if (!selectedStudentId?.trim()) {
+              throw new Error('Chưa chọn học sinh');
+            }
+            if (medicineData.StudentID !== selectedStudentId) {
+              console.warn('⚠️ StudentID mismatch:', {
+                medicineDataStudentID: medicineData.StudentID,
+                selectedStudentId: selectedStudentId
               });
+            }
+
+            const createResponse = await medicineApi.parent.createMedicine(medicineData);
+            console.log('✅ Kết quả tạo thuốc từ server:', createResponse);
+
+            if (createResponse?.data?.medicineID || createResponse?.data?.MedicineID) {
+              const realId = createResponse.data.medicineID || createResponse.data.MedicineID;
+              const serverStatus = createResponse.data.status || createResponse.data.Status || 'Chờ xử lý';
+              const serverDate = createResponse.data.sentDate || createResponse.data.SentDate || new Date().toISOString();
+
+              console.log('Nhận được ID thuốc từ server:', realId);
+
+              // Tạo đối tượng thuốc với dữ liệu từ server
+              const serverMedicine = {
+                MedicineID: realId,
+                MedicineName: medicineData.MedicineName,
+                Quantity: medicineData.Quantity,
+                Dosage: medicineData.Dosage,
+                Instructions: medicineData.Instructions,
+                Notes: medicineData.Notes,
+                Status: normalizeStatus(serverStatus),
+                SentDate: serverDate,
+                StudentID: medicineData.StudentID,
+                NurseID: null,
+                ParentID: null,
+                Images: newImages.map(file => URL.createObjectURL(file)), // Tạm thời cho UI
+                File: newImages.map((file, index) => ({
+                  FileLink: URL.createObjectURL(file),
+                  FileName: file.name,
+                  FileType: file.type
+                })),
+                _fromServer: true,
+                _serverFetchedAt: new Date().toISOString()
+              };
+
+              // Thêm vào state
+              setMedicines(prevMedicines => {
+                const updatedMedicines = [...prevMedicines, serverMedicine];
+                saveMedicinesToStorage(updatedMedicines);
+                return updatedMedicines;
+              });
+
+              message.success('Đã tạo yêu cầu thuốc thành công!');
+
+              // Force refresh để lấy dữ liệu mới nhất từ server
+              console.log('🔄 Force refresh sau khi tạo thuốc thành công');
+              setTimeout(() => {
+                fetchMedicinesFromServer();
+              }, 500);
+            } else {
+              throw new Error('Server không trả về ID thuốc');
+            }
+          } catch (createError) {
+            console.error('❌ Lỗi khi tạo thuốc trên server:', createError);
+            console.error('❌ Chi tiết lỗi:', {
+              message: createError.message,
+              response: createError.response?.data,
+              status: createError.response?.status
+            });
+
+            // Nếu có ảnh và lỗi, không lưu offline
+            if (newImages.length > 0) {
+              message.error(`Không thể tạo thuốc với ảnh: ${createError.response?.data?.message || createError.message}`);
+              return;
+            }
+
+            // Chỉ lưu offline nếu không có ảnh
+            message.warning('Không thể kết nối server. Thuốc sẽ được tạo offline (không có ảnh).');
+
+            // Tạo offline thuốc không có ảnh
+            const offlineMedicine = {
+              MedicineID: tempId,
+              MedicineName: medicineData.MedicineName,
+              Quantity: medicineData.Quantity,
+              Dosage: medicineData.Dosage,
+              Instructions: medicineData.Instructions,
+              Notes: medicineData.Notes,
+              Status: 'Chờ xử lý',
+              SentDate: new Date().toISOString(),
+              StudentID: medicineData.StudentID,
+              NurseID: null,
+              ParentID: null,
+              Images: [],
+              File: [],
+              _isTemp: true,
+              _pendingSync: true,
+              _createdAt: new Date().toISOString()
+            };
+
+            setMedicines(prevMedicines => {
+              const updatedMedicines = [...prevMedicines, offlineMedicine];
+              saveMedicinesToStorage(updatedMedicines);
+              return updatedMedicines;
+            });
+          }
+        } else {
+          // Offline và không có ảnh - tạo offline
+          if (newImages.length === 0) {
+            const offlineMedicine = {
+              MedicineID: tempId,
+              MedicineName: medicineData.MedicineName,
+              Quantity: medicineData.Quantity,
+              Dosage: medicineData.Dosage,
+              Instructions: medicineData.Instructions,
+              Notes: medicineData.Notes,
+              Status: 'Chờ xử lý',
+              SentDate: new Date().toISOString(),
+              StudentID: medicineData.StudentID,
+              NurseID: null,
+              ParentID: null,
+              Images: [],
+              File: [],
+              _isTemp: true,
+              _pendingSync: true,
+              _createdAt: new Date().toISOString()
+            };
+
+            setMedicines(prevMedicines => {
+              const updatedMedicines = [...prevMedicines, offlineMedicine];
               saveMedicinesToStorage(updatedMedicines);
               return updatedMedicines;
             });
 
-            message.success('Đã lưu yêu cầu thuốc trên server!');
-
-            // Force refresh để lấy dữ liệu mới nhất từ server
-            console.log('🔄 Force refresh sau khi tạo thuốc thành công');
-            setTimeout(() => {
-              fetchMedicinesFromServer();
-            }, 500);
+            message.warning('Đã tạo thuốc offline. Sẽ đồng bộ khi có kết nối internet.');
           }
-        } catch (createError) {
-          console.error('Lỗi khi tạo thuốc trên server:', createError);
-          message.warning('Đã lưu cục bộ, yêu cầu sẽ tự động đồng bộ khi có kết nối internet.');
         }
       }
 
@@ -1378,7 +1656,7 @@ const MedicineManagement = () => {
       title: 'Trạng thái',
       dataIndex: 'Status',
       key: 'Status',
-      width: 110, 
+      width: 110,
       render: (status) => {
         const normalizedStatus = normalizeStatus(status);
         return (
@@ -1748,7 +2026,7 @@ const MedicineManagement = () => {
                   textShadow: "1px 1px 3px rgba(0,0,0,0.10)"
                 }}
               >
-               Chăm sóc sức khỏe toàn diện cho trẻ
+                Chăm sóc sức khỏe toàn diện cho trẻ
               </span>
             </div>
           </div>
@@ -1930,7 +2208,7 @@ const MedicineManagement = () => {
                   </div>
                 </Col>
                 <Col xs={12} md={4}>
-                   <div style={{
+                  <div style={{
                     background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                     borderRadius: 18,
                     padding: "20px 0",
@@ -2078,6 +2356,10 @@ const MedicineManagement = () => {
             </div>
           }
           className="shadow-sm"
+          bodyStyle={{
+            padding: "0",
+            width: "100%" // Thêm dòng này 
+          }}
         >
           <Table
             columns={columns}
@@ -2203,6 +2485,48 @@ const MedicineManagement = () => {
                 accept="image/*"
                 maxCount={3}
                 listType="picture-card"
+                onPreview={(file) => {
+                  console.log('🖼️ Preview file:', file);
+                  // Xử lý preview ảnh
+                  let imageUrl = file.url || file.thumbUrl;
+                  if (!imageUrl && file.originFileObj) {
+                    imageUrl = URL.createObjectURL(file.originFileObj);
+                  }
+
+                  if (imageUrl) {
+                    // Tạo modal để xem ảnh full size
+                    const modal = document.createElement('div');
+                    modal.style.cssText = `
+                      position: fixed;
+                      top: 0;
+                      left: 0;
+                      width: 100vw;
+                      height: 100vh;
+                      background: rgba(0,0,0,0.8);
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+                      z-index: 9999;
+                      cursor: pointer;
+                    `;
+
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.style.cssText = `
+                      max-width: 90%;
+                      max-height: 90%;
+                      object-fit: contain;
+                      border-radius: 8px;
+                    `;
+
+                    modal.appendChild(img);
+                    document.body.appendChild(modal);
+
+                    modal.onclick = () => {
+                      document.body.removeChild(modal);
+                    };
+                  }
+                }}
               >
                 <p className="ant-upload-drag-icon">
                   <InboxOutlined />
@@ -2262,61 +2586,287 @@ const MedicineManagement = () => {
           width={800}
         >
           {viewingMedicine && (
-            <div className="space-y-6">
-              <Descriptions title="Thông tin yêu cầu thuốc" bordered column={2}>
-                <Descriptions.Item label="Mã yêu cầu">
-                  {viewingMedicine.MedicineID}
-                </Descriptions.Item>
-                <Descriptions.Item label="Trạng thái">
-                  <Tag
-                    color={getStatusColor(viewingMedicine.Status)}
-                    icon={getStatusIcon(viewingMedicine.Status)}
-                  >
-                    {normalizeStatus(viewingMedicine.Status)}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item label="Tên thuốc">
-                  {viewingMedicine.MedicineName}
-                </Descriptions.Item>
-                <Descriptions.Item label="Số lượng">
-                  {viewingMedicine.Quantity}
-                </Descriptions.Item>
-                <Descriptions.Item label="Liều lượng" span={2}>
-                  {viewingMedicine.Dosage}
-                </Descriptions.Item>
-                <Descriptions.Item label="Hướng dẫn sử dụng" span={2}>
-                  {viewingMedicine.Instructions || 'Không có'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Ghi chú" span={2}>
-                  {viewingMedicine.Notes || 'Không có'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Ngày gửi">
-                  {viewingMedicine.SentDate
-                    ? new Date(viewingMedicine.SentDate).toLocaleString('vi-VN')
-                    : 'Chưa có'
-                  }
-                </Descriptions.Item>
-                <Descriptions.Item label="Học sinh">
-                  {getStudentName(viewingMedicine.StudentID)} - {getStudentClass(viewingMedicine.StudentID)}
-                </Descriptions.Item>
-              </Descriptions>
+            <div>
+              {/* Main Information */}
+              <Card title="Thông tin chính" size="small" style={{ marginBottom: '16px' }}>
+                <Descriptions bordered column={2} size="small">
+                  <Descriptions.Item label="Mã yêu cầu" span={1}>
+                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>{viewingMedicine.MedicineID}</Text>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Trạng thái" span={1}>
+                    <Tag
+                      color={getStatusColor(viewingMedicine.Status)}
+                      icon={getStatusIcon(viewingMedicine.Status)}
+                    >
+                      {normalizeStatus(viewingMedicine.Status)}
+                    </Tag>
+                  </Descriptions.Item>
 
-              {viewingMedicine.Images && viewingMedicine.Images.length > 0 && (
-                <div>
-                  <h4 className="font-medium mb-3">Hình ảnh thuốc</h4>
-                  <div className="grid grid-cols-3 gap-2">
-                    {viewingMedicine.Images.map((img, index) => (
-                      <img
-                        key={index}
-                        src={img}
-                        alt={`Medicine ${index + 1}`}
-                        className="w-full h-24 object-cover rounded border hover:scale-105 transition-transform cursor-pointer"
-                        onClick={() => window.open(img, '_blank')}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+                  <Descriptions.Item label="Tên học sinh" span={1}>
+                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>{getStudentName(viewingMedicine.StudentID)}</Text>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Mã học sinh" span={1}>
+                    <Text style={{ color: '#1890ff' }}>{viewingMedicine.StudentID}</Text>
+                  </Descriptions.Item>
+
+                  <Descriptions.Item label="Lớp" span={1}>
+                    <Text style={{ color: '#1890ff' }}>{getStudentClass(viewingMedicine.StudentID)}</Text>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Tên thuốc" span={1}>
+                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>
+                      {viewingMedicine.MedicineName}
+                    </Text>
+                  </Descriptions.Item>
+
+                  <Descriptions.Item label="Số lượng" span={1}>
+                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>
+                      {viewingMedicine.Quantity}
+                    </Text>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Liều lượng" span={1}>
+                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>
+                      {viewingMedicine.Dosage}
+                    </Text>
+                  </Descriptions.Item>
+                </Descriptions>
+              </Card>
+
+              {/* Additional Information */}
+              <Card title="Thông tin bổ sung" size="small" style={{ marginBottom: '16px' }}>
+                <Descriptions bordered column={1} size="small">
+                  <Descriptions.Item label="Ngày gửi yêu cầu">
+                    <Text style={{ fontSize: '13px', color: '#1890ff' }}>
+                      {viewingMedicine.SentDate
+                        ? new Date(viewingMedicine.SentDate).toLocaleString('vi-VN')
+                        : 'Chưa có'
+                      }
+                    </Text>
+                  </Descriptions.Item>
+
+                  {viewingMedicine.Instructions && (
+                    <Descriptions.Item label="Hướng dẫn sử dụng">
+                      <Text style={{ fontSize: '13px', fontStyle: 'italic', color: '#1890ff' }}>{viewingMedicine.Instructions}</Text>
+                    </Descriptions.Item>
+                  )}
+
+                  {viewingMedicine.Notes && (
+                    <Descriptions.Item label="Ghi chú từ phụ huynh">
+                      <Text style={{ fontSize: '13px', fontStyle: 'italic', color: '#1890ff' }}>{viewingMedicine.Notes}</Text>
+                    </Descriptions.Item>
+                  )}
+
+                  {viewingMedicine.NurseID && (
+                    <Descriptions.Item label="Được xử lý bởi y tá">
+                      <Text style={{ fontSize: '13px', color: '#1890ff' }}>Mã y tá: {viewingMedicine.NurseID}</Text>
+                    </Descriptions.Item>
+                  )}
+                </Descriptions>
+              </Card>
+
+              {/* Hình ảnh thuốc */}
+              {(() => {
+                // Tìm ảnh từ nhiều nguồn có thể có
+                let medicineImages = [];
+
+                console.log('🔍 Debug ảnh thuốc trong modal view:', {
+                  medicineId: viewingMedicine.MedicineID,
+                  File: viewingMedicine.File,
+                  files: viewingMedicine.files,
+                  Images: viewingMedicine.Images,
+                  images: viewingMedicine.images,
+                  Image: viewingMedicine.Image,
+                  image: viewingMedicine.image,
+                  fullObject: viewingMedicine
+                });
+
+                // ✅ Ưu tiên lấy từ File array (chính xác nhất từ backend)
+                if (viewingMedicine.File && Array.isArray(viewingMedicine.File) && viewingMedicine.File.length > 0) {
+                  medicineImages = viewingMedicine.File
+                    .map(file => file.FileLink || file.fileLink || file.url)
+                    .filter(Boolean);
+                  console.log('✅ Found images from File array:', medicineImages);
+                }
+                // Fallback: files array (lowercase)
+                else if (viewingMedicine.files && Array.isArray(viewingMedicine.files) && viewingMedicine.files.length > 0) {
+                  medicineImages = viewingMedicine.files
+                    .map(file => file.FileLink || file.fileLink || file.url)
+                    .filter(Boolean);
+                  console.log('✅ Found images from files array:', medicineImages);
+                }
+                // Fallback: Images array
+                else if (viewingMedicine.Images && Array.isArray(viewingMedicine.Images) && viewingMedicine.Images.length > 0) {
+                  medicineImages = viewingMedicine.Images.filter(Boolean);
+                  console.log('✅ Found images from Images array:', medicineImages);
+                }
+                // Fallback: images array (lowercase)
+                else if (viewingMedicine.images && Array.isArray(viewingMedicine.images) && viewingMedicine.images.length > 0) {
+                  medicineImages = viewingMedicine.images.filter(Boolean);
+                  console.log('✅ Found images from images array:', medicineImages);
+                }
+                // Fallback: Image array
+                else if (viewingMedicine.Image && Array.isArray(viewingMedicine.Image) && viewingMedicine.Image.length > 0) {
+                  medicineImages = viewingMedicine.Image.filter(Boolean);
+                  console.log('✅ Found images from Image array:', medicineImages);
+                }
+                // Fallback: image array (lowercase)
+                else if (viewingMedicine.image && Array.isArray(viewingMedicine.image) && viewingMedicine.image.length > 0) {
+                  medicineImages = viewingMedicine.image.filter(Boolean);
+                  console.log('✅ Found images from image array:', medicineImages);
+                }
+                // Single image string
+                else if (viewingMedicine.imageUrl && typeof viewingMedicine.imageUrl === 'string') {
+                  medicineImages = [viewingMedicine.imageUrl];
+                  console.log('✅ Found single imageUrl:', medicineImages);
+                }
+                else if (viewingMedicine.image && typeof viewingMedicine.image === 'string') {
+                  medicineImages = [viewingMedicine.image];
+                  console.log('✅ Found single image string:', medicineImages);
+                }
+                else if (viewingMedicine.Image && typeof viewingMedicine.Image === 'string') {
+                  medicineImages = [viewingMedicine.Image];
+                  console.log('✅ Found single Image string:', medicineImages);
+                }
+                // Debug: tìm tất cả properties có chứa "image" hoặc "file"
+                else {
+                  console.log('❌ No standard image fields found, checking all properties...');
+                  const allProps = Object.keys(viewingMedicine);
+                  allProps.forEach(prop => {
+                    const lowerProp = prop.toLowerCase();
+                    if ((lowerProp.includes('file') || lowerProp.includes('image') || lowerProp.includes('url'))
+                      && viewingMedicine[prop]) {
+                      console.log(`🖼️ Found potential image property: ${prop}`, viewingMedicine[prop]);
+                    }
+                  });
+                }
+
+                console.log('🔍 Final medicineImages found:', medicineImages);
+
+                if (medicineImages.length > 0) {
+                  return (
+                    <Card title="Hình ảnh thuốc" size="small" style={{ marginBottom: '16px' }}>
+                      <div className="grid grid-cols-3 gap-2">
+                        {medicineImages.map((img, index) => {
+                          // Xử lý URL ảnh thông minh
+                          let imageUrl;
+
+                          if (typeof img === 'string') {
+                            if (img.startsWith('http://') || img.startsWith('https://')) {
+                              imageUrl = img;
+                            } else if (img.startsWith('data:')) {
+                              imageUrl = img;
+                            } else if (img.startsWith('blob:')) {
+                              imageUrl = img;
+                            } else {
+                              // Đường dẫn tương đối - thêm base URL
+                              const baseUrl = 'https://localhost:7040'; // ✅ Sử dụng HTTPS như backend
+                              const cleanImg = img.startsWith('/') ? img : `/${img}`;
+                              imageUrl = `${baseUrl}${cleanImg}`;
+                            }
+                          } else if (img instanceof File || img instanceof Blob) {
+                            imageUrl = URL.createObjectURL(img);
+                          } else if (img?.url) {
+                            imageUrl = img.url;
+                          } else {
+                            console.warn('⚠️ Không thể xử lý ảnh:', img);
+                            return null;
+                          }
+
+                          console.log(`🔗 Image #${index + 1} URL:`, imageUrl);
+
+                          return (
+                            <div key={index} className="relative group">
+                              <img
+                                src={imageUrl}
+                                alt={`Medicine ${index + 1}`}
+                                className="w-full h-24 object-cover rounded border hover:scale-105 transition-transform cursor-pointer"
+                                onClick={() => {
+                                  // Tạo modal để xem ảnh full size
+                                  const modal = document.createElement('div');
+                                  modal.style.cssText = `
+                                    position: fixed;
+                                    top: 0;
+                                    left: 0;
+                                    width: 100vw;
+                                    height: 100vh;
+                                    background: rgba(0,0,0,0.8);
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    z-index: 9999;
+                                    cursor: pointer;
+                                  `;
+
+                                  const img = document.createElement('img');
+                                  img.src = imageUrl;
+                                  img.style.cssText = `
+                                    max-width: 90%;
+                                    max-height: 90%;
+                                    object-fit: contain;
+                                    border-radius: 8px;
+                                  `;
+
+                                  modal.appendChild(img);
+                                  document.body.appendChild(modal);
+
+                                  modal.onclick = () => {
+                                    document.body.removeChild(modal);
+                                  };
+                                }}
+                                onError={(e) => {
+                                  console.log('❌ Lỗi tải ảnh:', imageUrl);
+                                  // Thử với các đường dẫn khác nếu lỗi
+                                  if (!e.target.dataset.retried) {
+                                    e.target.dataset.retried = 'true';
+                                    const retryUrl = `https://localhost:7040/uploads/${img}`;
+                                    console.log('🔄 Retry with URL:', retryUrl);
+                                    e.target.src = retryUrl;
+                                  } else if (!e.target.dataset.retried2) {
+                                    e.target.dataset.retried2 = 'true';
+                                    const retryUrl2 = `https://localhost:7040/files/${img}`;
+                                    console.log('🔄 Retry with URL 2:', retryUrl2);
+                                    e.target.src = retryUrl2;
+                                  } else {
+                                    // Hiển thị placeholder khi tất cả đều thất bại
+                                    e.target.style.display = 'none';
+                                    e.target.parentNode.innerHTML = `
+                                      <div style="
+                                        width: 100%;
+                                        height: 96px;
+                                        background: #f5f5f5;
+                                        border: 2px dashed #d9d9d9;
+                                        border-radius: 6px;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: #999;
+                                        font-size: 12px;
+                                        flex-direction: column;
+                                      ">
+                                        <div>📷</div>
+                                        <div>Ảnh không tải được</div>
+                                      </div>
+                                    `;
+                                  }
+                                }}
+                                onLoad={() => {
+                                  console.log('✅ Ảnh đã tải thành công:', imageUrl);
+                                }}
+                              />
+                              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded flex items-center justify-content">
+                                <EyeOutlined className="text-white opacity-0 group-hover:opacity-100 text-lg" />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-2">
+                        Click vào ảnh để xem kích thước đầy đủ
+                      </div>
+                    </Card>
+                  );
+                }
+                return null; // Không hiện Card nếu không có ảnh
+              })()}
             </div>
           )}
         </Modal>
@@ -2419,20 +2969,46 @@ const MedicineManagement = () => {
                                 <div className="font-medium text-gray-700 mb-1">
                                   {getFieldDisplayName(change.field)}:
                                 </div>
-                                <div className="grid grid-cols-2 gap-2">
+                                {change.field === 'Images' ? (
+                                  // Xử lý riêng cho ảnh
                                   <div>
-                                    <span className="text-xs text-gray-500">Trước:</span>
-                                    <div className="bg-red-50 text-red-700 p-1 rounded text-xs">
-                                      {change.from || '(Trống)'}
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div>
+                                        <span className="text-xs text-gray-500">Trước:</span>
+                                        <div className="bg-red-50 text-red-700 p-1 rounded text-xs">
+                                          {change.from || '(Không có ảnh)'}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <span className="text-xs text-gray-500">Sau:</span>
+                                        <div className="bg-green-50 text-green-700 p-1 rounded text-xs">
+                                          {change.to || '(Không có ảnh)'}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    {entry.hasImageUpdate && (
+                                      <div className="mt-2 text-xs text-blue-600 font-medium">
+                                        ✨ Đã cập nhật ảnh thuốc
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  // Xử lý bình thường cho các field khác
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <span className="text-xs text-gray-500">Trước:</span>
+                                      <div className="bg-red-50 text-red-700 p-1 rounded text-xs">
+                                        {change.from || '(Trống)'}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <span className="text-xs text-gray-500">Sau:</span>
+                                      <div className="bg-green-50 text-green-700 p-1 rounded text-xs">
+                                        {change.to || '(Trống)'}
+                                      </div>
                                     </div>
                                   </div>
-                                  <div>
-                                    <span className="text-xs text-gray-500">Sau:</span>
-                                    <div className="bg-green-50 text-green-700 p-1 rounded text-xs">
-                                      {change.to || '(Trống)'}
-                                    </div>
-                                  </div>
-                                </div>
+                                )}
                               </div>
                             ))}
                           </div>

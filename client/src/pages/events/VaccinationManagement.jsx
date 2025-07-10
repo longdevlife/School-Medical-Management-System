@@ -82,8 +82,7 @@ function VaccinationManagement() {
           );
 
           switch (backendStatus) {
-            case "Đã chấp nhận":
-            case "Đã xác nhận":
+            case "đã xác nhận":
               status = "confirmed";
               break;
             case "Chờ tiêm":
@@ -101,12 +100,10 @@ function VaccinationManagement() {
             case "Theo dõi":
               status = "monitoring";
               break;
-            case "Từ chối":
-            case "Đã từ chối":
+            case "đã từ chối":
               status = "rejected";
               break;
             case "Hoàn thành":
-            case "Hoàn tất":
               status = "completed";
               break;
             case "Chờ xác nhận":

@@ -13,7 +13,9 @@ import {
   Modal,
   Descriptions,
   Select,
-  Input
+  Input,
+  Image,
+  Empty
 } from 'antd';
 import {
   EyeOutlined,
@@ -134,6 +136,14 @@ const MedicalEvent = () => {
           console.log(`  - StudentID type:`, typeof studentID);
           console.log(`  - StudentID length:`, studentID.length);
 
+          // DEBUG Images mapping - xử lý ảnh đính kèm từ nurse
+          console.log(`📸 [IMAGES MAPPING] Item ${index + 1}:`);
+          console.log(`  - Raw item.images:`, item.images);
+          console.log(`  - Raw item.Images:`, item.Images);
+          const images = item.images || item.Images || null;
+          console.log(`  - Final Images:`, images);
+          // Expected format: [{ imageID: string, fileName: string, imageUrl: string, uploadedAt: string }]
+
           const mapped = {
             MedicalEventID: item.medicalEventID || item.MedicalEventID || `TEMP_${index + 1}`,
             EventDateTime: item.eventDateTime || item.EventDateTime || new Date().toISOString(),
@@ -144,7 +154,8 @@ const MedicalEvent = () => {
             NurseID: nurseID,
             StudentID: studentID,
             StudentName: item.studentName || item.StudentName || 'Chưa có tên',
-            StudentClass: item.class || item.Class || item.studentClass || 'Chưa có lớp'
+            StudentClass: item.class || item.Class || item.studentClass || 'Chưa có lớp',
+            Images: images // Sử dụng biến images đã được xử lý
           };
 
           console.log(`✅ [MAPPING] Mapped item ${index + 1}:`, mapped);
@@ -158,7 +169,7 @@ const MedicalEvent = () => {
         setMedicalEvents(mappedEvents);
         console.log('✅ [STATE] State đã được set');
 
-        message.success(`Đã tải ${mappedEvents.length} sự kiện y tế từ server`);
+        console.log(`Đã tải ${mappedEvents.length} sự kiện y tế từ server`);
       } else {
         console.log('⚠️ [ELSE BRANCH] Parent API trả về dữ liệu trống hoặc không hợp lệ');
         console.log('� [ELSE DEBUG] Data value:', data);
@@ -238,7 +249,7 @@ const MedicalEvent = () => {
         console.log('📋 Danh sách học sinh đã xử lý:', processedStudents);
         console.log('🔍 [STUDENTS] All StudentIDs:', processedStudents.map(s => s.StudentID));
         setStudents(processedStudents);
-        message.success(`Đã tải ${processedStudents.length} học sinh`);
+        console.log(`Đã tải ${processedStudents.length} học sinh`);
       } else {
         console.log('⚠️ Không có học sinh nào');
         setStudents([]);
@@ -290,7 +301,8 @@ const MedicalEvent = () => {
       NursePhone: '0912345678',
       StudentID: 'ST001', // Đảm bảo string
       StudentName: 'Lê Văn Bình',
-      StudentClass: '2A'
+      StudentClass: '2A',
+      Images: null // Không có ảnh cho sự kiện này
     },
     {
       MedicalEventID: 'ME2024002',
@@ -304,7 +316,15 @@ const MedicalEvent = () => {
       NursePhone: '0912345678',
       StudentID: 'ST001', // Đảm bảo string
       StudentName: 'Lê Văn Bình',
-      StudentClass: '2A'
+      StudentClass: '2A',
+      Images: [
+        {
+          imageID: 'IMG001',
+          fileName: 'vet_thuong_dau_goi.jpg',
+          imageUrl: '/api/images/medical-events/vet_thuong_dau_goi.jpg',
+          uploadedAt: '2024-12-05T14:20:00'
+        }
+      ]
     },
     {
       MedicalEventID: 'ME2024003',
@@ -318,7 +338,8 @@ const MedicalEvent = () => {
       NursePhone: '0912345678',
       StudentID: 'ST002', // Đảm bảo string
       StudentName: 'Lê Thị Cẩm Ly',
-      StudentClass: '4B'
+      StudentClass: '4B',
+      Images: null // Không có ảnh cho sự kiện này
     }
   ];
 
@@ -428,7 +449,7 @@ const MedicalEvent = () => {
       width: 200,
       render: (_, record) => (
         <div>
-          <Text strong style={{ fontSize: '14px' }}>
+          <Text strong style={{ fontSize: '13px',color: '#1890ff' }}>
             {record.StudentName}
           </Text>
           <br />
@@ -468,10 +489,23 @@ const MedicalEvent = () => {
       dataIndex: 'Description',
       key: 'Description',
       ellipsis: true,
-      render: (text) => (
-        <Text style={{ fontSize: '12px' }}>
-          {text}
-        </Text>
+      render: (text, record) => (
+        <div>
+          <Text style={{ fontSize: '12px' }}>
+            {text}
+          </Text>
+          {record.Images && Array.isArray(record.Images) && record.Images.length > 0 && (
+            <div style={{ marginTop: '4px' }}>
+              <Tag 
+                color="blue" 
+                style={{ fontSize: '10px', padding: '0 4px', lineHeight: '16px' }}
+                icon={<EyeOutlined style={{ fontSize: '10px' }} />}
+              >
+                {record.Images.length} ảnh
+              </Tag>
+            </div>
+          )}
+        </div>
       ),
     },
     {
@@ -951,167 +985,137 @@ const MedicalEvent = () => {
               Đóng
             </Button>
           ]}
-          width={800}
+          width={900}
           bodyStyle={{ padding: '20px 24px' }}
           style={{ top: 20 }}
-        >
-          {selectedEvent && (
-            <div>
-              {/* Thông tin cơ bản */}
-              <div style={{ marginBottom: '24px' }}>
-                <div style={{
-                  borderBottom: '1px solid #e5e7eb',
-                  paddingBottom: '8px',
-                  marginBottom: '16px'
-                }}>
-                  <Text strong style={{ fontSize: '15px', color: '#374151' }}>
-                    Thông tin cơ bản
+        >        {selectedEvent && (
+          <div>
+            {/* Main Information */}
+            <Card title="Thông tin chính" size="small" style={{ marginBottom: '16px' }}>
+              <Descriptions bordered column={2} size="small">
+                <Descriptions.Item label="Mã sự kiện" span={1}>
+                  <Text style={{ fontSize: '14px', color: '#1890ff' }}>{selectedEvent.MedicalEventID}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Loại sự kiện" span={1}>
+                  <Tag color={getEventTypeColor(selectedEvent.EventTypeID)}>
+                    {selectedEvent.EventTypeID}
+                  </Tag>
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Tên học sinh" span={1}>
+                  <Text style={{ fontSize: '14px', color: '#1890ff' }}>{selectedEvent.StudentName || 'Chưa có tên'}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Mã học sinh" span={1}>
+                  <Text style={{ color: '#1890ff' }}>{selectedEvent.StudentID}</Text>
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Lớp" span={1}>
+                  <Text style={{ color: '#1890ff' }}>{selectedEvent.StudentClass || 'Chưa phân lớp'}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Thời gian sự kiện" span={1}>
+                  <Text style={{ fontSize: '14px', color: '#1890ff' }}>
+                    {dayjs(selectedEvent.EventDateTime).format('DD/MM/YYYY HH:mm')}
                   </Text>
-                </div>
+                </Descriptions.Item>
 
-                <Row gutter={[24, 16]}>
-                  {/* Cột bên trái */}
-                  <Col span={12}>
-                    {/* Mã sự kiện */}
-                    <div style={{ marginBottom: '16px' }}>
-                      <div style={{ marginBottom: '8px' }}>
-                        <Text type="secondary" style={{ fontSize: '13px' }}>Mã sự kiện</Text>
-                      </div>
-                      <div>
-                        <Text strong style={{ fontSize: '15px' }}>{selectedEvent.MedicalEventID}</Text>
-                      </div>
-                    </div>
-
-                    {/* Loại sự kiện - đã tách riêng */}
-                    <div style={{ marginBottom: '16px' }}>
-                      <div style={{ marginBottom: '8px' }}>
-                        <Text type="secondary" style={{ fontSize: '13px' }}>Loại sự kiện</Text>
-                      </div>
-                      <div>
-                        <Tag color={getEventTypeColor(selectedEvent.EventTypeID)}
-                          style={{ padding: '4px 12px', fontSize: '13px', fontWeight: 500 }}>
-                          {selectedEvent.EventTypeID}
-                        </Tag>
-                      </div>
-                    </div>
-
-                    {/* Y tá phụ trách */}
-                    <div>
-                      <div style={{ marginBottom: '8px' }}>
-                        <Text type="secondary" style={{ fontSize: '13px' }}>Y tá phụ trách</Text>
-                      </div>
-                      <div>
-                        {selectedEvent.NurseID ? (
-                          <Text strong style={{ fontSize: '15px' }}>{selectedEvent.NurseID}</Text>
-                        ) : (
-                          <Text style={{ fontSize: '15px', color: '#d97706' }}>Chưa xác định</Text>
-                        )}
-                      </div>
-                    </div>
-                  </Col>
-
-                  {/* Cột bên phải */}
-                  <Col span={12}>
-                    {/* Học sinh */}
-                    <div style={{ marginBottom: '16px' }}>
-                      <div style={{ marginBottom: '8px' }}>
-                        <Text type="secondary" style={{ fontSize: '13px' }}>Học sinh</Text>
-                      </div>
-                      <div>
-                        <Text strong style={{ fontSize: '15px', display: 'flex' }}>
-                          {selectedEvent.StudentName}
-                        </Text>
-                        <Text type="secondary" style={{ fontSize: '13px' }}>
-                          {selectedEvent.StudentID} - Lớp {selectedEvent.StudentClass}
-                        </Text>
-                      </div>
-                    </div>
-
-                    {/* Thời gian */}
-                    <div>
-                      <div style={{ marginBottom: '8px' }}>
-                        <Text type="secondary" style={{ fontSize: '13px' }}>Thời gian</Text>
-                      </div>
-                      <div>
-                        <Text strong style={{ fontSize: '15px', display: 'flex' }}>
-                          {dayjs(selectedEvent.EventDateTime).format('DD/MM/YYYY HH:mm')}
-                        </Text>
-                        <Text type="secondary" style={{ fontSize: '13px' }}>
-                          {dayjs(selectedEvent.EventDateTime).fromNow()}
-                        </Text>
-                      </div>
-                    </div>
-                  </Col>
-                </Row>
-              </div>
-
-              {/* Chi tiết sự kiện */}
-              <div>
-                <div style={{
-                  borderBottom: '1px solid #e5e7eb',
-                  paddingBottom: '8px',
-                  marginBottom: '16px'
-                }}>
-                  <Text strong style={{ fontSize: '15px', color: '#374151' }}>
-                    Chi tiết sự kiện
-                  </Text>
-                </div>
-
-                {/* Mô tả */}
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ marginBottom: '8px' }}>
-                     <Text type="secondary" style={{ fontSize: '14px' }}>Mô tả sự kiện</Text>
-                  </div>
-                  <div style={{
-                    background: '#f9fafb',
-                    padding: '12px 16px',
-                    borderRadius: '6px',
-                    border: '1px solid #f3f4f6'
-                  }}>
-                    <Text style={{ fontSize: '14px', lineHeight: 1.5 }}>
-                      {selectedEvent.Description}
+                {selectedEvent.NurseID && (
+                  <Descriptions.Item label="Y tá phụ trách" span={2}>
+                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>
+                      {selectedEvent.NurseID}
                     </Text>
-                  </div>
-                </div>
-
-                {/* Xử lý */}
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ marginBottom: '8px' }}>
-                   <Text type="secondary" style={{ fontSize: '14px' }}>Xử lý đã thực hiện</Text>
-                  </div>
-                  <div style={{
-                    background: '#f9fafb',
-                    padding: '12px 16px',
-                    borderRadius: '6px',
-                    border: '1px solid #f3f4f6'
-                  }}>
-                    <Text style={{ fontSize: '14px', lineHeight: 1.5 }}>
-                      {selectedEvent.ActionTaken}
-                    </Text>
-                  </div>
-                </div>
-
-                {/* Ghi chú (nếu có) */}
-                {selectedEvent.Notes && (
-                  <div>
-                    <div style={{ marginBottom: '8px' }}>
-                      <Text type="secondary" style={{ fontSize: '14px' }}>Ghi chú</Text>
-                    </div>
-                    <div style={{
-                      background: '#f9fafb',
-                      padding: '12px 16px',
-                      borderRadius: '6px',
-                      border: '1px solid #f3f4f6'
-                    }}>
-                      <Text style={{ fontSize: '14px', lineHeight: 1.5 }}>
-                        {selectedEvent.Notes}
-                      </Text>
-                    </div>
-                  </div>
+                  </Descriptions.Item>
                 )}
-              </div>
-            </div>
-          )}
+              </Descriptions>
+            </Card>
+
+            {/* Additional Information */}
+            <Card title="Thông tin bổ sung" size="small" style={{ marginBottom: '16px' }}>
+              <Descriptions bordered column={1} size="small">
+                <Descriptions.Item label="Thời gian xảy ra">
+                  <Text style={{ fontSize: '13px', color: '#1890ff' }}>
+                    {dayjs(selectedEvent.EventDateTime).format('DD/MM/YYYY HH:mm')}
+                  </Text>
+                  <br />
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    {dayjs(selectedEvent.EventDateTime).fromNow()}
+                  </Text>
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Mô tả sự kiện">
+                  <Text style={{ fontSize: '13px', fontStyle: 'italic', color: '#1890ff' }}>{selectedEvent.Description}</Text>
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Xử lý đã thực hiện">
+                  <Text style={{ fontSize: '13px', fontStyle: 'italic', color: '#1890ff' }}>{selectedEvent.ActionTaken}</Text>
+                </Descriptions.Item>
+
+                {selectedEvent.Notes && (
+                  <Descriptions.Item label="Ghi chú từ y tá">
+                    <Text style={{ fontSize: '13px', fontStyle: 'italic', color: '#1890ff' }}>{selectedEvent.Notes}</Text>
+                  </Descriptions.Item>
+                )}
+              </Descriptions>
+            </Card>
+
+            {/* Images Section */}
+            {selectedEvent.Images && Array.isArray(selectedEvent.Images) && selectedEvent.Images.length > 0 && (
+              <Card title="Hình ảnh đính kèm" size="small" style={{ marginBottom: '16px' }}>
+                <Row gutter={[16, 16]}>
+                  {selectedEvent.Images.map((image, index) => (
+                    <Col xs={24} sm={12} md={8} lg={6} key={image.imageID || index}>
+                      <div style={{
+                        border: '1px solid #d9d9d9',
+                        borderRadius: '8px',
+                        padding: '8px',
+                        background: '#fafafa'
+                      }}>
+                        <Image
+                          src={image.imageUrl || `/api/files/medical-events/${image.fileName}`}
+                          alt={`Hình ảnh sự kiện ${selectedEvent.MedicalEventID} - ${index + 1}`}
+                          style={{
+                            width: '100%',
+                            height: '120px',
+                            objectFit: 'cover',
+                            borderRadius: '4px'
+                          }}
+                          fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN..."
+                          preview={{
+                            mask: (
+                              <div style={{ color: 'white', textAlign: 'center' }}>
+                                <EyeOutlined style={{ fontSize: '20px', marginBottom: '8px' }} />
+                                <br />
+                                Xem ảnh
+                              </div>
+                            )
+                          }}
+                        />
+                        <div style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
+                          <Text ellipsis style={{ display: 'block' }}>
+                            {image.fileName || `Ảnh ${index + 1}`}
+                          </Text>
+                          {image.uploadedAt && (
+                            <Text type="secondary" style={{ fontSize: '11px' }}>
+                              {dayjs(image.uploadedAt).format('DD/MM/YYYY HH:mm')}
+                            </Text>
+                          )}
+                        </div>
+                      </div>
+                    </Col>
+                  ))}
+                </Row>
+                
+                {/* Fallback message if no images can be displayed */}
+                {selectedEvent.Images.length === 0 && (
+                  <Empty
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    description="Không có hình ảnh nào được đính kèm"
+                    style={{ margin: '20px 0' }}
+                  />
+                )}
+              </Card>
+            )}
+          </div>
+        )}
         </Modal>
       </div>
     </div>

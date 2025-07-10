@@ -24,9 +24,12 @@ import {
   ExclamationCircleOutlined,
   CloseCircleOutlined,
   HeartOutlined,
+  CalendarOutlined,
+  EnvironmentOutlined,
 } from '@ant-design/icons';
 import healthCheckupApi from '../../api/healthCheckApi';
 import studentApi from '../../api/studentApi';
+import appointApi from '../../api/appointApi';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -34,9 +37,12 @@ const { Option } = Select;
 const HealthResult = () => {
   const [healthCheckups, setHealthCheckups] = useState([]);
   const [confirmedHistory, setConfirmedHistory] = useState([]); // Lịch sử đã xác nhận
+  const [appointments, setAppointments] = useState([]); // Danh sách appointments
   const [loading, setLoading] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [viewingCheckup, setViewingCheckup] = useState(null);
+  const [isAppointmentDetailModalVisible, setIsAppointmentDetailModalVisible] = useState(false);
+  const [viewingAppointment, setViewingAppointment] = useState(null);
   const [activeTab, setActiveTab] = useState('waiting'); // Tab hiện tại
 
   // Student management states
@@ -113,7 +119,7 @@ const HealthResult = () => {
       console.log('🔄 Đang lấy danh sách health checkup cho học sinh:', selectedStudentId);
 
       // Lấy thông tin user hiện tại để có parentId
-      const userInfoResponse = await healthCheckupApi.parent.getCurrentUserInfo();
+      const userInfoResponse = await appointApi.parent.getCurrentUserInfo();
       const parentId = userInfoResponse?.data?.user?.userID;
 
       if (!parentId) {
@@ -124,12 +130,57 @@ const HealthResult = () => {
 
       console.log('👤 Parent ID:', parentId);
 
+      // 🎯 Gọi API để lấy appointments cho học sinh
+      console.log('🔄 Đang lấy danh sách appointments cho học sinh:', selectedStudentId);
+      let appointmentsResponse;
+      try {
+        appointmentsResponse = await appointApi.parent.getAppointmentsByStudentId(selectedStudentId);
+        console.log('✅ Appointments response:', appointmentsResponse);
+        console.log('✅ Appointments response.data:', appointmentsResponse.data);
+        console.log('✅ Appointments response structure:', JSON.stringify(appointmentsResponse.data, null, 2));
+      } catch (appointmentError) {
+        console.warn('⚠️ Không thể lấy appointments:', appointmentError);
+        appointmentsResponse = { data: [] };
+      }
+
+      // 🎯 Sử dụng healthCheckupApi để lấy health checkups
       const response = await healthCheckupApi.parent.getHealthCheckupsByParentId(parentId);
       console.log('✅ Health checkup response:', response);
+      console.log('✅ Health checkup response.data:', response.data);
+      console.log('✅ Health checkup response structure:', JSON.stringify(response.data, null, 2));
 
       const healthCheckupData = response.data || [];
 
       if (Array.isArray(healthCheckupData)) {
+        console.log('🔍 Total health checkup items:', healthCheckupData.length);
+        
+        // Debug: Log cấu trúc của item đầu tiên để xem appointment ở đâu
+        if (healthCheckupData.length > 0) {
+          const firstItem = healthCheckupData[0];
+          console.log('🔍 First item structure:', firstItem);
+          console.log('🔍 First item keys:', Object.keys(firstItem));
+          console.log('🔍 appointment field (lowercase):', firstItem.appointment);
+          console.log('🔍 Appointment field (uppercase):', firstItem.Appointment);
+          console.log('🔍 appointments field (lowercase plural):', firstItem.appointments);
+          console.log('🔍 Appointments field (uppercase plural):', firstItem.Appointments);
+          
+          // Kiểm tra sâu hơn nếu có nested object
+          if (firstItem.appointment && typeof firstItem.appointment === 'object') {
+            console.log('🔍 appointment detail:', JSON.stringify(firstItem.appointment, null, 2));
+          }
+          if (firstItem.Appointment && typeof firstItem.Appointment === 'object') {
+            console.log('🔍 Appointment detail:', JSON.stringify(firstItem.Appointment, null, 2));
+          }
+          if (firstItem.appointments && Array.isArray(firstItem.appointments)) {
+            console.log('🔍 appointments array length:', firstItem.appointments.length);
+            console.log('🔍 appointments detail:', JSON.stringify(firstItem.appointments, null, 2));
+          }
+          if (firstItem.Appointments && Array.isArray(firstItem.Appointments)) {
+            console.log('🔍 Appointments array length:', firstItem.Appointments.length);
+            console.log('🔍 Appointments detail:', JSON.stringify(firstItem.Appointments, null, 2));
+          }
+        }
+
         // Lọc health checkup theo học sinh đã chọn
         const filteredHealthCheckups = healthCheckupData.filter(item => {
           const match = item.studentID && selectedStudentId &&
@@ -138,27 +189,82 @@ const HealthResult = () => {
         });
 
         // Chuẩn hóa dữ liệu
-        const normalizedHealthCheckups = filteredHealthCheckups.map(item => ({
-          key: item.healthCheckUpID || item.HealthCheckUpID,
-          HealthCheckUpID: item.healthCheckUpID || item.HealthCheckUpID,
-          CheckDate: item.checkDate || item.CheckDate,
-          Height: item.height || item.Height,
-          Weight: item.weight || item.Weight,
-          BMI: item.bmi || item.BMI,
-          VisionLeft: item.visionLeft || item.VisionLeft,
-          VisionRight: item.visionRight || item.VisionRight,
-          BloodPressure: item.bloodPressure || item.BloodPressure,
-          Dental: item.dental || item.Dental,
-          Skin: item.skin || item.Skin,
-          Hearing: item.hearing || item.Hearing,
-          Respiration: item.respiration || item.Respiration,
-          Cardiovascular: item.cardiovascular || item.Cardiovascular,
-          Notes: item.notes || item.Notes,
-          Status: item.status || item.Status,
-          StudentID: item.studentID || item.StudentID,
-          StudentName: item.studentProfile?.studentName || item.StudentProfile?.StudentName || 'Học sinh',
-          CheckerName: item.checker?.fullName || item.Checker?.FullName || 'Chưa xác định'
-        }));
+        const normalizedHealthCheckups = filteredHealthCheckups.map(item => {
+          console.log('🔍 Processing HealthCheckUp item:', item);
+          console.log('🔍 Appointment data:', item.appointment || item.Appointment);
+          console.log('🔍 All item keys:', Object.keys(item));
+          
+          return {
+            key: item.healthCheckUpID || item.HealthCheckUpID,
+            HealthCheckUpID: item.healthCheckUpID || item.HealthCheckUpID,
+            CheckDate: item.checkDate || item.CheckDate,
+            Height: item.height || item.Height,
+            Weight: item.weight || item.Weight,
+            BMI: item.bmi || item.BMI,
+            VisionLeft: item.visionLeft || item.VisionLeft,
+            VisionRight: item.visionRight || item.VisionRight,
+            BloodPressure: item.bloodPressure || item.BloodPressure,
+            Dental: item.dental || item.Dental,
+            Skin: item.skin || item.Skin,
+            Hearing: item.hearing || item.Hearing,
+            Respiration: item.respiration || item.Respiration,
+            Cardiovascular: item.cardiovascular || item.Cardiovascular,
+            Notes: item.notes || item.Notes,
+            Status: item.status || item.Status,
+            StudentID: item.studentID || item.StudentID,
+            StudentName: item.studentProfile?.studentName || item.StudentProfile?.StudentName || 'Học sinh',
+            CheckerName: item.checker?.fullName || item.Checker?.FullName || 'Chưa xác định',
+            // 🎯 Thêm thông tin appointments - kiểm tra nhiều trường hợp có thể
+            Appointments: item.appointment || item.Appointment || item.appointments || item.Appointments || []
+          };
+        });
+
+        // 🎯 Xử lý appointments từ API riêng biệt
+        console.log('🔍 Processing appointments from API:', appointmentsResponse?.data);
+        
+        const appointmentData = [];
+        const appointmentsFromApi = appointmentsResponse?.data || [];
+        
+        if (Array.isArray(appointmentsFromApi) && appointmentsFromApi.length > 0) {
+          appointmentsFromApi.forEach((appointment, index) => {
+            console.log(`🔍 Processing appointment ${index + 1}:`, appointment);
+            
+            // Tạo appointment data với nhiều fallback cho các field
+            const appointmentItem = {
+              key: appointment.appointmentID || appointment.AppointmentID || appointment.id || appointment.ID || `temp-appointment-${index}`,
+              AppointmentID: appointment.appointmentID || appointment.AppointmentID || appointment.id || appointment.ID,
+              DateTime: appointment.dateTime || appointment.DateTime || appointment.date || appointment.Date || appointment.appointmentDate,
+              Location: appointment.location || appointment.Location || 'Chưa xác định',
+              Reason: appointment.reason || appointment.Reason || 'Khám sức khỏe định kỳ',
+              Status: appointment.status || appointment.Status || 'Pending',
+              Notes: appointment.notes || appointment.Notes || '',
+              // Liên kết với HealthCheckUp
+              HealthCheckUpID: appointment.healthCheckUpID || appointment.HealthCheckUpID,
+              HealthCheckup: {
+                HealthCheckUpID: appointment.healthCheckUpID || appointment.HealthCheckUpID,
+                CheckDate: appointment.healthCheckUp?.checkDate || appointment.HealthCheckUp?.CheckDate
+              }
+            };
+            
+            console.log(`✅ Processed appointment ${index + 1}:`, appointmentItem);
+            appointmentData.push(appointmentItem);
+          });
+        } else {
+          console.log('⚠️ Không có appointments từ API hoặc dữ liệu không hợp lệ');
+        }
+
+        console.log('🔍 Final appointment data:', appointmentData);
+        console.log(`📊 Total appointments found: ${appointmentData.length}`);
+
+        // Log chi tiết từng appointment để debug
+        appointmentData.forEach((appointment, index) => {
+          console.log(`📅 Appointment ${index + 1}:`, {
+            ID: appointment.AppointmentID,
+            DateTime: appointment.DateTime,
+            Status: appointment.Status,
+            HealthCheckUpID: appointment.HealthCheckUpID
+          });
+        });
 
         // 🎯 Phân loại health checkup cho "Kết quả khám sức khỏe"
         // Tab "Chờ xác nhận": Những health checkup chưa được phụ huynh xác nhận
@@ -196,21 +302,25 @@ const HealthResult = () => {
         console.log('📊 Phân loại health checkup:');
         console.log('  - Chờ xác nhận (waitingHealthCheckups):', waitingHealthCheckups.map(v => `${v.HealthCheckUpID}:${v.Status}`));
         console.log('  - Lịch sử (processedHealthCheckups):', processedHealthCheckups.map(v => `${v.HealthCheckUpID}:${v.Status}`));
+        console.log('  - Appointments:', appointmentData.map(v => `${v.AppointmentID}:${v.Status}`));
 
         setHealthCheckups(waitingHealthCheckups);
         setConfirmedHistory(processedHealthCheckups);
+        setAppointments(appointmentData);
 
         console.log(`✅ Đã tải ${normalizedHealthCheckups.length} health checkup records`);
       } else {
         console.warn('⚠️ Dữ liệu health checkup không hợp lệ:', healthCheckupData);
         setHealthCheckups([]);
         setConfirmedHistory([]);
+        setAppointments([]);
       }
     } catch (error) {
       console.error('❌ Lỗi khi lấy danh sách health checkup:', error);
       message.error('Không thể tải danh sách khám sức khỏe. Vui lòng thử lại!');
       setHealthCheckups([]);
       setConfirmedHistory([]);
+      setAppointments([]);
     } finally {
       setLoading(false);
     }
@@ -265,6 +375,54 @@ const HealthResult = () => {
       console.error('❌ Lỗi khi từ chối:', error);
       message.error('Không thể từ chối lịch khám. Vui lòng thử lại!');
     }
+  };
+
+  // ==================== APPOINTMENT HANDLER FUNCTIONS ====================
+
+  const handleConfirmAppointment = async (appointmentId, notes = '') => {
+    try {
+      console.log('🔄 Đang xác nhận appointment:', appointmentId, 'với ghi chú:', notes);
+
+      const response = await appointApi.parent.confirmAppointment({
+        AppointmentID: appointmentId,
+        Notes: notes
+      });
+
+      console.log('✅ Xác nhận appointment thành công:', response);
+      message.success('Đã xác nhận tham gia cuộc hẹn thành công!');
+      
+      // Refresh danh sách
+      await fetchHealthCheckups();
+    } catch (error) {
+      console.error('❌ Lỗi khi xác nhận appointment:', error);
+      message.error('Xác nhận appointment thất bại. Vui lòng thử lại!');
+    }
+  };
+
+  const handleDeniedAppointment = async (appointmentId, notes = '') => {
+    try {
+      console.log('🔄 Đang từ chối appointment:', appointmentId, 'với ghi chú:', notes);
+
+      const response = await appointApi.parent.deniedAppointment({
+        AppointmentID: appointmentId,
+        Notes: notes
+      });
+
+      console.log('✅ Từ chối appointment thành công:', response);
+      message.success('Đã từ chối cuộc hẹn thành công!');
+      
+      // Refresh danh sách
+      await fetchHealthCheckups();
+    } catch (error) {
+      console.error('❌ Lỗi khi từ chối appointment:', error);
+      message.error('Từ chối appointment thất bại. Vui lòng thử lại!');
+    }
+  };
+
+  const handleViewAppointmentDetail = (record) => {
+    console.log('👁️ Viewing appointment detail:', record);
+    setViewingAppointment(record);
+    setIsAppointmentDetailModalVisible(true);
   };
 
   // ==================== HELPER FUNCTIONS ====================
@@ -401,6 +559,50 @@ const HealthResult = () => {
     } catch (error) {
       return 'Thời gian không hợp lệ';
     }
+  };
+
+  const getAppointmentStatusTag = (status) => {
+    const normalizedStatus = (status || '').toLowerCase();
+
+    const statusConfig = {
+      'pending': {
+        color: 'orange',
+        icon: <ClockCircleOutlined />,
+        text: 'Chờ xác nhận'
+      },
+      'confirmed': {
+        color: 'green',
+        icon: <CheckCircleOutlined />,
+        text: 'Đã xác nhận'
+      },
+      'denied': {
+        color: 'red',
+        icon: <CloseCircleOutlined />,
+        text: 'Đã từ chối'
+      },
+      'completed': {
+        color: 'blue',
+        icon: <CheckCircleOutlined />,
+        text: 'Đã hoàn thành'
+      }
+    };
+
+    const config = statusConfig[normalizedStatus] || {
+      color: 'default',
+      icon: <ClockCircleOutlined />,
+      text: status || 'Chưa xác định'
+    };
+
+    return (
+      <Tag color={config.color} icon={config.icon}>
+        {config.text}
+      </Tag>
+    );
+  };
+
+  const canTakeAppointmentAction = (status) => {
+    const normalizedStatus = (status || '').toLowerCase();
+    return normalizedStatus === 'pending' || normalizedStatus === 'chờ xác nhận';
   };
 
   // ==================== TABLE COLUMNS ====================
@@ -566,14 +768,14 @@ const HealthResult = () => {
       dataIndex: 'Weight',
       key: 'Weight',
       width: 80,
-      render: (weight) => <Text strong className="text-green-500 text-xs">{weight ? `${weight} kg` : 'N/A'}</Text>,
+      render: (weight) => <Text strong className="text-blue-500 text-xs">{weight ? `${weight} kg` : 'N/A'}</Text>,
     },
     {
       title: 'BMI',
       dataIndex: 'BMI',
       key: 'BMI',
       width: 80,
-      render: (bmi) => <Text strong className="text-purple-500 text-xs">{bmi ? bmi.toFixed(1) : 'N/A'}</Text>,
+      render: (bmi) => <Text strong className="text-blue-500 text-xs">{bmi ? bmi.toFixed(1) : 'N/A'}</Text>,
     },
     {
       title: 'Trạng thái',
@@ -598,6 +800,76 @@ const HealthResult = () => {
             Chi tiết
           </Button>
         </Tooltip>
+      ),
+    },
+  ];
+
+  // Columns cho appointments (lịch tư vấn) - Giống layout lịch sử khám
+  const appointmentColumns = [
+    {
+      title: 'Mã lịch hẹn',
+      dataIndex: 'AppointmentID',
+      key: 'AppointmentID',
+      width: 120,
+      render: (text) => (
+        <Text strong style={{ fontSize: '12px', color: '#1890ff' }}>
+          {text || 'N/A'}
+        </Text>
+      ),
+    },
+    {
+      title: 'Kết quả khám',
+      dataIndex: ['HealthCheckup', 'HealthCheckUpID'],
+      key: 'HealthCheckUpID',
+      width: 150,
+      render: (healthCheckUpId, record) => (
+        <div>
+          <Text strong style={{ fontSize: '12px', color: '#1890ff' }}>
+            {healthCheckUpId || 'N/A'}
+          </Text>
+          <br />
+          <Text type="secondary" style={{ fontSize: '11px' }}>
+            {record.HealthCheckup?.CheckDate ? formatDate(record.HealthCheckup.CheckDate) : 'Chưa khám'}
+          </Text>
+        </div>
+      ),
+    },
+    {
+      title: 'Thời gian hẹn',
+      dataIndex: 'DateTime',
+      key: 'DateTime',
+      width: 180,
+      render: (dateTime) => (
+        <div>
+          <Text strong style={{ fontSize: '13px' }}>{formatDateTime(dateTime)}</Text>
+        </div>
+      ),
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'Status',
+      key: 'Status',
+      width: 130,
+      render: (status) => getAppointmentStatusTag(status),
+    },
+    {
+      title: 'Thao tác',
+      key: 'actions',
+      width: 150,
+      render: (_, record) => (
+        <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-start' }}>
+          <Tooltip title="Xem chi tiết">
+            <Button
+              type="default"
+              icon={<EyeOutlined />}
+              size="small"
+              onClick={() => handleViewAppointmentDetail(record)}
+              style={{ color: "blue" }}
+            >
+              Chi tiết & phản hồi
+            </Button>
+          </Tooltip>
+        </div>
       ),
     },
   ];
@@ -694,7 +966,25 @@ const HealthResult = () => {
               <span role="img" aria-label="list">📋</span>
             </div>
             <div style={{ fontSize: 22, fontWeight: 700 }}>{healthCheckups.length + confirmedHistory.length}</div>
-            <div style={{ fontSize: 13, opacity: 0.85 }}>Tổng lần khám</div>
+            <div style={{ fontSize: 13, opacity: 0.85 }}>Lần khám</div>
+          </div>
+          {/* Appointments */}
+          <div
+            style={{
+              background: "rgba(255,255,255,0.13)",
+              borderRadius: 18,
+              padding: "18px 28px",
+              minWidth: 90,
+              textAlign: "center",
+              color: "#fff",
+              boxShadow: "0 2px 8px rgba(16,185,129,0.12)"
+            }}
+          >
+            <div style={{ fontSize: 26, marginBottom: 4 }}>
+              <span role="img" aria-label="calendar">📅</span>
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 700 }}>{appointments.length}</div>
+            <div style={{ fontSize: 13, opacity: 0.85 }}>Lịch hẹn</div>
           </div>
           {/* Ngày hôm nay */}
           <div
@@ -768,7 +1058,7 @@ const HealthResult = () => {
                 }
               >
                 <Row gutter={24} justify="center">
-                  <Col xs={12} md={5}>
+                  <Col xs={24} md={4}>
                     <div style={{
                       background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                       borderRadius: 18,
@@ -789,7 +1079,28 @@ const HealthResult = () => {
                       <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Tổng lần khám</div>
                     </div>
                   </Col>
-                  <Col xs={12} md={5}>
+                  <Col xs={24} md={4}>
+                    <div style={{
+                      background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
+                      borderRadius: 18,
+                      padding: "20px 0",
+                      textAlign: "center",
+                      boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
+                      border: "2px solid rgba(255,255,255,0.2)",
+                      transform: "perspective(1000px) rotateX(1deg)",
+                      transition: "all 0.3s ease",
+                    }}>
+                      <div style={{
+                        fontSize: 36,
+                        marginBottom: 8,
+                        textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                        filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
+                      }}>📅</div>
+                      <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{appointments.length}</div>
+                      <div style={{ fontSize: 14, color: "#2563eb", fontWeight: 600 }}>Lịch hẹn</div>
+                    </div>
+                  </Col>
+                  <Col xs={24} md={4}>
                     <div style={{
                       background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                       borderRadius: 18,
@@ -807,10 +1118,10 @@ const HealthResult = () => {
                         filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
                       }}>🕛</div>
                       <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{healthCheckups.length}</div>
-                      <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Chờ xác nhận</div>
+                      <div style={{ fontSize: 14, color: "#2563eb", fontWeight: 600 }}>Chờ xác nhận</div>
                     </div>
                   </Col>
-                  <Col xs={12} md={5}>
+                  <Col xs={24} md={4}>
                     <div style={{
                       background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                       borderRadius: 18,
@@ -839,10 +1150,10 @@ const HealthResult = () => {
                           );
                         }).length}
                       </div>
-                      <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Đã xác nhận</div>
+                      <div style={{ fontSize: 14, color: "#2563eb", fontWeight: 600 }}>Đã xác nhận</div>
                     </div>
                   </Col>
-                  <Col xs={12} md={5}>
+                  <Col xs={24} md={4}>
                     <div style={{
                       background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                       borderRadius: 18,
@@ -871,7 +1182,7 @@ const HealthResult = () => {
                           );
                         }).length}
                       </div>
-                      <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Từ chối</div>
+                      <div style={{ fontSize: 14, color: "#2563eb", fontWeight: 600 }}>Từ chối</div>
                     </div>
                   </Col>
                 </Row>
@@ -1074,6 +1385,50 @@ const HealthResult = () => {
                     style={{ borderRadius: "0 0 20px 20px" }}
                   />
                 )
+              },
+              {
+                key: 'appointments',
+                label: (
+                  <span style={{ fontSize: "16px", fontWeight: "600" }}>
+                    📅 Lịch tư vấn ({appointments.length})
+                  </span>
+                ),
+                children: (
+                  <Table
+                    columns={appointmentColumns}
+                    dataSource={appointments}
+                    rowKey="AppointmentID"
+                    loading={loading}
+                    pagination={{
+                      total: appointments.length,
+                      pageSize: 10,
+                      showSizeChanger: true,
+                      showQuickJumper: true,
+                      showTotal: (total, range) =>
+                        `${range[0]}-${range[1]} của ${total} lịch hẹn`,
+                    }}
+                    locale={{
+                      emptyText: (
+                        <Empty
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                          description={
+                            <div>
+                              <Text style={{ fontSize: '16px', color: '#8c8c8c' }}>
+                                Không có lịch hẹn nào
+                              </Text>
+                              <br />
+                              <Text style={{ fontSize: '14px', color: '#bfbfbf' }}>
+                                Lịch hẹn sẽ hiển thị khi có appointment được tạo từ kết quả khám sức khỏe
+                              </Text>
+                            </div>
+                          }
+                        />
+                      ),
+                    }}
+                    scroll={{ x: 1200 }}
+                    style={{ borderRadius: "0 0 20px 20px" }}
+                  />
+                )
               }
             ]}
           />
@@ -1106,21 +1461,21 @@ const HealthResult = () => {
             <Card title="Thông tin chính" size="small" style={{ marginBottom: '16px' }}>
               <Descriptions bordered column={2} size="small">
                 <Descriptions.Item label="Mã khám" span={1}>
-                  <Text style={{ fontSize: '14px' }}>{viewingCheckup.HealthCheckUpID}</Text>
+                  <Text style={{ fontSize: '14px', color: '#1890ff' }}>{viewingCheckup.HealthCheckUpID}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Trạng thái" span={1}>
                   {getStatusTag(viewingCheckup.Status)}
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Tên học sinh" span={1}>
-                  <Text style={{ fontSize: '14px' }}>{viewingCheckup.StudentName || 'Chưa có tên'}</Text>
+                  <Text style={{ fontSize: '14px', color: '#1890ff' }}>{viewingCheckup.StudentName || 'Chưa có tên'}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Mã học sinh" span={1}>
-                  <Text>{viewingCheckup.StudentID}</Text>
+                  <Text style={{ color: '#1890ff', fontSize: '14px' }}>{viewingCheckup.StudentID}</Text>
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Ngày khám" span={1}>
-                  <Text style={{ fontSize: '14px' }}>
+                  <Text style={{ fontSize: '14px', color: '#1890ff' }}>
                     {formatDate(viewingCheckup.CheckDate)}
                   </Text>
                 </Descriptions.Item>
@@ -1133,32 +1488,32 @@ const HealthResult = () => {
                 <Col span={12}>
                   <Descriptions bordered column={1} size="small">
                     <Descriptions.Item label="Chiều cao">
-                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.Height ? `${viewingCheckup.Height} cm` : 'Chưa đo'}</Text>
+                      <Text style={{ fontSize: '13px', color: '#1890ff' }}>{viewingCheckup.Height ? `${viewingCheckup.Height} cm` : 'Chưa đo'}</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Cân nặng">
-                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.Weight ? `${viewingCheckup.Weight} kg` : 'Chưa đo'}</Text>
+                      <Text style={{ fontSize: '13px', color: '#1890ff' }}>{viewingCheckup.Weight ? `${viewingCheckup.Weight} kg` : 'Chưa đo'}</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="BMI">
-                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.BMI ? viewingCheckup.BMI.toFixed(1) : 'Chưa tính'}</Text>
+                      <Text style={{ fontSize: '13px', color: '#1890ff' }}>{viewingCheckup.BMI ? viewingCheckup.BMI.toFixed(1) : 'Chưa tính'}</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Huyết áp">
-                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.BloodPressure ? `${viewingCheckup.BloodPressure} mmHg` : 'Chưa đo'}</Text>
+                      <Text style={{ fontSize: '13px', color: '#1890ff' }}>{viewingCheckup.BloodPressure ? `${viewingCheckup.BloodPressure} mmHg` : 'Chưa đo'}</Text>
                     </Descriptions.Item>
                   </Descriptions>
                 </Col>
                 <Col span={12}>
                   <Descriptions bordered column={1} size="small">
                     <Descriptions.Item label="Thị lực mắt trái">
-                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.VisionLeft ? `${viewingCheckup.VisionLeft}/10` : 'Chưa kiểm tra'}</Text>
+                      <Text style={{ fontSize: '13px', color: '#1890ff' }}>{viewingCheckup.VisionLeft ? `${viewingCheckup.VisionLeft}/10` : 'Chưa kiểm tra'}</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Thị lực mắt phải">
-                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.VisionRight ? `${viewingCheckup.VisionRight}/10` : 'Chưa kiểm tra'}</Text>
+                      <Text style={{ fontSize: '13px', color: '#1890ff' }}>{viewingCheckup.VisionRight ? `${viewingCheckup.VisionRight}/10` : 'Chưa kiểm tra'}</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Răng miệng">
-                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.Dental || 'Chưa kiểm tra'}</Text>
+                      <Text style={{ fontSize: '13px', color: '#1890ff' }}>{viewingCheckup.Dental || 'Chưa kiểm tra'}</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Da liễu">
-                      <Text style={{ fontSize: '13px' }}>{viewingCheckup.Skin || 'Chưa kiểm tra'}</Text>
+                      <Text style={{ fontSize: '13px', color: '#1890ff' }}>{viewingCheckup.Skin || 'Chưa kiểm tra'}</Text>
                     </Descriptions.Item>
                   </Descriptions>
                 </Col>
@@ -1169,18 +1524,18 @@ const HealthResult = () => {
             <Card title="Khám chuyên khoa" size="small" style={{ marginBottom: '16px' }}>
               <Descriptions bordered column={1} size="small">
                 <Descriptions.Item label="Tai mũi họng">
-                  <Text style={{ fontSize: '13px' }}>{viewingCheckup.Hearing || 'Chưa kiểm tra'}</Text>
+                  <Text style={{ fontSize: '13px', color: '#1890ff' }}>{viewingCheckup.Hearing || 'Chưa kiểm tra'}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Hô hấp">
-                  <Text style={{ fontSize: '13px' }}>{viewingCheckup.Respiration || 'Chưa kiểm tra'}</Text>
+                  <Text style={{ fontSize: '13px', color: '#1890ff' }}>{viewingCheckup.Respiration || 'Chưa kiểm tra'}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Tim mạch">
-                  <Text style={{ fontSize: '13px' }}>{viewingCheckup.Cardiovascular || 'Chưa kiểm tra'}</Text>
+                  <Text style={{ fontSize: '13px', color: '#1890ff' }}>{viewingCheckup.Cardiovascular || 'Chưa kiểm tra'}</Text>
                 </Descriptions.Item>
 
                 {viewingCheckup.Notes && (
                   <Descriptions.Item label="Ghi chú của bác sĩ">
-                    <Text style={{ fontSize: '13px', fontStyle: 'italic' }}>{viewingCheckup.Notes}</Text>
+                    <Text style={{ fontSize: '13px', fontStyle: 'italic', color: '#1890ff' }}>{viewingCheckup.Notes}</Text>
                   </Descriptions.Item>
                 )}
               </Descriptions>
@@ -1216,6 +1571,122 @@ const HealthResult = () => {
                       }}
                     >
                       Từ chối khám sức khỏe
+                    </Button>
+                  </Col>
+                </Row>
+              </Card>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* Appointment Detail Modal */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <CalendarOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
+            Chi tiết lịch hẹn tư vấn
+          </div>
+        }
+        open={isAppointmentDetailModalVisible}
+        onCancel={() => {
+          setIsAppointmentDetailModalVisible(false);
+          setViewingAppointment(null);
+        }}
+        footer={[
+          <Button key="close" onClick={() => setIsAppointmentDetailModalVisible(false)}>
+            Đóng
+          </Button>
+        ]}
+        width={800}
+      >
+        {viewingAppointment && (
+          <div>
+            {/* Main Information */}
+            <Card title="Thông tin cuộc hẹn" size="small" style={{ marginBottom: '16px' }}>
+              <Descriptions bordered column={2} size="small">
+                <Descriptions.Item label="Mã lịch hẹn" span={1}>
+                  <Text  style={{ fontSize: '14px', color: '#1890ff' }}>
+                    {viewingAppointment.AppointmentID}
+                  </Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Trạng thái" span={1}>
+                  {getAppointmentStatusTag(viewingAppointment.Status)}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Thời gian hẹn" span={1}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>{formatDateTime(viewingAppointment.DateTime)}</Text>
+                  </div>
+                </Descriptions.Item>
+                <Descriptions.Item label="Địa điểm" span={1}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>{viewingAppointment.Location || 'Chưa xác định'}</Text>
+                  </div>
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Lý do khám" span={2}>
+                  <Text style={{ fontSize: '14px', color: '#1890ff' }}>
+                    {viewingAppointment.Reason || 'Khám sức khỏe định kỳ'}
+                  </Text>
+                </Descriptions.Item>
+
+                {viewingAppointment.Notes && (
+                  <Descriptions.Item label="Ghi chú" span={2}>
+                    <Text style={{ fontSize: '14px', fontStyle: 'italic' }}>{viewingAppointment.Notes}</Text>
+                  </Descriptions.Item>
+                )}
+              </Descriptions>
+            </Card>
+
+            {/* Related Health Checkup */}
+            {viewingAppointment.HealthCheckup && (
+              <Card title="Kết quả khám liên quan" size="small" style={{ marginBottom: '16px' }}>
+                <Descriptions bordered column={2} size="small">
+                  <Descriptions.Item label="Mã khám" span={1}>
+                    <Text code style={{ fontSize: '14px', color: '#1890ff' }}>
+                      HC-{viewingAppointment.HealthCheckup.HealthCheckUpID}
+                    </Text>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Ngày khám" span={1}>
+                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>
+                      {viewingAppointment.HealthCheckup.CheckDate ? 
+                        formatDate(viewingAppointment.HealthCheckup.CheckDate) : 'Chưa khám'}
+                    </Text>
+                  </Descriptions.Item>
+                </Descriptions>
+              </Card>
+            )}
+
+            {/* Actions for pending appointments */}
+            {canTakeAppointmentAction(viewingAppointment.Status) && (
+              <Card title="Xác nhận tham gia" size="small">
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Button
+                      type="primary"
+                      icon={<CheckCircleOutlined />}
+                      block
+                      style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                      onClick={() => {
+                        handleConfirmAppointment(viewingAppointment.AppointmentID);
+                        setIsAppointmentDetailModalVisible(false);
+                      }}
+                    >
+                      Đồng ý tham gia
+                    </Button>
+                  </Col>
+                  <Col span={12}>
+                    <Button
+                      danger
+                      icon={<CloseCircleOutlined />}
+                      block
+                      onClick={() => {
+                        handleDeniedAppointment(viewingAppointment.AppointmentID);
+                        setIsAppointmentDetailModalVisible(false);
+                      }}
+                    >
+                      Từ chối tham gia
                     </Button>
                   </Col>
                 </Row>

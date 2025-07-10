@@ -1121,35 +1121,35 @@ const VaccineManagement = () => {
             <Card title="Thông tin chính" size="small" style={{ marginBottom: '16px' }}>
               <Descriptions bordered column={2} size="small">
                 <Descriptions.Item label="Mã vaccine" span={1}>
-                  <Text style={{ fontSize: '14px' }}>{viewingVaccine.RecordID}</Text>
+                  <Text style={{ fontSize: '14px', color:'#1890ff' }}>{viewingVaccine.RecordID}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Trạng thái" span={1}>
                   {getStatusTag(viewingVaccine.Status)}
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Tên học sinh" span={1}>
-                  <Text style={{ fontSize: '14px' }}>{viewingVaccine.StudentName || 'Chưa có tên'}</Text>
+                  <Text style={{ fontSize: '14px', color:'#1890ff' }}>{viewingVaccine.StudentName || 'Chưa có tên'}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Mã học sinh" span={1}>
-                  <Text>{viewingVaccine.StudentID}</Text>
+                  <Text style={{ color:'#1890ff' }}>{viewingVaccine.StudentID}</Text>
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Lớp" span={1}>
-                  <Text>{viewingVaccine.Class || 'Chưa phân lớp'}</Text>
+                  <Text style={{ color:'#1890ff' }}>{viewingVaccine.Class || 'Chưa phân lớp'}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Loại vaccine" span={1}>
-                  <Text style={{ fontSize: '14px', color: 'text-grey-700' }}>
+                  <Text style={{ fontSize: '14px', color: '#1890ff' }}>
                     {viewingVaccine.VaccineName || 'Chưa xác định'}
                   </Text>
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Liều lượng" span={1}>
-                  <Text style={{ fontSize: '14px', color: 'text-grey-700' }}>
+                  <Text style={{ fontSize: '14px', color: '#1890ff' }}>
                     Liều {viewingVaccine.Dose || 'Chưa xác định'}
                   </Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Ngày tiêm" span={1}>
-                  <Text style={{ fontSize: '14px' }}>
+                  <Text style={{ fontSize: '14px', color:'#1890ff' }}>
                     {formatDate(viewingVaccine.VaccinatedAt)}
                   </Text>
                 </Descriptions.Item>
@@ -1160,12 +1160,12 @@ const VaccineManagement = () => {
             <Card title="Thông tin bổ sung" size="small" style={{ marginBottom: '16px' }}>
               <Descriptions bordered column={1} size="small">
                 <Descriptions.Item label="Thời gian tạo yêu cầu">
-                  <Text style={{ fontSize: '13px' }}>{formatDateTime(viewingVaccine.DateTime)}</Text>
+                  <Text style={{ fontSize: '13px' ,color:'#1890ff'}}>{formatDateTime(viewingVaccine.DateTime)}</Text>
                 </Descriptions.Item>
 
                 {viewingVaccine.VaccinatorName && (
                   <Descriptions.Item label="Người thực hiện tiêm">
-                    <Text style={{ fontSize: '13px' }}>{viewingVaccine.VaccinatorName}</Text>
+                    <Text style={{ fontSize: '13px' ,color:'#1890ff'}}>{viewingVaccine.VaccinatorName}</Text>
                   </Descriptions.Item>
                 )}
 

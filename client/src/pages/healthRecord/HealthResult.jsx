@@ -30,6 +30,7 @@ import {
 import healthCheckupApi from '../../api/healthCheckApi';
 import studentApi from '../../api/studentApi';
 import appointApi from '../../api/appointApi';
+import dayjs from 'dayjs';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -56,11 +57,12 @@ const HealthResult = () => {
     fetchStudents();
   }, []);
 
-  // Effect để tải health checkup khi selectedStudentId thay đổi
+  // Effect để tải health checkup và appointment khi selectedStudentId thay đổi
   useEffect(() => {
     if (selectedStudentId) {
       console.log('🔄 Học sinh đã thay đổi:', selectedStudentId);
       fetchHealthCheckups();
+      fetchAppointments();
     }
   }, [selectedStudentId]);
 
@@ -110,7 +112,10 @@ const HealthResult = () => {
 
   const fetchHealthCheckups = async () => {
     if (!selectedStudentId) {
-      console.log('⚠️ Chưa chọn học sinh, không tải health checkups');
+      console.log('FE gửi studentId lên backend:', selectedStudentId);
+      setHealthCheckups([]);
+      setConfirmedHistory([]);
+
       return;
     }
 
@@ -125,25 +130,14 @@ const HealthResult = () => {
       if (!parentId) {
         console.error('❌ Không tìm thấy parentId trong user info:', userInfoResponse?.data);
         message.error('Không thể xác định thông tin phụ huynh');
+        setHealthCheckups([]);
+        setConfirmedHistory([]);
         return;
       }
 
       console.log('👤 Parent ID:', parentId);
 
-      // 🎯 Gọi API để lấy appointments cho học sinh
-      console.log('🔄 Đang lấy danh sách appointments cho học sinh:', selectedStudentId);
-      let appointmentsResponse;
-      try {
-        appointmentsResponse = await appointApi.parent.getAppointmentsByStudentId(selectedStudentId);
-        console.log('✅ Appointments response:', appointmentsResponse);
-        console.log('✅ Appointments response.data:', appointmentsResponse.data);
-        console.log('✅ Appointments response structure:', JSON.stringify(appointmentsResponse.data, null, 2));
-      } catch (appointmentError) {
-        console.warn('⚠️ Không thể lấy appointments:', appointmentError);
-        appointmentsResponse = { data: [] };
-      }
-
-      // 🎯 Sử dụng healthCheckupApi để lấy health checkups
+      // 🎯 Gọi API để lấy health checkups
       const response = await healthCheckupApi.parent.getHealthCheckupsByParentId(parentId);
       console.log('✅ Health checkup response:', response);
       console.log('✅ Health checkup response.data:', response.data);
@@ -153,7 +147,7 @@ const HealthResult = () => {
 
       if (Array.isArray(healthCheckupData)) {
         console.log('🔍 Total health checkup items:', healthCheckupData.length);
-        
+
         // Debug: Log cấu trúc của item đầu tiên để xem appointment ở đâu
         if (healthCheckupData.length > 0) {
           const firstItem = healthCheckupData[0];
@@ -163,7 +157,7 @@ const HealthResult = () => {
           console.log('🔍 Appointment field (uppercase):', firstItem.Appointment);
           console.log('🔍 appointments field (lowercase plural):', firstItem.appointments);
           console.log('🔍 Appointments field (uppercase plural):', firstItem.Appointments);
-          
+
           // Kiểm tra sâu hơn nếu có nested object
           if (firstItem.appointment && typeof firstItem.appointment === 'object') {
             console.log('🔍 appointment detail:', JSON.stringify(firstItem.appointment, null, 2));
@@ -193,7 +187,7 @@ const HealthResult = () => {
           console.log('🔍 Processing HealthCheckUp item:', item);
           console.log('🔍 Appointment data:', item.appointment || item.Appointment);
           console.log('🔍 All item keys:', Object.keys(item));
-          
+
           return {
             key: item.healthCheckUpID || item.HealthCheckUpID,
             HealthCheckUpID: item.healthCheckUpID || item.HealthCheckUpID,
@@ -214,56 +208,7 @@ const HealthResult = () => {
             StudentID: item.studentID || item.StudentID,
             StudentName: item.studentProfile?.studentName || item.StudentProfile?.StudentName || 'Học sinh',
             CheckerName: item.checker?.fullName || item.Checker?.FullName || 'Chưa xác định',
-            // 🎯 Thêm thông tin appointments - kiểm tra nhiều trường hợp có thể
-            Appointments: item.appointment || item.Appointment || item.appointments || item.Appointments || []
           };
-        });
-
-        // 🎯 Xử lý appointments từ API riêng biệt
-        console.log('🔍 Processing appointments from API:', appointmentsResponse?.data);
-        
-        const appointmentData = [];
-        const appointmentsFromApi = appointmentsResponse?.data || [];
-        
-        if (Array.isArray(appointmentsFromApi) && appointmentsFromApi.length > 0) {
-          appointmentsFromApi.forEach((appointment, index) => {
-            console.log(`🔍 Processing appointment ${index + 1}:`, appointment);
-            
-            // Tạo appointment data với nhiều fallback cho các field
-            const appointmentItem = {
-              key: appointment.appointmentID || appointment.AppointmentID || appointment.id || appointment.ID || `temp-appointment-${index}`,
-              AppointmentID: appointment.appointmentID || appointment.AppointmentID || appointment.id || appointment.ID,
-              DateTime: appointment.dateTime || appointment.DateTime || appointment.date || appointment.Date || appointment.appointmentDate,
-              Location: appointment.location || appointment.Location || 'Chưa xác định',
-              Reason: appointment.reason || appointment.Reason || 'Khám sức khỏe định kỳ',
-              Status: appointment.status || appointment.Status || 'Pending',
-              Notes: appointment.notes || appointment.Notes || '',
-              // Liên kết với HealthCheckUp
-              HealthCheckUpID: appointment.healthCheckUpID || appointment.HealthCheckUpID,
-              HealthCheckup: {
-                HealthCheckUpID: appointment.healthCheckUpID || appointment.HealthCheckUpID,
-                CheckDate: appointment.healthCheckUp?.checkDate || appointment.HealthCheckUp?.CheckDate
-              }
-            };
-            
-            console.log(`✅ Processed appointment ${index + 1}:`, appointmentItem);
-            appointmentData.push(appointmentItem);
-          });
-        } else {
-          console.log('⚠️ Không có appointments từ API hoặc dữ liệu không hợp lệ');
-        }
-
-        console.log('🔍 Final appointment data:', appointmentData);
-        console.log(`📊 Total appointments found: ${appointmentData.length}`);
-
-        // Log chi tiết từng appointment để debug
-        appointmentData.forEach((appointment, index) => {
-          console.log(`📅 Appointment ${index + 1}:`, {
-            ID: appointment.AppointmentID,
-            DateTime: appointment.DateTime,
-            Status: appointment.Status,
-            HealthCheckUpID: appointment.HealthCheckUpID
-          });
         });
 
         // 🎯 Phân loại health checkup cho "Kết quả khám sức khỏe"
@@ -302,27 +247,42 @@ const HealthResult = () => {
         console.log('📊 Phân loại health checkup:');
         console.log('  - Chờ xác nhận (waitingHealthCheckups):', waitingHealthCheckups.map(v => `${v.HealthCheckUpID}:${v.Status}`));
         console.log('  - Lịch sử (processedHealthCheckups):', processedHealthCheckups.map(v => `${v.HealthCheckUpID}:${v.Status}`));
-        console.log('  - Appointments:', appointmentData.map(v => `${v.AppointmentID}:${v.Status}`));
 
         setHealthCheckups(waitingHealthCheckups);
         setConfirmedHistory(processedHealthCheckups);
-        setAppointments(appointmentData);
 
         console.log(`✅ Đã tải ${normalizedHealthCheckups.length} health checkup records`);
       } else {
         console.warn('⚠️ Dữ liệu health checkup không hợp lệ:', healthCheckupData);
         setHealthCheckups([]);
         setConfirmedHistory([]);
-        setAppointments([]);
       }
     } catch (error) {
       console.error('❌ Lỗi khi lấy danh sách health checkup:', error);
       message.error('Không thể tải danh sách khám sức khỏe. Vui lòng thử lại!');
       setHealthCheckups([]);
       setConfirmedHistory([]);
-      setAppointments([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAppointments = async () => {
+    if (!selectedStudentId) {
+      setAppointments([]);
+      return;
+    }
+
+    try {
+      console.log('FE gửi studentId lên backend:', selectedStudentId);
+      // 🎯 Gọi API để lấy appointments cho học sinh
+      console.log('🔄 Đang lấy danh sách appointments cho học sinh:', selectedStudentId);
+      const res = await appointApi.parent.getAppointmentsByStudentId(selectedStudentId);
+      console.log('✅ Appointments response:', res);
+      setAppointments(res.data || []);
+    } catch (error) {
+      console.error('❌ Lỗi khi lấy danh sách appointments:', error);
+      setAppointments([]);
     }
   };
 
@@ -338,6 +298,7 @@ const HealthResult = () => {
     console.log('🔄 Refreshing data...');
     if (selectedStudentId) {
       fetchHealthCheckups();
+      fetchAppointments();
     } else {
       fetchStudents();
     }
@@ -348,11 +309,11 @@ const HealthResult = () => {
   const handleConfirmHealthCheckup = async (healthCheckupId) => {
     try {
       console.log('🔄 Đang xác nhận health checkup:', healthCheckupId);
-      
+
       await healthCheckupApi.parent.confirmHealthCheckup({
         HeathCheckUpID: healthCheckupId
       });
-      
+
       message.success('Đã xác nhận lịch khám sức khỏe');
       fetchHealthCheckups(); // Reload data
     } catch (error) {
@@ -364,11 +325,11 @@ const HealthResult = () => {
   const handleDenyHealthCheckup = async (healthCheckupId) => {
     try {
       console.log('🔄 Đang từ chối health checkup:', healthCheckupId);
-      
+
       await healthCheckupApi.parent.denyHealthCheckup({
         HeathCheckUpID: healthCheckupId
       });
-      
+
       message.success('Đã từ chối lịch khám sức khỏe');
       fetchHealthCheckups(); // Reload data
     } catch (error) {
@@ -390,9 +351,10 @@ const HealthResult = () => {
 
       console.log('✅ Xác nhận appointment thành công:', response);
       message.success('Đã xác nhận tham gia cuộc hẹn thành công!');
-      
+
       // Refresh danh sách
       await fetchHealthCheckups();
+      await fetchAppointments();
     } catch (error) {
       console.error('❌ Lỗi khi xác nhận appointment:', error);
       message.error('Xác nhận appointment thất bại. Vui lòng thử lại!');
@@ -410,9 +372,10 @@ const HealthResult = () => {
 
       console.log('✅ Từ chối appointment thành công:', response);
       message.success('Đã từ chối cuộc hẹn thành công!');
-      
+
       // Refresh danh sách
       await fetchHealthCheckups();
+      await fetchAppointments();
     } catch (error) {
       console.error('❌ Lỗi khi từ chối appointment:', error);
       message.error('Từ chối appointment thất bại. Vui lòng thử lại!');
@@ -611,8 +574,8 @@ const HealthResult = () => {
   const waitingColumns = [
     {
       title: 'Mã khám',
-      dataIndex: 'HealthCheckUpID',
-      key: 'HealthCheckUpID',
+      dataIndex: 'healthCheckUpID',
+      key: 'healthCheckUpID',
       width: 120,
       render: (text) => <Text strong className="text-blue-600 text-xs">{text || 'N/A'}</Text>,
     },
@@ -795,7 +758,7 @@ const HealthResult = () => {
             icon={<EyeOutlined />}
             size="small"
             onClick={() => handleViewDetail(record)}
-            style={{color:"blue"}}
+            style={{ color: "blue" }}
           >
             Chi tiết
           </Button>
@@ -808,8 +771,8 @@ const HealthResult = () => {
   const appointmentColumns = [
     {
       title: 'Mã lịch hẹn',
-      dataIndex: 'AppointmentID',
-      key: 'AppointmentID',
+      dataIndex: 'appointmentID',
+      key: 'appointmentID',
       width: 120,
       render: (text) => (
         <Text strong style={{ fontSize: '12px', color: '#1890ff' }}>
@@ -818,44 +781,49 @@ const HealthResult = () => {
       ),
     },
     {
-      title: 'Kết quả khám',
-      dataIndex: ['HealthCheckup', 'HealthCheckUpID'],
-      key: 'HealthCheckUpID',
-      width: 150,
-      render: (healthCheckUpId, record) => (
+      title: 'Thời gian hẹn',
+      key: 'dateTime',
+      width: 180,
+      render: (_, record) => (
         <div>
-          <Text strong style={{ fontSize: '12px', color: '#1890ff' }}>
-            {healthCheckUpId || 'N/A'}
+          <Text style={{ fontSize: '13px' }}>
+            <strong>📅 Ngày:</strong>{' '}
+            {record.dateTime ? dayjs(record.dateTime).format('DD/MM/YYYY') : 'Chưa xác định'}
           </Text>
           <br />
-          <Text type="secondary" style={{ fontSize: '11px' }}>
-            {record.HealthCheckup?.CheckDate ? formatDate(record.HealthCheckup.CheckDate) : 'Chưa khám'}
+          <Text style={{ fontSize: '13px' }}>
+            <strong>🕐 Giờ:</strong>{' '}
+            {record.dateTime ? dayjs(record.dateTime).format('HH:mm') : 'Chưa xác định'}
+          </Text>
+          <br />
+          <Text style={{ fontSize: '13px', color: '#722ed1' }}>
+            <strong>📍 Địa điểm:</strong> {record.location || 'Chưa xác định'}
           </Text>
         </div>
       ),
     },
     {
-      title: 'Thời gian hẹn',
-      dataIndex: 'DateTime',
-      key: 'DateTime',
+      title: 'Lý do',
+      dataIndex: 'reason',
+      key: 'reason',
       width: 180,
-      render: (dateTime) => (
-        <div>
-          <Text strong style={{ fontSize: '13px' }}>{formatDateTime(dateTime)}</Text>
-        </div>
+      render: (reason) => (
+        <Text style={{ fontSize: '13px', color: 'black' }}>
+          {reason || 'Không có lý do'}
+        </Text>
       ),
     },
     {
       title: 'Trạng thái',
-      dataIndex: 'Status',
-      key: 'Status',
-      width: 130,
+      dataIndex: 'status',
+      key: 'status',
+      width: 110,
       render: (status) => getAppointmentStatusTag(status),
     },
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 150,
+      width: 100,
       render: (_, record) => (
         <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-start' }}>
           <Tooltip title="Xem chi tiết">
@@ -864,7 +832,7 @@ const HealthResult = () => {
               icon={<EyeOutlined />}
               size="small"
               onClick={() => handleViewAppointmentDetail(record)}
-              style={{ color: "blue" }}
+              style={{ color: 'blue' }}
             >
               Chi tiết & phản hồi
             </Button>
@@ -1397,7 +1365,7 @@ const HealthResult = () => {
                   <Table
                     columns={appointmentColumns}
                     dataSource={appointments}
-                    rowKey="AppointmentID"
+                    rowKey="appointmentID"
                     loading={loading}
                     pagination={{
                       total: appointments.length,
@@ -1542,40 +1510,40 @@ const HealthResult = () => {
             </Card>
 
             {/* Actions for pending checkups */}
-            {(viewingCheckup.Status === 'Pending' || viewingCheckup.Status === 'Not Response' || 
+            {(viewingCheckup.Status === 'Pending' || viewingCheckup.Status === 'Not Response' ||
               viewingCheckup.Status === 'pending' || viewingCheckup.Status === 'chờ xác nhận' ||
               viewingCheckup.Status === 'not response' || viewingCheckup.Status === 'chưa phản hồi') && (
-              <Card title="Thao tác" size="small">
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Button
-                      type="primary"
-                      icon={<CheckCircleOutlined />}
-                      block
-                      onClick={() => {
-                        handleConfirmHealthCheckup(viewingCheckup.HealthCheckUpID);
-                        setIsDetailModalVisible(false);
-                      }}
-                    >
-                      Xác nhận khám sức khỏe
-                    </Button>
-                  </Col>
-                  <Col span={12}>
-                    <Button
-                      danger
-                      icon={<CloseCircleOutlined />}
-                      block
-                      onClick={() => {
-                        handleDenyHealthCheckup(viewingCheckup.HealthCheckUpID);
-                        setIsDetailModalVisible(false);
-                      }}
-                    >
-                      Từ chối khám sức khỏe
-                    </Button>
-                  </Col>
-                </Row>
-              </Card>
-            )}
+                <Card title="Thao tác" size="small">
+                  <Row gutter={16}>
+                    <Col span={12}>
+                      <Button
+                        type="primary"
+                        icon={<CheckCircleOutlined />}
+                        block
+                        onClick={() => {
+                          handleConfirmHealthCheckup(viewingCheckup.HealthCheckUpID);
+                          setIsDetailModalVisible(false);
+                        }}
+                      >
+                        Xác nhận khám sức khỏe
+                      </Button>
+                    </Col>
+                    <Col span={12}>
+                      <Button
+                        danger
+                        icon={<CloseCircleOutlined />}
+                        block
+                        onClick={() => {
+                          handleDenyHealthCheckup(viewingCheckup.HealthCheckUpID);
+                          setIsDetailModalVisible(false);
+                        }}
+                      >
+                        Từ chối khám sức khỏe
+                      </Button>
+                    </Col>
+                  </Row>
+                </Card>
+              )}
           </div>
         )}
       </Modal>
@@ -1603,42 +1571,30 @@ const HealthResult = () => {
         {viewingAppointment && (
           <div>
             {/* Main Information */}
-            <Card title="Thông tin cuộc hẹn" size="small" style={{ marginBottom: '16px' }}>
-              <Descriptions bordered column={2} size="small">
-                <Descriptions.Item label="Mã lịch hẹn" span={1}>
-                  <Text  style={{ fontSize: '14px', color: '#1890ff' }}>
-                    {viewingAppointment.AppointmentID}
-                  </Text>
-                </Descriptions.Item>
-                <Descriptions.Item label="Trạng thái" span={1}>
-                  {getAppointmentStatusTag(viewingAppointment.Status)}
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Thời gian hẹn" span={1}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>{formatDateTime(viewingAppointment.DateTime)}</Text>
-                  </div>
-                </Descriptions.Item>
-                <Descriptions.Item label="Địa điểm" span={1}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>{viewingAppointment.Location || 'Chưa xác định'}</Text>
-                  </div>
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Lý do khám" span={2}>
-                  <Text style={{ fontSize: '14px', color: '#1890ff' }}>
-                    {viewingAppointment.Reason || 'Khám sức khỏe định kỳ'}
-                  </Text>
-                </Descriptions.Item>
-
-                {viewingAppointment.Notes && (
-                  <Descriptions.Item label="Ghi chú" span={2}>
-                    <Text style={{ fontSize: '14px', fontStyle: 'italic' }}>{viewingAppointment.Notes}</Text>
-                  </Descriptions.Item>
-                )}
-              </Descriptions>
-            </Card>
-
+            <Descriptions bordered column={2} size="small">
+              <Descriptions.Item label="Mã lịch hẹn" span={1}>
+                <Text style={{ fontSize: '14px', color: '#1890ff' }}>
+                  {viewingAppointment.AppointmentID || viewingAppointment.appointmentID || 'Chưa có'}
+                </Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="Lý do khám" span={1}>
+                <Text style={{ fontSize: '14px', color: '#722ed1' }}>
+                  {viewingAppointment.Reason || viewingAppointment.reason || 'Không có lý do'}
+                </Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="Thời gian hẹn" span={1}>
+                <Text style={{ fontSize: '14px', color: '#1890ff' }}>
+                  {(viewingAppointment.DateTime || viewingAppointment.dateTime)
+                    ? formatDateTime(viewingAppointment.DateTime || viewingAppointment.dateTime)
+                    : 'Chưa xác định'}
+                </Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="Địa điểm" span={1}>
+                <Text style={{ fontSize: '14px', color: '#1890ff' }}>
+                  {viewingAppointment.Location || viewingAppointment.location || 'Chưa xác định'}
+                </Text>
+              </Descriptions.Item>
+            </Descriptions>
             {/* Related Health Checkup */}
             {viewingAppointment.HealthCheckup && (
               <Card title="Kết quả khám liên quan" size="small" style={{ marginBottom: '16px' }}>
@@ -1650,7 +1606,7 @@ const HealthResult = () => {
                   </Descriptions.Item>
                   <Descriptions.Item label="Ngày khám" span={1}>
                     <Text style={{ fontSize: '14px', color: '#1890ff' }}>
-                      {viewingAppointment.HealthCheckup.CheckDate ? 
+                      {viewingAppointment.HealthCheckup.CheckDate ?
                         formatDate(viewingAppointment.HealthCheckup.CheckDate) : 'Chưa khám'}
                     </Text>
                   </Descriptions.Item>

@@ -39,7 +39,7 @@ function SidebarParent({ collapsed }) {
     {
       key: `${basePath}/medical-events`,
       icon: <AlertOutlined />,
-      label: "Sự kiện y tế",
+      label: "Sự cố y tế",
     },
     {
       key: `${basePath}/vaccinations`,

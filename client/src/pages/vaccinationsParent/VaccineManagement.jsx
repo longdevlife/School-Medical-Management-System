@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Table,
@@ -149,39 +150,63 @@ const VaccineManagement = () => {
         }));
 
         // 🎯 Phân loại vaccine cho "Kết quả tiêm chủng"
-        // Tab "Chờ tiêm": Đã đồng ý nhưng chưa hoàn thành/từ chối
+        // Tab "Chờ tiêm": Vaccine chưa hoàn thành (bao gồm cả mới tạo, đã tiêm, đang theo dõi)
         const waitingVaccines = normalizedVaccines.filter(vaccine => {
-          const status = vaccine.Status?.toLowerCase() || '';
-          return (
-            status === 'confirmed' ||       // Đã đồng ý, chờ tiêm
-            status === 'đã xác nhận' ||     // Đã đồng ý, chờ tiêm
-            status === 'approved' ||        // Nurse đã chuẩn bị tiêm
-            status === 'injected' ||        // Đã tiêm, đang theo dõi
-            status === 'vaccinated' ||      // Đã tiêm, đang theo dõi
-            status === 'đã tiêm' ||         // Đã tiêm, đang theo dõi
-            status === 'monitoring' ||      // Đang theo dõi sau tiêm
-            status === 'đang theo dõi'      // Đang theo dõi sau tiêm (tiếng Việt)
-          );
+          const status = (vaccine.Status || '').toLowerCase().trim();
+          
+          // ✅ Bao gồm tất cả status chưa hoàn thành
+          const waitingStatuses = [
+            'pending',              // Chờ xác nhận (mới tạo từ nurse)
+            'chờ xác nhận',        // Chờ xác nhận (Vietnamese)  
+            'waiting',             // Đang chờ
+            'created',             // Vừa tạo
+            'new',                 // Mới
+            'confirmed',           // Parent đã đồng ý, chờ tiêm
+            'đã xác nhận',         // Parent đã đồng ý, chờ tiêm (Vietnamese)
+            'approved',            // Nurse đã chuẩn bị tiêm
+            'injected',            // Nurse đã tiêm (giai đoạn 1)
+            'vaccinated',          // Nurse đã tiêm (variant)
+            'đã tiêm',             // Nurse đã tiêm (Vietnamese)
+            'monitoring',          // Nurse đang theo dõi (giai đoạn 2)
+            'đang theo dõi',       // Nurse đang theo dõi (Vietnamese)
+            'processing',          // Đang xử lý
+            'in_progress',         // Đang tiến hành
+            'scheduled'            // Đã lên lịch
+          ];
+          
+          return waitingStatuses.includes(status);
         });
 
-        // Tab "Lịch sử tiêm": Chỉ những vaccine đã hoàn thành hoặc từ chối
+        // Tab "Lịch sử tiêm": Chỉ những vaccine đã hoàn thành (nurse xác nhận) hoặc từ chối
         const completedVaccines = normalizedVaccines.filter(vaccine => {
-          const status = vaccine.Status?.toLowerCase() || '';
-          return (
-            status === 'completed' ||       // Hoàn thành toàn bộ
-            status === 'hoàn thành' ||      // Hoàn thành toàn bộ
-            status === 'finish' ||          // Hoàn thành (variant)
-            status === 'finished' ||        // Hoàn thành (variant)
-            status === 'done' ||            // Hoàn thành (variant)
-            status === 'success' ||         // Hoàn thành (variant)
-            status === 'successful' ||      // Hoàn thành (variant)
-            status === 'denied' ||          // Đã từ chối
-            status === 'từ chối' ||         // Từ chối
-            status === 'đã từ chối' ||      // Đã từ chối (từ backend)
-            status === 'rejected' ||        // Đã từ chối (variant)
-            status === 'cancel' ||          // Đã hủy
-            status === 'cancelled'          // Đã hủy
-          );
+          const status = (vaccine.Status || '').toLowerCase().trim();
+          
+          const completedStatuses = [
+            'completed',           // Nurse xác nhận hoàn thành (giai đoạn 3) - English
+            'hoàn thành',          // ✅ QUAN TRỌNG: Backend trả về "Hoàn thành" (Vietnamese)
+            'finish',              // Hoàn thành (variant)
+            'finished',            // Hoàn thành (variant) 
+            'done',                // Hoàn thành (variant)
+            'success',             // Hoàn thành (variant)
+            'successful',          // Hoàn thành (variant)
+            'confirmed_complete',  // Xác nhận hoàn thành (nếu có)
+            'denied',              // Parent đã từ chối
+            'từ chối',             // Từ chối (Vietnamese)
+            'đã từ chối',          // Đã từ chối (Vietnamese variant)
+            'rejected',            // Đã từ chối (variant)
+            'cancel',              // Đã hủy
+            'cancelled',           // Đã hủy (variant)
+            'failed',              // Thất bại
+            'error'                // Lỗi
+          ];
+          
+          // 🚨 DEBUG: Log để kiểm tra status matching
+          const isCompleted = completedStatuses.includes(status);
+          if (status && status.includes('hoàn') || status.includes('completed')) {
+            console.log(`🎯 COMPLETION CHECK: RecordID=${vaccine.RecordID}, Status="${vaccine.Status}", normalized="${status}", isCompleted=${isCompleted}`);
+          }
+          
+          return isCompleted;
         });
 
         console.log('📋 Vaccine đã lọc theo học sinh:', filteredVaccines);
@@ -199,11 +224,60 @@ const VaccineManagement = () => {
         console.log('  - Chờ tiêm (waitingVaccines):', waitingVaccines.map(v => `${v.RecordID}:${v.Status}`));
         console.log('  - Lịch sử (completedVaccines):', completedVaccines.map(v => `${v.RecordID}:${v.Status}`));
 
+        // 🚨 DEBUG: Kiểm tra vaccine không được phân loại
+        const uncategorizedVaccines = normalizedVaccines.filter(vaccine => {
+          const status = (vaccine.Status || '').toLowerCase().trim();
+          
+          const waitingStatuses = [
+            'pending', 'chờ xác nhận', 'waiting', 'created', 'new', 'confirmed', 'đã xác nhận',
+            'approved', 'injected', 'vaccinated', 'đã tiêm', 'monitoring', 'đang theo dõi',
+            'processing', 'in_progress', 'scheduled'
+          ];
+          
+          const completedStatuses = [
+            'completed', 'hoàn thành', 'finish', 'finished', 'done', 'success', 'successful',
+            'confirmed_complete', 'denied', 'từ chối', 'đã từ chối', 'rejected', 'cancel', 'cancelled', 'failed', 'error'
+          ];
+          
+          return !waitingStatuses.includes(status) && !completedStatuses.includes(status);
+        });
+        
+        if (uncategorizedVaccines.length > 0) {
+          console.warn('⚠️ VACCINE KHÔNG ĐƯỢC PHÂN LOẠI:');
+          uncategorizedVaccines.forEach(vaccine => {
+            console.warn(`  - RecordID: ${vaccine.RecordID}, Status: "${vaccine.Status}" (normalized: "${(vaccine.Status || '').toLowerCase().trim()}")`);
+          });
+          console.warn('🔧 Cần thêm các status này vào logic phân loại!');
+        }
+
         // Liệt kê tất cả status unique để debug
         const allOriginalStatuses = [...new Set(filteredVaccines.map(v => v.status))];
         const allNormalizedStatuses = [...new Set(normalizedVaccines.map(v => v.Status))];
         console.log('🏷️ Tất cả status gốc có trong data:', allOriginalStatuses);
         console.log('🏷️ Tất cả status normalized có trong data:', allNormalizedStatuses);
+
+        // 🚨 SPECIAL DEBUG: Phân tích từng giai đoạn của nurse
+        console.log('🏥 NURSE STAGES ANALYSIS:');
+        normalizedVaccines.forEach((vaccine, index) => {
+          const status = (vaccine.Status || '').toLowerCase().trim();
+          let nurseStage = 'Unknown';
+          
+          if (['pending', 'chờ xác nhận', 'waiting', 'created', 'new'].includes(status)) {
+            nurseStage = '📝 Vừa tạo - Chờ parent xác nhận';
+          } else if (['confirmed', 'đã xác nhận', 'approved'].includes(status)) {
+            nurseStage = '✅ Parent đã đồng ý - Chờ tiêm';
+          } else if (['injected', 'vaccinated', 'đã tiêm'].includes(status)) {
+            nurseStage = '💉 GIAI ĐOẠN 1: Nurse đã tiêm';
+          } else if (['monitoring', 'đang theo dõi'].includes(status)) {
+            nurseStage = '👁️ GIAI ĐOẠN 2: Nurse đang theo dõi';
+          } else if (['completed', 'hoàn thành', 'finish', 'finished', 'done', 'success', 'successful'].includes(status)) {
+            nurseStage = '🎯 GIAI ĐOẠN 3: Nurse xác nhận hoàn thành ✅';  // ✅ Đánh dấu rõ
+          } else if (['denied', 'từ chối', 'đã từ chối', 'rejected'].includes(status)) {
+            nurseStage = '❌ Parent đã từ chối';
+          }
+          
+          console.log(`  ${index}: ${vaccine.RecordID} | Status: "${vaccine.Status}" → ${nurseStage}`);
+        });
 
         // 🚨 SPECIAL DEBUG: Tìm vaccines mà nurse đã mark là hoàn thành
         console.log('🚨 DEBUGGING NURSE COMPLETION STATUS:');
@@ -216,6 +290,24 @@ const VaccineManagement = () => {
             originalStatus.includes('success');
           if (isLikelyCompleted) {
             console.log(`  🎯 FOUND COMPLETION: recordID=${vaccine.recordID}, original="${vaccine.status}", normalized="${vaccine.Status}"`);
+          }
+        });
+
+        // ✅ FINAL STATUS VERIFICATION: Kiểm tra vaccines có status "Hoàn thành" từ backend
+        console.log('🔍 BACKEND STATUS VERIFICATION:');
+        normalizedVaccines.forEach((vaccine, index) => {
+          const originalStatus = vaccine.Status || '';
+          const normalizedStatus = originalStatus.toLowerCase().trim();
+          
+          // Kiểm tra exact match với "Hoàn thành" từ backend
+          if (originalStatus === 'Hoàn thành' || normalizedStatus === 'hoàn thành') {
+            console.log(`🎯 BACKEND COMPLETION DETECTED: RecordID=${vaccine.RecordID}, Status="${vaccine.Status}"`);
+          }
+          
+          // Kiểm tra tất cả completion variants
+          const completionVariants = ['completed', 'hoàn thành', 'finish', 'finished', 'done', 'success', 'successful'];
+          if (completionVariants.includes(normalizedStatus)) {
+            console.log(`✅ COMPLETION VARIANT: RecordID=${vaccine.RecordID}, Status="${vaccine.Status}", normalized="${normalizedStatus}"`);
           }
         });
 
@@ -235,7 +327,7 @@ const VaccineManagement = () => {
           );
           const isCompleted = (
             status === 'completed' ||
-            status === 'hoàn thành' ||
+            status === 'hoàn thành' ||     // ✅ QUAN TRỌNG: Backend status
             status === 'finish' ||
             status === 'finished' ||
             status === 'done' ||
@@ -243,11 +335,17 @@ const VaccineManagement = () => {
             status === 'successful' ||
             status === 'denied' ||
             status === 'từ chối' ||
-            status === 'đã từ chối' ||      // Đã từ chối (từ backend)
+            status === 'đã từ chối' ||     // Đã từ chối (từ backend)
             status === 'rejected' ||
             status === 'cancel' ||
             status === 'cancelled'
           );
+          
+          // 🎯 Special case: Log vaccines với status "Hoàn thành"
+          if (status === 'hoàn thành' || vaccine.Status === 'Hoàn thành') {
+            console.log(`🎯 HOÀN THÀNH DETECTED: recordID=${vaccine.RecordID}, Status="${vaccine.Status}", normalized="${status}", isCompleted=${isCompleted}`);
+          }
+          
           console.log(`  ${index}: recordID=${vaccine.RecordID}, status="${vaccine.Status}" → normalized="${status}" → isWaiting=${isWaiting}, isCompleted=${isCompleted}`);
         });
 
@@ -278,6 +376,50 @@ const VaccineManagement = () => {
     setIsDetailModalVisible(true);
   };
 
+  const handleConfirmVaccination = async (record) => {
+    try {
+      console.log('✅ Confirming vaccination for record:', record.RecordID);
+      
+      const confirmData = {
+        recordID: record.RecordID
+      };
+      
+      const response = await vaccineApi.parent.confirmVaccination(confirmData);
+      console.log('✅ Confirm vaccination response:', response);
+      
+      message.success('Đã đồng ý tiêm vaccine thành công!');
+      
+      // Refresh data
+      fetchVaccineData();
+      
+    } catch (error) {
+      console.error('❌ Error confirming vaccination:', error);
+      message.error('Không thể xác nhận đồng ý. Vui lòng thử lại!');
+    }
+  };
+
+  const handleDenyVaccination = async (record) => {
+    try {
+      console.log('❌ Denying vaccination for record:', record.RecordID);
+      
+      const denyData = {
+        recordID: record.RecordID
+      };
+      
+      const response = await vaccineApi.parent.denyVaccination(denyData);
+      console.log('✅ Deny vaccination response:', response);
+      
+      message.success('Đã từ chối tiêm vaccine thành công!');
+      
+      // Refresh data
+      fetchVaccineData();
+      
+    } catch (error) {
+      console.error('❌ Error denying vaccination:', error);
+      message.error('Không thể từ chối vaccine. Vui lòng thử lại!');
+    }
+  };
+
   const handleRefresh = () => {
     console.log('🔄 Refreshing data...');
     if (selectedStudentId) {
@@ -290,9 +432,10 @@ const VaccineManagement = () => {
   // ==================== HELPER FUNCTIONS ====================
 
   const getStatusTag = (status) => {
-    const normalizedStatus = (status || '').toLowerCase();
+    const normalizedStatus = (status || '').toLowerCase().trim();
 
     const statusConfig = {
+      // 🔵 Trạng thái chờ xử lý (mới tạo từ nurse)
       'pending': {
         color: 'orange',
         icon: <ClockCircleOutlined />,
@@ -303,6 +446,23 @@ const VaccineManagement = () => {
         icon: <ClockCircleOutlined />,
         text: 'Chờ xác nhận'
       },
+      'waiting': {
+        color: 'orange',
+        icon: <ClockCircleOutlined />,
+        text: 'Đang chờ'
+      },
+      'created': {
+        color: 'cyan',
+        icon: <ClockCircleOutlined />,
+        text: 'Vừa tạo'
+      },
+      'new': {
+        color: 'cyan',
+        icon: <ClockCircleOutlined />,
+        text: 'Mới'
+      },
+      
+      // 🟦 Trạng thái đã xác nhận từ parent
       'confirmed': {
         color: 'blue',
         icon: <CheckCircleOutlined />,
@@ -318,21 +478,25 @@ const VaccineManagement = () => {
         icon: <CheckCircleOutlined />,
         text: 'Chuẩn bị tiêm'
       },
+      
+      // 🟡 Giai đoạn 1: Nurse đã tiêm (riêng biệt)
       'injected': {
-        color: 'cyan',
+        color: 'gold',
         icon: <SafetyCertificateOutlined />,
-        text: 'Đã tiêm - Đang theo dõi'
+        text: 'Đã tiêm'
       },
       'vaccinated': {
-        color: 'cyan',
+        color: 'gold',
         icon: <SafetyCertificateOutlined />,
-        text: 'Đã tiêm - Đang theo dõi'
+        text: 'Đã tiêm'
       },
       'đã tiêm': {
-        color: 'cyan',
+        color: 'gold',
         icon: <SafetyCertificateOutlined />,
-        text: 'Đã tiêm - Đang theo dõi'
+        text: 'Đã tiêm'
       },
+      
+      // 🟣 Giai đoạn 2: Nurse đang theo dõi (riêng biệt)
       'monitoring': {
         color: 'geekblue',
         icon: <SafetyCertificateOutlined />,
@@ -343,6 +507,8 @@ const VaccineManagement = () => {
         icon: <SafetyCertificateOutlined />,
         text: 'Đang theo dõi'
       },
+      
+      // 🟢 Giai đoạn 3: Nurse xác nhận hoàn thành
       'completed': {
         color: 'green',
         icon: <CheckCircleOutlined />,
@@ -351,7 +517,7 @@ const VaccineManagement = () => {
       'hoàn thành': {
         color: 'green',
         icon: <CheckCircleOutlined />,
-        text: 'Hoàn thành'
+        text: 'Hoàn thành'  // ✅ QUAN TRỌNG: Backend trả về "Hoàn thành"
       },
       'finish': {
         color: 'green',
@@ -378,6 +544,13 @@ const VaccineManagement = () => {
         icon: <CheckCircleOutlined />,
         text: 'Hoàn thành'
       },
+      'confirmed_complete': {
+        color: 'green',
+        icon: <CheckCircleOutlined />,
+        text: 'Xác nhận hoàn thành'
+      },
+      
+      // 🔴 Trạng thái từ chối
       'denied': {
         color: 'red',
         icon: <CloseCircleOutlined />,
@@ -405,11 +578,18 @@ const VaccineManagement = () => {
       }
     };
 
-    const config = statusConfig[normalizedStatus] || {
-      color: 'default',
-      icon: <ClockCircleOutlined />,
-      text: status || 'Chưa xác định'
-    };
+    const config = statusConfig[normalizedStatus];
+    
+    if (!config) {
+      // 🚨 DEBUG: Log unknown status
+      console.warn(`⚠️ Unknown vaccine status: "${status}" (normalized: "${normalizedStatus}")`);
+      
+      return (
+        <Tag color="magenta" icon={<ExclamationCircleOutlined />}>
+          Unknown: {status || 'N/A'}
+        </Tag>
+      );
+    }
 
     return (
       <Tag color={config.color} icon={config.icon}>
@@ -519,20 +699,57 @@ const VaccineManagement = () => {
     {
       title: 'Thao tác',
       key: 'action',
-      width: 100,
-      render: (_, record) => (
-        <Tooltip title="Xem chi tiết">
-          <Button
-            type="default"
-            icon={<EyeOutlined />}
-            size="small"
-            onClick={() => handleViewDetail(record)}
-            style={{ color: "blue" }}
-          >
-            Chi tiết
-          </Button>
-        </Tooltip>
-      ),
+      width: 200,
+      render: (_, record) => {
+        const status = (record.Status || '').toLowerCase().trim();
+        const needsParentResponse = ['pending', 'waiting', 'created', 'new', 'chờ xác nhận'].includes(status);
+        
+        return (
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            <Tooltip title="Xem chi tiết">
+              <Button
+                type="default"
+                icon={<EyeOutlined />}
+                size="small"
+                onClick={() => handleViewDetail(record)}
+                style={{ color: "blue" }}
+              >
+                Chi tiết
+              </Button>
+            </Tooltip>
+            
+            {needsParentResponse && (
+              <>
+                <Tooltip title="Đồng ý tiêm vaccine">
+                  <Button
+                    type="primary"
+                    size="small"
+                    onClick={() => handleConfirmVaccination(record)}
+                    style={{ 
+                      background: "#22c55e", 
+                      borderColor: "#22c55e",
+                      fontSize: "11px"
+                    }}
+                  >
+                    ✓ Đồng ý
+                  </Button>
+                </Tooltip>
+                
+                <Tooltip title="Từ chối tiêm vaccine">
+                  <Button
+                    danger
+                    size="small"
+                    onClick={() => handleDenyVaccination(record)}
+                    style={{ fontSize: "11px" }}
+                  >
+                    ✗ Từ chối
+                  </Button>
+                </Tooltip>
+              </>
+            )}
+          </div>
+        );
+      },
     },
   ];    // Columns cho lịch sử đã tiêm
   const historyColumns = [

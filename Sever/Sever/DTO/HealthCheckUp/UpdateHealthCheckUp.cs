@@ -15,5 +15,7 @@
         public string? Respiration { get; set; }
         public string? Ardiovascular { get; set; }
         public string? Notes { get; set; }
+        public string? Status { get; set; }
+
     }
 }

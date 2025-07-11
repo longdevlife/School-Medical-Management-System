@@ -11,5 +11,6 @@
         public string Status { get; set; }
         public string? Notes { get; set; }
         public string HealthCheckUpID { get; set; }
+        public string? StudentID { get; set; }
     }
 }

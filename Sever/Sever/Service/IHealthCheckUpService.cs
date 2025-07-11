@@ -113,7 +113,7 @@ namespace Sever.Service
                 var student = await _studentRepository.SearchStudentProfile(healthCheckUp.StudentID);
                 await _healthCheckupRepository.UpdateHealthCheckupAsync(healthCheckUp);
                 await _healthProfileRepository.UpdateHealthProfile(healthProfile);
-                await _healthCheckupRepository.UpdateStatus(healthCheckUp, "Đã hoàn thành");
+                await _healthCheckupRepository.UpdateStatus(healthCheckUp, healthCheckupUpdate.Status);
                 _notificationService.UpdateHealthCheckUpNotifycationAsync(student);
                 return true;
             }

@@ -14,8 +14,6 @@ const medicineApi = {
       );
 
       const formData = new FormData();
-
-      // Xử lý từng field một cách cụ thể
       Object.keys(medicineData).forEach((key) => {
         if (medicineData[key] !== null && medicineData[key] !== undefined) {
           // Xử lý riêng trường Image
@@ -61,7 +59,7 @@ const medicineApi = {
       console.log("🚀 Sending POST request to /nurse/medicine/create");
       return axiosClient.post("/nurse/medicine/create", formData, {
         headers: { "Content-Type": "multipart/form-data" },
-        timeout: 30000, // Tăng timeout cho việc upload ảnh
+        timeout: 30000,
       });
     },
 

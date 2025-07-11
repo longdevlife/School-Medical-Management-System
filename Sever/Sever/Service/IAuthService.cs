@@ -75,7 +75,7 @@ namespace Sever.Service
             {
                 UserId = user.UserID,
                 Token = refreshTokenString,
-                ExpiryDate = DateTime.UtcNow.AddMinutes(ConfigSystem.TokenTimeOut)
+                ExpiryDate = DateTime.UtcNow.AddDays(ConfigSystem.TokenTimeOut)
             };
 
             await _refreshTokenRepository.AddAsync(refreshToken);
@@ -119,7 +119,7 @@ namespace Sever.Service
             {
                 UserId = storedRefreshToken.UserId,
                 Token = newRefreshTokenString,
-                ExpiryDate = DateTime.UtcNow.AddMinutes(ConfigSystem.TokenTimeOut)
+                ExpiryDate = DateTime.UtcNow.AddDays(ConfigSystem.TokenTimeOut)
             };
 
             await _refreshTokenRepository.AddAsync(newRefreshToken);
@@ -211,7 +211,7 @@ namespace Sever.Service
             {
                 UserId = user.UserID,
                 Token = token,
-                ExpiryDate = DateTime.UtcNow.AddMinutes(ConfigSystem.ForgotPasswordTokenTimeOut)
+                ExpiryDate = DateTime.UtcNow.AddDays(ConfigSystem.ForgotPasswordTokenTimeOut)
             };
 
             await _forgotRepo.CreateTokenAsync(resetToken);

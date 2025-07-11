@@ -490,6 +490,16 @@
   },
   {
     "ContainingType": "Sever.Controllers.ManagerController",
+    "Method": "GetAllStudent",
+    "RelativePath": "api/manager/get-all-student",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ManagerController",
     "Method": "GetNewsByManager",
     "RelativePath": "api/manager/get-news-by-manager",
     "HttpMethod": "GET",

@@ -7,6 +7,29 @@ const healthCheckApi = {
       return axiosClient.get("nurse/get-all-health-check-up");
     },
 
+    // Tạo yêu cầu khám sức khỏe theo lớp
+    createByClass: (data) => {
+      const formData = new FormData();
+
+      if (data.classId) formData.append("classId", String(data.classId));
+      if (data.dateCheckUp) formData.append("dateCheckUp", data.dateCheckUp);
+
+      console.log("🚀 healthCheckApi.createByClass - data gửi lên:");
+      for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}: ${value}`);
+      }
+
+      return axiosClient.post(
+        "nurse/create-health-check-up-by-class",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+    },
+
     // Tạo health check mới
     create: (data) => {
       const formData = new FormData();
@@ -33,7 +56,7 @@ const healthCheckApi = {
       if (data.Notes) formData.append("Notes", data.Notes);
       if (data.Status) formData.append("Status", data.Status);
 
-      // CheckerID - lấy từ current user
+      // CheckerID
       if (data.CheckerID) {
         formData.append("CheckerID", String(data.CheckerID));
       } else {
@@ -64,7 +87,7 @@ const healthCheckApi = {
       });
     },
 
-    // Cập nhật health check - endpoint mới
+    // Cập nhật health check
     update: (healthCheckId, data) => {
       const updateData = {
         healthCheckId: String(healthCheckId),
@@ -83,8 +106,9 @@ const healthCheckApi = {
         skin: data.Skin || undefined,
         hearing: data.Hearing || undefined,
         respiration: data.Respiration || undefined,
-        ardiovascular: data.Cardiovascular || undefined, // Lưu ý: API backend sử dụng "ardiovascular" (có typo)
+        ardiovascular: data.Cardiovascular || undefined,
         notes: data.Notes || undefined,
+        status: data.Status || undefined,
       };
 
       // Loại bỏ các field undefined
@@ -101,6 +125,85 @@ const healthCheckApi = {
           "Content-Type": "application/json",
         },
       });
+    },
+
+    // tạo lịch hẹn khám sức khỏe
+    createAppointment: (data) => {
+      const appointmentData = {
+        dateTime:
+          data.dateTime ||
+          `${data.appointmentDate}T${data.appointmentTime || "08:00"}:00.000Z`,
+        location: data.location || "Phòng y tế trường",
+        reason: data.reason || data.purpose || "Khám sức khỏe",
+        notes: data.notes || "",
+        healthCheckUpID: String(
+          data.healthCheckUpID || data.healthCheckId || ""
+        ),
+      };
+
+      console.log("🚀 healthCheckApi.createAppointment - data gửi lên:");
+      console.log(JSON.stringify(appointmentData, null, 2));
+
+      return axiosClient.post("nurse/create-appointment", appointmentData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    },
+
+    // Cập nhật lịch hẹn
+    updateAppointment: (appointmentId, data) => {
+      let actualAppointmentId = appointmentId;
+      // Kiểm tra nếu appointmentId là chuỗi và bắt đầu bằng "app_"
+      if (
+        typeof appointmentId === "string" &&
+        appointmentId.startsWith("app_")
+      ) {
+        actualAppointmentId = appointmentId.replace("app_", "");
+      }
+
+      const updateData = {
+        appointmentID: String(actualAppointmentId),
+        notes: data.notes || "",
+      };
+
+      console.log(
+        "🚀 healthCheckApi.updateAppointment - appointmentID:",
+        actualAppointmentId
+      );
+      console.log("🚀 healthCheckApi.updateAppointment - data gửi lên:");
+      console.log(JSON.stringify(updateData, null, 2));
+
+      return axiosClient.put("nurse/update-appointment", updateData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    },
+
+    //  Cập nhật status của health check
+    updateStatus: (healthCheckId, status) => {
+      const updateData = {
+        healthCheckId: String(healthCheckId),
+        status: String(status),
+      };
+
+      console.log(
+        "🚀 healthCheckApi.updateStatus - healthCheckId:",
+        healthCheckId
+      );
+      console.log("🚀 healthCheckApi.updateStatus - status:", status);
+      console.log("🚀 healthCheckApi.updateStatus - data gửi lên:");
+      console.log(JSON.stringify(updateData, null, 2));
+
+      return axiosClient.put("nurse/update-health-check-status", updateData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    },
+    getAllApointment: () => {
+      return axiosClient.get("nurse/get-all-appointment");
     },
   },
 

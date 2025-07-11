@@ -970,7 +970,7 @@ const MedicalEvent = () => {
           title={
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <HistoryOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
-              <span style={{ fontWeight: 700, fontSize: '16px' }}>Chi tiết sự kiện y tế</span>
+              <span style={{ fontWeight: 700, fontSize: '16px' }}>Chi tiết sự cố y tế</span>
             </div>
           }
           open={isDetailModalVisible}

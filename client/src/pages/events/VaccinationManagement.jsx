@@ -82,8 +82,8 @@ function VaccinationManagement() {
           );
 
           switch (backendStatus) {
-            case "Đã chấp nhận":
             case "Đã xác nhận":
+            case "đã xác nhận":
               status = "confirmed";
               break;
             case "Chờ tiêm":
@@ -101,12 +101,10 @@ function VaccinationManagement() {
             case "Theo dõi":
               status = "monitoring";
               break;
-            case "Từ chối":
-            case "Đã từ chối":
+            case "đã từ chối":
               status = "rejected";
               break;
             case "Hoàn thành":
-            case "Hoàn tất":
               status = "completed";
               break;
             case "Chờ xác nhận":
@@ -259,13 +257,15 @@ function VaccinationManagement() {
 
     let nextStatus = "completed";
     if (submission.status === "confirmed") {
-      nextStatus = "approved"; // Đã xác nhận → Chờ tiêm
+      nextStatus = "approved";
     } else if (submission.status === "approved") {
-      nextStatus = "injected"; // Chờ tiêm → Đã tiêm
+      nextStatus = "injected";
+      nextStatus = "monitoring";
+      nextStatus = "completed";
     } else if (submission.status === "injected") {
-      nextStatus = "monitoring"; // Đã tiêm → Đang theo dõi
+      nextStatus = "monitoring";
     } else if (submission.status === "monitoring") {
-      nextStatus = "completed"; // Đang theo dõi → Hoàn thành
+      nextStatus = "completed";
     }
 
     updateForm.setFieldsValue({

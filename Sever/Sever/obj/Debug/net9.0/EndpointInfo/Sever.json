@@ -2743,6 +2743,93 @@
         }
       }
     },
+    "/api/parent/update-student-profile": {
+      "put": {
+        "tags": [
+          "Parent"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "StudentID": {
+                    "type": "string"
+                  },
+                  "StudentName": {
+                    "type": "string"
+                  },
+                  "Class": {
+                    "type": "string"
+                  },
+                  "StudentAvata": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "RelationName": {
+                    "type": "string"
+                  },
+                  "Nationality": {
+                    "type": "string"
+                  },
+                  "Ethnicity": {
+                    "type": "string"
+                  },
+                  "Birthday": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "Sex": {
+                    "type": "string"
+                  },
+                  "Location": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "StudentID": {
+                  "style": "form"
+                },
+                "StudentName": {
+                  "style": "form"
+                },
+                "Class": {
+                  "style": "form"
+                },
+                "StudentAvata": {
+                  "style": "form"
+                },
+                "RelationName": {
+                  "style": "form"
+                },
+                "Nationality": {
+                  "style": "form"
+                },
+                "Ethnicity": {
+                  "style": "form"
+                },
+                "Birthday": {
+                  "style": "form"
+                },
+                "Sex": {
+                  "style": "form"
+                },
+                "Location": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/school/get-school-info": {
       "get": {
         "tags": [

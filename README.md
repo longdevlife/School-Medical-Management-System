@@ -1,4 +1,4 @@
-# School Medical Management System
+
 # School Medical Management System
 
 Hệ thống quản lý y tế học đường hỗ trợ quản lý hồ sơ sức khỏe, sự kiện y tế, thuốc men, tiêm chủng, báo cáo và nhiều chức năng khác cho trường học.
@@ -57,4 +57,8 @@ School-Medical-Management-System/
 - Mọi ý kiến đóng góp hoặc báo lỗi xin gửi về nhóm phát triển.
 
 ## 7. Thông tin liên hệ
-- (Bổ sung thông tin nhóm hoặc email nếu cần)
+- Hoàng Bảo Ân
+- Hoàng Long Anh
+- Lê Hữu Khoa 
+- Lưu Sa Trường 
+- Vy

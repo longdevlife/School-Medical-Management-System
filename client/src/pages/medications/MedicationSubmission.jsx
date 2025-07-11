@@ -16,6 +16,7 @@ import {
   message,
   Upload,
   Descriptions,
+  Radio,
 } from "antd";
 import {
   PlusOutlined,
@@ -58,6 +59,11 @@ function MedicationSubmission() {
   // modal chỉnh sửa thuốc
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editForm] = Form.useForm();
+
+  // moodal phóng to ảnh
+  const [imagePreviewVisible, setImagePreviewVisible] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
+  const [previewTitle, setPreviewTitle] = useState("");
 
   const getStatusFromBackend = (backendStatus) => {
     switch (backendStatus) {
@@ -104,22 +110,51 @@ function MedicationSubmission() {
           "🔍 Debugging all possible image fields for",
           item.medicineID
         );
+        console.log("📋 item.image:", item.image);
         console.log("📋 item.file:", item.file);
         console.log("📋 item.files:", item.files);
-        console.log("📋 item.images:", item.images);
-        console.log("📋 item.image:", item.image);
-        console.log("📋 item.imageUrl:", item.imageUrl);
+        console.log("📋 Full item:", item); // 🆕 Debug toàn bộ object
 
-        // Ưu tiên lấy FileLink nếu có (tương tự AccidentManagement)
-        if (item.files && Array.isArray(item.files)) {
+        // ✅ Mapping ảnh theo đúng cấu trúc backend response mới nhất
+        if (item.image && Array.isArray(item.image) && item.image.length > 0) {
+          images = item.image
+            .map((imageData) => {
+              // Lấy url từ backend response mới
+              const link = imageData.url;
+              if (link && typeof link === "string" && link.startsWith("http")) {
+                console.log(`✅ Found image URL from 'image' field: ${link}`);
+                return link;
+              }
+              return null;
+            })
+            .filter(Boolean);
+        }
+        // Fallback cho cấu trúc cũ với 'file' field
+        else if (
+          item.file &&
+          Array.isArray(item.file) &&
+          item.file.length > 0
+        ) {
+          images = item.file
+            .map((fileData) => {
+              // Lấy fileLink từ backend response cũ
+              const link = fileData.fileLink;
+              if (link && typeof link === "string" && link.startsWith("http")) {
+                console.log(`✅ Found image URL from 'file' field: ${link}`);
+                return link;
+              }
+              return null;
+            })
+            .filter(Boolean);
+        }
+        // Fallback cho các trường khác (backward compatibility)
+        else if (item.files && Array.isArray(item.files)) {
           images = item.files
             .map((fileData) => {
-              // Ưu tiên lấy trường FileLink (hoặc fileLink, file_link)
               const link =
                 fileData.FileLink || fileData.fileLink || fileData.file_link;
               if (link && typeof link === "string" && link.startsWith("http"))
                 return link;
-              // Nếu là string và là URL đầy đủ
               if (typeof fileData === "string" && fileData.startsWith("http"))
                 return fileData;
               return null;
@@ -131,12 +166,6 @@ function MedicationSubmission() {
           item.fileLink.startsWith("http")
         ) {
           images = [item.fileLink];
-        } else if (
-          item.file &&
-          typeof item.file === "string" &&
-          item.file.startsWith("http")
-        ) {
-          images = [item.file];
         } else if (Array.isArray(item.images)) {
           images = item.images
             .map((img) =>
@@ -147,18 +176,6 @@ function MedicationSubmission() {
                 : img.FileLink || img.fileLink || img.file_link || null
             )
             .filter(Boolean);
-        } else if (
-          item.imageUrl &&
-          typeof item.imageUrl === "string" &&
-          item.imageUrl.startsWith("http")
-        ) {
-          images = [item.imageUrl];
-        } else if (
-          item.image &&
-          typeof item.image === "string" &&
-          item.image.startsWith("http")
-        ) {
-          images = [item.image];
         }
 
         console.log(`🖼️ Final images for ${item.medicineID}:`, images);
@@ -181,10 +198,11 @@ function MedicationSubmission() {
           verifiedDate: null,
           verificationNotes: item.notes,
           urgencyLevel: "normal",
-          medicationImages: images, // Gán luôn ảnh đã mapping
+          medicationImages: images,
           prescriptionImage: null,
           parentSignature: null,
           administrationTimes: [],
+          parentId: item.parentID,
           createdBy: item.parentID
             ? "parent"
             : item.status === "Chờ xử lý"
@@ -212,18 +230,81 @@ function MedicationSubmission() {
     setVerifyModalVisible(true);
   };
 
-  const handleViewDetails = (submission) => {
-    setSelectedSubmission(submission);
+  const handleViewDetails = async (submission) => {
+    // 🆕 Gọi API chi tiết để lấy ảnh nếu chưa có
+    let submissionWithImages = { ...submission };
+
+    if (
+      !submission.medicationImages ||
+      submission.medicationImages.length === 0
+    ) {
+      try {
+        console.log(`🔍 Fetching images for medicine ${submission.id}...`);
+        const detailResponse = await medicineApi.nurse.getById(submission.id);
+        const detailData = detailResponse.data;
+
+        console.log("📋 Detail API response for modal:", detailData);
+
+        // Mapping ảnh từ API chi tiết
+        if (
+          detailData.image &&
+          Array.isArray(detailData.image) &&
+          detailData.image.length > 0
+        ) {
+          const images = detailData.image
+            .map((imageData) => {
+              const link = imageData.url;
+              if (link && typeof link === "string" && link.startsWith("http")) {
+                console.log(`✅ Found image URL for modal: ${link}`);
+                return link;
+              }
+              return null;
+            })
+            .filter(Boolean);
+
+          submissionWithImages.medicationImages = images;
+          console.log(`🖼️ Updated images for modal:`, images);
+        }
+      } catch (error) {
+        console.warn(`⚠️ Could not fetch images for ${submission.id}:`, error);
+      }
+    }
+
+    setSelectedSubmission(submissionWithImages);
     setDetailModalVisible(true);
   };
 
   // Tạo mới thuốc
   const handleCreateMedicine = async (values) => {
     try {
-      // Chuyển fileList thành array file gốc
-      const imageFiles =
-        values.image?.map((fileObj) => fileObj.originFileObj).filter(Boolean) ||
-        [];
+      // 🔧 Chuyển fileList thành array file gốc - Xử lý cấu trúc Upload component
+      console.log("🔍 CREATE DEBUG - values.image raw:", values.image);
+      console.log("🔍 CREATE DEBUG - values.image type:", typeof values.image);
+
+      let imageFiles = [];
+
+      // Xử lý cấu trúc Upload component từ Ant Design
+      if (values.image) {
+        if (Array.isArray(values.image)) {
+          // Trường hợp values.image là array
+          imageFiles = values.image
+            .map((fileObj) => fileObj.originFileObj || fileObj)
+            .filter(Boolean);
+        } else if (
+          values.image.fileList &&
+          Array.isArray(values.image.fileList)
+        ) {
+          // Trường hợp values.image có property fileList
+          imageFiles = values.image.fileList
+            .map((fileObj) => fileObj.originFileObj || fileObj)
+            .filter(Boolean);
+        } else if (values.image.originFileObj) {
+          // Trường hợp values.image là single file object
+          imageFiles = [values.image.originFileObj];
+        }
+      }
+
+      console.log("🔍 CREATE DEBUG - imageFiles after processing:", imageFiles);
 
       const createData = {
         MedicineName: values.medicineName,
@@ -330,10 +411,36 @@ function MedicationSubmission() {
 
   const handleUpdateProgressSubmit = async (values) => {
     try {
-      // Chuyển fileList thành array file gốc (nếu có)
-      const imageFiles =
-        values.image?.map((fileObj) => fileObj.originFileObj).filter(Boolean) ||
-        [];
+      // Chuyển fileList thành array file gốc - Xử lý cấu trúc Upload component
+      console.log("🔍 UPDATE PROGRESS DEBUG - values.image raw:", values.image);
+
+      let imageFiles = [];
+
+      // Xử lý cấu trúc Upload component từ Ant Design
+      if (values.image) {
+        if (Array.isArray(values.image)) {
+          // Trường hợp values.image là array
+          imageFiles = values.image
+            .map((fileObj) => fileObj.originFileObj || fileObj)
+            .filter(Boolean);
+        } else if (
+          values.image.fileList &&
+          Array.isArray(values.image.fileList)
+        ) {
+          // Trường hợp values.image có property fileList
+          imageFiles = values.image.fileList
+            .map((fileObj) => fileObj.originFileObj || fileObj)
+            .filter(Boolean);
+        } else if (values.image.originFileObj) {
+          // Trường hợp values.image là single file object
+          imageFiles = [values.image.originFileObj];
+        }
+      }
+
+      console.log(
+        "🔍 UPDATE PROGRESS DEBUG - imageFiles after processing:",
+        imageFiles
+      );
 
       let backendStatus;
       switch (values.newStatus) {
@@ -357,13 +464,25 @@ function MedicationSubmission() {
         Notes: values.progressNotes,
         SentDate: selectedSubmission.submissionDate,
         ParentID: selectedSubmission.parentId || null,
-        Image: imageFiles, // Thêm file ảnh (nếu có)
       };
+
+      // CHỈ thêm Image khi thực sự có ảnh mới
+      if (imageFiles.length > 0) {
+        updateData.Image = imageFiles;
+      }
 
       console.log("🚀 Update Progress - JSON Data gửi lên API:", updateData);
       console.log("📁 Số lượng file ảnh bổ sung:", imageFiles.length);
       console.log("📝 Form values từ modal:", values);
       console.log("🔄 Backend Status:", backendStatus);
+      console.log(
+        "🔧 UPDATE PROGRESS - Có gửi ảnh không?",
+        imageFiles.length > 0 ? "CÓ" : "KHÔNG"
+      );
+      console.log(
+        "🏷️ UPDATE PROGRESS - updateData có chứa Image?",
+        "Image" in updateData
+      );
 
       // Kiểm tra ID hợp lệ trước khi gọi API
       if (
@@ -421,6 +540,8 @@ function MedicationSubmission() {
       instructions: submission.instructions,
       urgency: submission.urgency || "normal",
       notes: submission.notes || "",
+      image: [],
+      imageAction: "add",
     });
 
     console.log("🔍 Form values set:", {
@@ -430,6 +551,7 @@ function MedicationSubmission() {
       instructions: submission.instructions,
       urgency: submission.urgency || "normal",
       notes: submission.notes || "",
+      image: [],
     });
 
     setEditModalVisible(true);
@@ -460,6 +582,41 @@ function MedicationSubmission() {
         return;
       }
 
+      // Chuyển fileList thành array file gốc
+      console.log("🔍 DEBUG - values.image raw:", values.image);
+      console.log("🔍 DEBUG - values.image type:", typeof values.image);
+      console.log(
+        "🔍 DEBUG - values.image isArray:",
+        Array.isArray(values.image)
+      );
+
+      let imageFiles = [];
+
+      // Xử lý cấu trúc Upload component từ Ant Design
+      if (values.image) {
+        if (Array.isArray(values.image)) {
+          // Trường hợp values.image là array
+          imageFiles = values.image
+            .map((fileObj) => fileObj.originFileObj || fileObj)
+            .filter(Boolean);
+        } else if (
+          values.image.fileList &&
+          Array.isArray(values.image.fileList)
+        ) {
+          // Trường hợp values.image có property fileList
+          imageFiles = values.image.fileList
+            .map((fileObj) => fileObj.originFileObj || fileObj)
+            .filter(Boolean);
+        } else if (values.image.originFileObj) {
+          // Trường hợp values.image là single file object
+          imageFiles = [values.image.originFileObj];
+        }
+      }
+
+      console.log("🔍 DEBUG - imageFiles after processing:", imageFiles);
+      console.log("🔍 DEBUG - imageFiles length:", imageFiles.length);
+      console.log("🔍 DEBUG - imageAction:", values.imageAction);
+
       // Map status từ frontend sang backend format
       let backendStatus;
       switch (selectedSubmission.status) {
@@ -481,6 +638,7 @@ function MedicationSubmission() {
         default:
           backendStatus = "Chờ xử lý";
       }
+
       const updateData = {
         StudentID: studentID,
         MedicineName: values.medicineName,
@@ -493,8 +651,23 @@ function MedicationSubmission() {
         ParentID: selectedSubmission.parentId || null,
       };
 
-      console.log("🚀 Edit Submit - JSON Data gửi lên API:", updateData);
+      // Logic xử lý ảnh dựa trên imageAction
+      const imageAction = values.imageAction || "add";
+      const hasImages = imageFiles.length > 0;
+
+      if (hasImages && imageAction === "replace") {
+        // THAY THẾ: Thêm Image vào updateData
+        updateData.Image = imageFiles;
+        console.log("🔄 Chế độ THAY THẾ: Thêm Image vào updateData");
+      }
+
+      console.log("🚀 Edit Submit - JSON Data gửi lên API UPDATE:", updateData);
+      console.log("📁 Số lượng file ảnh mới:", imageFiles.length);
       console.log("📝 Form values:", values);
+      console.log("🖼️ Image files:", imageFiles);
+      console.log("🔧 Image Action:", imageAction);
+      console.log("🔧 Has Images:", hasImages);
+      console.log("🆔 StudentID for addImage API:", studentID);
 
       if (
         !selectedSubmission.id ||
@@ -504,11 +677,34 @@ function MedicationSubmission() {
         return;
       }
 
+      // Api Update
       await medicineApi.nurse.update(selectedSubmission.id, updateData);
+
+      // API AddImanage
+      if (hasImages && imageAction === "add") {
+        await medicineApi.nurse.addImage(
+          selectedSubmission.id,
+          imageFiles,
+          studentID
+        );
+        console.log("Thêm ảnh mới thành công!");
+      }
+
       fetchSubmissions();
 
-      message.success("Cập nhật thông tin thuốc thành công!");
+      // Success message dựa trên action
+      let successMessage = "Cập nhật thông tin thuốc thành công!";
+      if (hasImages) {
+        if (imageAction === "replace") {
+          successMessage += ` Đã thay thế bằng ${imageFiles.length} ảnh mới.`;
+        } else {
+          successMessage += ` Đã thêm ${imageFiles.length} ảnh mới.`;
+        }
+      }
+
+      message.success(successMessage);
       setEditModalVisible(false);
+      editForm.resetFields(); // 🆕 Reset form sau khi update thành công
     } catch (error) {
       console.error("❌ Lỗi cập nhật thuốc:", error);
       console.error("❌ Error response:", error.response?.data);
@@ -575,7 +771,7 @@ function MedicationSubmission() {
   const classes = ["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B"];
   const statuses = ["pending", "approved", "in-use", "completed", "rejected"];
 
-  // 🆕 Handle search function
+  // Handle search function
   const handleSearch = () => {
     // Search is handled in filteredSubmissions filter logic
     console.log("🔍 Searching for:", searchText);
@@ -747,8 +943,7 @@ function MedicationSubmission() {
       {/* 🎨 Tab Header */}
       <div
         style={{
-          background:
-            "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
+          background: "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
           borderRadius: "0 0 32px 32px",
           padding: "40px 32px 48px",
           marginBottom: "40px",
@@ -1774,6 +1969,17 @@ function MedicationSubmission() {
                                   height: "120px",
                                   objectFit: "cover",
                                   borderRadius: "8px",
+                                  cursor: "pointer", // 🆕 Thêm con trỏ click
+                                }}
+                                onClick={() => {
+                                  // 🆕 Xử lý click để phóng to ảnh
+                                  setPreviewImage(image);
+                                  setPreviewTitle(
+                                    `Ảnh thuốc ${index + 1} - ${
+                                      selectedSubmission.medicationName
+                                    }`
+                                  );
+                                  setImagePreviewVisible(true);
                                 }}
                                 onError={(e) => {
                                   e.target.style.display = "none";
@@ -2057,7 +2263,10 @@ function MedicationSubmission() {
             </div>
           }
           open={editModalVisible}
-          onCancel={() => setEditModalVisible(false)}
+          onCancel={() => {
+            setEditModalVisible(false);
+            editForm.resetFields(); // 🆕 Reset form khi đóng modal
+          }}
           onOk={() => editForm.submit()}
           okText="Lưu thay đổi"
           cancelText="Hủy"
@@ -2102,17 +2311,111 @@ function MedicationSubmission() {
             >
               <TextArea rows={3} placeholder="Nhập hướng dẫn sử dụng..." />
             </Form.Item>
-            <Form.Item label="Mức độ ưu tiên" name="urgency">
-              <Select>
-                <Option value="normal">🟢 Bình thường</Option>
-                <Option value="urgent">🟡 Khẩn cấp</Option>
-                <Option value="critical">🔴 Rất khẩn cấp</Option>
-              </Select>
-            </Form.Item>
             <Form.Item label="Ghi chú" name="notes">
               <TextArea rows={3} placeholder="Nhập ghi chú..." />
             </Form.Item>
+
+            {/* 🆕 Hiển thị ảnh hiện tại */}
+            {selectedSubmission?.medicationImages &&
+              selectedSubmission.medicationImages.length > 0 && (
+                <Form.Item label="Ảnh hiện tại">
+                  <div
+                    style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}
+                  >
+                    {selectedSubmission.medicationImages.map(
+                      (imageUrl, index) => (
+                        <div key={index} style={{ position: "relative" }}>
+                          <img
+                            src={imageUrl}
+                            alt={`Current ${index + 1}`}
+                            style={{
+                              width: "80px",
+                              height: "80px",
+                              objectFit: "cover",
+                              borderRadius: "6px",
+                              border: "1px solid #d9d9d9",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => {
+                              setPreviewImage(imageUrl);
+                              setPreviewTitle(`Ảnh hiện tại ${index + 1}`);
+                              setImagePreviewVisible(true);
+                            }}
+                          />
+                        </div>
+                      )
+                    )}
+                  </div>
+                  <Text type="secondary" style={{ fontSize: "12px" }}>
+                    📸 Ảnh hiện tại. Chọn "Thêm ảnh" để giữ nguyên hoặc "Thay
+                    thế" để xóa hết.
+                  </Text>
+                </Form.Item>
+              )}
+
+            {/* 🆕 Tùy chọn xử lý ảnh */}
+            <Form.Item
+              label="Tùy chọn ảnh"
+              name="imageAction"
+              initialValue="add"
+            >
+              <Radio.Group>
+                <Radio value="add">➕ Thêm ảnh mới (giữ ảnh cũ)</Radio>
+                <Radio value="replace">🔄 Thay thế toàn bộ ảnh</Radio>
+              </Radio.Group>
+            </Form.Item>
+
+            {/* 🆕 Trường upload ảnh mới */}
+            <Form.Item
+              label="Ảnh thuốc"
+              name="image"
+              help="Chọn ảnh để thêm vào hoặc thay thế (tùy theo lựa chọn bên trên)"
+            >
+              <Upload
+                listType="picture-card"
+                beforeUpload={() => false}
+                maxCount={5}
+                accept="image/*"
+                showUploadList={{
+                  showPreviewIcon: true,
+                  showRemoveIcon: true,
+                  showDownloadIcon: false,
+                }}
+              >
+                <div>
+                  <PlusOutlined />
+                  <div style={{ marginTop: 8 }}>Chọn ảnh</div>
+                </div>
+              </Upload>
+            </Form.Item>
           </Form>
+        </Modal>
+
+        {/* 🆕 Modal phóng to ảnh */}
+        <Modal
+          open={imagePreviewVisible}
+          title={previewTitle}
+          footer={null}
+          onCancel={() => setImagePreviewVisible(false)}
+          width="80%"
+          style={{ top: 20 }}
+          bodyStyle={{
+            padding: "20px",
+            textAlign: "center",
+            background: "#f8fafc",
+          }}
+        >
+          <img
+            alt="preview"
+            style={{
+              width: "100%",
+              maxHeight: "70vh",
+              objectFit: "contain",
+              borderRadius: "12px",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+            }}
+            src={previewImage}
+          />
         </Modal>
       </div>
     </div>

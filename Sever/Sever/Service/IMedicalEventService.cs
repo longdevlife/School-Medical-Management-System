@@ -194,7 +194,8 @@ namespace Sever.Service
             string studentName = null;
             string studentClass = null;
 
-            var imageList = medicalEvent.File?.Select(f => new ImageResponse
+            var imageFiles = await _filesService.GetImageByMedicalEventIdAsync(medicalEventID);
+            var imageList = imageFiles?.Select(f => new ImageResponse
             {
                 Id = f.FileID,
                 FileName = f.FileName,
@@ -242,12 +243,15 @@ namespace Sever.Service
 
             foreach (var student in studentList)
             {
+
                 var medicalEvent = await _medicalEventRepository.GetMedicalEventByStudentIdAsync(student.StudentID);
 
 
                 foreach (var e in medicalEvent)
                 {
-                    var imageList = e.File.Select(f => new ImageResponse
+                    var imageFiles = await _filesService.GetImageByMedicalEventIdAsync(e.MedicalEventID);
+
+                    var imageList = imageFiles.Select(f => new ImageResponse
                     {
                         Id = f.FileID,
                         FileName = f.FileName,
@@ -282,7 +286,9 @@ namespace Sever.Service
 
             foreach (var e in medical)
             {
-                var imageList = e.File.Select(f => new ImageResponse
+                var imageFiles = await _filesService.GetImageByMedicalEventIdAsync(e.MedicalEventID);
+
+                var imageList = imageFiles.Select(f => new ImageResponse
                 {
                     Id = f.FileID,
                     FileName = f.FileName,
@@ -317,7 +323,8 @@ namespace Sever.Service
 
             foreach (var e in medicalEvents)
             {
-                var imageList = e.File.Select(f => new ImageResponse
+                var imageFiles = await _filesService.GetImageByMedicalEventIdAsync(e.MedicalEventID);
+                var imageList = imageFiles.Select(f => new ImageResponse
                 {
                     Id = f.FileID,
                     FileName = f.FileName,

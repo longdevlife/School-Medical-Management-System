@@ -11,6 +11,7 @@ namespace Sever.Repository
         Task<List<StudentProfile>> GetStudentProfileByParentId(string info);
         Task<StudentProfile> GetStudentProfileByStudentId(string info);
         Task<List<StudentProfile>> GetStudentProfilesByClassIdAsync(string classId);
+        Task<List<StudentProfile>> GetAllStudent();
         Task<bool> CreateStudentProfile(StudentProfile student);
         Task<bool> DeleteStudentProfile(StudentProfile student);
         Task<bool> UpdateStudentProfile(StudentProfile student);
@@ -90,6 +91,11 @@ namespace Sever.Repository
             _context.StudentProfile.Update(student);
             var result = await _context.SaveChangesAsync();
             return result > 0;
+        }
+
+        public async Task<List<StudentProfile>> GetAllStudent()
+        {
+            return await _context.StudentProfile.Include(s => s.Parent).ToListAsync();
         }
     }
 }

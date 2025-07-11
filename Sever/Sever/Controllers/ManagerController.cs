@@ -187,14 +187,33 @@ namespace Sever.Controllers
                     CountConfirmVaccines = countConfirmVaccines,
                     CountDeniedVaccines = countDeniedVaccines,
                     CountNotResponseVaccines = countNotResponseVaccines,
-                    
+
                 });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { message = $"Lỗi khi tạo báo cáo: {ex.Message}" });
             }
-
+        }
+        [HttpGet("get-all-student")]
+        public async Task<IActionResult> GetAllStudent()
+        {
+            try
+            {
+                var results = await _studentService.GetAllStudentInfo();
+                if (results == null)
+                {
+                    return NotFound("Không tìm thấy học sinh");
+                }
+                else
+                {
+                    return Ok(results);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Thất bại khi tải danh sách học sinh" + ex.Message);
+            }
         }
     }
 }

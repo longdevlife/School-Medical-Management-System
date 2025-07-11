@@ -8,6 +8,7 @@ namespace Sever.Service
     public interface IStudentService
     {
         Task<GetStudentInfoRequest> SearchStudentProfileAsync(string info);
+        Task<List<GetStudentInfoRequest>> GetAllStudentInfo();
         Task<List<GetStudentInfoRequest>> GetStudentProfilesByParentAsync(string parent);
         Task<bool> CreateStudent(CreateStudentRequest createStudentRequests);
         Task<bool> DeleteStudentProfile(string studentId);
@@ -178,5 +179,30 @@ namespace Sever.Service
             return result;
         }
 
+        public async Task<List<GetStudentInfoRequest>> GetAllStudentInfo()
+        {
+            var results = await _studentProfileRepository.GetAllStudent();
+            List<GetStudentInfoRequest> getStudents = new List<GetStudentInfoRequest>();
+            foreach (var student in results)
+            {
+                getStudents.Add(new GetStudentInfoRequest
+                {
+                    StudentID = student.StudentID,
+                    StudentName = student.StudentName,
+                    Avatar = student.StudentAvata,
+                    Class = student.Class,
+                    Nationality = student.Nationality,
+                    Ethnicity = student.Ethnicity,
+                    Birthday = student.Birthday,
+                    Sex = student.Sex,
+                    Location = student.Location,
+                    ParentName = student.Parent.Name,
+                    RelationName = student.RelationName,
+                    ParentEmail = student.Parent.Email,
+                    ParentPhone = student.Parent.Phone,
+                });
+            }
+            return getStudents;
+        }
     }
 }

@@ -5,6 +5,7 @@ using Sever.DTO.File;
 using Sever.DTO.HealProfile;
 using Sever.DTO.HealthCheckUp;
 using Sever.DTO.SendMedicine;
+using Sever.DTO.Student;
 using Sever.DTO.Vaccination;
 using Sever.Service;
 using System.Security.Claims;
@@ -260,6 +261,35 @@ namespace Sever.Controllers
             }
             var appointments = await _appointmentService.GetAppointmentByStudentId(StudentID);
             return Ok(appointments);
+        }
+
+        [HttpPut("update-student-profile")]
+        public async Task<IActionResult> UpdateStudentProfile([FromForm] UpdateStudentRequest updateStudentRequest)
+        {
+            if (updateStudentRequest == null || string.IsNullOrEmpty(updateStudentRequest.StudentID))
+            {
+                return BadRequest(new { message = "Thông tin học sinh không được để trống" });
+            }
+            try
+            {
+                var result = await _studentService.UpdateStudentProfile(updateStudentRequest);
+                if (result)
+                {
+                    return Ok(new { message = "Cập nhật hồ sơ học sinh thành công" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Không tìm thấy hồ sơ học sinh để cập nhật" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = $"Cập nhật hồ sơ học sinh thất bại: {ex.Message}",
+                    inner = ex.InnerException?.Message
+                });
+            }
         }
     }
 }

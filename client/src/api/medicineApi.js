@@ -8,14 +8,58 @@ const medicineApi = {
 
     // POST - Tạo thuốc cho học sinh
     create: (medicineData) => {
+      console.log(
+        "🚀 medicineApi.nurse.create called with data:",
+        medicineData
+      );
+
       const formData = new FormData();
       Object.keys(medicineData).forEach((key) => {
         if (medicineData[key] !== null && medicineData[key] !== undefined) {
-          formData.append(key, medicineData[key]);
+          // Xử lý riêng trường Image
+          if (key === "Image" && Array.isArray(medicineData[key])) {
+            if (medicineData[key].length > 0) {
+              console.log(
+                `📁 Adding ${medicineData[key].length} images to FormData`
+              );
+              medicineData[key].forEach((file, index) => {
+                if (file instanceof File) {
+                  formData.append("Image", file);
+                  console.log(
+                    `📎 Added Image[${index}]: ${file.name} (${file.size} bytes)`
+                  );
+                } else {
+                  console.warn(`⚠️ Invalid image at index ${index}:`, file);
+                }
+              });
+            } else {
+              console.log("📷 No images to upload");
+            }
+          }
+          // Xử lý các field khác
+          else {
+            formData.append(key, medicineData[key]);
+            console.log(`📝 Added field: ${key} = ${medicineData[key]}`);
+          }
         }
       });
+
+      // Debug FormData contents
+      console.log("📋 Final FormData contents:");
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(
+            `  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`
+          );
+        } else {
+          console.log(`  ${key}: ${value}`);
+        }
+      }
+
+      console.log("🚀 Sending POST request to /nurse/medicine/create");
       return axiosClient.post("/nurse/medicine/create", formData, {
         headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000,
       });
     },
 
@@ -54,6 +98,52 @@ const medicineApi = {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 30000,
       });
+    },
+
+    // PUT - Thêm ảnh vào medicine theo medicineId AddImangeByMedicine
+    addImage: (medicineId, imageFiles, studentID) => {
+      console.log("🖼️ API AddImage - Medicine ID:", medicineId);
+      console.log("🖼️ API AddImage - Student ID:", studentID);
+      console.log("🖼️ API AddImage - Image Files:", imageFiles);
+
+      const formData = new FormData();
+
+      // Thêm StudentID
+      if (studentID) {
+        formData.append("StudentID", studentID);
+        console.log(`📝 Added StudentID: ${studentID}`);
+      }
+
+      // Thêm từng file ảnh vào FormData
+      imageFiles.forEach((file) => {
+        formData.append("Image", file);
+        console.log(`📁 Added image: ${file.name} (${file.size} bytes)`);
+      });
+
+      // Debug FormData contents
+      console.log("📋 AddImage FormData contents:");
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(
+            `  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`
+          );
+        } else {
+          console.log(`  ${key}: ${value}`);
+        }
+      }
+
+      console.log(
+        "🚀 Sending FormData to PUT /nurse/medicine/addImage/" + medicineId
+      );
+
+      return axiosClient.put(
+        `/nurse/medicine/addImage/${medicineId}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 30000,
+        }
+      );
     },
   },
   parent: {

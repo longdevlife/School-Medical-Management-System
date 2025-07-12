@@ -704,15 +704,6 @@ function HealthCheckManagement() {
       render: (_, record) => (
         <Space size="small">
           <Button
-            type="link"
-            icon={<EyeOutlined />}
-            size="small"
-            onClick={() => handleViewAppointmentDetails(record)}
-            style={{ padding: "0 4px", fontSize: "12px" }}
-          >
-            Chi tiết
-          </Button>
-          <Button
             type="default"
             icon={<EditOutlined />}
             size="small"

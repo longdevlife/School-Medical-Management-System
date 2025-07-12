@@ -32,24 +32,14 @@ function SidebarParent({ collapsed }) {
       label: "Khai báo sức khỏe",
     },
     {
-      key: `${basePath}/health`,
+      key: `${basePath}/health-result`,
       icon: <BarChartOutlined />,
       label: "Hồ sơ sức khỏe",
-      children: [
-        {
-          key: `${basePath}/health-result`,
-          label: "Kết quả sức khỏe",
-        },
-        {
-          key: `${basePath}/health/offer`,
-          label: "Tư vấn sức khỏe",
-        },
-      ],
     },
     {
       key: `${basePath}/medical-events`,
       icon: <AlertOutlined />,
-      label: "Sự kiện y tế",
+      label: "Sự cố y tế",
     },
     {
       key: `${basePath}/vaccinations`,

@@ -16,7 +16,7 @@ import {
   UserOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
-import { Pie, Funnel } from '@ant-design/plots';
+import { Pie, Bar } from '@ant-design/plots';
 import { getAllAccounts } from '../../api/userApi';
 
 const { Title, Text } = Typography;
@@ -33,7 +33,8 @@ function AdminDashboard() {
   const fetchStats = async () => {
     try {
       const res = await getAllAccounts();
-      const data = Array.isArray(res.data) ? res.data : [];
+      // Đảm bảo lấy đúng mảng dữ liệu từ backend
+      const data = Array.isArray(res.data?.data) ? res.data.data : Array.isArray(res.data) ? res.data : [];
 
       const totalUsers = data.length;
       const activeAccounts = data.filter((acc) => acc.isActive).length;
@@ -74,86 +75,86 @@ function AdminDashboard() {
     },
   ];
 
+  // Biểu đồ tròn mới: chỉ hiển thị phần trăm, không có statistic ở giữa, màu sắc rõ ràng hơn
   const pieConfig = {
     data: chartData,
     angleField: 'count',
     colorField: 'role',
-    radius: 0.8,
+    radius: 0.9,
+    innerRadius: 0.5,
     label: {
-      type: 'outer',
-      content: ({ percent, count, role }) => `${role}: ${count} (${(percent * 100).toFixed(1)}%)`,
+      type: 'spider',
+      content: '{name}: {percentage}',
       style: {
-        fontSize: 13,
-        fontWeight: 'bold',
-        fill: '#1e293b',
+        fontSize: 14,
+        fontWeight: 600,
       },
     },
-    color: ({ role }) => {
-      if (role === 'Admin') return '#ff6b6b';
-      if (role === 'Nurse + Manager') return '#4ecdc4';
-      return '#a855f7';
-    },
+    color: ['#ff6b6b', '#4ecdc4', '#a855f7'],
     legend: {
       position: 'bottom',
       itemName: {
         style: {
           fontSize: 14,
           fontWeight: 600,
-          fill: '#1e293b',
-        },
-      },
-      marker: {
-        symbol: 'circle',
-        style: {
-          r: 6,
         },
       },
     },
-    tooltip: false, // Bỏ tooltip
-    interactions: [], // Bỏ tất cả interactions
-    statistic: {
-      title: {
-        style: {
-          fontSize: 16,
-          fontWeight: 'bold',
-          fill: '#1e293b',
-        },
-        content: 'Tổng cộng',
-      },
-      content: {
-        style: {
-          fontSize: 24,
-          fontWeight: 'bold',
-          fill: '#667eea',
-        },
-        content: `${stats.totalUsers}`,
-      },
+    tooltip: {
+      formatter: (datum) => ({
+        name: datum.role,
+        value: datum.count,
+      }),
     },
+    interactions: [{ type: 'element-active' }],
   };
 
-  const funnelConfig = {
-    data: chartData.sort((a, b) => b.count - a.count),
-    xField: 'role',
-    yField: 'count',
+  // Chỉ giữ biểu đồ cột ngang (Bar chart)
+  const barData = [
+    {
+      role: 'Admin',
+      count: stats.adminCount,
+    },
+    {
+      role: 'Nurse + Manager',
+      count: stats.nurseManagerCount,
+    },
+    {
+      role: 'Parent',
+      count: stats.parentCount,
+    },
+  ];
+  const barConfig = {
+    data: barData,
+    xField: 'count',
+    yField: 'role',
+    seriesField: 'role',
     color: ['#ff6b6b', '#4ecdc4', '#a855f7'],
+    legend: false,
     label: {
+      position: 'right',
       style: {
         fontSize: 14,
-        fontWeight: 'bold',
-        fill: '#ffffff',
-        textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-      },
-    },
-    conversionTag: {
-      style: {
-        fontSize: 12,
         fontWeight: 600,
-        fill: '#64748b',
       },
+      formatter: (datum) => `${datum.count}`,
     },
-    funnelStyle: {
-      stroke: '#ffffff',
-      lineWidth: 2,
+    barStyle: {
+      radius: [8, 8, 8, 8],
+    },
+    xAxis: {
+      title: { text: 'Số lượng', style: { fontWeight: 600 } },
+      grid: { line: { style: { stroke: '#e5e7eb', lineDash: [4, 4] } } },
+    },
+    yAxis: {
+      title: { text: 'Vai trò', style: { fontWeight: 600 } },
+      label: { style: { fontWeight: 600 } },
+    },
+    tooltip: {
+      formatter: (datum) => ({
+        name: datum.role,
+        value: datum.count,
+      }),
     },
   };
 
@@ -287,7 +288,7 @@ function AdminDashboard() {
 
         {/* Charts Row */}
         <Row gutter={[32, 32]} justify="center">
-          <Col xs={24} lg={12}>
+          <Col xs={24} lg={16}>
             <Card
               title={
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -301,7 +302,7 @@ function AdminDashboard() {
                     justifyContent: 'center',
                     boxShadow: '0 6px 16px rgba(59, 130, 246, 0.3)',
                   }}>
-                    <span style={{ color: 'white', fontSize: '16px' }}>🥧</span>
+                    <span style={{ color: 'white', fontSize: '16px' }}>📊</span>
                   </div>
                   <div>
                     <span style={{ 
@@ -313,14 +314,14 @@ function AdminDashboard() {
                       WebkitTextFillColor: 'transparent',
                       display: 'block',
                     }}>
-                      Biểu đồ tròn
+                      Biểu đồ cột ngang
                     </span>
                     <span style={{ 
                       color: '#64748b',
                       fontSize: '12px',
                       fontWeight: 500,
                     }}>
-                      Phân bố theo tỷ lệ
+                      So sánh số lượng từng vai trò
                     </span>
                   </div>
                 </div>
@@ -339,62 +340,7 @@ function AdminDashboard() {
                 }
               }}
             >
-              <Pie {...pieConfig} />
-            </Card>
-          </Col>
-          <Col xs={24} lg={12}>
-            <Card
-              title={
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.3)',
-                  }}>
-                    <span style={{ color: 'white', fontSize: '16px' }}>🔺</span>
-                  </div>
-                  <div>
-                    <span style={{ 
-                      fontWeight: 'bold', 
-                      fontSize: '18px', 
-                      color: '#1e293b',
-                      background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      display: 'block',
-                    }}>
-                      Biểu đồ phân cấp
-                    </span>
-                    <span style={{ 
-                      color: '#64748b',
-                      fontSize: '12px',
-                      fontWeight: 500,
-                    }}>
-                      Phân bố theo cấp bậc
-                    </span>
-                  </div>
-                </div>
-              }
-              className="rounded-3xl shadow-2xl border-blue-200"
-              style={{ 
-                background: 'rgba(255,255,255,0.95)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(59, 130, 246, 0.2)',
-              }}
-              styles={{ 
-                body: { 
-                  padding: '24px',
-                  background: 'linear-gradient(135deg, #f8faff 0%, #ffffff 100%)',
-                  borderRadius: '0 0 24px 24px'
-                }
-              }}
-            >
-              <Funnel {...funnelConfig} />
+              <Bar {...barConfig} />
             </Card>
           </Col>
         </Row>
@@ -415,3 +361,4 @@ function AdminDashboard() {
 }
 
 export default AdminDashboard;
+

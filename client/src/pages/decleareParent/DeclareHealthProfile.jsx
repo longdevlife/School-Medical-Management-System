@@ -145,7 +145,7 @@ const DeclareHealthProfile = () => {
               formData.surgicalCause || formData.toothDecay || formData.otheHealthIssues;
 
             if (hasData) {
-              message.success('Đã tải thông tin hồ sơ sức khỏe');
+              console.log('Đã tải thông tin hồ sơ sức khỏe');
             } else {
               message.info('Hồ sơ sức khỏe chưa có thông tin chi tiết, vui lòng cập nhật');
             }

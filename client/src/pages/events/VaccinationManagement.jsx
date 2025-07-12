@@ -82,8 +82,8 @@ function VaccinationManagement() {
           );
 
           switch (backendStatus) {
-            case "Đã chấp nhận":
             case "Đã xác nhận":
+            case "đã xác nhận":
               status = "confirmed";
               break;
             case "Chờ tiêm":
@@ -101,12 +101,10 @@ function VaccinationManagement() {
             case "Theo dõi":
               status = "monitoring";
               break;
-            case "Từ chối":
-            case "Đã từ chối":
+            case "đã từ chối":
               status = "rejected";
               break;
             case "Hoàn thành":
-            case "Hoàn tất":
               status = "completed";
               break;
             case "Chờ xác nhận":
@@ -259,13 +257,15 @@ function VaccinationManagement() {
 
     let nextStatus = "completed";
     if (submission.status === "confirmed") {
-      nextStatus = "approved"; // Đã xác nhận → Chờ tiêm
+      nextStatus = "approved";
     } else if (submission.status === "approved") {
-      nextStatus = "injected"; // Chờ tiêm → Đã tiêm
+      nextStatus = "injected";
+      nextStatus = "monitoring";
+      nextStatus = "completed";
     } else if (submission.status === "injected") {
-      nextStatus = "monitoring"; // Đã tiêm → Đang theo dõi
+      nextStatus = "monitoring";
     } else if (submission.status === "monitoring") {
-      nextStatus = "completed"; // Đang theo dõi → Hoàn thành
+      nextStatus = "completed";
     }
 
     updateForm.setFieldsValue({
@@ -661,7 +661,7 @@ function VaccinationManagement() {
     }
   };
 
-  const classes = ["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B"];
+  const classes = ["1A", "2A", "3A", "4A", "5A"];
   const statuses = [
     "pending",
     "confirmed",
@@ -1971,81 +1971,6 @@ function VaccinationManagement() {
                   </Descriptions.Item>
                 )}
               </Descriptions>
-
-              {/* Hiển thị ảnh vaccine */}
-              {selectedSubmission.vaccineImages &&
-                selectedSubmission.vaccineImages.length > 0 && (
-                  <div style={{ marginTop: "24px" }}>
-                    <Text
-                      strong
-                      style={{
-                        fontSize: "16px",
-                        marginBottom: "12px",
-                        display: "block",
-                      }}
-                    >
-                      📸 Hình ảnh vaccine:
-                    </Text>
-                    <Row gutter={[12, 12]}>
-                      {selectedSubmission.vaccineImages.map((image, index) => (
-                        <Col xs={24} sm={12} md={8} key={index}>
-                          <div
-                            style={{
-                              border: "2px solid #e5e7eb",
-                              borderRadius: "12px",
-                              padding: "8px",
-                              textAlign: "center",
-                              backgroundColor: "#f9fafb",
-                            }}
-                          >
-                            <img
-                              src={image}
-                              alt={`Vaccine ${index + 1}`}
-                              style={{
-                                width: "100%",
-                                height: "120px",
-                                objectFit: "cover",
-                                borderRadius: "8px",
-                              }}
-                              onError={(e) => {
-                                e.target.style.display = "none";
-                                e.target.nextSibling.style.display = "block";
-                              }}
-                            />
-                            <div
-                              style={{
-                                display: "none",
-                                padding: "20px",
-                                color: "#6b7280",
-                                fontSize: "12px",
-                              }}
-                            >
-                              Không thể tải ảnh
-                            </div>
-                          </div>
-                        </Col>
-                      ))}
-                    </Row>
-                  </div>
-                )}
-
-              {(!selectedSubmission.vaccineImages ||
-                selectedSubmission.vaccineImages.length === 0) && (
-                <div
-                  style={{
-                    marginTop: "24px",
-                    padding: "20px",
-                    textAlign: "center",
-                    backgroundColor: "#f9fafb",
-                    borderRadius: "12px",
-                    border: "2px dashed #d1d5db",
-                  }}
-                >
-                  <Text style={{ color: "#6b7280", fontSize: "14px" }}>
-                    📷 Chưa có hình ảnh vaccine
-                  </Text>
-                </div>
-              )}
             </div>
           )}
         </Modal>
@@ -2381,32 +2306,6 @@ function VaccinationManagement() {
                 rows={3}
                 placeholder="Nhập ghi chú về tiến độ tiêm chủng..."
               />
-            </Form.Item>
-            <Form.Item
-              label="Hình ảnh bổ sung"
-              name="image"
-              valuePropName="fileList"
-              getValueFromEvent={(e) =>
-                Array.isArray(e) ? e : e && e.fileList
-              }
-            >
-              <Upload
-                listType="picture-card"
-                beforeUpload={() => false}
-                multiple
-                maxCount={5}
-                accept="image/*"
-                showUploadList={{
-                  showPreviewIcon: true,
-                  showRemoveIcon: true,
-                  showDownloadIcon: false,
-                }}
-              >
-                <div>
-                  <PlusOutlined />
-                  <div style={{ marginTop: 8 }}>Tải ảnh</div>
-                </div>
-              </Upload>
             </Form.Item>
           </Form>
         </Modal>

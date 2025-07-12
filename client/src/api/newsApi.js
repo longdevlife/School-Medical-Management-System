@@ -94,3 +94,44 @@ export const getActiveNews = async () => {
     }
   }
 };
+
+// Get news by manager
+export const getNewsByManager = async () => {
+  try {
+    const response = await axiosClient.get('/manager/get-news-by-manager');
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Create news by manager (POST /api/manager/create-news?Title=...&Summary=...&Body=..., multipart/form-data)
+export const createNewsByManager = async ({ url, formData }) => {
+  try {
+    // url có thể là /api/manager/create-news?Title=...&Summary=...&Body=...
+    const response = await axiosClient.post(url, formData);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Update news by manager (PUT /api/manager/update-news, multipart/form-data)
+export const updateNewsByManager = async (formData) => {
+  try {
+    const response = await axiosClient.put('/manager/update-news', formData);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Delete news by manager (DELETE /api/manager/delete-news/{id})
+export const deleteNewsByManager = async (newsId) => {
+  try {
+    const response = await axiosClient.delete(`/manager/delete-news/${newsId}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

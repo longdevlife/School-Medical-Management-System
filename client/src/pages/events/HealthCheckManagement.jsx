@@ -26,6 +26,7 @@ import {
   SearchOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
+  UsergroupAddOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import healthCheckApi from "../../api/healthCheckApi";
@@ -36,19 +37,24 @@ const { Option } = Select;
 
 function HealthCheckManagement() {
   const [submissions, setSubmissions] = useState([]);
+  // 🆕 State riêng cho appointments
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [appointmentLoading, setAppointmentLoading] = useState(true);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [classFilter, setClassFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
-  const [activeTab, setActiveTab] = useState("health-check"); // 🆕 Tab state
+  const [activeTab, setActiveTab] = useState("waiting-confirmation"); // 🆕 Tab state: waiting-confirmation, health-check, appointment
 
   // modal thêm health check
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createForm] = Form.useForm();
+
+  // 🆕 modal tạo yêu cầu khám theo lớp (Tab 1)
+  const [createByClassModalVisible, setCreateByClassModalVisible] =
+    useState(false);
+  const [createByClassForm] = Form.useForm();
 
   // modal chỉnh sửa health check
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -62,10 +68,11 @@ function HealthCheckManagement() {
     setSelectedHealthCheckForAppointment,
   ] = useState(null);
 
-  // 🆕 Create by class modal
-  const [createByClassModalVisible, setCreateByClassModalVisible] =
+  // 🆕 Edit appointment modal
+  const [editAppointmentModalVisible, setEditAppointmentModalVisible] =
     useState(false);
-  const [createByClassForm] = Form.useForm();
+  const [editAppointmentForm] = Form.useForm();
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   // API fetch health check data
   const fetchSubmissions = async () => {
@@ -83,32 +90,51 @@ function HealthCheckManagement() {
             ? (item.weight / Math.pow(item.height / 100, 2)).toFixed(1)
             : 0);
 
+        // 🆕 Kiểm tra nếu đây là appointment record (có appointmentID)
+        const isAppointment = !!item.appointmentID;
+
         return {
-          id: item.healthCheckUpID,
-          key: item.healthCheckUpID,
+          id: isAppointment ? item.appointmentID : item.healthCheckUpID,
+          key: isAppointment ? item.appointmentID : item.healthCheckUpID,
+          // studentI Để healthCheckId và appointmentId riêng biệt
           healthCheckId: item.healthCheckUpID,
+          appointmentId: isAppointment ? item.appointmentID : null,
+
           studentId: item.studentID,
-          studentName:
-            item.studentProfile?.fullName || `Học sinh ${item.studentID}`,
-          studentClass: item.studentProfile?.class || "Chưa xác định",
+          studentName: item.studentName,
+          studentClass: item.classID,
           checkDate: item.checkDate,
-          height: item.height,
-          weight: item.weight,
-          bmi: calculatedBMI,
-          visionLeft: item.visionLeft,
-          visionRight: item.visionRight,
-          bloodPressure: item.bloodPressure,
-          dental: item.dental,
-          skin: item.skin,
-          hearing: item.hearing,
-          respiration: item.respiration,
-          cardiovascular: item.ardiovascular, // Typo từ backend
+
+          // 🆕 Giữ lại dữ liệu chỉ số cơ bản từ health check gốc
+          height: item.height || item.healthCheckUp?.height,
+          weight: item.weight || item.healthCheckUp?.weight,
+          bmi: calculatedBMI || item.healthCheckUp?.bmi,
+          visionLeft: item.visionLeft || item.healthCheckUp?.visionLeft,
+          visionRight: item.visionRight || item.healthCheckUp?.visionRight,
+          bloodPressure:
+            item.bloodPressure || item.healthCheckUp?.bloodPressure,
+          dental: item.dental || item.healthCheckUp?.dental,
+          skin: item.skin || item.healthCheckUp?.skin,
+          hearing: item.hearing || item.healthCheckUp?.hearing,
+          respiration: item.respiration || item.healthCheckUp?.respiration,
+          cardiovascular:
+            item.ardiovascular || item.healthCheckUp?.ardiovascular, // Typo từ backend
+
           notes: item.notes,
-          status: getStatusFromBackend(item.status),
+          status: getStatusFromBackend(item.status, isAppointment),
           checkerId: item.checkerID,
           checkerName: item.checker?.fullName || "Y tá",
           createdDate: item.checkDate,
           urgencyLevel: "normal", // Default
+
+          // Appointment-specific fields
+          appointmentDate: item.appointmentDate || item.checkDate,
+          appointmentTime: item.appointmentTime || "08:00",
+          appointmentLocation: item.appointmentLocation || "Phòng y tế trường",
+          appointmentReason: item.appointmentReason || "Khám sức khỏe",
+
+          // Flag để biết đây là appointment hay health check
+          isAppointment: isAppointment,
         };
       });
 
@@ -123,12 +149,91 @@ function HealthCheckManagement() {
     }
   };
 
-  // Chuyển đổi status từ backend
-  const getStatusFromBackend = (backendStatus) => {
+  // API fetch appointments data riêng cho tab "Lịch hẹn"
+  const fetchAppointments = async () => {
+    try {
+      const response = await healthCheckApi.nurse.getAllApointment();
+      console.log("📊 Appointments API response:", response.data);
+
+      // Map dữ liệu từ API appointment
+      const mappedAppointments = response.data.map((item) => ({
+        id: item.appointmentID,
+        key: item.appointmentID,
+        appointmentId: item.appointmentID,
+        healthCheckId: item.healthCheckUpID,
+
+        studentId: item.studentID,
+        studentName: item.studentName,
+        studentClass: item.classeName,
+        appointmentDate: item.dateTime,
+        appointmentTime: item.dateTime
+          ? dayjs(item.dateTime).format("HH:mm")
+          : "08:00",
+        appointmentLocation: item.location,
+        appointmentReason: item.reason,
+        notes: item.notes,
+
+        // Map status cho appointment
+        status: getStatusFromBackend(item.status, true), // isAppointment = true
+
+        // Default values cho compatibility với table
+        height: 0,
+        weight: 0,
+        bmi: 0,
+        visionLeft: 0,
+        visionRight: 0,
+        bloodPressure: 0,
+        dental: "Chưa có thông tin",
+        skin: "Chưa có thông tin",
+        hearing: "Chưa có thông tin",
+        respiration: "Chưa có thông tin",
+        cardiovascular: "Chưa có thông tin",
+
+        checkDate: item.dateTime,
+        createdDate: item.dateTime,
+        checkerName: "Y tá",
+        urgencyLevel: "normal",
+        isAppointment: true,
+      }));
+
+      console.log("✅ Appointments mapped data:", mappedAppointments);
+      setAppointments(mappedAppointments);
+    } catch (error) {
+      console.error("❌ Error fetching appointments:", error);
+      message.error("Không thể tải dữ liệu lịch hẹn!");
+      setAppointments([]);
+    }
+  };
+
+  const getStatusFromBackend = (backendStatus, isAppointment = false) => {
+    if (isAppointment) {
+      switch (backendStatus) {
+        case "Chờ xác nhận":
+          return "appointment-pending";
+        case "Đã từ chối":
+          return "appointment-rejected";
+        case "Đã xác nhận":
+          return "appointment-confirmed";
+        case "Đã Tham Gia":
+          return "attended";
+        case "Đã hẹn":
+        case "Đã lên lịch":
+          return "scheduled";
+        default:
+          return "appointment-pending";
+      }
+    }
+
+    // Health Check status mapping
     switch (backendStatus) {
-      case "Chờ khám":
-      case "Đã lên lịch":
+      case "Chờ xác nhận":
         return "pending";
+      case "Đã xác nhận":
+        return "confirmed";
+      case "Từ chối":
+        return "rejected";
+      case "Chờ khám":
+        return "waiting-checkup";
       case "Đang khám":
         return "in-progress";
       case "Hoàn thành":
@@ -143,13 +248,88 @@ function HealthCheckManagement() {
     }
   };
 
+  // 🆕 Chuyển đổi status từ frontend sang backend
+  const getStatusToBackend = (frontendStatus) => {
+    switch (frontendStatus) {
+      case "pending":
+        return "Chờ xác nhận";
+      case "confirmed":
+        return "Đã xác nhận";
+      case "rejected":
+        return "Từ chối";
+      case "waiting-checkup":
+        return "Chờ khám";
+      case "in-progress":
+        return "Đang khám";
+      case "completed":
+        return "Hoàn thành";
+      case "recheck":
+        return "Cần tái khám";
+      case "cancelled":
+        return "Hủy";
+      // Appointment statuses
+      case "appointment-pending":
+        return "Chờ xác nhận";
+      case "appointment-confirmed":
+        return "Đã xác nhận";
+      case "appointment-rejected":
+        return "Đã từ chối";
+      case "attended":
+        return "Đã Tham Gia";
+      case "scheduled":
+        return "Đã lên lịch";
+      default:
+        return frontendStatus;
+    }
+  };
+
   // Xem chi tiết
   const handleViewDetails = (submission) => {
     setSelectedSubmission(submission);
     setDetailModalVisible(true);
   };
 
-  // Tạo mới health check
+  // Tạo yêu cầu khám sức khỏe theo lớp (Tab 1 Chờ xác nhận)
+  const handleCreateByClass = async (values) => {
+    try {
+      const createData = {
+        classId: values.classId,
+        dateCheckUp: values.dateCheckUp
+          ? dayjs(values.dateCheckUp).format("YYYY-MM-DD HH:mm:ss")
+          : dayjs().format("YYYY-MM-DD HH:mm:ss"),
+      };
+
+      console.log("🚀 Creating health check by class - Form values:", values);
+      console.log("🚀 Creating health check by class - API data:", createData);
+
+      await healthCheckApi.nurse.createByClass(createData);
+      fetchSubmissions();
+      message.success(
+        `Tạo yêu cầu khám sức khỏe cho lớp ${values.classId} thành công!`
+      );
+      setCreateByClassModalVisible(false);
+      createByClassForm.resetFields();
+    } catch (error) {
+      console.error("❌ Error creating health check by class:", error);
+      console.error("❌ Error response:", error.response?.data);
+
+      if (error.response?.status === 400) {
+        const errorMessage =
+          error.response?.data?.message || "Dữ liệu không hợp lệ";
+        message.error(`Lỗi: ${errorMessage}`);
+      } else if (error.response?.status === 404) {
+        message.error("Lớp học không tồn tại! Vui lòng kiểm tra lại.");
+      } else if (error.response?.status === 409) {
+        message.error(
+          "Lớp học này đã có yêu cầu khám sức khỏe! Vui lòng kiểm tra lại."
+        );
+      } else {
+        message.error("Không thể tạo yêu cầu khám sức khỏe! Vui lòng thử lại.");
+      }
+    }
+  };
+
+  // Tạo mới health check (manual - Tab 2)
   const handleCreateHealthCheck = async (values) => {
     try {
       const createData = {
@@ -203,6 +383,7 @@ function HealthCheckManagement() {
       respiration: submission.respiration,
       cardiovascular: submission.cardiovascular,
       notes: submission.notes,
+      status: submission.status,
     });
 
     setEditModalVisible(true);
@@ -223,6 +404,7 @@ function HealthCheckManagement() {
         Respiration: values.respiration,
         Cardiovascular: values.cardiovascular,
         Notes: values.notes,
+        Status: getStatusToBackend(values.status),
       };
 
       console.log(
@@ -255,18 +437,58 @@ function HealthCheckManagement() {
     return null;
   };
 
+  // Tính số lượng records cho từng tab
+  const getTabCounts = () => {
+    const waitingConfirmationCount = submissions.filter((s) =>
+      ["pending", "confirmed", "rejected"].includes(s.status)
+    ).length;
+
+    const healthCheckCount = submissions.filter((s) =>
+      ["waiting-checkup", "in-progress", "completed", "recheck"].includes(
+        s.status
+      )
+    ).length;
+
+    // Tab Lịch hẹn sử dụng appointments data
+    const appointmentCount = appointments.length;
+
+    return {
+      waitingConfirmation: waitingConfirmationCount,
+      healthCheck: healthCheckCount,
+      appointment: appointmentCount,
+    };
+  };
+
+  const tabCounts = getTabCounts();
+
   const getStatusColor = (status) => {
     switch (status) {
       case "pending":
         return "warning";
-      case "in-progress":
+      case "confirmed":
+        return "blue";
+      case "rejected":
+        return "error";
+      case "waiting-checkup":
         return "processing";
+      case "in-progress":
+        return "cyan";
       case "completed":
         return "success";
       case "recheck":
         return "orange";
       case "cancelled":
         return "error";
+      case "scheduled":
+        return "purple";
+      case "appointment-pending":
+        return "warning";
+      case "appointment-confirmed":
+        return "green";
+      case "appointment-rejected":
+        return "red";
+      case "attended":
+        return "success";
       default:
         return "default";
     }
@@ -275,6 +497,12 @@ function HealthCheckManagement() {
   const getStatusText = (status) => {
     switch (status) {
       case "pending":
+        return "Chờ xác nhận";
+      case "confirmed":
+        return "Đã xác nhận";
+      case "rejected":
+        return "Từ chối";
+      case "waiting-checkup":
         return "Chờ khám";
       case "in-progress":
         return "Đang khám";
@@ -284,18 +512,35 @@ function HealthCheckManagement() {
         return "Cần tái khám";
       case "cancelled":
         return "Đã hủy";
+      // Appointment statuses
+      case "scheduled":
+        return "Đã lên lịch hẹn";
+      case "appointment-pending":
+        return "Chờ xác nhận";
+      case "appointment-confirmed":
+        return "Đã xác nhận";
+      case "appointment-rejected":
+        return "Đã từ chối";
+      case "attended":
+        return "Đã tham gia";
       default:
         return status;
     }
   };
 
-  const classes = ["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B"];
+  const classes = ["1A", "2A", "3A", "4A", "5A"];
   const statuses = [
     "pending",
+    "confirmed",
+    "rejected", // Tab 1
+    "waiting-checkup",
     "in-progress",
-    "completed",
-    "recheck",
-    "cancelled",
+    "completed", // Tab 2
+    "scheduled",
+    "appointment-pending",
+    "appointment-confirmed",
+    "appointment-rejected",
+    "attended", // Tab 3
   ];
 
   // Handle search function
@@ -303,26 +548,175 @@ function HealthCheckManagement() {
     console.log("🔍 Searching for:", searchText);
   };
 
-  // Filter logic
-  const filteredSubmissions = submissions.filter((submission) => {
-    const matchesStatus =
-      statusFilter === "all" || submission.status === statusFilter;
-    const matchesClass =
-      classFilter === "all" || submission.studentClass === classFilter;
+  // Filter logic with 3 tabs workflow
+  const filteredSubmissions = (() => {
+    // Tab "Lịch hẹn" sử dụng appointments data
+    if (activeTab === "appointment") {
+      return appointments.filter((appointment) => {
+        const matchesStatus =
+          statusFilter === "all" || appointment.status === statusFilter;
+        const matchesClass =
+          classFilter === "all" || appointment.studentClass === classFilter;
 
-    // Multi-field search: studentId, studentName, studentClass
-    const search = searchText.trim().toLowerCase();
-    const matchesSearch =
-      !search ||
-      (submission.studentId &&
-        String(submission.studentId).toLowerCase().includes(search)) ||
-      (submission.studentName &&
-        String(submission.studentName).toLowerCase().includes(search)) ||
-      (submission.studentClass &&
-        String(submission.studentClass).toLowerCase().includes(search));
+        // Multi-field search
+        const search = searchText.trim().toLowerCase();
+        const matchesSearch =
+          !search ||
+          (appointment.appointmentId &&
+            String(appointment.appointmentId).toLowerCase().includes(search)) ||
+          (appointment.studentName &&
+            String(appointment.studentName).toLowerCase().includes(search)) ||
+          (appointment.studentClass &&
+            String(appointment.studentClass).toLowerCase().includes(search));
 
-    return matchesStatus && matchesClass && matchesSearch;
-  });
+        return matchesStatus && matchesClass && matchesSearch;
+      });
+    }
+
+    // Tab "Chờ xác nhận" và "Khám sức khỏe" sử dụng submissions data
+    return submissions.filter((submission) => {
+      // Tab filtering first
+      let matchesTab = false;
+      if (activeTab === "waiting-confirmation") {
+        // Tab 1: Chờ xác nhận (pending, confirmed, rejected)
+        matchesTab = ["pending", "confirmed", "rejected"].includes(
+          submission.status
+        );
+      } else if (activeTab === "health-check") {
+        // Tab 2: Khám sức khỏe (waiting-checkup, in-progress, completed, recheck)
+        matchesTab = [
+          "waiting-checkup",
+          "in-progress",
+          "completed",
+          "recheck",
+        ].includes(submission.status);
+      }
+
+      const matchesStatus =
+        statusFilter === "all" || submission.status === statusFilter;
+      const matchesClass =
+        classFilter === "all" || submission.studentClass === classFilter;
+
+      // Multi-field search: studentId, studentName, studentClass
+      const search = searchText.trim().toLowerCase();
+      const matchesSearch =
+        !search ||
+        (submission.studentId &&
+          String(submission.studentId).toLowerCase().includes(search)) ||
+        (submission.studentName &&
+          String(submission.studentName).toLowerCase().includes(search)) ||
+        (submission.studentClass &&
+          String(submission.studentClass).toLowerCase().includes(search));
+
+      return matchesTab && matchesStatus && matchesClass && matchesSearch;
+    });
+  })();
+
+  // 🆕 Columns riêng cho tab "Lịch hẹn"
+  const appointmentColumns = [
+    {
+      title: "Mã lịch hẹn",
+      dataIndex: "appointmentId",
+      key: "appointmentId",
+      width: 100,
+      render: (text) => (
+        <Text strong style={{ color: "#1890ff", fontSize: "12px" }}>
+          {text}
+        </Text>
+      ),
+    },
+    {
+      title: "Học sinh",
+      key: "student",
+      width: 180,
+      render: (_, record) => (
+        <div>
+          <Text strong style={{ fontSize: "14px" }}>
+            {record.studentName}
+          </Text>
+          <br />
+          <Text type="secondary" style={{ fontSize: "12px" }}>
+            {record.studentId}-{record.studentClass}
+          </Text>
+        </div>
+      ),
+    },
+    {
+      title: "Thông tin lịch hẹn",
+      key: "appointmentInfo",
+      width: 200,
+      render: (_, record) => (
+        <div>
+          <Text style={{ fontSize: "13px" }}>
+            <strong>📅 Ngày:</strong>{" "}
+            {dayjs(record.appointmentDate).format("DD/MM/YYYY")}
+          </Text>
+          <br />
+          <Text style={{ fontSize: "13px" }}>
+            <strong>🕐 Giờ:</strong> {record.appointmentTime}
+          </Text>
+          <br />
+          <Text style={{ fontSize: "13px", color: "#722ed1" }}>
+            <strong>📍 Địa điểm:</strong> {record.appointmentLocation}
+          </Text>
+        </div>
+      ),
+    },
+    {
+      title: "Lý do khám",
+      dataIndex: "appointmentReason",
+      key: "appointmentReason",
+      width: 150,
+      render: (reason) => <Text style={{ fontSize: "12px" }}>{reason}</Text>,
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      width: 120,
+      render: (status) => (
+        <Tag
+          color={getStatusColor(status)}
+          style={{ fontSize: "11px", padding: "2px 6px" }}
+        >
+          {getStatusText(status)}
+        </Tag>
+      ),
+    },
+    {
+      title: "Ghi chú",
+      dataIndex: "notes",
+      key: "notes",
+      width: 150,
+      render: (notes) => (
+        <Text
+          style={{ fontSize: "12px" }}
+          type={notes ? "default" : "secondary"}
+        >
+          {notes || "Chưa có ghi chú"}
+        </Text>
+      ),
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      width: 160,
+      render: (_, record) => (
+        <Space size="small">
+          <Button
+            type="default"
+            icon={<EditOutlined />}
+            size="small"
+            onClick={() => handleEditAppointment(record)}
+            style={{ padding: "0 6px", fontSize: "12px", marginRight: "4px" }}
+            title="Cập nhật lịch hẹn"
+          >
+            Cập nhật
+          </Button>
+        </Space>
+      ),
+    },
+  ];
 
   const columns = [
     {
@@ -330,10 +724,20 @@ function HealthCheckManagement() {
       dataIndex: "healthCheckId",
       key: "healthCheckId",
       width: 90,
-      render: (text) => (
-        <Text strong style={{ color: "#1890ff", fontSize: "12px" }}>
-          {text}
-        </Text>
+      render: (text, record) => (
+        <div>
+          <Text strong style={{ color: "#1890ff", fontSize: "12px" }}>
+            {record.isAppointment ? record.appointmentId : record.healthCheckId}
+          </Text>
+          {record.isAppointment && (
+            <>
+              <br />
+              <Text type="secondary" style={{ fontSize: "10px" }}>
+                (Lịch hẹn)
+              </Text>
+            </>
+          )}
+        </div>
       ),
     },
     {
@@ -435,286 +839,186 @@ function HealthCheckManagement() {
           >
             Chi tiết
           </Button>
-          <Button
-            type="default"
-            icon={<EditOutlined />}
-            size="small"
-            onClick={() => handleEdit(record)}
-            style={{
-              padding: "0 6px",
-              fontSize: "12px",
-              marginRight: "4px",
-            }}
-          >
-            Sửa
-          </Button>
-          <Button
-            type="link"
-            icon={<CalendarOutlined />}
-            size="small"
-            onClick={() => showAppointmentModal(record)}
-            style={{ padding: "0 4px", fontSize: "12px", color: "#faad14" }}
-            title="Tạo lịch hẹn"
-          >
-            Hẹn khám
-          </Button>
-        </Space>
-      ),
-    },
-  ];
 
-  // Columns cho appointment tab
-  const appointmentColumns = [
-    {
-      title: "Ngày hẹn",
-      key: "appointmentDateTime",
-      width: 140,
-      render: (_, record) => (
-        <div>
-          <Text strong style={{ fontSize: "13px", color: "#1890ff" }}>
-            {dayjs(record.appointmentDate).format("DD/MM/YYYY")}
-          </Text>
-          <br />
-          <Text style={{ fontSize: "12px", color: "#666" }}>
-            🕐 {record.appointmentTime}
-          </Text>
-        </div>
-      ),
-    },
-    {
-      title: "Học sinh",
-      key: "student",
-      width: 180,
-      render: (_, record) => (
-        <div>
-          <Text strong style={{ fontSize: "14px" }}>
-            {record.studentName}
-          </Text>
-          <br />
-          <Text type="secondary" style={{ fontSize: "12px" }}>
-            {record.studentId} - {record.studentClass}
-          </Text>
-        </div>
-      ),
-    },
-    {
-      title: "Mục đích",
-      dataIndex: "purpose",
-      key: "purpose",
-      width: 150,
-      render: (text) => <Text style={{ fontSize: "13px" }}>{text}</Text>,
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      width: 100,
-      render: (status) => (
-        <Tag
-          color={getAppointmentStatusColor(status)}
-          style={{ fontSize: "11px", padding: "2px 6px" }}
-        >
-          {getAppointmentStatusText(status)}
-        </Tag>
-      ),
-    },
-    {
-      title: "Ghi chú",
-      dataIndex: "notes",
-      key: "notes",
-      width: 150,
-      render: (text) => (
-        <Text style={{ fontSize: "12px" }}>{text || "Không có ghi chú"}</Text>
-      ),
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      width: 120,
-      render: (_, record) => (
-        <Space size="small">
-          <Button
-            type="link"
-            icon={<EyeOutlined />}
-            size="small"
-            onClick={() => showAppointmentDetail(record)}
-            style={{ padding: "0 6px" }}
-          />
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            size="small"
-            onClick={() => showEditAppointmentModal(record)}
-            style={{ padding: "0 6px" }}
-          />
-          {record.status === "scheduled" && (
+          {/* Tab 1: Chờ xác nhận  */}
+          {activeTab !== "waiting-confirmation" && (
             <Button
-              type="link"
-              icon={<ClockCircleOutlined />}
+              type="default"
+              icon={<EditOutlined />}
               size="small"
-              onClick={() => markAppointmentCompleted(record)}
-              style={{ padding: "0 6px", color: "#52c41a" }}
-              title="Hoàn thành"
-            />
+              onClick={() => handleEdit(record)}
+              style={{ padding: "0 6px", fontSize: "12px", marginRight: "4px" }}
+            >
+              Cập nhật
+            </Button>
           )}
+
+          {/* Tab 2: Khám sức khỏe */}
+          {activeTab === "health-check" && (
+            <>
+              {(record.status === "completed" ||
+                record.status === "recheck") && (
+                <Button
+                  type="link"
+                  icon={<CalendarOutlined />}
+                  size="small"
+                  onClick={() => {
+                    console.log("🎯 Tạo lịch hẹn cho health check:", record);
+                    showAppointmentModal(record);
+                  }}
+                  style={{
+                    padding: "0 4px",
+                    fontSize: "12px",
+                    color: "#faad14",
+                  }}
+                  title="Tạo lịch hẹn (hoàn thành hoặc cần tái khám)"
+                >
+                  Hẹn khám
+                </Button>
+              )}
+              {!["completed", "recheck"].includes(record.status) &&
+                console.log(
+                  "ℹ️ Không hiển thị nút Hẹn khám vì status:",
+                  record.status,
+                  "không phải 'completed' hoặc 'recheck'"
+                )}
+            </>
+          )}
+
+          {/* Tab 3: Lịch hẹn */}
+          {activeTab === "appointment" && <></>}
         </Space>
       ),
     },
   ];
 
-  // API fetch appointments
-  const fetchAppointments = async () => {
-    setAppointmentLoading(true);
-    try {
-      // Giả lập dữ liệu appointments - sẽ thay bằng API thực tế
-      const mockAppointments = [
-        {
-          id: 1,
-          appointmentDate: "2024-01-15",
-          appointmentTime: "08:00",
-          studentId: "HS001",
-          studentName: "Nguyễn Văn A",
-          studentClass: "10A1",
-          purpose: "Khám sức khỏe định kỳ",
-          status: "scheduled",
-          notes: "Khám tổng quát",
-        },
-        {
-          id: 2,
-          appointmentDate: "2024-01-15",
-          appointmentTime: "09:00",
-          studentId: "HS002",
-          studentName: "Trần Thị B",
-          studentClass: "10A2",
-          purpose: "Tái khám",
-          status: "completed",
-          notes: "Kiểm tra lại thị lực",
-        },
-      ];
-      setAppointments(mockAppointments);
-    } catch (error) {
-      console.error("❌ Error fetching appointments:", error);
-      message.error("Không thể tải danh sách lịch hẹn!");
-    } finally {
-      setAppointmentLoading(false);
-    }
-  };
-
-  // Helper functions cho appointment status
-  const getAppointmentStatusColor = (status) => {
-    switch (status) {
-      case "scheduled":
-        return "blue";
-      case "completed":
-        return "green";
-      case "cancelled":
-        return "red";
-      default:
-        return "default";
-    }
-  };
-
-  const getAppointmentStatusText = (status) => {
-    switch (status) {
-      case "scheduled":
-        return "Đã hẹn";
-      case "completed":
-        return "Hoàn thành";
-      case "cancelled":
-        return "Hủy";
-      default:
-        return "Chưa xác định";
-    }
-  };
-
-  // Appointment handlers
+  // Handle tạo lịch hẹn khám sức khỏe (cho tab 2)
   const showAppointmentModal = (record) => {
     setSelectedHealthCheckForAppointment(record);
     appointmentForm.setFieldsValue({
       studentId: record.studentId,
       studentName: record.studentName,
       studentClass: record.studentClass,
-      purpose: "Khám sức khỏe định kỳ",
-      appointmentDate: dayjs().add(1, "day"),
-      appointmentTime: "08:00",
+      dateTime: dayjs().add(1, "day").hour(8).minute(0),
+      location: "Phòng y tế trường",
+      reason: "Khám sức khỏe định kỳ",
+      notes: "",
     });
     setAppointmentModalVisible(true);
   };
 
-  const showAppointmentDetail = (record) => {
-    console.log("Show appointment detail:", record);
-    // Implement appointment detail modal
+  // Handle edit appointment (cho Tab 3)
+  const handleEditAppointment = (record) => {
+    console.log("🔧 Edit appointment:", record);
+    setSelectedAppointment(record);
+    editAppointmentForm.setFieldsValue({
+      studentId: record.studentId,
+      studentName: record.studentName,
+      studentClass: record.studentClass,
+      appointmentDate: record.appointmentDate
+        ? dayjs(record.appointmentDate)
+        : dayjs(),
+      appointmentTime: record.appointmentTime || "08:00",
+      purpose: record.appointmentReason || "Khám sức khỏe",
+      notes: record.notes || "",
+      status: record.status,
+    });
+    setEditAppointmentModalVisible(true);
   };
 
-  const showEditAppointmentModal = (record) => {
-    console.log("Edit appointment:", record);
-    // Implement edit appointment modal
-  };
-
-  const markAppointmentCompleted = async (record) => {
+  // 🆕 Handle submit edit appointment
+  const handleEditAppointmentSubmit = async (values) => {
     try {
-      // API call to mark appointment as completed
-      console.log("Mark appointment completed:", record);
-      message.success("Đã hoàn thành lịch hẹn!");
-      fetchAppointments(); // Refresh data
+      // Sử dụng appointmentId thật từ backend, không phải mock ID
+      const appointmentId =
+        selectedAppointment.appointmentId || selectedAppointment.healthCheckId;
+
+      const updateData = {
+        notes: values.notes || "",
+      };
+
+      console.log("🚀 Updating appointment - appointmentId:", appointmentId);
+      console.log("🚀 Update data:", updateData);
+
+      // 🆕 Gọi API cập nhật lịch hẹn với appointmentId thật
+      await healthCheckApi.nurse.updateAppointment(appointmentId, updateData);
+
+      message.success("Đã cập nhật lịch hẹn thành công!");
+      setEditAppointmentModalVisible(false);
+      editAppointmentForm.resetFields();
+      setSelectedAppointment(null);
+
+      // 🆕 Refresh cả submissions và appointments data
+      await fetchSubmissions();
+      await fetchAppointments();
     } catch (error) {
-      console.error("❌ Error marking appointment completed:", error);
-      message.error("Không thể hoàn thành lịch hẹn!");
+      console.error("❌ Error updating appointment:", error);
+      message.error("Không thể cập nhật lịch hẹn! Vui lòng thử lại.");
     }
   };
 
   const handleAppointmentSubmit = async (values) => {
     try {
+      // Format datetime theo yêu cầu API: "2025-07-09T13:56:36.220Z"
+      const appointmentDateTime = values.dateTime.format(
+        "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
+      );
+
       const appointmentData = {
-        ...values,
-        appointmentDate: values.appointmentDate.format("YYYY-MM-DD"),
-        healthCheckId: selectedHealthCheckForAppointment?.id,
+        dateTime: appointmentDateTime,
+        location: values.location || "Phòng y tế trường",
+        reason: values.reason || "Khám sức khỏe định kỳ",
+        notes: values.notes || "",
+        healthCheckUpID: String(
+          selectedHealthCheckForAppointment?.healthCheckId ||
+            selectedHealthCheckForAppointment?.id ||
+            ""
+        ),
       };
 
-      console.log("Creating appointment:", appointmentData);
+      console.log("🚀 Creating appointment - Form values:", values);
+      console.log("🚀 Creating appointment - API data:", appointmentData);
+      console.log(
+        "🏥 Health check ID:",
+        selectedHealthCheckForAppointment?.healthCheckId
+      );
 
-      // API call to create appointment
-      // await healthCheckApi.createAppointment(appointmentData);
+      // Gọi API tạo lịch hẹn - Backend sẽ tự động tạo appointment record mới
+      await healthCheckApi.nurse.createAppointment(appointmentData);
 
-      message.success("Đã tạo lịch hẹn khám sức khỏe!");
+      message.success("Đã tạo lịch hẹn khám sức khỏe thành công!");
       setAppointmentModalVisible(false);
       appointmentForm.resetFields();
-      fetchAppointments(); // Refresh data
+      setSelectedHealthCheckForAppointment(null);
+
+      // 🆕 Refresh cả submissions và appointments data
+      console.log("🔄 Đang refresh dữ liệu sau khi tạo lịch hẹn...");
+      await fetchSubmissions(); // Refresh để lấy appointment record mới
+      await fetchAppointments(); // 🆕 Refresh appointments data
+
+      console.log("✅ Hoàn thành refresh dữ liệu");
     } catch (error) {
       console.error("❌ Error creating appointment:", error);
-      message.error("Không thể tạo lịch hẹn!");
-    }
-  };
+      console.error("❌ Error response:", error.response?.data);
 
-  const handleCreateByClassSubmit = async (values) => {
-    try {
-      const createByClassData = {
-        classId: values.classId,
-        checkDate: values.checkDate
-          ? dayjs(values.checkDate).format("YYYY-MM-DD")
-          : dayjs().format("YYYY-MM-DD"),
-        notes: values.notes || "Khám sức khỏe theo lớp",
-      };
-
-      console.log("🚀 Creating health check by class:", createByClassData);
-
-      // API call để tạo khám sức khỏe theo lớp
-      // await healthCheckApi.createByClass(createByClassData);
-
-      message.success("Đã tạo khám sức khỏe theo lớp thành công!");
-      setCreateByClassModalVisible(false);
-      createByClassForm.resetFields();
-      fetchSubmissions(); // Refresh data
-    } catch (error) {
-      console.error("❌ Error creating health check by class:", error);
-      message.error("Tạo khám sức khỏe theo lớp thất bại!");
+      if (error.response?.status === 400) {
+        const errorMessage =
+          error.response?.data?.message || "Dữ liệu lịch hẹn không hợp lệ";
+        message.error(`Lỗi: ${errorMessage}`);
+      } else if (error.response?.status === 404) {
+        message.error(
+          "Không tìm thấy hồ sơ khám sức khỏe! Vui lòng kiểm tra lại."
+        );
+      } else {
+        message.error("Không thể tạo lịch hẹn! Vui lòng thử lại.");
+      }
     }
   };
 
   // Fetch data khi component mount
   useEffect(() => {
     fetchSubmissions();
-    fetchAppointments();
+    fetchAppointments(); // 🆕 Fetch appointments data khi mount
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -763,9 +1067,16 @@ function HealthCheckManagement() {
                     fontSize: "36px",
                     fontWeight: "800",
                     textShadow: "2px 2px 8px rgba(0,0,0,0.3)",
+                    letterSpacing: "0.5px",
+                    lineHeight: "1.2",
+                    background:
+                      "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
                   }}
                 >
-                  Quản Lý Khám Sức Khỏe
+                  Khám sức khỏe tổng quát
                 </Title>
                 <Text
                   style={{
@@ -823,16 +1134,60 @@ function HealthCheckManagement() {
       {/* Main Content */}
       <div style={{ padding: "0 32px 32px" }}>
         {/* Thống kê */}
+        {/* 📊 Thống kê trạng thái đơn tiêm chủng */}
         <Card
           title={
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <HeartOutlined style={{ fontSize: "24px", color: "#ef4444" }} />
-              <Text strong style={{ fontSize: "18px" }}>
-                Thống kê sức khỏe học sinh
-              </Text>
+              <div
+                style={{
+                  width: "50px",
+                  height: "50px",
+                  borderRadius: "16px",
+                  background:
+                    "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 8px 20px rgba(16, 185, 129, 0.3)",
+                  border: "2px solid rgba(255,255,255,0.2)",
+                  minWidth: "25px",
+                }}
+              >
+                <Text style={{ color: "white", fontSize: "24px" }}> ❤️ </Text>
+              </div>
+              <div>
+                <Text
+                  strong
+                  style={{
+                    fontSize: "18px",
+                    color: "#1e293b",
+                    display: "flex",
+                    marginBottom: "4px",
+                  }}
+                >
+                  Thống kê khám sức khỏe
+                </Text>
+                <Text
+                  style={{
+                    fontSize: "14px",
+                    color: "#64748b",
+                    fontWeight: "400",
+                  }}
+                >
+                  Tổng quan về các lịch khảm sức khỏe
+                </Text>
+              </div>
             </div>
           }
-          style={{ marginBottom: "32px", borderRadius: "20px" }}
+          style={{
+            marginBottom: "32px",
+            borderRadius: "20px",
+            border: "none",
+            background: "white",
+            boxShadow:
+              "0 20px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05)",
+          }}
+          bodyStyle={{ padding: "16px" }}
         >
           <Row gutter={[20, 20]}>
             <Col xs={12} sm={6}>
@@ -1205,47 +1560,49 @@ function HealthCheckManagement() {
                 alignItems: "center",
               }}
             >
-              <div>
+              <div className="flex gap-5">
                 <div
                   style={{
-                    fontSize: "20px",
-                    fontWeight: "700",
-                    color: "#1f2937",
+                    width: "50px",
+                    height: "50px",
+                    borderRadius: "16px",
+                    background:
+                      "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
                     display: "flex",
-                    marginBottom: "4px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 8px 20px rgba(124, 58, 237, 0.3)",
+                    border: "2px solid rgba(255,255,255,0.2)",
                   }}
                 >
-                  Quản lý khám sức khỏe học sinh
+                  <Text style={{ color: "white", fontSize: "24px" }}>📋</Text>
                 </div>
-                <Text
-                  style={{
-                    fontSize: "14px",
-                    color: "#64748b",
-                    fontWeight: "400",
-                  }}
-                >
-                  Quản lý hồ sơ khám sức khỏe định kỳ và lịch hẹn khám
-                </Text>
+                <div>
+                  <Text
+                    strong
+                    style={{
+                      fontSize: "18px",
+                      color: "#1e293b",
+                      display: "flex",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    Danh sách khám sức khỏe
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: "14px",
+                      color: "#64748b",
+                      fontWeight: "400",
+                    }}
+                  >
+                    Quản lý và theo dõi lịch khám sức khỏe học sinh
+                  </Text>
+                </div>
               </div>
               <div
                 style={{ display: "flex", alignItems: "center", gap: "12px" }}
               >
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => setCreateModalVisible(true)}
-                  style={{
-                    borderRadius: "8px",
-                    background:
-                      "linear-gradient(135deg, #52c41a 0%, #73d13d 100%)",
-                    borderColor: "#52c41a",
-                    boxShadow: "0 4px 12px rgba(82, 196, 26, 0.3)",
-                    fontWeight: "600",
-                  }}
-                  size="middle"
-                >
-                  Thêm hồ sơ khám
-                </Button>
                 <Button
                   type="default"
                   icon={<CalendarOutlined />}
@@ -1275,7 +1632,7 @@ function HealthCheckManagement() {
           }}
           bodyStyle={{ padding: "0" }}
         >
-          {/* 🎯 Tabs cho workflow khám sức khỏe - Đặt ngay dưới tiêu đề */}
+          {/* 🎯 Tabs cho workflow khám sức khỏe theo 3 bước */}
           <Tabs
             activeKey={activeTab}
             onChange={setActiveTab}
@@ -1284,14 +1641,40 @@ function HealthCheckManagement() {
             type="card"
             items={[
               {
-                key: "health-check",
+                key: "waiting-confirmation",
                 label: (
                   <span style={{ fontSize: "16px", fontWeight: "600" }}>
-                    🩺 Khám sức khỏe ({filteredSubmissions.length})
+                    ⏳ Chờ xác nhận ({tabCounts.waitingConfirmation})
                   </span>
                 ),
                 children: (
-                  /* Bảng danh sách cho Tab Khám sức khỏe */
+                  /* Bảng danh sách cho Tab 1: Chờ xác nhận */
+                  <Table
+                    columns={columns}
+                    dataSource={filteredSubmissions}
+                    loading={loading}
+                    rowKey="id"
+                    pagination={{
+                      pageSize: 10,
+                      showSizeChanger: true,
+                      showQuickJumper: true,
+                      showTotal: (total, range) =>
+                        `${range[0]}-${range[1]} của ${total} yêu cầu`,
+                    }}
+                    scroll={{ x: 800 }}
+                    style={{ borderRadius: "0 0 20px 20px" }}
+                  />
+                ),
+              },
+              {
+                key: "health-check",
+                label: (
+                  <span style={{ fontSize: "16px", fontWeight: "600" }}>
+                    🩺 Khám sức khỏe ({tabCounts.healthCheck})
+                  </span>
+                ),
+                children: (
+                  /* Bảng danh sách cho Tab 2: Khám sức khỏe */
                   <Table
                     columns={columns}
                     dataSource={filteredSubmissions}
@@ -1313,15 +1696,15 @@ function HealthCheckManagement() {
                 key: "appointment",
                 label: (
                   <span style={{ fontSize: "16px", fontWeight: "600" }}>
-                    📅 Lịch hẹn ({appointments.length})
+                    📅 Lịch hẹn ({tabCounts.appointment})
                   </span>
                 ),
                 children: (
-                  /* Bảng danh sách cho Tab Lịch hẹn */
+                  /* Bảng danh sách cho Tab 3: Lịch hẹn - sử dụng filteredSubmissions thay vì appointments */
                   <Table
                     columns={appointmentColumns}
-                    dataSource={appointments}
-                    loading={appointmentLoading}
+                    dataSource={filteredSubmissions}
+                    loading={loading}
                     rowKey="id"
                     pagination={{
                       pageSize: 10,
@@ -1337,6 +1720,7 @@ function HealthCheckManagement() {
               },
             ]}
           />
+          ,
         </Card>
 
         {/* Modal chi tiết */}
@@ -1722,6 +2106,16 @@ function HealthCheckManagement() {
                 </Form.Item>
               </Col>
             </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item label="Trạng thái khám" name="status">
+                  <Select placeholder="Chọn trạng thái">
+                    <Option value="waiting-checkup">Chờ khám</Option>
+                    <Option value="completed">Hoàn thành</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
             <Form.Item label="Ghi chú" name="notes">
               <TextArea rows={3} />
             </Form.Item>
@@ -1743,7 +2137,7 @@ function HealthCheckManagement() {
           onOk={() => appointmentForm.submit()}
           okText="Tạo lịch hẹn"
           cancelText="Hủy"
-          width={600}
+          width={700}
         >
           <Form
             form={appointmentForm}
@@ -1777,143 +2171,189 @@ function HealthCheckManagement() {
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
-                  label="Lớp"
-                  name="studentClass"
-                  rules={[{ required: true, message: "Vui lòng chọn lớp!" }]}
-                >
-                  <Input disabled />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Mục đích khám"
-                  name="purpose"
+                  label="Ngày giờ hẹn"
+                  name="dateTime"
                   rules={[
-                    { required: true, message: "Vui lòng nhập mục đích khám!" },
-                  ]}
-                >
-                  <Select>
-                    <Option value="Khám sức khỏe định kỳ">
-                      Khám sức khỏe định kỳ
-                    </Option>
-                    <Option value="Tái khám">Tái khám</Option>
-                    <Option value="Khám theo yêu cầu">Khám theo yêu cầu</Option>
-                    <Option value="Khám cấp cứu">Khám cấp cứu</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  label="Ngày hẹn"
-                  name="appointmentDate"
-                  rules={[
-                    { required: true, message: "Vui lòng chọn ngày hẹn!" },
+                    { required: true, message: "Vui lòng chọn ngày giờ hẹn!" },
                   ]}
                 >
                   <DatePicker
                     style={{ width: "100%" }}
-                    format="DD/MM/YYYY"
-                    placeholder="Chọn ngày hẹn"
-                    disabledDate={(current) =>
-                      current && current < dayjs().startOf("day")
-                    }
+                    showTime={{
+                      format: "HH:mm",
+                      minuteStep: 15,
+                      defaultValue: dayjs("08:00", "HH:mm"),
+                    }}
+                    format="DD/MM/YYYY HH:mm"
+                    placeholder="Chọn ngày giờ hẹn khám"
+                    disabledDate={(current) => {
+                      // Không cho chọn ngày trong quá khứ
+                      return current && current < dayjs().startOf("day");
+                    }}
+                    showNow={false}
                   />
                 </Form.Item>
               </Col>
               <Col span={12}>
                 <Form.Item
-                  label="Giờ hẹn"
-                  name="appointmentTime"
+                  label="Địa điểm khám"
+                  name="location"
                   rules={[
-                    { required: true, message: "Vui lòng chọn giờ hẹn!" },
+                    { required: true, message: "Vui lòng nhập địa điểm!" },
                   ]}
+                  initialValue="Phòng y tế trường"
                 >
-                  <Select>
-                    <Option value="08:00">08:00</Option>
-                    <Option value="08:30">08:30</Option>
-                    <Option value="09:00">09:00</Option>
-                    <Option value="09:30">09:30</Option>
-                    <Option value="10:00">10:00</Option>
-                    <Option value="10:30">10:30</Option>
-                    <Option value="11:00">11:00</Option>
-                    <Option value="13:30">13:30</Option>
-                    <Option value="14:00">14:00</Option>
-                    <Option value="14:30">14:30</Option>
-                    <Option value="15:00">15:00</Option>
-                    <Option value="15:30">15:30</Option>
-                    <Option value="16:00">16:00</Option>
-                  </Select>
+                  <Input placeholder="Nhập địa điểm khám" />
                 </Form.Item>
               </Col>
             </Row>
+            <Form.Item
+              label="Lý do khám"
+              name="reason"
+              rules={[{ required: true, message: "Vui lòng nhập lý do khám!" }]}
+              initialValue="Khám sức khỏe định kỳ"
+            >
+              <Input placeholder="Nhập lý do cần khám" />
+            </Form.Item>
             <Form.Item label="Ghi chú" name="notes">
-              <TextArea rows={3} placeholder="Nhập ghi chú cho lịch hẹn..." />
+              <TextArea
+                rows={3}
+                placeholder="Nhập ghi chú bổ sung cho lịch hẹn..."
+              />
             </Form.Item>
           </Form>
         </Modal>
 
-        {/* Modal tạo khám sức khỏe theo lớp */}
+        {/* Modal chỉnh sửa lịch hẹn */}
         <Modal
           title={
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <HeartOutlined style={{ color: "#52c41a", fontSize: "20px" }} />
-              <span>Tạo khám sức khỏe theo lớp</span>
+              <EditOutlined style={{ color: "#1890ff", fontSize: "20px" }} />
+              <span>Cập nhật lịch hẹn khám sức khỏe</span>
+            </div>
+          }
+          open={editAppointmentModalVisible}
+          onCancel={() => setEditAppointmentModalVisible(false)}
+          onOk={() => editAppointmentForm.submit()}
+          okText="Cập nhật"
+          cancelText="Hủy"
+          width={600}
+        >
+          <Form
+            form={editAppointmentForm}
+            layout="vertical"
+            onFinish={handleEditAppointmentSubmit}
+          >
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item label="Mã học sinh" name="studentId">
+                  <Input disabled />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Tên học sinh" name="studentName">
+                  <Input disabled />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item label="Lớp" name="studentClass">
+                  <Input disabled />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Mục đích khám" name="purpose">
+                  <Input disabled />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item label="Ngày hẹn" name="appointmentDate">
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    format="DD/MM/YYYY"
+                    disabled
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Giờ hẹn" name="appointmentTime">
+                  <Input disabled />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Form.Item
+              label="Ghi chú"
+              name="notes"
+              extra="Chỉ có thể cập nhật ghi chú cho lịch hẹn này"
+            >
+              <TextArea
+                rows={4}
+                placeholder="Nhập ghi chú mới cho lịch hẹn..."
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        {/* 🆕 Modal tạo yêu cầu khám sức khỏe theo lớp */}
+        <Modal
+          title={
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <UsergroupAddOutlined
+                style={{ color: "#52c41a", fontSize: "20px" }}
+              />
+              <span>Tạo yêu cầu khám sức khỏe theo lớp</span>
             </div>
           }
           open={createByClassModalVisible}
           onCancel={() => setCreateByClassModalVisible(false)}
           onOk={() => createByClassForm.submit()}
-          okText="Tạo khám sức khỏe"
+          okText="Tạo yêu cầu"
           cancelText="Hủy"
           width={600}
         >
           <Form
             form={createByClassForm}
             layout="vertical"
-            onFinish={handleCreateByClassSubmit}
+            onFinish={handleCreateByClass}
           >
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  label="Lớp học"
-                  name="classId"
-                  rules={[{ required: true, message: "Vui lòng chọn lớp!" }]}
-                >
-                  <Select placeholder="Chọn lớp học">
-                    <Option value="10A1">10A1</Option>
-                    <Option value="10A2">10A2</Option>
-                    <Option value="10A3">10A3</Option>
-                    <Option value="11A1">11A1</Option>
-                    <Option value="11A2">11A2</Option>
-                    <Option value="11A3">11A3</Option>
-                    <Option value="12A1">12A1</Option>
-                    <Option value="12A2">12A2</Option>
-                    <Option value="12A3">12A3</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Ngày khám"
-                  name="checkDate"
-                  rules={[
-                    { required: true, message: "Vui lòng chọn ngày khám!" },
-                  ]}
-                >
-                  <DatePicker
-                    style={{ width: "100%" }}
-                    format="DD/MM/YYYY"
-                    placeholder="Chọn ngày khám"
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Form.Item label="Ghi chú" name="notes">
-              <TextArea
-                rows={3}
-                placeholder="Nhập ghi chú cho đợt khám sức khỏe..."
+            <Form.Item
+              label="Lớp học"
+              name="classId"
+              rules={[{ required: true, message: "Vui lòng chọn lớp học!" }]}
+            >
+              <Select placeholder="Chọn lớp học" size="large">
+                {classes.map((cls) => (
+                  <Option key={cls} value={cls}>
+                    {cls}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item
+              label="Ngày giờ khám dự kiến"
+              name="dateCheckUp"
+              rules={[
+                { required: true, message: "Vui lòng chọn ngày giờ khám!" },
+              ]}
+            >
+              <DatePicker
+                style={{ width: "100%" }}
+                size="large"
+                showTime={{
+                  format: "HH:mm",
+                  minuteStep: 15,
+                  defaultValue: dayjs("08:00", "HH:mm"),
+                }}
+                format="DD/MM/YYYY HH:mm"
+                placeholder="Chọn ngày và giờ khám cho toàn lớp"
+                disabledDate={(current) => {
+                  // Không cho chọn ngày trong quá khứ
+                  return current && current < dayjs().startOf("day");
+                }}
+                showNow={false}
               />
             </Form.Item>
           </Form>

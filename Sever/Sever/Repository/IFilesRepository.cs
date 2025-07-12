@@ -65,8 +65,12 @@ namespace Sever.Repository
 
         public async Task<List<Files>> GetImageByMedicineIdAsync(string id)
         {
-            return await _context.Files.Where(m => m.MedicineID == id && m.IsActive == true).ToListAsync();
+            return await _context.Files
+                .Where(m => m.MedicineID == id && m.IsActive == true)
+                .ToListAsync();
         }
+
+
 
     }
 }

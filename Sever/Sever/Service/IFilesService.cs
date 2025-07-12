@@ -38,7 +38,9 @@ namespace Sever.Service
         private readonly IUserRepository _userRepository;
         private readonly IMedicineRepository _medicineRepository;
         private readonly IMedicalEventRepository _medicalEventRepository;
-        public FilesSevice(IFilesRepository repository, IConfiguration config, DataContext context, IUserRepository userRepository, IMedicineRepository medicineRepository, IMedicalEventRepository medicalEventRepository)
+        public FilesSevice(IFilesRepository repository, IConfiguration config, DataContext context, 
+                           IUserRepository userRepository, IMedicineRepository medicineRepository, 
+                           IMedicalEventRepository medicalEventRepository)
         {
             _fileRepository = repository;
             var account = new Account(
@@ -380,7 +382,7 @@ namespace Sever.Service
             var list = await _fileRepository.GetImageByMedicineIdAsync(id);
             if (list == null || list.Count == 0)
             {
-                throw new ArgumentException("Tải file từ repository thất bại");
+                return new List<Files>();
             }
             return list;
         }
@@ -390,7 +392,7 @@ namespace Sever.Service
             var list = await _fileRepository.GetImageByMedicalEventIdAsync(id);
             if (list == null || list.Count == 0)
             {
-                throw new ArgumentException("Tải file từ repository thất bại");
+               return new List<Files>();
             }
             return list;
         }
@@ -416,9 +418,6 @@ namespace Sever.Service
             await _context.SaveChangesAsync();
         }
 
-        //public Task<bool> DeleteFileByIdAsync(string id)
-        //{
-        //    throw new NotImplementedException();
-        //}
+
     }
 }

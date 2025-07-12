@@ -366,7 +366,9 @@ namespace Sever.Service
                 foreach (var e in medicine)
                 {
 
-                var imageList = e.File.Select(f => new ImageResponse
+                var imageFiles = await _filesService.GetImageByMedicineIdAsync(e.MedicineID);
+
+                var imageList = imageFiles.Select(f => new ImageResponse
                 {
                     Id = f.FileID,
                     FileName = f.FileName,
@@ -406,7 +408,10 @@ namespace Sever.Service
                 List<MedicineResponse> response = new List<MedicineResponse>();
                 foreach (var e in medicines)
                 {
-                var imageList = e.File.Select(f => new ImageResponse
+
+                var imageFiles = await _filesService.GetImageByMedicineIdAsync(e.MedicineID);
+
+                var imageList = imageFiles.Select(f => new ImageResponse
                 {
                     Id = f.FileID,
                     FileName = f.FileName,
@@ -440,31 +445,31 @@ namespace Sever.Service
 
         public async Task<List<MedicineResponse>> GetMedicineByParentAsync(string userName)
         {
-                var parent = await _userService.GetUserAsyc(userName);
-                if (parent == null) return null;
+            var parent = await _userService.GetUserAsyc(userName);
+            if (parent == null) return null;
 
-                var userId = parent.UserID;
+            var userId = parent.UserID;
+            var studentList = await _medicineRepository.GetStudentsByParentIdAsync(userId);
+            if (studentList == null || !studentList.Any()) return null;
 
-                var studentList = await _medicineRepository.GetStudentsByParentIdAsync(userId);
-                if (studentList == null || !studentList.Any()) return null;
-
-                var response = new List<MedicineResponse>();
+            var response = new List<MedicineResponse>();
 
             foreach (var student in studentList)
             {
                 var medicines = await _medicineRepository.GetMedicineByStudentIdAsync(student.StudentID);
+
                 foreach (var e in medicines)
                 {
-                    var imageList = e.File != null
-                        ? e.File.Select(f => new ImageResponse
-                        {
-                            Id = f.FileID,
-                            FileName = f.FileName,
-                            FileType = f.FileType,
-                            Url = f.FileLink,
-                            UploadedAt = f.UploadDate
-                        }).ToList()
-                        : new List<ImageResponse>();
+                    var imageFiles = await _filesService.GetImageByMedicineIdAsync(e.MedicineID);
+
+                    var imageList = imageFiles.Select(f => new ImageResponse
+                    {
+                        Id = f.FileID,
+                        FileName = f.FileName,
+                        FileType = f.FileType,
+                        Url = f.FileLink,
+                        UploadedAt = f.UploadDate
+                    }).ToList();
 
                     response.Add(new MedicineResponse
                     {

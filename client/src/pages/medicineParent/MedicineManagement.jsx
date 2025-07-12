@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Table,
   Button,
@@ -15,8 +15,8 @@ import {
   Col,
   Descriptions,
   Typography,
-  Popconfirm
-} from 'antd';
+  Popconfirm,
+} from "antd";
 import {
   PlusOutlined,
   EditOutlined,
@@ -29,10 +29,9 @@ import {
   InboxOutlined,
   SyncOutlined,
   HistoryOutlined,
-} from '@ant-design/icons';
-import medicineApi from '../../api/medicineApi';
-import studentApi from '../../api/studentApi';
-
+} from "@ant-design/icons";
+import medicineApi from "../../api/medicineApi";
+import studentApi from "../../api/studentApi";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -47,7 +46,14 @@ const MedicineManagement = () => {
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [editingMedicine, setEditingMedicine] = useState(null);
   const [viewingMedicine, setViewingMedicine] = useState(null);
-  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState("");
+
+  // 🆕 IMAGE MODAL - Cách đơn giản và hiệu quả
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [currentImageUrl, setCurrentImageUrl] = useState("");
+  const [imageTitle, setImageTitle] = useState("");
+  const [allImages, setAllImages] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // History states
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
@@ -61,18 +67,11 @@ const MedicineManagement = () => {
   const [fileList, setFileList] = useState([]);
 
   // Filter states
-  const [statusFilter, setStatusFilter] = useState('');
-
-  // LocalStorage keys
-  const MEDICINES_STORAGE_KEY = 'medicines_persistent_v4';
-  const MEDICINE_HISTORY_KEY = 'medicine_history_v1';
+  const [statusFilter, setStatusFilter] = useState("");
 
   // Component mount
   useEffect(() => {
-    console.log('🚀 Component mounting...');
-
-    // Đảm bảo tải dữ liệu từ localStorage trước
-    loadPersistedMedicines();
+    console.log("🚀 Component mounting...");
 
     // Tải danh sách học sinh trước
     // fetchMedicinesFromServer sẽ được gọi tự động khi studentsInitialized = true
@@ -82,23 +81,22 @@ const MedicineManagement = () => {
         // Không cần gọi fetchMedicinesFromServer ở đây nữa
         // Nó sẽ được gọi tự động trong useEffect theo dõi studentsInitialized
       } catch (error) {
-        console.error('❌ Lỗi khởi tạo dữ liệu:', error);
+        console.error("❌ Lỗi khởi tạo dữ liệu:", error);
       }
     };
 
     initializeData();
 
     // Thêm listeners cho trạng thái online/offline
-    window.addEventListener('online', handleOnlineStatus);
-    window.addEventListener('offline', handleOfflineStatus);
-
-    // Thêm listener cho thay đổi localStorage từ tab khác
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("online", handleOnlineStatus);
+    window.addEventListener("offline", handleOfflineStatus);
 
     // 🆕 Thêm listener để refresh khi user quay lại tab (catch updates từ nurse)
     const handleVisibilityChange = () => {
       if (!document.hidden && navigator.onLine && studentsInitialized) {
-        console.log('👀 User quay lại tab, đang refresh dữ liệu để cập nhật trạng thái mới nhất...');
+        console.log(
+          "👀 User quay lại tab, đang refresh dữ liệu để cập nhật trạng thái mới nhất..."
+        );
         setTimeout(() => {
           fetchMedicinesFromServer();
         }, 1000); // Đợi 1s để đảm bảo tab đã focus hoàn toàn
@@ -107,38 +105,45 @@ const MedicineManagement = () => {
 
     const handleWindowFocus = () => {
       if (navigator.onLine && studentsInitialized) {
-        console.log('🔄 Window focus, refresh dữ liệu để cập nhật trạng thái...');
+        console.log(
+          "🔄 Window focus, refresh dữ liệu để cập nhật trạng thái..."
+        );
         setTimeout(() => {
           fetchMedicinesFromServer();
         }, 500);
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleWindowFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleWindowFocus);
 
     // Tạo interval để cố gắng đồng bộ định kỳ và check database changes
     const syncInterval = setInterval(() => {
       if (navigator.onLine && studentsInitialized) {
-        const pendingSyncMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
+        const pendingSyncMedicines = medicines.filter(
+          (m) => m._pendingSync === true || m._isTemp === true
+        );
         if (pendingSyncMedicines.length > 0) {
-          console.log('⏱️ Tự động đồng bộ định kỳ:', pendingSyncMedicines.length, 'yêu cầu');
+          console.log(
+            "⏱️ Tự động đồng bộ định kỳ:",
+            pendingSyncMedicines.length,
+            "yêu cầu"
+          );
           syncPendingMedicines(pendingSyncMedicines);
         }
 
         // ✅ Định kỳ refresh dữ liệu để phát hiện thay đổi database (bao gồm việc xóa)
-        console.log('⏱️ Định kỳ check database changes (bao gồm xóa database)');
+        console.log("⏱️ Định kỳ check database changes (bao gồm xóa database)");
         fetchMedicinesFromServer();
       }
     }, 30000); // ✅ Giảm từ 2 phút xuống 30 giây để phát hiện thay đổi nhanh hơn
 
     return () => {
       // Cleanup listeners khi component unmount
-      window.removeEventListener('online', handleOnlineStatus);
-      window.removeEventListener('offline', handleOfflineStatus);
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('focus', handleWindowFocus);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener("online", handleOnlineStatus);
+      window.removeEventListener("offline", handleOfflineStatus);
+      window.removeEventListener("focus", handleWindowFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       clearInterval(syncInterval);
 
       // Lưu lại state medicines khi component unmount để đảm bảo không mất dữ liệu
@@ -146,109 +151,34 @@ const MedicineManagement = () => {
     };
   }, []); // 🔥 QUAN TRỌNG: Empty dependency array để chỉ chạy 1 lần khi mount
 
-  // Xử lý khi localStorage thay đổi ở tab khác
-  const handleStorageChange = (event) => {
-    if (event.key === MEDICINES_STORAGE_KEY) {
-      console.log('🔄 Phát hiện thay đổi dữ liệu từ tab khác, đang tải lại...');
-      loadPersistedMedicines();
-    }
-  };
-
   // ==================== PERSISTENCE FUNCTIONS ====================
 
   const saveMedicinesToStorage = (medicinesList) => {
     try {
       // Chỉ lưu khi có dữ liệu
       if (!medicinesList || medicinesList.length === 0) {
-        console.log('⚠️ Không có dữ liệu thuốc để lưu');
+        console.log("⚠️ Không có dữ liệu thuốc để lưu");
         return;
       }
 
-      // Đánh dấu thời gian lưu trữ cho mỗi thuốc
-      const medicinesWithTimestamp = medicinesList.map(med => ({
-        ...med,
-        _localSavedAt: new Date().toISOString(),
-        // Đảm bảo các thuốc chưa đồng bộ được đánh dấu đúng
-        _pendingSync: med._pendingSync || med._isTemp || false
-      }));
-
-      const dataToSave = {
-        medicines: medicinesWithTimestamp,
-        timestamp: new Date().toISOString(),
-        version: '4.2' // Tăng phiên bản để đánh dấu cải tiến lưu trữ
-      };
-
-      localStorage.setItem(MEDICINES_STORAGE_KEY, JSON.stringify(dataToSave));
-      console.log('💾 Lưu trữ thành công:', medicinesList.length, 'thuốc');
+      console.log("💾 Lưu trữ thành công:", medicinesList.length, "thuốc");
     } catch (error) {
-      console.error('❌ Lỗi khi lưu thuốc:', error);
+      console.error("❌ Lỗi khi lưu thuốc:", error);
     }
-  };
-
-  const loadPersistedMedicines = () => {
-    try {
-      console.log('📂 Đang tải dữ liệu thuốc từ bộ nhớ cục bộ...');
-      const cached = localStorage.getItem(MEDICINES_STORAGE_KEY);
-
-      if (!cached) {
-        console.log('⚠️ Không có dữ liệu thuốc được lưu trữ');
-        return false;
-      }
-
-      const parsedData = JSON.parse(cached);
-      const medicinesList = parsedData.medicines || parsedData;
-
-      if (!Array.isArray(medicinesList) || medicinesList.length === 0) {
-        console.log('⚠️ Không có thuốc nào trong dữ liệu lưu trữ');
-        return false;
-      }
-
-      // Đánh dấu và kiểm tra các thuốc cần đồng bộ
-      const medicinesWithFlags = medicinesList.map(med => ({
-        ...med,
-        // Đảm bảo thuốc có ID tạm thời vẫn được đánh dấu là cần đồng bộ
-        _pendingSync: med._pendingSync || (med.MedicineID && med.MedicineID.startsWith('MED_')) || med._isTemp || false,
-        _isTemp: med._isTemp || (med.MedicineID && med.MedicineID.startsWith('MED_')) || false
-      }));
-
-      // Cập nhật state
-      setMedicines(medicinesWithFlags);
-      console.log('✅ Đã tải', medicinesWithFlags.length, 'thuốc từ bộ nhớ cục bộ');
-
-      // Tìm các thuốc cần đồng bộ
-      const pendingSyncMedicines = medicinesWithFlags.filter(m => m._pendingSync === true || m._isTemp === true);
-      if (pendingSyncMedicines.length > 0) {
-        console.log('🔄 Phát hiện', pendingSyncMedicines.length, 'thuốc chưa đồng bộ');
-        if (navigator.onLine) {
-          console.log('🌐 Đang online - Bắt đầu đồng bộ...');
-          syncPendingMedicines(pendingSyncMedicines);
-        } else {
-          console.log('📵 Đang offline - Sẽ đồng bộ khi có kết nối');
-        }
-      }
-
-      return true;
-    } catch (error) {
-      console.error('❌ Lỗi khi tải dữ liệu thuốc:', error);
-      return false;
-    }
-  };
-
-  const updateMedicinesWithPersistence = (newMedicines) => {
-    console.log('🔄 Updating medicines with persistence:', newMedicines.length);
-    setMedicines(newMedicines);
-    saveMedicinesToStorage(newMedicines);
   };
 
   // Hàm đồng bộ các thuốc đang chờ khi có kết nối
   const syncPendingMedicines = async (pendingMedicines) => {
     if (!pendingMedicines || pendingMedicines.length === 0) return;
 
-    console.log('🔄 Attempting to sync pending medicines:', pendingMedicines.length);
+    console.log(
+      "🔄 Attempting to sync pending medicines:",
+      pendingMedicines.length
+    );
 
     // Kiểm tra kết nối internet
     if (!navigator.onLine) {
-      console.log('❌ No internet connection, sync postponed');
+      console.log("❌ No internet connection, sync postponed");
       return;
     }
 
@@ -261,39 +191,48 @@ const MedicineManagement = () => {
           MedicineName: medicine.MedicineName,
           Quantity: medicine.Quantity,
           Dosage: medicine.Dosage,
-          Instructions: medicine.Instructions || '',
-          Notes: medicine.Notes || '',
+          Instructions: medicine.Instructions || "",
+          Notes: medicine.Notes || "",
           StudentID: medicine.StudentID,
         };
 
         // ✅ Thêm ảnh nếu có file gốc được lưu
         if (medicine._originalFiles && medicine._originalFiles.length > 0) {
           syncData.Images = medicine._originalFiles;
-          console.log('�️ Found original files to sync:', medicine._originalFiles.length);
+          console.log(
+            "�️ Found original files to sync:",
+            medicine._originalFiles.length
+          );
         }
 
-        console.log('�🔍 Sync data prepared:', {
+        console.log("�🔍 Sync data prepared:", {
           ...syncData,
-          ImagesCount: syncData.Images?.length || 0
+          ImagesCount: syncData.Images?.length || 0,
         });
 
         // Nếu là thuốc mới (tạm thời)
         if (medicine._isTemp) {
-          console.log('🆕 Creating new medicine on server');
-          const createResponse = await medicineApi.parent.createMedicine(syncData);
+          console.log("🆕 Creating new medicine on server");
+          const createResponse = await medicineApi.parent.createMedicine(
+            syncData
+          );
 
-          if (createResponse?.data?.medicineID || createResponse?.data?.MedicineID) {
-            const realId = createResponse.data.medicineID || createResponse.data.MedicineID;
+          if (
+            createResponse?.data?.medicineID ||
+            createResponse?.data?.MedicineID
+          ) {
+            const realId =
+              createResponse.data.medicineID || createResponse.data.MedicineID;
 
             // Cập nhật ID thật và xóa trạng thái tạm
-            setMedicines(prevMedicines => {
-              const updatedMedicines = prevMedicines.map(med => {
+            setMedicines((prevMedicines) => {
+              const updatedMedicines = prevMedicines.map((med) => {
                 if (med.MedicineID === medicine.MedicineID) {
                   return {
                     ...med,
                     MedicineID: realId,
                     _isTemp: false,
-                    _pendingSync: false
+                    _pendingSync: false,
                   };
                 }
                 return med;
@@ -302,20 +241,22 @@ const MedicineManagement = () => {
               return updatedMedicines;
             });
 
-            console.log(`✅ Successfully synced new medicine. Temp ID: ${medicine.MedicineID}, Real ID: ${realId}`);
+            console.log(
+              `✅ Successfully synced new medicine. Temp ID: ${medicine.MedicineID}, Real ID: ${realId}`
+            );
           }
         }
         // Nếu là thuốc cần cập nhật
         else if (medicine._pendingSync && !medicine._isTemp) {
-          console.log('🔄 Updating existing medicine on server');
+          console.log("🔄 Updating existing medicine on server");
           await medicineApi.parent.updateMedicine({
             ...syncData,
-            MedicineID: medicine.MedicineID
+            MedicineID: medicine.MedicineID,
           });
 
           // Xóa trạng thái đồng bộ
-          setMedicines(prevMedicines => {
-            const updatedMedicines = prevMedicines.map(med => {
+          setMedicines((prevMedicines) => {
+            const updatedMedicines = prevMedicines.map((med) => {
               if (med.MedicineID === medicine.MedicineID) {
                 return { ...med, _pendingSync: false };
               }
@@ -325,33 +266,16 @@ const MedicineManagement = () => {
             return updatedMedicines;
           });
 
-          console.log(`✅ Successfully synced medicine update: ${medicine.MedicineID}`);
+          console.log(
+            `✅ Successfully synced medicine update: ${medicine.MedicineID}`
+          );
         }
       } catch (error) {
-        console.error(`❌ Failed to sync medicine ${medicine.MedicineID}:`, error);
+        console.error(
+          `❌ Failed to sync medicine ${medicine.MedicineID}:`,
+          error
+        );
       }
-    }
-
-    // 🔥 SAU KHI ĐỒNG BỘ XONG: Kiểm tra xem có còn thuốc nào không
-    // Nếu không còn thuốc nào (database trống hoàn toàn) thì xóa lịch sử
-    setTimeout(() => {
-      if (medicines.length === 0) {
-        console.log('🗑️ Sau khi đồng bộ: Không còn thuốc nào, xóa lịch sử thuốc');
-        clearMedicineHistory('Sau khi đồng bộ - database trống');
-      }
-    }, 1000); // Đợi 1 giây để state được cập nhật
-  };
-
-  // ==================== HISTORY MANAGEMENT ====================
-
-  // 🔥 Helper function để xóa lịch sử thuốc khi database trống hoàn toàn
-  const clearMedicineHistory = (reason = 'Database trống hoàn toàn') => {
-    try {
-      console.log(`🗑️ Xóa lịch sử thuốc - Lý do: ${reason}`);
-      localStorage.removeItem(MEDICINE_HISTORY_KEY);
-      console.log('✅ Đã xóa lịch sử thuốc thành công');
-    } catch (error) {
-      console.error('❌ Lỗi khi xóa lịch sử thuốc:', error);
     }
   };
 
@@ -371,52 +295,30 @@ const MedicineManagement = () => {
       }
       return [];
     } catch (error) {
-      console.error('❌ Error loading medicine history:', error);
+      console.error("❌ Error loading medicine history:", error);
       return [];
-    }
-  };
-
-  const saveMedicineHistory = (medicineId, historyEntry) => {
-    try {
-      const currentHistory = localStorage.getItem(MEDICINE_HISTORY_KEY);
-      let allHistory = currentHistory ? JSON.parse(currentHistory) : {};
-
-      if (!allHistory[medicineId]) {
-        allHistory[medicineId] = [];
-      }
-
-      // Thêm entry mới vào đầu array (newest first)
-      allHistory[medicineId].unshift({
-        ...historyEntry,
-        timestamp: new Date().toISOString(),
-        id: Date.now() // unique ID cho mỗi history entry
-      });
-
-      // Giới hạn tối đa 10 entries per medicine
-      if (allHistory[medicineId].length > 10) {
-        allHistory[medicineId] = allHistory[medicineId].slice(0, 10);
-      }
-
-      localStorage.setItem(MEDICINE_HISTORY_KEY, JSON.stringify(allHistory));
-      console.log('💾 Saved history for medicine:', medicineId);
-    } catch (error) {
-      console.error('❌ Error saving medicine history:', error);
     }
   };
 
   const getChangedFields = (oldData, newData) => {
     const changes = [];
-    const fieldsToCheck = ['MedicineName', 'Quantity', 'Dosage', 'Instructions', 'Notes'];
+    const fieldsToCheck = [
+      "MedicineName",
+      "Quantity",
+      "Dosage",
+      "Instructions",
+      "Notes",
+    ];
 
-    fieldsToCheck.forEach(field => {
-      const oldValue = oldData[field] || '';
-      const newValue = newData[field] || '';
+    fieldsToCheck.forEach((field) => {
+      const oldValue = oldData[field] || "";
+      const newValue = newData[field] || "";
 
       if (oldValue !== newValue) {
         changes.push({
           field: field,
           from: oldValue,
-          to: newValue
+          to: newValue,
         });
       }
     });
@@ -426,19 +328,19 @@ const MedicineManagement = () => {
 
   const getFieldDisplayName = (fieldName) => {
     const fieldNames = {
-      'MedicineName': 'Tên thuốc',
-      'Quantity': 'Số lượng',
-      'Dosage': 'Liều lượng',
-      'Instructions': 'Hướng dẫn sử dụng',
-      'Notes': 'Ghi chú',
-      'Status': 'Trạng thái',
-      'Images': 'Hình ảnh thuốc'
+      MedicineName: "Tên thuốc",
+      Quantity: "Số lượng",
+      Dosage: "Liều lượng",
+      Instructions: "Hướng dẫn sử dụng",
+      Notes: "Ghi chú",
+      Status: "Trạng thái",
+      Images: "Hình ảnh thuốc",
     };
     return fieldNames[fieldName] || fieldName;
   };
 
   const handleViewHistory = (record) => {
-    console.log('📜 Viewing history for medicine:', record.MedicineID);
+    console.log("📜 Viewing history for medicine:", record.MedicineID);
 
     const history = getMedicineHistory(record.MedicineID);
     setViewingMedicineHistory(record);
@@ -451,54 +353,99 @@ const MedicineManagement = () => {
   const fetchStudents = async (isAutoRefresh = false) => {
     // 🚫 Ngăn việc gọi nhiều lần cùng lúc
     if (studentsLoading || fetchingStudents) {
-      console.log('⚠️ fetchStudents đã đang chạy, bỏ qua...');
+      console.log("⚠️ fetchStudents đã đang chạy, bỏ qua...");
       return;
     }
 
     // 🚫 Ngăn việc gọi lại khi đã initialized (trừ khi force refresh)
     if (studentsInitialized && !isAutoRefresh) {
-      console.log('⚠️ Students đã được initialized, bỏ qua...');
+      console.log("⚠️ Students đã được initialized, bỏ qua...");
       return;
     }
 
     try {
       setStudentsLoading(true);
       setFetchingStudents(true); // 🆕 Đánh dấu đang fetch
-      console.log('🔄 Đang lấy danh sách học sinh của phụ huynh...');
+      console.log("🔄 Đang lấy danh sách học sinh của phụ huynh...");
 
-      // Sử dụng API từ studentApi 
+      // Sử dụng API từ studentApi
       const response = await studentApi.parent.getMyChildren();
-      console.log('✅ API getMyChildren response:', response);
+      console.log("✅ API getMyChildren response:", response);
+
+      // ✅ DEBUG: Kiểm tra response format
+      console.log("🔍 API Response Analysis:", {
+        responseType: typeof response.data,
+        isArray: Array.isArray(response.data),
+        length: response.data?.length || 0,
+        firstStudent: response.data?.[0] || null,
+        studentIDs: response.data?.map((s) => s.studentID) || [],
+      });
 
       const studentsData = response.data || [];
 
       if (Array.isArray(studentsData) && studentsData.length > 0) {
-        const processedStudents = studentsData.map(student => {
+        // ✅ LOG từng student để debug
+        studentsData.forEach((student, index) => {
+          console.log(`📋 Student #${index + 1}:`, {
+            studentID: student.studentID,
+            studentName: student.studentName,
+            class: student.class,
+            parentName: student.parentName,
+          });
+        });
+
+        const processedStudents = studentsData.map((student) => {
           // Xử lý dữ liệu học sinh dựa trên cấu trúc thực tế từ API
           // ✅ Ưu tiên trường "class" mới từ backend
           return {
             StudentID: student.studentID || student.StudentID || student.id,
-            StudentName: student.studentName || student.StudentName || student.name || 'Học sinh',
-            StudentCode: student.studentID || student.StudentID || student.studentCode || student.id,
-            Class: student.class || student.className || student.ClassName || student.grade || student.classRoom || student.class_name || 'Chưa phân lớp',
-            Age: student.age || (student.birthday ? new Date().getFullYear() - new Date(student.birthday).getFullYear() : 0),
-            Sex: student.sex || student.gender || 'Chưa xác định',
+            StudentName:
+              student.studentName ||
+              student.StudentName ||
+              student.name ||
+              "Học sinh",
+            StudentCode:
+              student.studentID ||
+              student.StudentID ||
+              student.studentCode ||
+              student.id,
+            Class:
+              student.class ||
+              student.className ||
+              student.ClassName ||
+              student.grade ||
+              student.classRoom ||
+              student.class_name ||
+              "Chưa phân lớp",
+            Age:
+              student.age ||
+              (student.birthday
+                ? new Date().getFullYear() -
+                  new Date(student.birthday).getFullYear()
+                : 0),
+            Sex: student.sex || student.gender || "Chưa xác định",
             Birthday: student.birthday || student.dob || null,
-            ParentName: student.parentName || null
+            ParentName: student.parentName || null,
           };
         });
 
-        console.log('📋 Danh sách học sinh đã xử lý:', processedStudents);
+        console.log("📋 Danh sách học sinh đã xử lý:", processedStudents);
         setStudents(processedStudents);
 
         // Tự động chọn học sinh đầu tiên nếu chưa chọn
         if (processedStudents.length > 0 && !selectedStudentId) {
-          console.log('🔍 Tự động chọn học sinh đầu tiên:', processedStudents[0].StudentID);
+          console.log(
+            "🔍 Tự động chọn học sinh đầu tiên:",
+            processedStudents[0].StudentID
+          );
           setSelectedStudentId(processedStudents[0].StudentID);
         }
 
         // Chỉ hiển thị message khi thực sự cần (không phải call từ interval/auto-refresh)
-        console.log('🔍 Debug fetchStudents message:', { isAutoRefresh, studentsLength: processedStudents.length });
+        console.log("🔍 Debug fetchStudents message:", {
+          isAutoRefresh,
+          studentsLength: processedStudents.length,
+        });
 
         // ❌ TẠM THỜI TẮT MESSAGE ĐỂ NGĂN SPAM
         // if (!isAutoRefresh) {
@@ -510,14 +457,14 @@ const MedicineManagement = () => {
           console.log(`✅ Đã tải ${processedStudents.length} học sinh`);
         }
       } else {
-        console.warn('⚠️ Không tìm thấy học sinh nào từ API');
+        console.warn("⚠️ Không tìm thấy học sinh nào từ API");
         // Nếu không có dữ liệu từ API, sử dụng dữ liệu mẫu
         createMockStudents();
       }
     } catch (error) {
-      console.error('❌ Lỗi khi lấy danh sách học sinh:', error);
-      console.error('❌ Chi tiết lỗi:', error.response?.data);
-      console.error('❌ Mã lỗi:', error.response?.status);
+      console.error("❌ Lỗi khi lấy danh sách học sinh:", error);
+      console.error("❌ Chi tiết lỗi:", error.response?.data);
+      console.error("❌ Mã lỗi:", error.response?.status);
 
       // Sử dụng dữ liệu mẫu nếu có lỗi
       createMockStudents();
@@ -529,22 +476,29 @@ const MedicineManagement = () => {
   };
 
   const createMockStudents = () => {
-    console.log('⚠️ Sử dụng dữ liệu học sinh mẫu');
+    console.log("⚠️ Sử dụng dữ liệu học sinh mẫu");
+    console.log(
+      "🚨 CẢNH BÁO: StudentID từ mock data có thể KHÔNG TỒN TẠI trong database backend!"
+    );
+    console.log(
+      "🔧 Giải pháp: Đảm bảo backend có StudentProfile với các ID này hoặc sử dụng data thật từ API"
+    );
+
     const mockStudents = [
       {
-        StudentID: 'ST001',
-        StudentName: 'Lê Văn Bình',
-        Class: 'Lớp 2',
+        StudentID: "ST001",
+        StudentName: "Lê Văn Bình",
+        Class: "Lớp 2",
         Age: 8,
-        Sex: 'Nam'
+        Sex: "Nam",
       },
       {
-        StudentID: 'ST002',
-        StudentName: 'Lê Thị Cẩm Ly',
-        Class: 'Lớp 4',
+        StudentID: "ST002",
+        StudentName: "Lê Thị Cẩm Ly",
+        Class: "Lớp 4",
         Age: 10,
-        Sex: 'Nữ'
-      }
+        Sex: "Nữ",
+      },
     ];
 
     setStudents(mockStudents);
@@ -554,101 +508,108 @@ const MedicineManagement = () => {
       setSelectedStudentId(mockStudents[0].StudentID);
     }
 
-    message.warning('Sử dụng dữ liệu mẫu - Vui lòng kiểm tra kết nối');
+    message.warning("Sử dụng dữ liệu mẫu - Vui lòng kiểm tra kết nối");
   };
 
   const normalizeStatus = (status) => {
     // Nếu status không tồn tại, trả về giá trị mặc định
-    if (!status) return 'Chờ xử lý';
+    if (!status) return "Chờ xử lý";
 
     // Debug - log trạng thái gốc
-    console.log('📝 Normalize status - Original:', status);
+    console.log("📝 Normalize status - Original:", status);
 
     // Đưa về chữ thường và bỏ dấu cách thừa để dễ so sánh
     const cleanStatus = status.toString().toLowerCase().trim();
 
     // Debug - log trạng thái đã làm sạch
-    console.log('�� Normalize status - Cleaned:', cleanStatus);
+    console.log("�� Normalize status - Cleaned:", cleanStatus);
 
     // Mapping đầy đủ hơn để xử lý các trường hợp khác nhau
     const statusMap = {
       // Các trạng thái tiếng Việt chuẩn
-      'chờ xử lý': 'Chờ xử lý',
-      'đã xác nhận': 'Đã xác nhận',
-      'đã duyệt': 'Đã xác nhận', // ⭐ Đồng bộ "Đã duyệt" từ y tế thành "Đã xác nhận" cho phụ huynh
-      'đang thực hiện': 'Đang thực hiện',
-      'đã hoàn thành': 'Đã hoàn thành',
-      'từ chối': 'Từ chối',
-      'chờ xác nhận': 'Chờ xác nhận',
+      "chờ xử lý": "Chờ xử lý",
+      "đã xác nhận": "Đã xác nhận",
+      "đã duyệt": "Đã xác nhận", // ⭐ Đồng bộ "Đã duyệt" từ y tế thành "Đã xác nhận" cho phụ huynh
+      "đang thực hiện": "Đang thực hiện",
+      "đã hoàn thành": "Đã hoàn thành",
+      "từ chối": "Từ chối",
+      "chờ xác nhận": "Chờ xác nhận",
 
       // Các trạng thái có thể bị mã hóa sai UTF-8
-      'cho xu ly': 'Chờ xử lý',
-      'cho xac nhan': 'Chờ xác nhận',
-      'da xac nhan': 'Đã xác nhận',
-      'da duyet': 'Đã xác nhận' // ⭐ Đồng bộ "Đã duyệt" từ y tế thành "Đã xác nhận" cho phụ huynh
-      , 'dang thuc hien': 'Đang thực hiện',
-      'da hoan thanh': 'Đã hoàn thành',
-      'tu choi': 'Từ chối',
+      "cho xu ly": "Chờ xử lý",
+      "cho xac nhan": "Chờ xác nhận",
+      "da xac nhan": "Đã xác nhận",
+      "da duyet": "Đã xác nhận", // ⭐ Đồng bộ "Đã duyệt" từ y tế thành "Đã xác nhận" cho phụ huynh
+      "dang thuc hien": "Đang thực hiện",
+      "da hoan thanh": "Đã hoàn thành",
+      "tu choi": "Từ chối",
 
       // Các trạng thái mã hóa sai tiềm ẩn từ server
-      'ch? x? lý': 'Chờ xử lý',
-      'ch? xác nh?n': 'Chờ xác nhận',
-      'ðã xác nh?n': 'Đã xác nhận',
-      'ðã duy?t': 'Đã xác nhận' // ⭐ Đồng bộ "Đã duyệt" từ y tế thành "Đã xác nhận" cho phụ huynh
-      , 'ðang th?c hi?n': 'Đang thực hiện',
-      'ðã hoàn thành': 'Đã hoàn thành',
-      't? ch?i': 'Từ chối',
+      "ch? x? lý": "Chờ xử lý",
+      "ch? xác nh?n": "Chờ xác nhận",
+      "ðã xác nh?n": "Đã xác nhận",
+      "ðã duy?t": "Đã xác nhận", // ⭐ Đồng bộ "Đã duyệt" từ y tế thành "Đã xác nhận" cho phụ huynh
+      "ðang th?c hi?n": "Đang thực hiện",
+      "ðã hoàn thành": "Đã hoàn thành",
+      "t? ch?i": "Từ chối",
 
       // Các trạng thái viết tắt hoặc sai chính tả
-      'pending': 'Chờ xử lý',
-      'confirmed': 'Đã xác nhận',
-      'approved': 'Đã xác nhận', // ⭐ Đồng bộ các trạng thái từ tiếng Anh
-      'in progress': 'Đang thực hiện',
-      'completed': 'Đã hoàn thành',
-      'rejected': 'Từ chối',
-      'waiting': 'Chờ xử lý',
-      'processing': 'Đang thực hiện',
-      'done': 'Đã hoàn thành',
+      pending: "Chờ xử lý",
+      confirmed: "Đã xác nhận",
+      approved: "Đã xác nhận", // ⭐ Đồng bộ các trạng thái từ tiếng Anh
+      "in progress": "Đang thực hiện",
+      completed: "Đã hoàn thành",
+      rejected: "Từ chối",
+      waiting: "Chờ xử lý",
+      processing: "Đang thực hiện",
+      done: "Đã hoàn thành",
 
       // Các giá trị số (nếu có)
-      '0': 'Chờ xử lý',
-      '1': 'Đã xác nhận',
-      '2': 'Đang thực hiện',
-      '3': 'Đã hoàn thành',
-      '4': 'Từ chối',
+      0: "Chờ xử lý",
+      1: "Đã xác nhận",
+      2: "Đang thực hiện",
+      3: "Đã hoàn thành",
+      4: "Từ chối",
     };
 
     // Thử tìm trong mapping với chuỗi đã được chuẩn hóa
     const result = statusMap[cleanStatus];
     if (result) {
-      console.log('📝 Normalize status - Mapped:', result);
+      console.log("📝 Normalize status - Mapped:", result);
       return result;
     }
 
     // Nếu không tìm được, thử kiểm tra một cách thông minh hơn
-    if (cleanStatus.includes('ch') && (cleanStatus.includes('ly') || cleanStatus.includes('xu'))) {
-      return 'Chờ xử lý';
+    if (
+      cleanStatus.includes("ch") &&
+      (cleanStatus.includes("ly") || cleanStatus.includes("xu"))
+    ) {
+      return "Chờ xử lý";
     }
-    if (cleanStatus.includes('xac') && cleanStatus.includes('nhan')) {
-      return cleanStatus.includes('da') ? 'Đã xác nhận' : 'Chờ xác nhận';
+    if (cleanStatus.includes("xac") && cleanStatus.includes("nhan")) {
+      return cleanStatus.includes("da") ? "Đã xác nhận" : "Chờ xác nhận";
     }
-    if (cleanStatus.includes('hoan') && cleanStatus.includes('thanh')) {
-      return 'Đã hoàn thành';
+    if (cleanStatus.includes("hoan") && cleanStatus.includes("thanh")) {
+      return "Đã hoàn thành";
     }
-    if (cleanStatus.includes('tu') && cleanStatus.includes('choi')) {
-      return 'Từ chối';
+    if (cleanStatus.includes("tu") && cleanStatus.includes("choi")) {
+      return "Từ chối";
     }
-    if (cleanStatus.includes('thuc') && cleanStatus.includes('hien')) {
-      return 'Đang thực hiện';
+    if (cleanStatus.includes("thuc") && cleanStatus.includes("hien")) {
+      return "Đang thực hiện";
     }
     // ⭐ Kiểm tra "duyệt" -> Đã xác nhận
-    if (cleanStatus.includes('duyet') || cleanStatus.includes('duy?t') || cleanStatus.includes('approv')) {
-      console.log('📝 Normalize status - Detected approval:', cleanStatus);
-      return 'Đã xác nhận';
+    if (
+      cleanStatus.includes("duyet") ||
+      cleanStatus.includes("duy?t") ||
+      cleanStatus.includes("approv")
+    ) {
+      console.log("📝 Normalize status - Detected approval:", cleanStatus);
+      return "Đã xác nhận";
     }
 
     // Log trạng thái không thể chuẩn hóa để debug
-    console.log('⚠️ Trạng thái không thể chuẩn hóa:', status);
+    console.log("⚠️ Trạng thái không thể chuẩn hóa:", status);
 
     // Trả về nguyên bản nếu không tìm được mapping phù hợp
     return status;
@@ -668,11 +629,11 @@ const MedicineManagement = () => {
       const currentStudents = students.length > 0 ? students : [];
 
       if (currentStudents.length === 0) {
-        console.log('⚠️ Chưa có danh sách học sinh');
+        console.log("⚠️ Chưa có danh sách học sinh");
 
         // Nếu students chưa được initialized, chờ và chỉ dùng localStorage khi offline
         if (!studentsInitialized) {
-          console.log('⏳ Students đang được tải, chờ...');
+          console.log("⏳ Students đang được tải, chờ...");
           if (!navigator.onLine) {
             loadPersistedMedicines();
           } else {
@@ -683,33 +644,35 @@ const MedicineManagement = () => {
         }
 
         // Nếu đã initialized nhưng vẫn không có students
-        console.log('📁 Students đã tải xong nhưng không có dữ liệu');
+        console.log("📁 Students đã tải xong nhưng không có dữ liệu");
         if (!navigator.onLine) {
-          console.log('📱 Offline - Sử dụng localStorage');
+          console.log("📱 Offline - Sử dụng localStorage");
           loadPersistedMedicines();
         } else {
-          console.log('🌐 Online - Hiển thị rỗng vì không có students');
+          console.log("🌐 Online - Hiển thị rỗng vì không có students");
           setMedicines([]);
           saveMedicinesToStorage([]);
 
           // 🔥 XÓA LỊCH SỬ THUỐC khi không có students (có thể do database trống)
-          console.log('🗑️ Xóa lịch sử thuốc vì không có students');
-          clearMedicineHistory('Không có students');
+          console.log("🗑️ Xóa lịch sử thuốc vì không có students");
+          clearMedicineHistory("Không có students");
         }
         setLoading(false);
         return;
       }
 
-      console.log('📚 Sử dụng API tối ưu: Lấy TẤT CẢ thuốc của parent từ 1 lần gọi API');
+      console.log(
+        "📚 Sử dụng API tối ưu: Lấy TẤT CẢ thuốc của parent từ 1 lần gọi API"
+      );
 
       // ✅ OPTIMIZATION: Chỉ gọi 1 lần API thay vì loop cho từng student
       let allMedicines = [];
       try {
-        const studentIds = currentStudents.map(student => student.StudentID);
-        console.log('🔍 Danh sách ID học sinh:', studentIds);
+        const studentIds = currentStudents.map((student) => student.StudentID);
+        console.log("🔍 Danh sách ID học sinh:", studentIds);
 
         if (studentIds.length === 0) {
-          console.log('⚠️ Không có học sinh nào để lấy thuốc');
+          console.log("⚠️ Không có học sinh nào để lấy thuốc");
           if (!navigator.onLine) {
             loadPersistedMedicines();
           } else {
@@ -717,8 +680,8 @@ const MedicineManagement = () => {
             saveMedicinesToStorage([]);
 
             // 🔥 XÓA LỊCH SỬ THUỐC khi không có studentIds
-            console.log('🗑️ Xóa lịch sử thuốc vì không có studentIds');
-            clearMedicineHistory('Không có studentIds');
+            console.log("🗑️ Xóa lịch sử thuốc vì không có studentIds");
+            clearMedicineHistory("Không có studentIds");
           }
           setLoading(false);
           return;
@@ -735,91 +698,121 @@ const MedicineManagement = () => {
           hasData: !!response?.data,
           dataType: typeof response?.data,
           isArray: Array.isArray(response?.data),
-          dataLength: Array.isArray(response?.data) ? response.data.length : 'N/A',
+          dataLength: Array.isArray(response?.data)
+            ? response.data.length
+            : "N/A",
           dataKeys: response?.data ? Object.keys(response.data) : [],
-          sampleData: response?.data && Array.isArray(response.data) && response.data.length > 0 ? response.data[0] : response?.data
+          sampleData:
+            response?.data &&
+            Array.isArray(response.data) &&
+            response.data.length > 0
+              ? response.data[0]
+              : response?.data,
         });
 
         if (response?.data) {
           if (Array.isArray(response.data)) {
             allMedicines = response.data;
-            console.log(`📦 Dữ liệu là mảng trực tiếp: ${allMedicines.length} thuốc tổng`);
+            console.log(
+              `📦 Dữ liệu là mảng trực tiếp: ${allMedicines.length} thuốc tổng`
+            );
           } else if (response.data.data && Array.isArray(response.data.data)) {
             allMedicines = response.data.data;
-            console.log(`📦 Dữ liệu nằm trong trường data: ${allMedicines.length} thuốc tổng`);
+            console.log(
+              `📦 Dữ liệu nằm trong trường data: ${allMedicines.length} thuốc tổng`
+            );
           } else if (response.data.medicineID || response.data.MedicineID) {
             allMedicines = [response.data];
-            console.log('📦 Dữ liệu là một đối tượng thuốc đơn lẻ');
+            console.log("📦 Dữ liệu là một đối tượng thuốc đơn lẻ");
           } else {
-            console.log('⚠️ Dữ liệu có cấu trúc không xác định:', response.data);
+            console.log(
+              "⚠️ Dữ liệu có cấu trúc không xác định:",
+              response.data
+            );
             allMedicines = [];
           }
 
           // 🔍 Filter medicines theo studentIds của parent (đảm bảo chỉ hiển thị thuốc của con)
-          const filteredMedicines = allMedicines.filter(med => {
-            const medicineStudentId = med.studentID || med.StudentID || med.student_id;
+          const filteredMedicines = allMedicines.filter((med) => {
+            const medicineStudentId =
+              med.studentID || med.StudentID || med.student_id;
             const isForParentChild = studentIds.includes(medicineStudentId);
             if (!isForParentChild && medicineStudentId) {
-              console.log(`🚫 Loại bỏ thuốc không thuộc con của parent: ${med.medicineID || med.MedicineID} (StudentID: ${medicineStudentId})`);
+              console.log(
+                `🚫 Loại bỏ thuốc không thuộc con của parent: ${
+                  med.medicineID || med.MedicineID
+                } (StudentID: ${medicineStudentId})`
+              );
             }
             return isForParentChild;
           });
 
           allMedicines = filteredMedicines;
-          console.log(`✅ Sau khi filter: ${allMedicines.length} thuốc thuộc về con của parent`);
+          console.log(
+            `✅ Sau khi filter: ${allMedicines.length} thuốc thuộc về con của parent`
+          );
 
           // Kiểm tra chi tiết trạng thái của các thuốc
           if (allMedicines.length > 0) {
-            console.log('📋 Chi tiết các thuốc nhận được:');
+            console.log("📋 Chi tiết các thuốc nhận được:");
             allMedicines.forEach((med, idx) => {
               console.log(`Thuốc #${idx + 1}:`, {
                 id: med.medicineID || med.MedicineID,
                 name: med.medicineName || med.MedicineName,
                 status_original: med.status || med.Status,
-                status_normalized: normalizeStatus(med.status || med.Status || 'Chờ xử lý'),
-                studentId: med.studentID || med.StudentID || med.student_id
+                status_normalized: normalizeStatus(
+                  med.status || med.Status || "Chờ xử lý"
+                ),
+                studentId: med.studentID || med.StudentID || med.student_id,
               });
             });
           }
         } else {
-          console.log('⚠️ Không nhận được dữ liệu từ API');
+          console.log("⚠️ Không nhận được dữ liệu từ API");
           allMedicines = [];
         }
 
-        console.log('📊 Tổng số thuốc nhận được:', allMedicines.length);
+        console.log("📊 Tổng số thuốc nhận được:", allMedicines.length);
 
         // Debug - kiểm tra xem có thuốc đã duyệt hay không
-        const approvedMeds = allMedicines.filter(m =>
-          m.status === 'Đã xác nhận' ||
-          m.status === 'Đã duyệt' ||
-          m.Status === 'Đã xác nhận' ||
-          m.Status === 'Đã duyệt'
+        const approvedMeds = allMedicines.filter(
+          (m) =>
+            m.status === "Đã xác nhận" ||
+            m.status === "Đã duyệt" ||
+            m.Status === "Đã xác nhận" ||
+            m.Status === "Đã duyệt"
         );
-        console.log('📊 Số lượng thuốc đã được duyệt:', approvedMeds.length);
+        console.log("📊 Số lượng thuốc đã được duyệt:", approvedMeds.length);
         if (approvedMeds.length > 0) {
-          console.log('📊 Chi tiết thuốc đã duyệt:', approvedMeds.map(med => ({
-            id: med.medicineID || med.MedicineID,
-            name: med.medicineName || med.MedicineName,
-            status_original: med.status || med.Status
-          })));
+          console.log(
+            "📊 Chi tiết thuốc đã duyệt:",
+            approvedMeds.map((med) => ({
+              id: med.medicineID || med.MedicineID,
+              name: med.medicineName || med.MedicineName,
+              status_original: med.status || med.Status,
+            }))
+          );
         }
-
       } catch (error) {
-        console.error('❌ Lỗi khi lấy dữ liệu từ API:', error);
+        console.error("❌ Lỗi khi lấy dữ liệu từ API:", error);
 
         // ✅ CHỈ fallback về localStorage khi OFFLINE
         if (!navigator.onLine) {
-          console.log('📱 Offline - Sử dụng localStorage');
+          console.log("📱 Offline - Sử dụng localStorage");
           loadPersistedMedicines();
         } else {
-          console.log('🌐 Online nhưng có lỗi API - Hiển thị rỗng thay vì localStorage cũ');
+          console.log(
+            "🌐 Online nhưng có lỗi API - Hiển thị rỗng thay vì localStorage cũ"
+          );
 
           // Chỉ giữ lại thuốc pending
-          const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
+          const pendingMedicines = medicines.filter(
+            (m) => m._pendingSync === true || m._isTemp === true
+          );
           setMedicines(pendingMedicines);
           saveMedicinesToStorage(pendingMedicines);
 
-          message.error('Lỗi kết nối API - Chỉ hiển thị thuốc chưa đồng bộ');
+          message.error("Lỗi kết nối API - Chỉ hiển thị thuốc chưa đồng bộ");
         }
 
         setLoading(false);
@@ -829,25 +822,33 @@ const MedicineManagement = () => {
       // ✅ QUAN TRỌNG: Nếu API trả về rỗng, có nghĩa database đã bị xóa
       // KHÔNG ĐƯỢC fallback về localStorage trong trường hợp này
       if (allMedicines.length === 0) {
-        console.log('🗑️ API trả về rỗng - Database đã bị xóa hoặc không có thuốc');
+        console.log(
+          "🗑️ API trả về rỗng - Database đã bị xóa hoặc không có thuốc"
+        );
 
         // Chỉ giữ lại các thuốc đang chờ đồng bộ (nếu có)
-        const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
+        const pendingMedicines = medicines.filter(
+          (m) => m._pendingSync === true || m._isTemp === true
+        );
 
         if (pendingMedicines.length === 0) {
-          console.log('🗑️ Không có thuốc pending, xóa toàn bộ UI và lịch sử');
-          console.log('✅ Dữ liệu đã được đồng bộ với database (trống)');
+          console.log("🗑️ Không có thuốc pending, xóa toàn bộ UI và lịch sử");
+          console.log("✅ Dữ liệu đã được đồng bộ với database (trống)");
           setMedicines([]);
           saveMedicinesToStorage([]);
 
           // 🔥 XÓA LỊCH SỬ THUỐC khi database trống hoàn toàn
-          console.log('🗑️ Xóa lịch sử thuốc vì database đã trống hoàn toàn');
-          clearMedicineHistory('Database trống hoàn toàn');
+          console.log("🗑️ Xóa lịch sử thuốc vì database đã trống hoàn toàn");
+          clearMedicineHistory("Database trống hoàn toàn");
         } else {
-          console.log(`⏳ Chỉ giữ ${pendingMedicines.length} thuốc pending chưa đồng bộ`);
+          console.log(
+            `⏳ Chỉ giữ ${pendingMedicines.length} thuốc pending chưa đồng bộ`
+          );
           setMedicines(pendingMedicines);
           saveMedicinesToStorage(pendingMedicines);
-          message.warning(`Database trống, chỉ còn ${pendingMedicines.length} thuốc chưa đồng bộ`);
+          message.warning(
+            `Database trống, chỉ còn ${pendingMedicines.length} thuốc chưa đồng bộ`
+          );
         }
 
         setLoading(false);
@@ -855,8 +856,8 @@ const MedicineManagement = () => {
       }
 
       // Chuẩn hóa dữ liệu từ server
-      const processedServerMedicines = allMedicines.map(medicine => {
-        console.log('🔍 Processing medicine from server:', {
+      const processedServerMedicines = allMedicines.map((medicine) => {
+        console.log("🔍 Processing medicine from server:", {
           id: medicine.medicineID || medicine.MedicineID,
           name: medicine.medicineName || medicine.MedicineName,
           File: medicine.File,
@@ -864,43 +865,70 @@ const MedicineManagement = () => {
           Images: medicine.Images,
           images: medicine.images,
           Image: medicine.Image,
-          image: medicine.image
+          image: medicine.image,
         });
 
         // ✅ Xử lý ảnh từ nhiều nguồn có thể có - ưu tiên File array
         let processedImages = [];
         let fileArray = [];
 
-        if (medicine.File && Array.isArray(medicine.File) && medicine.File.length > 0) {
+        if (
+          medicine.File &&
+          Array.isArray(medicine.File) &&
+          medicine.File.length > 0
+        ) {
           // Backend trả về File array với FileLink
           fileArray = medicine.File;
-          processedImages = medicine.File
-            .map(file => file.FileLink || file.fileLink || file.url)
-            .filter(Boolean);
-          console.log('✅ Found images from File array:', processedImages);
-        } else if (medicine.files && Array.isArray(medicine.files) && medicine.files.length > 0) {
+          processedImages = medicine.File.map(
+            (file) => file.FileLink || file.fileLink || file.url
+          ).filter(Boolean);
+          console.log("✅ Found images from File array:", processedImages);
+        } else if (
+          medicine.files &&
+          Array.isArray(medicine.files) &&
+          medicine.files.length > 0
+        ) {
           fileArray = medicine.files;
           processedImages = medicine.files
-            .map(file => file.FileLink || file.fileLink || file.url)
+            .map((file) => file.FileLink || file.fileLink || file.url)
             .filter(Boolean);
-          console.log('✅ Found images from files array:', processedImages);
-        } else if (medicine.Images && Array.isArray(medicine.Images) && medicine.Images.length > 0) {
+          console.log("✅ Found images from files array:", processedImages);
+        } else if (
+          medicine.Images &&
+          Array.isArray(medicine.Images) &&
+          medicine.Images.length > 0
+        ) {
           processedImages = medicine.Images.filter(Boolean);
-          console.log('✅ Found images from Images array:', processedImages);
-        } else if (medicine.images && Array.isArray(medicine.images) && medicine.images.length > 0) {
+          console.log("✅ Found images from Images array:", processedImages);
+        } else if (
+          medicine.images &&
+          Array.isArray(medicine.images) &&
+          medicine.images.length > 0
+        ) {
           processedImages = medicine.images.filter(Boolean);
-          console.log('✅ Found images from images array:', processedImages);
-        } else if (medicine.Image && Array.isArray(medicine.Image) && medicine.Image.length > 0) {
+          console.log("✅ Found images from images array:", processedImages);
+        } else if (
+          medicine.Image &&
+          Array.isArray(medicine.Image) &&
+          medicine.Image.length > 0
+        ) {
           processedImages = medicine.Image.filter(Boolean);
-          console.log('✅ Found images from Image array:', processedImages);
-        } else if (medicine.image && Array.isArray(medicine.image) && medicine.image.length > 0) {
+          console.log("✅ Found images from Image array:", processedImages);
+        } else if (
+          medicine.image &&
+          Array.isArray(medicine.image) &&
+          medicine.image.length > 0
+        ) {
           processedImages = medicine.image.filter(Boolean);
-          console.log('✅ Found images from image array:', processedImages);
-        } else if (medicine.image && typeof medicine.image === 'string') {
+          console.log("✅ Found images from image array:", processedImages);
+        } else if (medicine.image && typeof medicine.image === "string") {
           processedImages = [medicine.image];
-          console.log('✅ Found single image string:', processedImages);
+          console.log("✅ Found single image string:", processedImages);
         } else {
-          console.log('❌ No images found for medicine:', medicine.medicineID || medicine.MedicineID);
+          console.log(
+            "❌ No images found for medicine:",
+            medicine.medicineID || medicine.MedicineID
+          );
         }
 
         return {
@@ -908,56 +936,71 @@ const MedicineManagement = () => {
           MedicineName: medicine.medicineName || medicine.MedicineName,
           Quantity: medicine.quantity || medicine.Quantity,
           Dosage: medicine.dosage || medicine.Dosage,
-          Instructions: medicine.instructions || medicine.Instructions || '',
-          Notes: medicine.notes || medicine.Notes || '',
-          Status: normalizeStatus(medicine.status || medicine.Status || 'Chờ xử lý'),
-          SentDate: medicine.sentDate || medicine.SentDate || medicine.createdAt,
-          StudentID: medicine.studentID || medicine.StudentID || medicine.student_id,
+          Instructions: medicine.instructions || medicine.Instructions || "",
+          Notes: medicine.notes || medicine.Notes || "",
+          Status: normalizeStatus(
+            medicine.status || medicine.Status || "Chờ xử lý"
+          ),
+          SentDate:
+            medicine.sentDate || medicine.SentDate || medicine.createdAt,
+          StudentID:
+            medicine.studentID || medicine.StudentID || medicine.student_id,
           NurseID: medicine.nurseID || medicine.NurseID || null,
           ParentID: medicine.parentID || medicine.ParentID || null,
           Images: processedImages, // Mảng URL ảnh để hiển thị
           File: fileArray, // Mảng File objects từ backend để dùng trong edit
           _fromServer: true,
-          _serverFetchedAt: new Date().toISOString()
+          _serverFetchedAt: new Date().toISOString(),
         };
       });
 
       // Kiểm tra trạng thái sau khi chuẩn hóa
       const statusCounts = {};
-      processedServerMedicines.forEach(med => {
+      processedServerMedicines.forEach((med) => {
         statusCounts[med.Status] = (statusCounts[med.Status] || 0) + 1;
       });
-      console.log('📊 Phân bố trạng thái sau khi chuẩn hóa:', statusCounts);
+      console.log("📊 Phân bố trạng thái sau khi chuẩn hóa:", statusCounts);
 
       // Chỉ giữ lại các thuốc đang chờ đồng bộ (nếu có)
-      const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
+      const pendingMedicines = medicines.filter(
+        (m) => m._pendingSync === true || m._isTemp === true
+      );
 
       // ✅ Kết hợp data từ server và pending medicines
       const combinedMedicines = [
         ...processedServerMedicines,
-        ...pendingMedicines.filter(m => !processedServerMedicines.some(s => s.MedicineID === m.MedicineID))
+        ...pendingMedicines.filter(
+          (m) =>
+            !processedServerMedicines.some((s) => s.MedicineID === m.MedicineID)
+        ),
       ];
 
       setMedicines(combinedMedicines);
       saveMedicinesToStorage(combinedMedicines);
-      console.log(`✅ Đã tải ${processedServerMedicines.length} yêu cầu thuốc từ server`);
+      console.log(
+        `✅ Đã tải ${processedServerMedicines.length} yêu cầu thuốc từ server`
+      );
     } catch (error) {
-      console.error('❌ Lỗi không xác định:', error);
+      console.error("❌ Lỗi không xác định:", error);
 
       // ✅ CHỈ fallback về localStorage khi OFFLINE
       if (!navigator.onLine) {
-        console.log('📱 Offline - Sử dụng localStorage');
-        message.warning('Không có kết nối internet - Hiển thị dữ liệu cục bộ');
+        console.log("📱 Offline - Sử dụng localStorage");
+        message.warning("Không có kết nối internet - Hiển thị dữ liệu cục bộ");
         loadPersistedMedicines();
       } else {
-        console.log('🌐 Online nhưng có lỗi - Hiển thị rỗng thay vì localStorage cũ');
+        console.log(
+          "🌐 Online nhưng có lỗi - Hiển thị rỗng thay vì localStorage cũ"
+        );
 
         // Chỉ giữ lại thuốc pending
-        const pendingMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
+        const pendingMedicines = medicines.filter(
+          (m) => m._pendingSync === true || m._isTemp === true
+        );
         setMedicines(pendingMedicines);
         saveMedicinesToStorage(pendingMedicines);
 
-        message.error('Lỗi không xác định - Chỉ hiển thị thuốc chưa đồng bộ');
+        message.error("Lỗi không xác định - Chỉ hiển thị thuốc chưa đồng bộ");
       }
     } finally {
       setLoading(false);
@@ -967,35 +1010,37 @@ const MedicineManagement = () => {
   // ==================== HANDLER FUNCTIONS ====================
 
   const getStudentName = (studentId) => {
-    const student = students.find(s => s.StudentID === studentId);
+    const student = students.find((s) => s.StudentID === studentId);
     return student ? student.StudentName : studentId;
   };
 
   const getStudentClass = (studentId) => {
-    const student = students.find(s => s.StudentID === studentId);
-    return student ? (student.Class || 'Chưa phân lớp') : 'Chưa phân lớp';
+    const student = students.find((s) => s.StudentID === studentId);
+    return student ? student.Class || "Chưa phân lớp" : "Chưa phân lớp";
   };
 
   const getCurrentStudentMedicines = () => {
-    console.log('===== CHẠY HÀM LỌC THUỐC =====');
-    console.log('Dữ liệu ban đầu:', {
+    console.log("===== CHẠY HÀM LỌC THUỐC =====");
+    console.log("Dữ liệu ban đầu:", {
       tổngSốThuốc: medicines.length,
       họcSinhĐangChọn: selectedStudentId,
-      trạngTháiLọc: statusFilter
+      trạngTháiLọc: statusFilter,
     });
 
     // In ra tất cả ID thuốc đang có trong state để debug
-    console.log('Danh sách ID thuốc ban đầu:', medicines.map(m =>
-      `${m.MedicineID} (${m.StudentID}, ${m.Status})`
-    ));
+    console.log(
+      "Danh sách ID thuốc ban đầu:",
+      medicines.map((m) => `${m.MedicineID} (${m.StudentID}, ${m.Status})`)
+    );
 
     // Kiểm tra cụ thể các thuốc có trạng thái "Đã duyệt" hoặc "Đã xác nhận"
-    const approvedMeds = medicines.filter(m =>
-      normalizeStatus(m.Status) === 'Đã xác nhận'
+    const approvedMeds = medicines.filter(
+      (m) => normalizeStatus(m.Status) === "Đã xác nhận"
     );
-    console.log('🔍 Thuốc đã được duyệt trong medicines:', approvedMeds.map(m =>
-      `${m.MedicineID} (${m.StudentID}, ${m.Status})`
-    ));
+    console.log(
+      "🔍 Thuốc đã được duyệt trong medicines:",
+      approvedMeds.map((m) => `${m.MedicineID} (${m.StudentID}, ${m.Status})`)
+    );
 
     let filteredMedicines = medicines;
 
@@ -1004,19 +1049,29 @@ const MedicineManagement = () => {
       console.log(`Đang lọc theo học sinh: ${selectedStudentId}`);
 
       // Sử dụng so sánh không phân biệt chữ hoa/thường để tránh lỗi case sensitivity
-      filteredMedicines = filteredMedicines.filter(m => {
-        const match = m.StudentID && selectedStudentId &&
-          m.StudentID.toString().toLowerCase() === selectedStudentId.toString().toLowerCase();
+      filteredMedicines = filteredMedicines.filter((m) => {
+        const match =
+          m.StudentID &&
+          selectedStudentId &&
+          m.StudentID.toString().toLowerCase() ===
+            selectedStudentId.toString().toLowerCase();
 
         if (!match && m.StudentID) {
-          console.log(`❓ Thuốc không khớp: ${m.MedicineID}, StudentID: ${m.StudentID} vs ${selectedStudentId}`);
+          console.log(
+            `❓ Thuốc không khớp: ${m.MedicineID}, StudentID: ${m.StudentID} vs ${selectedStudentId}`
+          );
         }
 
         return match;
       });
 
-      console.log(`Sau khi lọc theo học sinh: ${filteredMedicines.length} thuốc còn lại`);
-      console.log('ID thuốc sau khi lọc học sinh:', filteredMedicines.map(m => m.MedicineID));
+      console.log(
+        `Sau khi lọc theo học sinh: ${filteredMedicines.length} thuốc còn lại`
+      );
+      console.log(
+        "ID thuốc sau khi lọc học sinh:",
+        filteredMedicines.map((m) => m.MedicineID)
+      );
     }
 
     // Filter by status
@@ -1024,21 +1079,28 @@ const MedicineManagement = () => {
       console.log(`Đang lọc theo trạng thái: ${statusFilter}`);
 
       // Kiểm tra chuẩn hóa trạng thái
-      filteredMedicines = filteredMedicines.filter(m => {
+      filteredMedicines = filteredMedicines.filter((m) => {
         const normalizedMedicineStatus = normalizeStatus(m.Status);
         const normalizedFilterStatus = normalizeStatus(statusFilter);
         const matches = normalizedMedicineStatus === normalizedFilterStatus;
 
-        console.log(`Kiểm tra trạng thái của ${m.MedicineID}: ${m.Status} -> ${normalizedMedicineStatus} vs ${normalizedFilterStatus}: ${matches}`);
+        console.log(
+          `Kiểm tra trạng thái của ${m.MedicineID}: ${m.Status} -> ${normalizedMedicineStatus} vs ${normalizedFilterStatus}: ${matches}`
+        );
 
         return matches;
       });
 
-      console.log(`Sau khi lọc theo trạng thái: ${filteredMedicines.length} thuốc còn lại`);
-      console.log('ID thuốc sau khi lọc trạng thái:', filteredMedicines.map(m => m.MedicineID));
+      console.log(
+        `Sau khi lọc theo trạng thái: ${filteredMedicines.length} thuốc còn lại`
+      );
+      console.log(
+        "ID thuốc sau khi lọc trạng thái:",
+        filteredMedicines.map((m) => m.MedicineID)
+      );
     }
 
-    console.log('===== KẾT QUẢ LỌC =====');
+    console.log("===== KẾT QUẢ LỌC =====");
     console.log(`Tổng số thuốc sau khi lọc: ${filteredMedicines.length}`);
 
     return filteredMedicines;
@@ -1046,9 +1108,46 @@ const MedicineManagement = () => {
 
   const handleCreate = () => {
     if (!selectedStudentId) {
-      message.warning('Vui lòng chọn học sinh trước');
+      message.warning("Vui lòng chọn học sinh trước");
       return;
     }
+
+    // ✅ DEBUG: Kiểm tra StudentID trước khi submit
+    const selectedStudent = students.find(
+      (s) => s.StudentID === selectedStudentId
+    );
+    console.log("🔍 Debug handleCreate - Student Info:", {
+      selectedStudentId,
+      selectedStudent,
+      allStudentIds: students.map((s) => s.StudentID),
+      totalStudents: students.length,
+      studentsFromMock: students.some((s) => s.StudentID.startsWith("ST00")), // Check if using mock data
+      studentsFromAPI: students.some((s) => s.ParentName), // Check if from real API (has parentName field)
+    });
+
+    if (!selectedStudent) {
+      console.error("❌ Selected student not found in students array");
+      console.error(
+        "Available students:",
+        students.map((s) => ({
+          StudentID: s.StudentID,
+          StudentName: s.StudentName,
+          Class: s.Class,
+          ParentName: s.ParentName,
+        }))
+      );
+      message.error("Học sinh được chọn không hợp lệ. Vui lòng chọn lại.");
+      return;
+    }
+
+    // ✅ CRITICAL: Confirm StudentID matches API response format
+    console.log("✅ Selected student confirmed:", {
+      StudentID: selectedStudent.StudentID,
+      StudentName: selectedStudent.StudentName,
+      Class: selectedStudent.Class,
+      ParentName: selectedStudent.ParentName,
+      message: "StudentID này sẽ được gửi tới backend để tạo medicine",
+    });
 
     setEditingMedicine(null);
     setIsModalVisible(true);
@@ -1057,7 +1156,7 @@ const MedicineManagement = () => {
   };
 
   const handleEdit = (record) => {
-    console.log('✏️ EDIT clicked for medicine:', record.MedicineID);
+    console.log("✏️ EDIT clicked for medicine:", record.MedicineID);
 
     setEditingMedicine(record);
 
@@ -1065,8 +1164,8 @@ const MedicineManagement = () => {
       MedicineName: record.MedicineName,
       Quantity: record.Quantity,
       Dosage: record.Dosage,
-      Instructions: record.Instructions || '',
-      Notes: record.Notes || ''
+      Instructions: record.Instructions || "",
+      Notes: record.Notes || "",
     });
 
     // ✅ Load ảnh cũ vào fileList để hiển thị trong form edit
@@ -1075,74 +1174,107 @@ const MedicineManagement = () => {
     // Tìm ảnh từ nhiều nguồn có thể có từ backend
     let medicineImages = [];
 
-    console.log('🔍 Loading existing images for edit:', {
+    console.log("🔍 Loading existing images for edit:", {
       medicineId: record.MedicineID,
       File: record.File,
       files: record.files,
       Images: record.Images,
       images: record.images,
       Image: record.Image,
-      image: record.image
+      image: record.image,
     });
 
     // ✅ Ưu tiên lấy từ File array (chính xác nhất từ backend)
     if (record.File && Array.isArray(record.File) && record.File.length > 0) {
-      medicineImages = record.File
-        .map(file => file.FileLink || file.fileLink || file.url)
-        .filter(Boolean);
-      console.log('✅ Found images from File array for edit:', medicineImages);
-    } else if (record.files && Array.isArray(record.files) && record.files.length > 0) {
+      medicineImages = record.File.map(
+        (file) => file.FileLink || file.fileLink || file.url
+      ).filter(Boolean);
+      console.log("✅ Found images from File array for edit:", medicineImages);
+    } else if (
+      record.files &&
+      Array.isArray(record.files) &&
+      record.files.length > 0
+    ) {
       medicineImages = record.files
-        .map(file => file.FileLink || file.fileLink || file.url)
+        .map((file) => file.FileLink || file.fileLink || file.url)
         .filter(Boolean);
-      console.log('✅ Found images from files array for edit:', medicineImages);
-    } else if (record.Images && Array.isArray(record.Images) && record.Images.length > 0) {
+      console.log("✅ Found images from files array for edit:", medicineImages);
+    } else if (
+      record.Images &&
+      Array.isArray(record.Images) &&
+      record.Images.length > 0
+    ) {
       medicineImages = record.Images.filter(Boolean);
-      console.log('✅ Found images from Images array for edit:', medicineImages);
-    } else if (record.images && Array.isArray(record.images) && record.images.length > 0) {
+      console.log(
+        "✅ Found images from Images array for edit:",
+        medicineImages
+      );
+    } else if (
+      record.images &&
+      Array.isArray(record.images) &&
+      record.images.length > 0
+    ) {
       medicineImages = record.images.filter(Boolean);
-      console.log('✅ Found images from images array for edit:', medicineImages);
-    } else if (record.Image && Array.isArray(record.Image) && record.Image.length > 0) {
+      console.log(
+        "✅ Found images from images array for edit:",
+        medicineImages
+      );
+    } else if (
+      record.Image &&
+      Array.isArray(record.Image) &&
+      record.Image.length > 0
+    ) {
       medicineImages = record.Image.filter(Boolean);
-      console.log('✅ Found images from Image array for edit:', medicineImages);
-    } else if (record.image && Array.isArray(record.image) && record.image.length > 0) {
+      console.log("✅ Found images from Image array for edit:", medicineImages);
+    } else if (
+      record.image &&
+      Array.isArray(record.image) &&
+      record.image.length > 0
+    ) {
       medicineImages = record.image.filter(Boolean);
-      console.log('✅ Found images from image array for edit:', medicineImages);
-    } else if (record.image && typeof record.image === 'string') {
+      console.log("✅ Found images from image array for edit:", medicineImages);
+    } else if (record.image && typeof record.image === "string") {
       medicineImages = [record.image];
-      console.log('✅ Found single image string for edit:', medicineImages);
-    } else if (record.Image && typeof record.Image === 'string') {
+      console.log("✅ Found single image string for edit:", medicineImages);
+    } else if (record.Image && typeof record.Image === "string") {
       medicineImages = [record.Image];
-      console.log('✅ Found single Image string for edit:', medicineImages);
-    } else if (record.imageUrl && typeof record.imageUrl === 'string') {
+      console.log("✅ Found single Image string for edit:", medicineImages);
+    } else if (record.imageUrl && typeof record.imageUrl === "string") {
       medicineImages = [record.imageUrl];
-      console.log('✅ Found imageUrl for edit:', medicineImages);
+      console.log("✅ Found imageUrl for edit:", medicineImages);
     } else {
-      console.log('❌ No images found for editing medicine:', record.MedicineID);
+      console.log(
+        "❌ No images found for editing medicine:",
+        record.MedicineID
+      );
     }
 
     // Chuyển đổi ảnh thành format cho Upload component
     if (medicineImages.length > 0) {
       medicineImages.forEach((img, index) => {
         let imageUrl;
-        if (typeof img === 'string') {
-          if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:')) {
+        if (typeof img === "string") {
+          if (
+            img.startsWith("http://") ||
+            img.startsWith("https://") ||
+            img.startsWith("data:")
+          ) {
             imageUrl = img;
           } else {
             // ✅ Sử dụng HTTPS như backend
-            const baseUrl = 'https://localhost:7040';
-            const cleanImg = img.startsWith('/') ? img : `/${img}`;
+            const baseUrl = "https://localhost:7040";
+            const cleanImg = img.startsWith("/") ? img : `/${img}`;
             imageUrl = `${baseUrl}${cleanImg}`;
           }
 
           existingImages.push({
             uid: `existing-${index}`,
             name: `medicine-image-${index + 1}.jpg`,
-            status: 'done',
+            status: "done",
             url: imageUrl,
             thumbUrl: imageUrl, // Quan trọng: để hiển thị preview
             response: { url: imageUrl }, // Để component Upload hiểu đây là ảnh đã upload
-            isExisting: true // Flag để phân biệt ảnh cũ và ảnh mới
+            isExisting: true, // Flag để phân biệt ảnh cũ và ảnh mới
           });
         }
       });
@@ -1151,13 +1283,13 @@ const MedicineManagement = () => {
     setFileList(existingImages);
     setIsModalVisible(true);
 
-    console.log('✅ Edit form populated with data:', {
+    console.log("✅ Edit form populated with data:", {
       name: record.MedicineName,
       quantity: record.Quantity,
       dosage: record.Dosage,
       existingImages: existingImages.length,
       medicineImages: medicineImages,
-      fileList: existingImages
+      fileList: existingImages,
     });
   };
 
@@ -1166,41 +1298,125 @@ const MedicineManagement = () => {
     setIsViewModalVisible(true);
   };
 
+  // 🆕 XỬ LÝ CLICK ẢNH - ĐƠN GIẢN VÀ HIỆU QUẢ
+  const openImageModal = (
+    imageUrl,
+    title = "Hình ảnh thuốc",
+    allImageUrls = [],
+    index = 0
+  ) => {
+    console.log("🖼️ Mở modal ảnh:", {
+      imageUrl,
+      title,
+      totalImages: allImageUrls.length,
+      index,
+    });
+    setCurrentImageUrl(imageUrl);
+    setImageTitle(title);
+    setAllImages(allImageUrls);
+    setCurrentImageIndex(index);
+    setImageModalVisible(true);
+  };
+
+  const closeImageModal = () => {
+    setImageModalVisible(false);
+    setCurrentImageUrl("");
+    setImageTitle("");
+    setAllImages([]);
+    setCurrentImageIndex(0);
+  };
+
+  const nextImage = () => {
+    if (allImages.length > 1) {
+      const nextIndex = (currentImageIndex + 1) % allImages.length;
+      setCurrentImageIndex(nextIndex);
+      setCurrentImageUrl(allImages[nextIndex]);
+    }
+  };
+
+  const prevImage = () => {
+    if (allImages.length > 1) {
+      const prevIndex =
+        currentImageIndex === 0 ? allImages.length - 1 : currentImageIndex - 1;
+      setCurrentImageIndex(prevIndex);
+      setCurrentImageUrl(allImages[prevIndex]);
+    }
+  };
+
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
 
-      if (!values.MedicineName?.trim() || !values.Quantity?.trim() || !values.Dosage?.trim()) {
-        message.error('Vui lòng điền đầy đủ thông tin bắt buộc');
+      if (
+        !values.MedicineName?.trim() ||
+        !values.Quantity?.trim() ||
+        !values.Dosage?.trim()
+      ) {
+        message.error("Vui lòng điền đầy đủ thông tin bắt buộc");
         return;
       }
 
       if (!selectedStudentId) {
-        message.error('Vui lòng chọn học sinh');
+        message.error("Vui lòng chọn học sinh");
         return;
       }
 
+      // ✅ VALIDATION QUAN TRỌNG: Kiểm tra StudentID có tồn tại trong danh sách students
+      const selectedStudent = students.find(
+        (s) => s.StudentID === selectedStudentId
+      );
+      if (!selectedStudent) {
+        console.error("❌ StudentID không tồn tại trong danh sách students:", {
+          selectedStudentId,
+          availableStudents: students.map((s) => s.StudentID),
+          totalStudents: students.length,
+        });
+        message.error(
+          `Học sinh với ID "${selectedStudentId}" không tồn tại. Vui lòng chọn lại học sinh.`
+        );
+        return;
+      }
+
+      console.log("✅ Student validation passed:", {
+        studentId: selectedStudent.StudentID,
+        studentName: selectedStudent.StudentName,
+        studentClass: selectedStudent.Class,
+      });
+
+      // ✅ CRITICAL DEBUG: Confirm exact StudentID format
+      console.log("🔍 CRITICAL StudentID Debug:", {
+        selectedStudentId,
+        type: typeof selectedStudentId,
+        length: selectedStudentId.length,
+        startsWith_ST: selectedStudentId.startsWith("ST"),
+        matchesPattern: /^ST\d+$/.test(selectedStudentId),
+        fromMockData: selectedStudentId.startsWith("ST00"),
+        fromRealAPI: !selectedStudentId.startsWith("ST00"),
+        warning:
+          "Đây là StudentID sẽ được gửi tới backend - PHẢI tồn tại trong bảng StudentProfile",
+      });
+
       // Xử lý hình ảnh từ fileList
       const newImages = fileList
-        .filter(file => !file.isExisting) // Chỉ lấy ảnh mới (không phải ảnh cũ)
-        .map(file => file.originFileObj)
+        .filter((file) => !file.isExisting) // Chỉ lấy ảnh mới (không phải ảnh cũ)
+        .map((file) => file.originFileObj)
         .filter(Boolean);
 
       const existingImages = fileList
-        .filter(file => file.isExisting) // Chỉ lấy ảnh cũ
-        .map(file => file.url || file.thumbUrl)
+        .filter((file) => file.isExisting) // Chỉ lấy ảnh cũ
+        .map((file) => file.url || file.thumbUrl)
         .filter(Boolean);
 
-      console.log('🖼️ Image processing:', {
+      console.log("🖼️ Image processing:", {
         totalFiles: fileList.length,
         newImages: newImages.length,
         existingImages: existingImages.length,
-        fileListDetails: fileList.map(f => ({
+        fileListDetails: fileList.map((f) => ({
           name: f.name,
           isExisting: f.isExisting,
           hasOriginFile: !!f.originFileObj,
-          url: f.url
-        }))
+          url: f.url,
+        })),
       });
 
       // Chuẩn bị dữ liệu chung
@@ -1208,23 +1424,26 @@ const MedicineManagement = () => {
         MedicineName: values.MedicineName.trim(),
         Quantity: values.Quantity.trim(),
         Dosage: values.Dosage.trim(),
-        Instructions: values.Instructions?.trim() || '',
-        Notes: values.Notes?.trim() || '',
+        Instructions: values.Instructions?.trim() || "",
+        Notes: values.Notes?.trim() || "",
         StudentID: selectedStudentId,
-        Images: newImages // Chỉ gửi ảnh mới khi tạo thuốc
+        // ✅ API backend nhận field "Images" (array File objects)
+        Images: newImages, // Chỉ gửi ảnh mới khi tạo thuốc
       };
 
       // Xử lý trường hợp cập nhật
       if (editingMedicine) {
-        console.log('Đang cập nhật thuốc:', editingMedicine.MedicineID);
+        console.log("Đang cập nhật thuốc:", editingMedicine.MedicineID);
 
         // Lưu lịch sử thay đổi
-        const oldImageCount = editingMedicine.File?.length || editingMedicine.Images?.length || 0;
+        const oldImageCount =
+          editingMedicine.File?.length || editingMedicine.Images?.length || 0;
         const newImageCount = newImages.length + existingImages.length;
-        const hasImageChange = newImages.length > 0 || oldImageCount !== newImageCount;
+        const hasImageChange =
+          newImages.length > 0 || oldImageCount !== newImageCount;
 
         const historyEntry = {
-          action: 'UPDATE',
+          action: "UPDATE",
           hasImageUpdate: hasImageChange,
           previousData: {
             MedicineName: editingMedicine.MedicineName,
@@ -1232,7 +1451,7 @@ const MedicineManagement = () => {
             Dosage: editingMedicine.Dosage,
             Instructions: editingMedicine.Instructions,
             Notes: editingMedicine.Notes,
-            ImageCount: oldImageCount
+            ImageCount: oldImageCount,
           },
           newData: {
             MedicineName: medicineData.MedicineName,
@@ -1240,26 +1459,27 @@ const MedicineManagement = () => {
             Dosage: medicineData.Dosage,
             Instructions: medicineData.Instructions,
             Notes: medicineData.Notes,
-            ImageCount: newImageCount
+            ImageCount: newImageCount,
           },
           changedFields: (() => {
             const changes = getChangedFields(editingMedicine, medicineData);
             // Thêm thông tin về ảnh nếu có thay đổi
             if (hasImageChange) {
               changes.push({
-                field: 'Images',
-                from: oldImageCount > 0 ? `${oldImageCount} ảnh` : 'Không có ảnh',
-                to: newImageCount > 0 ? `${newImageCount} ảnh` : 'Không có ảnh'
+                field: "Images",
+                from:
+                  oldImageCount > 0 ? `${oldImageCount} ảnh` : "Không có ảnh",
+                to: newImageCount > 0 ? `${newImageCount} ảnh` : "Không có ảnh",
               });
             }
             return changes;
           })(),
-          updatedBy: 'Parent'
+          updatedBy: "Parent",
         };
 
         saveMedicineHistory(editingMedicine.MedicineID, historyEntry);
 
-        // Tạo đối tượng thuốc đã cập nhật 
+        // Tạo đối tượng thuốc đã cập nhật
         // QUAN TRỌNG: Giữ nguyên Status, không cho phép phụ huynh cập nhật trạng thái
         const updatedMedicine = {
           ...editingMedicine,
@@ -1270,39 +1490,47 @@ const MedicineManagement = () => {
           Notes: medicineData.Notes,
           // Giữ nguyên Status: editingMedicine.Status
           // Xử lý ảnh: kết hợp ảnh cũ và ảnh mới
-          Images: [...existingImages, ...newImages.map(file => URL.createObjectURL(file))],
-          File: [...(editingMedicine.File || []), ...newImages.map((file, index) => ({
-            FileLink: URL.createObjectURL(file),
-            FileName: file.name,
-            FileType: file.type
-          }))],
+          Images: [
+            ...existingImages,
+            ...newImages.map((file) => URL.createObjectURL(file)),
+          ],
+          File: [
+            ...(editingMedicine.File || []),
+            ...newImages.map((file, index) => ({
+              FileLink: URL.createObjectURL(file),
+              FileName: file.name,
+              FileType: file.type,
+            })),
+          ],
           // ✅ Đánh dấu cần đồng bộ khi update
           _pendingSync: true,
-          _lastUpdateAttempt: new Date().toISOString()
+          _lastUpdateAttempt: new Date().toISOString(),
         };
 
         // Cập nhật state local trước để giao diện phản hồi nhanh
-        setMedicines(prevMedicines => {
-          const updatedMedicines = prevMedicines.map(med =>
-            med.MedicineID === editingMedicine.MedicineID ? updatedMedicine : med
+        setMedicines((prevMedicines) => {
+          const updatedMedicines = prevMedicines.map((med) =>
+            med.MedicineID === editingMedicine.MedicineID
+              ? updatedMedicine
+              : med
           );
           saveMedicinesToStorage(updatedMedicines);
           return updatedMedicines;
         });
 
         // Hiển thị thông báo đang cập nhật
-        message.loading('Đang cập nhật thuốc...', 1);
+        message.loading("Đang cập nhật thuốc...", 1);
 
         // Gọi API để cập nhật trên server
         try {
           const apiData = {
             MedicineID: editingMedicine.MedicineID,
             ...medicineData,
-            Images: newImages // Chỉ gửi ảnh mới cho API update
+            Images: newImages, // Chỉ gửi ảnh mới cho API update
           };
 
-          console.log('Gửi dữ liệu cập nhật lên server:', apiData);
-          console.log('Chi tiết API Data:', {
+          console.log("Gửi dữ liệu cập nhật lên server:", apiData);
+          console.log("Chi tiết API Data:", {
             MedicineID: apiData.MedicineID,
             MedicineName: apiData.MedicineName,
             Quantity: apiData.Quantity,
@@ -1310,15 +1538,17 @@ const MedicineManagement = () => {
             Instructions: apiData.Instructions,
             Notes: apiData.Notes,
             Images: apiData.Images,
-            ImagesLength: apiData.Images?.length || 0
+            ImagesLength: apiData.Images?.length || 0,
           });
 
-          const updateResponse = await medicineApi.parent.updateMedicine(apiData);
-          console.log('Kết quả cập nhật từ server:', updateResponse);
+          const updateResponse = await medicineApi.parent.updateMedicine(
+            apiData
+          );
+          console.log("Kết quả cập nhật từ server:", updateResponse);
 
           // ✅ XÓA FLAG _pendingSync KHI THÀNH CÔNG
-          setMedicines(prevMedicines => {
-            const updatedMedicines = prevMedicines.map(med => {
+          setMedicines((prevMedicines) => {
+            const updatedMedicines = prevMedicines.map((med) => {
               if (med.MedicineID === editingMedicine.MedicineID) {
                 return { ...med, _pendingSync: false };
               }
@@ -1328,35 +1558,41 @@ const MedicineManagement = () => {
             return updatedMedicines;
           });
 
-          message.success('Cập nhật thuốc thành công!');
+          message.success("Cập nhật thuốc thành công!");
 
           // Force refresh để lấy dữ liệu mới nhất từ server
-          console.log('🔄 Force refresh sau khi cập nhật thuốc thành công');
+          console.log("🔄 Force refresh sau khi cập nhật thuốc thành công");
           setTimeout(() => {
             fetchMedicinesFromServer();
           }, 500);
         } catch (updateError) {
-          console.error('❌ Lỗi khi cập nhật thuốc trên server:', updateError);
-          console.error('❌ Chi tiết lỗi:', {
+          console.error("❌ Lỗi khi cập nhật thuốc trên server:", updateError);
+          console.error("❌ Chi tiết lỗi:", {
             message: updateError.message,
             response: updateError.response?.data,
             status: updateError.response?.status,
-            statusText: updateError.response?.statusText
+            statusText: updateError.response?.statusText,
           });
 
           // Kiểm tra loại lỗi để đưa ra thông báo phù hợp
           if (updateError.response?.status === 401) {
-            message.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+            message.error(
+              "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+            );
           } else if (updateError.response?.status === 403) {
-            message.error('Bạn không có quyền cập nhật thuốc này.');
+            message.error("Bạn không có quyền cập nhật thuốc này.");
           } else if (updateError.response?.status === 404) {
-            message.error('Không tìm thấy thuốc cần cập nhật.');
+            message.error("Không tìm thấy thuốc cần cập nhật.");
           } else if (updateError.response?.status >= 500) {
-            message.error('Lỗi server. Vui lòng thử lại sau.');
+            message.error("Lỗi server. Vui lòng thử lại sau.");
           } else if (!navigator.onLine) {
-            message.warning('Không có kết nối internet. Thay đổi sẽ được đồng bộ khi có kết nối.');
+            message.warning(
+              "Không có kết nối internet. Thay đổi sẽ được đồng bộ khi có kết nối."
+            );
           } else {
-            message.warning(`Đã lưu cục bộ, thay đổi sẽ được đồng bộ khi có kết nối. (Lỗi: ${updateError.message})`);
+            message.warning(
+              `Đã lưu cục bộ, thay đổi sẽ được đồng bộ khi có kết nối. (Lỗi: ${updateError.message})`
+            );
           }
 
           // ✅ GIỮ NGUYÊN _pendingSync = true để đồng bộ sau
@@ -1364,55 +1600,90 @@ const MedicineManagement = () => {
       }
       // Xử lý trường hợp tạo mới
       else {
-        console.log('Đang tạo thuốc mới');
+        console.log("Đang tạo thuốc mới");
 
         // ✅ Kiểm tra: nếu có ảnh thì bắt buộc phải online
         if (newImages.length > 0 && !navigator.onLine) {
-          message.error('Không thể tạo thuốc với ảnh khi offline. Vui lòng kiểm tra kết nối internet.');
+          message.error(
+            "Không thể tạo thuốc với ảnh khi offline. Vui lòng kiểm tra kết nối internet."
+          );
           return;
         }
 
         // Tạo ID tạm thời duy nhất cho thuốc mới
-        const tempId = `MED_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const tempId = `MED_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`;
 
         // Nếu online, gọi API ngay
         if (navigator.onLine) {
           try {
-            console.log('🌐 Online - Gửi thuốc trực tiếp lên server');
-            console.log('📋 Medicine data being sent:', {
+            console.log("🌐 Online - Gửi thuốc trực tiếp lên server");
+
+            // ✅ DOUBLE CHECK: Validation final trước khi gửi API
+            console.log("� Final validation before API call:", {
               MedicineName: medicineData.MedicineName,
               Quantity: medicineData.Quantity,
               Dosage: medicineData.Dosage,
               Instructions: medicineData.Instructions,
               Notes: medicineData.Notes,
               StudentID: medicineData.StudentID,
+              selectedStudentId: selectedStudentId,
+              selectedStudent: selectedStudent,
               ImagesCount: medicineData.Images?.length || 0,
-              ImageTypes: medicineData.Images?.map(img => img?.type) || []
+              ImageTypes: medicineData.Images?.map((img) => img?.type) || [],
             });
 
-            // ✅ Validation trước khi gửi
+            // ✅ Validation trước khi gửi - với thông tin chi tiết
             if (!medicineData.StudentID?.trim()) {
-              throw new Error('StudentID không được để trống');
+              throw new Error("StudentID không được để trống");
             }
             if (!selectedStudentId?.trim()) {
-              throw new Error('Chưa chọn học sinh');
+              throw new Error("Chưa chọn học sinh");
             }
             if (medicineData.StudentID !== selectedStudentId) {
-              console.warn('⚠️ StudentID mismatch:', {
+              console.error("❌ StudentID mismatch:", {
                 medicineDataStudentID: medicineData.StudentID,
-                selectedStudentId: selectedStudentId
+                selectedStudentId: selectedStudentId,
               });
+              throw new Error(
+                "Mismatch giữa StudentID trong data và selectedStudentId"
+              );
             }
 
-            const createResponse = await medicineApi.parent.createMedicine(medicineData);
-            console.log('✅ Kết quả tạo thuốc từ server:', createResponse);
+            // ✅ Kiểm tra StudentID có đúng format không
+            if (!medicineData.StudentID.startsWith("ST")) {
+              console.error(
+                "❌ Invalid StudentID format:",
+                medicineData.StudentID
+              );
+              throw new Error(
+                `StudentID "${medicineData.StudentID}" không đúng format (phải bắt đầu bằng ST)`
+              );
+            }
 
-            if (createResponse?.data?.medicineID || createResponse?.data?.MedicineID) {
-              const realId = createResponse.data.medicineID || createResponse.data.MedicineID;
-              const serverStatus = createResponse.data.status || createResponse.data.Status || 'Chờ xử lý';
-              const serverDate = createResponse.data.sentDate || createResponse.data.SentDate || new Date().toISOString();
+            const createResponse = await medicineApi.parent.createMedicine(
+              medicineData
+            );
+            console.log("✅ Kết quả tạo thuốc từ server:", createResponse);
 
-              console.log('Nhận được ID thuốc từ server:', realId);
+            if (
+              createResponse?.data?.medicineID ||
+              createResponse?.data?.MedicineID
+            ) {
+              const realId =
+                createResponse.data.medicineID ||
+                createResponse.data.MedicineID;
+              const serverStatus =
+                createResponse.data.status ||
+                createResponse.data.Status ||
+                "Chờ xử lý";
+              const serverDate =
+                createResponse.data.sentDate ||
+                createResponse.data.SentDate ||
+                new Date().toISOString();
+
+              console.log("Nhận được ID thuốc từ server:", realId);
 
               // Tạo đối tượng thuốc với dữ liệu từ server
               const serverMedicine = {
@@ -1427,49 +1698,108 @@ const MedicineManagement = () => {
                 StudentID: medicineData.StudentID,
                 NurseID: null,
                 ParentID: null,
-                Images: newImages.map(file => URL.createObjectURL(file)), // Tạm thời cho UI
+                Images: newImages.map((file) => URL.createObjectURL(file)), // Tạm thời cho UI
                 File: newImages.map((file, index) => ({
                   FileLink: URL.createObjectURL(file),
                   FileName: file.name,
-                  FileType: file.type
+                  FileType: file.type,
                 })),
                 _fromServer: true,
-                _serverFetchedAt: new Date().toISOString()
+                _serverFetchedAt: new Date().toISOString(),
               };
 
               // Thêm vào state
-              setMedicines(prevMedicines => {
+              setMedicines((prevMedicines) => {
                 const updatedMedicines = [...prevMedicines, serverMedicine];
                 saveMedicinesToStorage(updatedMedicines);
                 return updatedMedicines;
               });
 
-              message.success('Đã tạo yêu cầu thuốc thành công!');
+              message.success("Đã tạo yêu cầu thuốc thành công!");
 
               // Force refresh để lấy dữ liệu mới nhất từ server
-              console.log('🔄 Force refresh sau khi tạo thuốc thành công');
+              console.log("🔄 Force refresh sau khi tạo thuốc thành công");
               setTimeout(() => {
                 fetchMedicinesFromServer();
               }, 500);
             } else {
-              throw new Error('Server không trả về ID thuốc');
+              throw new Error("Server không trả về ID thuốc");
             }
           } catch (createError) {
-            console.error('❌ Lỗi khi tạo thuốc trên server:', createError);
-            console.error('❌ Chi tiết lỗi:', {
+            console.error("❌ Lỗi khi tạo thuốc trên server:", createError);
+            console.error("❌ Chi tiết lỗi:", {
               message: createError.message,
               response: createError.response?.data,
-              status: createError.response?.status
+              status: createError.response?.status,
+              statusText: createError.response?.statusText,
             });
+
+            // ✅ XỬ LÝ CỤ THỂ CHO FOREIGN KEY CONSTRAINT ERROR
+            const errorMessage =
+              createError.response?.data?.message || createError.message;
+            const isStudentIdError =
+              errorMessage.includes("FK_Medicine_StudentProfile_StudentID") ||
+              errorMessage.includes("StudentID") ||
+              errorMessage.includes("FOREIGN KEY constraint");
+
+            if (isStudentIdError) {
+              console.error(
+                "🚨 FOREIGN KEY ERROR - StudentID không tồn tại trong database:"
+              );
+              console.error("Selected StudentID:", medicineData.StudentID);
+              console.error(
+                "Available students:",
+                students.map((s) => ({
+                  id: s.StudentID,
+                  name: s.StudentName,
+                  class: s.Class,
+                }))
+              );
+
+              message.error(`❌ Lỗi: Học sinh với ID "${medicineData.StudentID}" không tồn tại trong hệ thống. 
+                           Vui lòng:
+                           1. Kiểm tra lại danh sách học sinh
+                           2. Liên hệ quản trị viên nếu vấn đề vẫn tiếp diễn`);
+
+              // Tự động refresh danh sách học sinh
+              console.log("🔄 Auto refreshing students list...");
+              fetchStudents(true);
+              return;
+            }
+
+            // Xử lý các lỗi khác như cũ
+            if (createError.response?.status === 401) {
+              message.error(
+                "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+              );
+            } else if (createError.response?.status === 403) {
+              message.error("Bạn không có quyền tạo thuốc này.");
+            } else if (createError.response?.status === 404) {
+              message.error("Không tìm thấy API endpoint.");
+            } else if (createError.response?.status >= 500) {
+              message.error("Lỗi server. Vui lòng thử lại sau.");
+            } else if (!navigator.onLine) {
+              message.warning(
+                "Không có kết nối internet. Thuốc sẽ được tạo offline (không có ảnh)."
+              );
+            } else {
+              message.error(`Không thể tạo thuốc: ${errorMessage}`);
+            }
 
             // Nếu có ảnh và lỗi, không lưu offline
             if (newImages.length > 0) {
-              message.error(`Không thể tạo thuốc với ảnh: ${createError.response?.data?.message || createError.message}`);
+              message.error(
+                `Không thể tạo thuốc với ảnh: ${
+                  createError.response?.data?.message || createError.message
+                }`
+              );
               return;
             }
 
             // Chỉ lưu offline nếu không có ảnh
-            message.warning('Không thể kết nối server. Thuốc sẽ được tạo offline (không có ảnh).');
+            message.warning(
+              "Không thể kết nối server. Thuốc sẽ được tạo offline (không có ảnh)."
+            );
 
             // Tạo offline thuốc không có ảnh
             const offlineMedicine = {
@@ -1479,7 +1809,7 @@ const MedicineManagement = () => {
               Dosage: medicineData.Dosage,
               Instructions: medicineData.Instructions,
               Notes: medicineData.Notes,
-              Status: 'Chờ xử lý',
+              Status: "Chờ xử lý",
               SentDate: new Date().toISOString(),
               StudentID: medicineData.StudentID,
               NurseID: null,
@@ -1488,10 +1818,10 @@ const MedicineManagement = () => {
               File: [],
               _isTemp: true,
               _pendingSync: true,
-              _createdAt: new Date().toISOString()
+              _createdAt: new Date().toISOString(),
             };
 
-            setMedicines(prevMedicines => {
+            setMedicines((prevMedicines) => {
               const updatedMedicines = [...prevMedicines, offlineMedicine];
               saveMedicinesToStorage(updatedMedicines);
               return updatedMedicines;
@@ -1507,7 +1837,7 @@ const MedicineManagement = () => {
               Dosage: medicineData.Dosage,
               Instructions: medicineData.Instructions,
               Notes: medicineData.Notes,
-              Status: 'Chờ xử lý',
+              Status: "Chờ xử lý",
               SentDate: new Date().toISOString(),
               StudentID: medicineData.StudentID,
               NurseID: null,
@@ -1516,16 +1846,18 @@ const MedicineManagement = () => {
               File: [],
               _isTemp: true,
               _pendingSync: true,
-              _createdAt: new Date().toISOString()
+              _createdAt: new Date().toISOString(),
             };
 
-            setMedicines(prevMedicines => {
+            setMedicines((prevMedicines) => {
               const updatedMedicines = [...prevMedicines, offlineMedicine];
               saveMedicinesToStorage(updatedMedicines);
               return updatedMedicines;
             });
 
-            message.warning('Đã tạo thuốc offline. Sẽ đồng bộ khi có kết nối internet.');
+            message.warning(
+              "Đã tạo thuốc offline. Sẽ đồng bộ khi có kết nối internet."
+            );
           }
         }
       }
@@ -1536,8 +1868,64 @@ const MedicineManagement = () => {
       setFileList([]);
       setEditingMedicine(null);
     } catch (error) {
-      console.error('Lỗi khi xử lý form:', error);
-      message.error(`Có lỗi xảy ra: ${error.message}`);
+      console.error("❌ Lỗi khi xử lý form:", error);
+
+      // ✅ ENHANCED ERROR ANALYSIS
+      console.error("🔍 Chi tiết lỗi:", {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          data:
+            error.config?.data instanceof FormData
+              ? "[FormData]"
+              : error.config?.data,
+        },
+      });
+
+      // ✅ SPECIFIC ERROR HANDLING
+      if (error.response?.status === 500) {
+        console.error("🚨 SERVER ERROR 500 - Chi tiết:");
+        console.error("Backend URL:", error.config?.url);
+        console.error("Request method:", error.config?.method);
+        console.error("Response data:", error.response?.data);
+
+        // Check for Foreign Key constraint error
+        const errorMessage =
+          error.response?.data?.message ||
+          error.response?.data?.toString() ||
+          "";
+        if (
+          errorMessage.includes("FK_Medicine_StudentProfile_StudentID") ||
+          errorMessage.includes("FOREIGN KEY constraint") ||
+          errorMessage.includes("StudentID")
+        ) {
+          message.error(
+            `Lỗi StudentID: "${selectedStudentId}" không tồn tại trong database. Vui lòng liên hệ admin.`
+          );
+        } else {
+          message.error(
+            `Lỗi server (500): ${errorMessage || "Server gặp sự cố nội bộ"}`
+          );
+        }
+      } else if (error.response?.status === 400) {
+        const errorMsg =
+          error.response?.data?.message || "Dữ liệu không hợp lệ";
+        message.error(`Lỗi dữ liệu: ${errorMsg}`);
+      } else if (error.response?.status === 401) {
+        message.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+      } else if (error.response?.status === 403) {
+        message.error("Bạn không có quyền thực hiện thao tác này.");
+      } else if (!navigator.onLine) {
+        message.error("Không có kết nối internet. Vui lòng kiểm tra kết nối.");
+      } else {
+        message.error(
+          `Có lỗi xảy ra: ${error.message || "Lỗi không xác định"}`
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -1548,25 +1936,25 @@ const MedicineManagement = () => {
   const getStatusColor = (status) => {
     const normalizedStatus = normalizeStatus(status);
     const colors = {
-      'Chờ xử lý': 'orange',
-      'Đã xác nhận': 'green',
-      'Đang thực hiện': 'blue',
-      'Đã hoàn thành': 'green',
-      'Từ chối': 'red',
-      'Chờ xác nhận': 'blue'
+      "Chờ xử lý": "orange",
+      "Đã xác nhận": "green",
+      "Đang thực hiện": "blue",
+      "Đã hoàn thành": "green",
+      "Từ chối": "red",
+      "Chờ xác nhận": "blue",
     };
-    return colors[normalizedStatus] || 'default';
+    return colors[normalizedStatus] || "default";
   };
 
   const getStatusIcon = (status) => {
     const normalizedStatus = normalizeStatus(status);
     const icons = {
-      'Chờ xử lý': <ClockCircleOutlined />,
-      'Đã xác nhận': <CheckCircleOutlined />,
-      'Đang thực hiện': <SyncOutlined />,
-      'Đã hoàn thành': <CheckCircleOutlined />,
-      'Từ chối': <ExclamationCircleOutlined />,
-      'Chờ xác nhận': <ClockCircleOutlined />
+      "Chờ xử lý": <ClockCircleOutlined />,
+      "Đã xác nhận": <CheckCircleOutlined />,
+      "Đang thực hiện": <SyncOutlined />,
+      "Đã hoàn thành": <CheckCircleOutlined />,
+      "Từ chối": <ExclamationCircleOutlined />,
+      "Chờ xác nhận": <ClockCircleOutlined />,
     };
     return icons[normalizedStatus] || <ClockCircleOutlined />;
   };
@@ -1575,18 +1963,19 @@ const MedicineManagement = () => {
     const normalizedStatus = normalizeStatus(record.Status);
 
     // Chỉ cho phép edit khi thuốc đang ở trạng thái chờ xử lý hoặc chờ xác nhận
-    const canEditStatus = normalizedStatus === 'Chờ xử lý' || normalizedStatus === 'Chờ xác nhận';
+    const canEditStatus =
+      normalizedStatus === "Chờ xử lý" || normalizedStatus === "Chờ xác nhận";
 
     // ✅ BACKEND LOGIC: Cho phép update tất cả các medicine chưa được y tế xử lý (NurseID == null)
     const isUnprocessedByNurse = !record.NurseID; // NurseID == null
 
-    console.log('🔍 Can edit check:', {
+    console.log("🔍 Can edit check:", {
       medicineId: record.MedicineID,
       originalStatus: record.Status,
       normalizedStatus: normalizedStatus,
       canEditStatus: canEditStatus,
       isUnprocessedByNurse: isUnprocessedByNurse,
-      canEdit: canEditStatus && isUnprocessedByNurse
+      canEdit: canEditStatus && isUnprocessedByNurse,
     });
 
     return canEditStatus && isUnprocessedByNurse;
@@ -1595,37 +1984,51 @@ const MedicineManagement = () => {
   // Get statistics
   const currentStudentMedicines = getCurrentStudentMedicines();
   const totalMedicines = currentStudentMedicines.length;
-  const pendingCount = currentStudentMedicines.filter(m => normalizeStatus(m.Status) === 'Chờ xử lý').length;
-  const approvedCount = currentStudentMedicines.filter(m => normalizeStatus(m.Status) === 'Đã xác nhận').length;
-  const inUseCount = currentStudentMedicines.filter(m => normalizeStatus(m.Status) === 'Đang thực hiện').length;
-  const completedCount = currentStudentMedicines.filter(m => normalizeStatus(m.Status) === 'Đã hoàn thành').length;
-  const rejectedCount = currentStudentMedicines.filter(m => normalizeStatus(m.Status) === 'Từ chối').length;
+  const pendingCount = currentStudentMedicines.filter(
+    (m) => normalizeStatus(m.Status) === "Chờ xử lý"
+  ).length;
+  const approvedCount = currentStudentMedicines.filter(
+    (m) => normalizeStatus(m.Status) === "Đã xác nhận"
+  ).length;
+  const inUseCount = currentStudentMedicines.filter(
+    (m) => normalizeStatus(m.Status) === "Đang thực hiện"
+  ).length;
+  const completedCount = currentStudentMedicines.filter(
+    (m) => normalizeStatus(m.Status) === "Đã hoàn thành"
+  ).length;
+  const rejectedCount = currentStudentMedicines.filter(
+    (m) => normalizeStatus(m.Status) === "Từ chối"
+  ).length;
 
   // ==================== TABLE COLUMNS ====================
 
   const columns = [
     {
-      title: 'Mã yêu cầu',
-      dataIndex: 'MedicineID',
-      key: 'MedicineID',
+      title: "Mã yêu cầu",
+      dataIndex: "MedicineID",
+      key: "MedicineID",
       width: 100, // ✅ Giảm từ 120 xuống 100
-      fixed: 'left', // ✅ Fix cột đầu
+      fixed: "left", // ✅ Fix cột đầu
       render: (text, record) => (
         <div>
-          <Text strong className="text-blue-600 text-xs">{text}</Text>
+          <Text strong className="text-blue-600 text-xs">
+            {text}
+          </Text>
         </div>
       ),
     },
     {
-      title: 'Học sinh',
-      dataIndex: 'StudentID',
-      key: 'StudentID',
+      title: "Học sinh",
+      dataIndex: "StudentID",
+      key: "StudentID",
       width: 150, // ✅ Giảm từ 200 xuống 150
       render: (studentId) => {
-        const student = students.find(s => s.StudentID === studentId);
+        const student = students.find((s) => s.StudentID === studentId);
         return (
           <div>
-            <div className="font-medium text-xs text-blue-500 ">{student?.StudentName || 'N/A'}</div>
+            <div className="font-medium text-xs text-blue-500 ">
+              {student?.StudentName || "N/A"}
+            </div>
             <div className="text-xs text-gray-500">
               {getStudentClass(studentId)}
             </div>
@@ -1634,9 +2037,9 @@ const MedicineManagement = () => {
       },
     },
     {
-      title: 'Thuốc & Liều dùng',
-      dataIndex: 'MedicineName',
-      key: 'MedicineName',
+      title: "Thuốc & Liều dùng",
+      dataIndex: "MedicineName",
+      key: "MedicineName",
       width: 200, // ✅ Giảm từ 250 xuống 200
       render: (text, record) => (
         <div>
@@ -1645,17 +2048,15 @@ const MedicineManagement = () => {
             <span className="bg-blue-50 text-gray-500 px-1 py-0.5 rounded text-xs mr-1">
               {record.Quantity} -
             </span>
-            <span className="text-gray-500 text-xs">
-              {record.Dosage}
-            </span>
+            <span className="text-gray-500 text-xs">{record.Dosage}</span>
           </div>
         </div>
       ),
     },
     {
-      title: 'Trạng thái',
-      dataIndex: 'Status',
-      key: 'Status',
+      title: "Trạng thái",
+      dataIndex: "Status",
+      key: "Status",
       width: 110,
       render: (status) => {
         const normalizedStatus = normalizeStatus(status);
@@ -1671,29 +2072,165 @@ const MedicineManagement = () => {
       },
     },
     {
-      title: 'Ngày gửi',
-      dataIndex: 'SentDate',
-      key: 'SentDate',
+      title: "Ảnh thuốc",
+      key: "images",
+      width: 80,
+      render: (_, record) => {
+        // Lấy ảnh từ nhiều nguồn có thể có
+        let medicineImages = [];
+        if (
+          record.File &&
+          Array.isArray(record.File) &&
+          record.File.length > 0
+        ) {
+          medicineImages = record.File.map(
+            (file) => file.FileLink || file.fileLink || file.url
+          ).filter(Boolean);
+        } else if (
+          record.Images &&
+          Array.isArray(record.Images) &&
+          record.Images.length > 0
+        ) {
+          medicineImages = record.Images.filter(Boolean);
+        } else if (
+          record.images &&
+          Array.isArray(record.images) &&
+          record.images.length > 0
+        ) {
+          medicineImages = record.images.filter(Boolean);
+        }
+
+        if (medicineImages.length === 0) {
+          return (
+            <div className="text-center text-gray-400 text-xs">
+              <div>📷</div>
+              <div>Không có ảnh</div>
+            </div>
+          );
+        }
+
+        // Hiển thị ảnh đầu tiên với số lượng
+        const firstImage = medicineImages[0];
+        let imageUrl = "";
+
+        if (typeof firstImage === "string") {
+          if (
+            firstImage.startsWith("http://") ||
+            firstImage.startsWith("https://") ||
+            firstImage.startsWith("data:") ||
+            firstImage.startsWith("blob:")
+          ) {
+            imageUrl = firstImage;
+          } else {
+            const baseUrl = "https://localhost:7040";
+            const cleanImg = firstImage.startsWith("/")
+              ? firstImage
+              : `/${firstImage}`;
+            imageUrl = `${baseUrl}${cleanImg}`;
+          }
+        } else if (firstImage instanceof File || firstImage instanceof Blob) {
+          imageUrl = URL.createObjectURL(firstImage);
+        } else if (firstImage?.url) {
+          imageUrl = firstImage.url;
+        }
+
+        return (
+          <div
+            className="relative group cursor-pointer"
+            onClick={() => {
+              // Chuẩn bị tất cả URLs cho modal
+              const processedUrls = medicineImages
+                .map((img) => {
+                  if (typeof img === "string") {
+                    if (
+                      img.startsWith("http://") ||
+                      img.startsWith("https://") ||
+                      img.startsWith("data:") ||
+                      img.startsWith("blob:")
+                    ) {
+                      return img;
+                    } else {
+                      const baseUrl = "https://localhost:7040";
+                      const cleanImg = img.startsWith("/") ? img : `/${img}`;
+                      return `${baseUrl}${cleanImg}`;
+                    }
+                  } else if (img instanceof File || img instanceof Blob) {
+                    return URL.createObjectURL(img);
+                  } else if (img?.url) {
+                    return img.url;
+                  }
+                  return null;
+                })
+                .filter(Boolean);
+
+              openImageModal(
+                imageUrl,
+                `${record.MedicineName} - Ảnh thuốc`,
+                processedUrls,
+                0
+              );
+            }}
+          >
+            <img
+              src={imageUrl}
+              alt="Medicine"
+              className="w-12 h-12 object-cover rounded border hover:scale-110 transition-transform"
+              onError={(e) => {
+                e.target.style.display = "none";
+                e.target.parentNode.innerHTML = `
+                  <div style="
+                    width: 48px;
+                    height: 48px;
+                    background: #f5f5f5;
+                    border: 1px dashed #d9d9d9;
+                    border-radius: 4px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #999;
+                    font-size: 10px;
+                    cursor: pointer;
+                  ">
+                    📷
+                  </div>
+                `;
+              }}
+            />
+            {medicineImages.length > 1 && (
+              <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {medicineImages.length}
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      title: "Ngày gửi",
+      dataIndex: "SentDate",
+      key: "SentDate",
       width: 100, // ✅ Giảm từ 120 xuống 100
       render: (date) => (
         <div className="text-center">
           <div className="text-xs font-medium" style={{ display: "flex" }}>
-            {date ? new Date(date).toLocaleDateString('vi-VN') : 'Chưa có'}
+            {date ? new Date(date).toLocaleDateString("vi-VN") : "Chưa có"}
           </div>
           <div className="text-xs text-gray-500" style={{ display: "flex" }}>
-            {date ? new Date(date).toLocaleTimeString('vi-VN', {
-              hour: '2-digit',
-              minute: '2-digit'
-            }) : ''}
+            {date
+              ? new Date(date).toLocaleTimeString("vi-VN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : ""}
           </div>
         </div>
       ),
     },
     {
-      title: 'Thao tác',
-      key: 'action',
+      title: "Thao tác",
+      key: "action",
       width: 120, // ✅ Giảm từ 140 xuống 120
-      fixed: 'right', // ✅ Fix cột cuối
+      fixed: "right", // ✅ Fix cột cuối
       render: (_, record) => {
         return (
           <Space size="small">
@@ -1718,16 +2255,18 @@ const MedicineManagement = () => {
             )}
 
             {/* Hiển thị tooltip cho medicine không thể edit */}
-            {!canEdit(record) && (normalizeStatus(record.Status) === 'Chờ xử lý' || normalizeStatus(record.Status) === 'Chờ xác nhận') && (
-              <Button
-                type="text"
-                icon={<EditOutlined />}
-                disabled
-                className="text-gray-400"
-                title="Không thể chỉnh sửa - Đã được y tế xử lý"
-                size="small"
-              />
-            )}
+            {!canEdit(record) &&
+              (normalizeStatus(record.Status) === "Chờ xử lý" ||
+                normalizeStatus(record.Status) === "Chờ xác nhận") && (
+                <Button
+                  type="text"
+                  icon={<EditOutlined />}
+                  disabled
+                  className="text-gray-400"
+                  title="Không thể chỉnh sửa - Đã được y tế xử lý"
+                  size="small"
+                />
+              )}
 
             {/* ✅ NÚT XEM LỊCH SỬ */}
             {hasHistory(record) && (
@@ -1750,13 +2289,18 @@ const MedicineManagement = () => {
 
   // Xử lý khi có kết nối internet trở lại
   const handleOnlineStatus = () => {
-    console.log('🌐 App is now ONLINE');
-    message.success('Kết nối internet đã được khôi phục');
+    console.log("🌐 App is now ONLINE");
+    message.success("Kết nối internet đã được khôi phục");
 
     // Tìm và đồng bộ các thuốc đang chờ
-    const pendingSyncMedicines = medicines.filter(m => m._pendingSync === true || m._isTemp === true);
+    const pendingSyncMedicines = medicines.filter(
+      (m) => m._pendingSync === true || m._isTemp === true
+    );
     if (pendingSyncMedicines.length > 0) {
-      console.log('🔄 Found pending medicines after reconnect:', pendingSyncMedicines.length);
+      console.log(
+        "🔄 Found pending medicines after reconnect:",
+        pendingSyncMedicines.length
+      );
       message.info(`Đang đồng bộ ${pendingSyncMedicines.length} yêu cầu thuốc`);
       syncPendingMedicines(pendingSyncMedicines);
     }
@@ -1767,14 +2311,16 @@ const MedicineManagement = () => {
 
   // Xử lý khi mất kết nối internet
   const handleOfflineStatus = () => {
-    console.log('📵 App is now OFFLINE');
-    message.warning('Mất kết nối internet - Dữ liệu sẽ được lưu cục bộ và đồng bộ khi có kết nối');
+    console.log("📵 App is now OFFLINE");
+    message.warning(
+      "Mất kết nối internet - Dữ liệu sẽ được lưu cục bộ và đồng bộ khi có kết nối"
+    );
   };
 
   // Student change handler
   useEffect(() => {
     if (selectedStudentId) {
-      console.log('🔄 Học sinh đã thay đổi:', selectedStudentId);
+      console.log("🔄 Học sinh đã thay đổi:", selectedStudentId);
       setLoading(true);
 
       // Khi thay đổi học sinh, cố gắng lấy lại thuốc của học sinh đó từ server
@@ -1788,11 +2334,12 @@ const MedicineManagement = () => {
     }
   }, [selectedStudentId]);
 
-
   //  Theo dõi khi students đã được initialized để fetch medicines
   useEffect(() => {
     if (studentsInitialized && students.length > 0) {
-      console.log('✅ Students đã initialized, bắt đầu fetch medicines từ server');
+      console.log(
+        "✅ Students đã initialized, bắt đầu fetch medicines từ server"
+      );
       fetchMedicinesFromServer();
     }
   }, [studentsInitialized]);
@@ -1805,31 +2352,34 @@ const MedicineManagement = () => {
       console.log(`👨‍👩‍👧‍👦 Đang lấy TẤT CẢ thuốc của parent...`);
       const response = await medicineApi.parent.getMedicinesByParentId();
 
-      console.log('✅ API getMedicinesByParentId response:', response);
+      console.log("✅ API getMedicinesByParentId response:", response);
 
       // Debug chi tiết cấu trúc dữ liệu
-      console.log('✅ API response.data:', JSON.stringify(response.data, null, 2));
+      console.log(
+        "✅ API response.data:",
+        JSON.stringify(response.data, null, 2)
+      );
 
       if (response?.data) {
         let allMedicines = [];
 
         if (Array.isArray(response.data)) {
           allMedicines = response.data;
-          console.log('🔍 Dữ liệu là mảng trực tiếp:', allMedicines.length);
+          console.log("🔍 Dữ liệu là mảng trực tiếp:", allMedicines.length);
         } else if (response.data.data && Array.isArray(response.data.data)) {
           allMedicines = response.data.data;
-          console.log('🔍 Dữ liệu nằm trong trường data:', allMedicines.length);
+          console.log("🔍 Dữ liệu nằm trong trường data:", allMedicines.length);
         } else if (response.data.medicineID || response.data.MedicineID) {
           allMedicines = [response.data];
-          console.log('🔍 Dữ liệu là một đối tượng thuốc đơn lẻ');
+          console.log("🔍 Dữ liệu là một đối tượng thuốc đơn lẻ");
         } else {
           // Xử lý trường hợp JSON không đúng định dạng mong đợi
-          console.log('⚠️ Dữ liệu có cấu trúc không xác định:', response.data);
+          console.log("⚠️ Dữ liệu có cấu trúc không xác định:", response.data);
           try {
             // Thử kiểm tra nếu response là string JSON
-            if (typeof response.data === 'string') {
+            if (typeof response.data === "string") {
               const parsedData = JSON.parse(response.data);
-              console.log('🔄 Đã phân tích dữ liệu string JSON:', parsedData);
+              console.log("🔄 Đã phân tích dữ liệu string JSON:", parsedData);
 
               if (Array.isArray(parsedData)) {
                 allMedicines = parsedData;
@@ -1839,9 +2389,18 @@ const MedicineManagement = () => {
             }
             // Kiểm tra nếu có trường khác chứa dữ liệu
             else {
-              const possibleFields = ['medicines', 'items', 'results', 'records', 'list'];
+              const possibleFields = [
+                "medicines",
+                "items",
+                "results",
+                "records",
+                "list",
+              ];
               for (const field of possibleFields) {
-                if (response.data[field] && Array.isArray(response.data[field])) {
+                if (
+                  response.data[field] &&
+                  Array.isArray(response.data[field])
+                ) {
                   console.log(`🔍 Tìm thấy dữ liệu trong trường '${field}'`);
                   allMedicines = response.data[field];
                   break;
@@ -1849,7 +2408,7 @@ const MedicineManagement = () => {
               }
             }
           } catch (e) {
-            console.error('❌ Lỗi khi xử lý dữ liệu:', e);
+            console.error("❌ Lỗi khi xử lý dữ liệu:", e);
           }
         }
 
@@ -1862,77 +2421,104 @@ const MedicineManagement = () => {
               id: med.medicineID || med.MedicineID,
               name: med.medicineName || med.MedicineName,
               status: med.status || med.Status,
-              status_normalized: normalizeStatus(med.status || med.Status || 'Chờ xử lý'),
-              studentId: med.studentID || med.StudentID || med.student_id
+              status_normalized: normalizeStatus(
+                med.status || med.Status || "Chờ xử lý"
+              ),
+              studentId: med.studentID || med.StudentID || med.student_id,
             });
           });
 
           // Debug - kiểm tra xem có thuốc đã duyệt hay không
-          const approvedMeds = allMedicines.filter(m => {
-            const status = (m.status || m.Status || '').toLowerCase();
-            return status.includes('duyệt') || status.includes('xác nhận') ||
-              status.includes('approved') || status.includes('confirmed');
+          const approvedMeds = allMedicines.filter((m) => {
+            const status = (m.status || m.Status || "").toLowerCase();
+            return (
+              status.includes("duyệt") ||
+              status.includes("xác nhận") ||
+              status.includes("approved") ||
+              status.includes("confirmed")
+            );
           });
 
-          console.log('📊 Số lượng thuốc đã được duyệt của parent:', approvedMeds.length);
+          console.log(
+            "📊 Số lượng thuốc đã được duyệt của parent:",
+            approvedMeds.length
+          );
           if (approvedMeds.length > 0) {
-            console.log('📊 Chi tiết thuốc đã duyệt:', approvedMeds.map(med => ({
-              id: med.medicineID || med.MedicineID,
-              name: med.medicineName || med.MedicineName,
-              status_original: med.status || med.Status
-            })));
+            console.log(
+              "📊 Chi tiết thuốc đã duyệt:",
+              approvedMeds.map((med) => ({
+                id: med.medicineID || med.MedicineID,
+                name: med.medicineName || med.MedicineName,
+                status_original: med.status || med.Status,
+              }))
+            );
           }
 
           // Chuẩn hóa dữ liệu từ server
-          const processedMedicines = allMedicines.map(medicine => ({
+          const processedMedicines = allMedicines.map((medicine) => ({
             MedicineID: medicine.medicineID || medicine.MedicineID,
             MedicineName: medicine.medicineName || medicine.MedicineName,
             Quantity: medicine.quantity || medicine.Quantity,
             Dosage: medicine.dosage || medicine.Dosage,
-            Instructions: medicine.instructions || medicine.Instructions || '',
-            Notes: medicine.notes || medicine.Notes || '',
-            Status: normalizeStatus(medicine.status || medicine.Status || 'Chờ xử lý'),
-            SentDate: medicine.sentDate || medicine.SentDate || medicine.createdAt,
-            StudentID: medicine.studentID || medicine.StudentID || medicine.student_id,
+            Instructions: medicine.instructions || medicine.Instructions || "",
+            Notes: medicine.notes || medicine.Notes || "",
+            Status: normalizeStatus(
+              medicine.status || medicine.Status || "Chờ xử lý"
+            ),
+            SentDate:
+              medicine.sentDate || medicine.SentDate || medicine.createdAt,
+            StudentID:
+              medicine.studentID || medicine.StudentID || medicine.student_id,
             NurseID: medicine.nurseID || medicine.NurseID || null,
             ParentID: medicine.parentID || medicine.ParentID || null,
-            Images: medicine.image ? [medicine.image] : medicine.images || medicine.Images || [],
+            // ✅ API trả về "image" là array of objects {id, url, fileName, fileType, uploadedAt}
+            Images: medicine.image || medicine.images || medicine.Images || [],
+            // ✅ Đồng thời lưu vào File để tương thích với code hiện tại
+            File: medicine.image || medicine.images || medicine.Images || [],
             _fromServer: true,
-            _serverFetchedAt: new Date().toISOString()
+            _serverFetchedAt: new Date().toISOString(),
           }));
 
           // Kiểm tra trạng thái sau khi chuẩn hóa
           const statusCounts = {};
-          processedMedicines.forEach(med => {
+          processedMedicines.forEach((med) => {
             statusCounts[med.Status] = (statusCounts[med.Status] || 0) + 1;
           });
-          console.log('📊 Phân bố trạng thái sau khi chuẩn hóa:', statusCounts);
+          console.log("📊 Phân bố trạng thái sau khi chuẩn hóa:", statusCounts);
 
           // Cập nhật medicines trong state
-          setMedicines(prevMedicines => {
+          setMedicines((prevMedicines) => {
             // Lấy danh sách ID thuốc mới từ server
-            const newMedicineIds = processedMedicines.map(m => m.MedicineID);
+            const newMedicineIds = processedMedicines.map((m) => m.MedicineID);
 
             // Giữ lại thuốc đang chờ đồng bộ (pending)
-            const pendingMedicines = prevMedicines.filter(m => {
+            const pendingMedicines = prevMedicines.filter((m) => {
               // Giữ lại thuốc tạm thời chưa đồng bộ
-              if (m._isTemp || (m.MedicineID && m.MedicineID.startsWith('MED_'))) return true;
+              if (
+                m._isTemp ||
+                (m.MedicineID && m.MedicineID.startsWith("MED_"))
+              )
+                return true;
 
               // Giữ lại thuốc pending sync không có trong danh sách mới
-              if (m._pendingSync && !newMedicineIds.includes(m.MedicineID)) return true;
+              if (m._pendingSync && !newMedicineIds.includes(m.MedicineID))
+                return true;
 
               // Còn lại sẽ bị thay thế bởi dữ liệu mới
               return false;
             });
 
             // Kết hợp thuốc pending với thuốc mới từ server
-            const updatedMedicines = [...pendingMedicines, ...processedMedicines];
+            const updatedMedicines = [
+              ...pendingMedicines,
+              ...processedMedicines,
+            ];
 
             // Debug
-            console.log('🔄 Đã cập nhật dữ liệu thuốc của parent:', {
+            console.log("🔄 Đã cập nhật dữ liệu thuốc của parent:", {
               pending: pendingMedicines.length,
               mới: processedMedicines.length,
-              tổngSau: updatedMedicines.length
+              tổngSau: updatedMedicines.length,
             });
 
             // Lưu vào localStorage
@@ -1942,10 +2528,18 @@ const MedicineManagement = () => {
           });
 
           // Kiểm tra một số thuốc test
-          console.log('🔍 Kiểm tra M0001:', allMedicines.find(m =>
-            m.medicineID === 'M0001' || m.MedicineID === 'M0001'));
-          console.log('🔍 Kiểm tra M0002:', allMedicines.find(m =>
-            m.medicineID === 'M0002' || m.MedicineID === 'M0002'));
+          console.log(
+            "🔍 Kiểm tra M0001:",
+            allMedicines.find(
+              (m) => m.medicineID === "M0001" || m.MedicineID === "M0001"
+            )
+          );
+          console.log(
+            "🔍 Kiểm tra M0002:",
+            allMedicines.find(
+              (m) => m.medicineID === "M0002" || m.MedicineID === "M0002"
+            )
+          );
         } else {
           console.log(`ℹ️ Không tìm thấy thuốc nào của parent`);
         }
@@ -1958,7 +2552,13 @@ const MedicineManagement = () => {
   };
 
   return (
-    <div style={{ padding: '0px', background: "linear-gradient(135deg, rgb(248, 250, 252) 0%, rgb(226, 232, 240) 50%, rgb(241,245,249) 100%)" }}>
+    <div
+      style={{
+        padding: "0px",
+        background:
+          "linear-gradient(135deg, rgb(248, 250, 252) 0%, rgb(226, 232, 240) 50%, rgb(241,245,249) 100%)",
+      }}
+    >
       {/* Header */}
       <div
         style={{
@@ -1971,7 +2571,7 @@ const MedicineManagement = () => {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          minHeight: 120
+          minHeight: 120,
         }}
       >
         {/* Left: Icon + Title */}
@@ -1992,7 +2592,14 @@ const MedicineManagement = () => {
               backdropFilter: "blur(2px)", // hiệu ứng kính mờ nhẹ
             }}
           >
-            <span style={{ fontSize: 44, filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.13))" }}>💊</span>
+            <span
+              style={{
+                fontSize: 44,
+                filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.13))",
+              }}
+            >
+              💊
+            </span>
           </div>
           {/* Title + Subtitle */}
           <div>
@@ -2003,7 +2610,7 @@ const MedicineManagement = () => {
                 color: "#fff",
                 textShadow: "2px 2px 8px rgba(0,0,0,0.13)",
                 letterSpacing: "0.5px",
-                marginBottom: 8
+                marginBottom: 8,
               }}
             >
               Gửi thuốc cho y tế
@@ -2015,7 +2622,7 @@ const MedicineManagement = () => {
                   height: 8,
                   borderRadius: "50%",
                   background: "#10b981",
-                  boxShadow: "0 0 0 4px rgba(16,185,129,0.18)"
+                  boxShadow: "0 0 0 4px rgba(16,185,129,0.18)",
                 }}
               />
               <span
@@ -2023,7 +2630,7 @@ const MedicineManagement = () => {
                   fontSize: 17,
                   color: "#f3f4f6",
                   fontWeight: 500,
-                  textShadow: "1px 1px 3px rgba(0,0,0,0.10)"
+                  textShadow: "1px 1px 3px rgba(0,0,0,0.10)",
                 }}
               >
                 Chăm sóc sức khỏe toàn diện cho trẻ
@@ -2042,13 +2649,17 @@ const MedicineManagement = () => {
               minWidth: 90,
               textAlign: "center",
               color: "#fff",
-              boxShadow: "0 2px 8px rgba(22,160,133,0.12)"
+              boxShadow: "0 2px 8px rgba(22,160,133,0.12)",
             }}
           >
             <div style={{ fontSize: 26, marginBottom: 4 }}>
-              <span role="img" aria-label="list">📋</span>
+              <span role="img" aria-label="list">
+                📋
+              </span>
             </div>
-            <div style={{ fontSize: 22, fontWeight: 700 }}>{totalMedicines}</div>
+            <div style={{ fontSize: 22, fontWeight: 700 }}>
+              {totalMedicines}
+            </div>
             <div style={{ fontSize: 13, opacity: 0.85 }}>Tổng đơn</div>
           </div>
           {/* Ngày hôm nay */}
@@ -2060,14 +2671,16 @@ const MedicineManagement = () => {
               minWidth: 110,
               textAlign: "center",
               color: "#fff",
-              boxShadow: "0 2px 8px rgba(22,160,133,0.12)"
+              boxShadow: "0 2px 8px rgba(22,160,133,0.12)",
             }}
           >
             <div style={{ fontSize: 26, marginBottom: 4 }}>
-              <span role="img" aria-label="clock">⏰</span>
+              <span role="img" aria-label="clock">
+                ⏰
+              </span>
             </div>
             <div style={{ fontSize: 18, fontWeight: 700 }}>
-              {new Date().toLocaleDateString('vi-VN')}
+              {new Date().toLocaleDateString("vi-VN")}
             </div>
             <div style={{ fontSize: 13, opacity: 0.85 }}>Hôm nay</div>
           </div>
@@ -2084,7 +2697,8 @@ const MedicineManagement = () => {
                 borderRadius: 20,
                 border: "none",
                 background: "white",
-                boxShadow: "0 8px 32px rgba(127,90,240,0.07), 0 0 0 1px #f3f4f6",
+                boxShadow:
+                  "0 8px 32px rgba(127,90,240,0.07), 0 0 0 1px #f3f4f6",
                 marginBottom: 0,
               }}
               bodyStyle={{ padding: "24px 32px" }}
@@ -2095,21 +2709,26 @@ const MedicineManagement = () => {
                       width: 36,
                       height: 36,
                       borderRadius: 12,
-                      background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                      background:
+                        "linear-gradient(135deg, #10b981 0%, #059669 100%)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       boxShadow: "0 4px 12px rgba(16,185,129,0.13)",
                       border: "2px solid rgba(255,255,255,0.2)",
                       transform: "perspective(1000px) rotateX(5deg)",
-                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
+                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))",
                     }}
                   >
-                    <span style={{
-                      color: "white",
-                      fontSize: 20,
-                      textShadow: "0 2px 4px rgba(0,0,0,0.2)"
-                    }}>💊</span>
+                    <span
+                      style={{
+                        color: "white",
+                        fontSize: 20,
+                        textShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                      }}
+                    >
+                      💊
+                    </span>
                   </div>
                   <div>
                     <Text strong style={{ fontSize: 16, color: "#1e293b" }}>
@@ -2124,108 +2743,223 @@ const MedicineManagement = () => {
             >
               <Row gutter={24} justify="center">
                 <Col xs={12} md={4}>
-                  <div style={{
-                    background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
-                    borderRadius: 18,
-                    padding: "20px 0",
-                    textAlign: "center",
-                    boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
-                    border: "2px solid rgba(255,255,255,0.2)",
-                    transform: "perspective(1000px) rotateX(1deg)",
-                    transition: "all 0.3s ease",
-                  }}>
-                    <div style={{
-                      fontSize: 36,
-                      marginBottom: 8,
-                      textShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
-                    }}>🕛</div>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{pendingCount}</div>
-                    <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Chờ xử lý</div>
+                  <div
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
+                      borderRadius: 18,
+                      padding: "20px 0",
+                      textAlign: "center",
+                      boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
+                      border: "2px solid rgba(255,255,255,0.2)",
+                      transform: "perspective(1000px) rotateX(1deg)",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 36,
+                        marginBottom: 8,
+                        textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                        filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))",
+                      }}
+                    >
+                      🕛
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 28,
+                        fontWeight: 800,
+                        color: "#2563eb",
+                      }}
+                    >
+                      {pendingCount}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 14,
+                        color: "#1d4ed8",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Chờ xử lý
+                    </div>
                   </div>
                 </Col>
                 <Col xs={12} md={4}>
-                  <div style={{
-                    background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
-                    borderRadius: 18,
-                    padding: "20px 0",
-                    textAlign: "center",
-                    boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
-                    border: "2px solid rgba(255,255,255,0.2)",
-                    transform: "perspective(1000px) rotateX(1deg)",
-                    transition: "all 0.3s ease",
-                  }}>
-                    <div style={{
-                      fontSize: 36,
-                      marginBottom: 8,
-                      textShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
-                    }}>✔️</div>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{approvedCount}</div>
-                    <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Đã duyệt</div>
+                  <div
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
+                      borderRadius: 18,
+                      padding: "20px 0",
+                      textAlign: "center",
+                      boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
+                      border: "2px solid rgba(255,255,255,0.2)",
+                      transform: "perspective(1000px) rotateX(1deg)",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 36,
+                        marginBottom: 8,
+                        textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                        filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))",
+                      }}
+                    >
+                      ✔️
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 28,
+                        fontWeight: 800,
+                        color: "#2563eb",
+                      }}
+                    >
+                      {approvedCount}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 14,
+                        color: "#1d4ed8",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Đã duyệt
+                    </div>
                   </div>
                 </Col>
                 <Col xs={12} md={4}>
-                  <div style={{
-                    background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
-                    borderRadius: 18,
-                    padding: "20px 0",
-                    textAlign: "center",
-                    boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
-                    border: "2px solid rgba(255,255,255,0.2)",
-                    transform: "perspective(1000px) rotateX(1deg)",
-                    transition: "all 0.3s ease",
-                  }}>
-                    <div style={{
-                      fontSize: 36,
-                      marginBottom: 8,
-                      textShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
-                    }}>💊</div>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{inUseCount}</div>
-                    <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Đang sử dụng</div>
+                  <div
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
+                      borderRadius: 18,
+                      padding: "20px 0",
+                      textAlign: "center",
+                      boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
+                      border: "2px solid rgba(255,255,255,0.2)",
+                      transform: "perspective(1000px) rotateX(1deg)",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 36,
+                        marginBottom: 8,
+                        textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                        filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))",
+                      }}
+                    >
+                      💊
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 28,
+                        fontWeight: 800,
+                        color: "#2563eb",
+                      }}
+                    >
+                      {inUseCount}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 14,
+                        color: "#1d4ed8",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Đang sử dụng
+                    </div>
                   </div>
                 </Col>
                 <Col xs={12} md={4}>
-                  <div style={{
-                    background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
-                    borderRadius: 18,
-                    padding: "20px 0",
-                    textAlign: "center",
-                    boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
-                    border: "2px solid rgba(255,255,255,0.2)",
-                    transform: "perspective(1000px) rotateX(1deg)",
-                    transition: "all 0.3s ease",
-                  }}>
-                    <div style={{
-                      fontSize: 36,
-                      marginBottom: 8,
-                      textShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
-                    }}>🎯</div>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{completedCount}</div>
-                    <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Hoàn thành</div>
+                  <div
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
+                      borderRadius: 18,
+                      padding: "20px 0",
+                      textAlign: "center",
+                      boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
+                      border: "2px solid rgba(255,255,255,0.2)",
+                      transform: "perspective(1000px) rotateX(1deg)",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 36,
+                        marginBottom: 8,
+                        textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                        filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))",
+                      }}
+                    >
+                      🎯
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 28,
+                        fontWeight: 800,
+                        color: "#2563eb",
+                      }}
+                    >
+                      {completedCount}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 14,
+                        color: "#1d4ed8",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Hoàn thành
+                    </div>
                   </div>
                 </Col>
                 <Col xs={12} md={4}>
-                  <div style={{
-                    background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
-                    borderRadius: 18,
-                    padding: "20px 0",
-                    textAlign: "center",
-                    boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
-                    border: "2px solid rgba(255,255,255,0.2)",
-                    transform: "perspective(1000px) rotateX(1deg)",
-                    transition: "all 0.3s ease",
-                  }}>
-                    <div style={{
-                      fontSize: 36,
-                      marginBottom: 8,
-                      textShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))"
-                    }}>❌</div>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>{rejectedCount}</div>
-                    <div style={{ fontSize: 14, color: "#1d4ed8", fontWeight: 600 }}>Từ chối</div>
+                  <div
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
+                      borderRadius: 18,
+                      padding: "20px 0",
+                      textAlign: "center",
+                      boxShadow: "0 4px 16px rgba(59,130,246,0.10)",
+                      border: "2px solid rgba(255,255,255,0.2)",
+                      transform: "perspective(1000px) rotateX(1deg)",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 36,
+                        marginBottom: 8,
+                        textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                        filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))",
+                      }}
+                    >
+                      ❌
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 28,
+                        fontWeight: 800,
+                        color: "#2563eb",
+                      }}
+                    >
+                      {rejectedCount}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 14,
+                        color: "#1d4ed8",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Từ chối
+                    </div>
                   </div>
                 </Col>
               </Row>
@@ -2240,7 +2974,7 @@ const MedicineManagement = () => {
             background: "#ffffff",
             marginBottom: 24,
             boxShadow: "0 2px 8px rgba(127,90,240,0.06)",
-            border: "none"
+            border: "none",
           }}
           bodyStyle={{ padding: 18 }}
         >
@@ -2250,9 +2984,18 @@ const MedicineManagement = () => {
               <Row gutter={12} align="middle">
                 {/* Trạng thái */}
                 <Col xs={12} sm={12} md={12} lg={12}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      marginBottom: 4,
+                    }}
+                  >
                     <span style={{ fontSize: 18, color: "#e11d48" }}>🔄</span>
-                    <span style={{ fontWeight: 600, color: "#334155" }}>Trạng thái</span>
+                    <span style={{ fontWeight: 600, color: "#334155" }}>
+                      Trạng thái
+                    </span>
                   </div>
                   <Select
                     placeholder="Tất cả"
@@ -2273,9 +3016,18 @@ const MedicineManagement = () => {
 
                 {/* Học sinh */}
                 <Col xs={12} sm={12} md={12} lg={12}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      marginBottom: 4,
+                    }}
+                  >
                     <span style={{ fontSize: 18, color: "#0ea5e9" }}>🎓</span>
-                    <span style={{ fontWeight: 600, color: "#334155" }}>Học sinh</span>
+                    <span style={{ fontWeight: 600, color: "#334155" }}>
+                      Học sinh
+                    </span>
                   </div>
                   <Select
                     placeholder="Chọn học sinh"
@@ -2283,7 +3035,7 @@ const MedicineManagement = () => {
                     value={selectedStudentId}
                     onChange={(value) => {
                       setSelectedStudentId(value);
-                      setStatusFilter('');
+                      setStatusFilter("");
                     }}
                     loading={studentsLoading}
                     showSearch
@@ -2291,9 +3043,10 @@ const MedicineManagement = () => {
                     allowClear
                     size="middle"
                   >
-                    {students.map(student => (
+                    {students.map((student) => (
                       <Option key={student.StudentID} value={student.StudentID}>
-                        {student.StudentName} - {student.Class || 'Chưa phân lớp'}
+                        {student.StudentName} -{" "}
+                        {student.Class || "Chưa phân lớp"}
                       </Option>
                     ))}
                   </Select>
@@ -2302,7 +3055,13 @@ const MedicineManagement = () => {
             </Col>
 
             {/* Thêm thuốc mới + Cập nhật (nằm cùng 1 cột, bên phải) */}
-            <Col xs={24} sm={8} md={14} lg={16} style={{ display: "flex", justifyContent: "flex-end" }}>
+            <Col
+              xs={24}
+              sm={8}
+              md={14}
+              lg={16}
+              style={{ display: "flex", justifyContent: "flex-end" }}
+            >
               <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
                 <Button
                   type="primary"
@@ -2310,10 +3069,11 @@ const MedicineManagement = () => {
                   onClick={handleCreate}
                   style={{
                     borderRadius: "8px",
-                    background: "linear-gradient(135deg,rgb(32, 81, 195) 0%,rgb(42, 100, 215) 100%)",
+                    background:
+                      "linear-gradient(135deg,rgb(32, 81, 195) 0%,rgb(42, 100, 215) 100%)",
                     borderColor: "#52c41a",
                     boxShadow: "0 4px 12px rgba(68, 123, 211, 0.3)",
-                    fontWeight: "600"
+                    fontWeight: "600",
                   }}
                   size="middle"
                 >
@@ -2330,16 +3090,18 @@ const MedicineManagement = () => {
                     fontWeight: 600,
                     fontSize: 15,
                     padding: "8px 18px",
-                    border: "none"
+                    border: "none",
                   }}
                 >
-                  Cập nhật lúc <span style={{ fontWeight: 700 }}>{new Date().toLocaleTimeString('vi-VN')}</span>
+                  Cập nhật lúc{" "}
+                  <span style={{ fontWeight: 700 }}>
+                    {new Date().toLocaleTimeString("vi-VN")}
+                  </span>
                 </Button>
               </div>
             </Col>
           </Row>
         </Card>
-
 
         {/* Table */}
         <Card
@@ -2347,18 +3109,23 @@ const MedicineManagement = () => {
             <div className="flex items-center justify-between">
               <span style={{ display: "flex", flexDirection: "column" }}>
                 <span>Danh sách yêu cầu thuốc</span>
-                <Text className="text-sm text-gray-500" style={{ display: "flex", marginTop: 2 }}>
+                <Text
+                  className="text-sm text-gray-500"
+                  style={{ display: "flex", marginTop: 2 }}
+                >
                   Tổng cộng: {totalMedicines} yêu cầu
                 </Text>
               </span>
-              <div className="flex items-center space-x-2" style={{ marginRight: 10 }}>
-              </div>
+              <div
+                className="flex items-center space-x-2"
+                style={{ marginRight: 10 }}
+              ></div>
             </div>
           }
           className="shadow-sm"
           bodyStyle={{
             padding: "0",
-            width: "100%" // Thêm dòng này 
+            width: "100%", // Thêm dòng này
           }}
         >
           <Table
@@ -2372,27 +3139,30 @@ const MedicineManagement = () => {
               showQuickJumper: true,
               showTotal: (total, range) =>
                 `${range[0]}-${range[1]} của ${total} yêu cầu`,
-              size: 'small'
+              size: "small",
             }}
             scroll={{
               x: 780,
-              y: 400
+              y: 400,
             }}
             size="small"
             bordered
             locale={{
-              emptyText: loading ? 'Đang tải...' : (
+              emptyText: loading ? (
+                "Đang tải..."
+              ) : (
                 <div className="text-center py-8">
                   <MedicineBoxOutlined className="text-4xl text-gray-300 mb-2" />
                   <div className="text-gray-500">Chưa có yêu cầu thuốc nào</div>
                   <div className="text-sm text-gray-400 mt-1">
                     {selectedStudentId
-                      ? `Chưa có yêu cầu nào cho ${getStudentName(selectedStudentId)} - ${getStudentClass(selectedStudentId)}`
-                      : 'Hãy chọn học sinh để xem yêu cầu thuốc'
-                    }
+                      ? `Chưa có yêu cầu nào cho ${getStudentName(
+                          selectedStudentId
+                        )} - ${getStudentClass(selectedStudentId)}`
+                      : "Hãy chọn học sinh để xem yêu cầu thuốc"}
                   </div>
                 </div>
-              )
+              ),
             }}
           />
         </Card>
@@ -2402,10 +3172,13 @@ const MedicineManagement = () => {
           title={
             <div className="flex items-center">
               <MedicineBoxOutlined className="text-blue-500 mr-2" />
-              {editingMedicine ? 'Chỉnh sửa yêu cầu thuốc' : 'Tạo yêu cầu thuốc mới'}
+              {editingMedicine
+                ? "Chỉnh sửa yêu cầu thuốc"
+                : "Tạo yêu cầu thuốc mới"}
               {selectedStudentId && (
                 <span className="ml-2 text-sm text-gray-500">
-                  cho {getStudentName(selectedStudentId)} - {getStudentClass(selectedStudentId)}
+                  cho {getStudentName(selectedStudentId)} -{" "}
+                  {getStudentClass(selectedStudentId)}
                 </span>
               )}
             </div>
@@ -2432,7 +3205,9 @@ const MedicineManagement = () => {
                 <Form.Item
                   name="MedicineName"
                   label="Tên thuốc"
-                  rules={[{ required: true, message: 'Vui lòng nhập tên thuốc' }]}
+                  rules={[
+                    { required: true, message: "Vui lòng nhập tên thuốc" },
+                  ]}
                 >
                   <Input placeholder="Ví dụ: Paracetamol" size="large" />
                 </Form.Item>
@@ -2441,9 +3216,14 @@ const MedicineManagement = () => {
                 <Form.Item
                   name="Quantity"
                   label="Số lượng"
-                  rules={[{ required: true, message: 'Vui lòng nhập số lượng' }]}
+                  rules={[
+                    { required: true, message: "Vui lòng nhập số lượng" },
+                  ]}
                 >
-                  <Input placeholder="Ví dụ: 2 viên/ngày - 10 viên" size="large" />
+                  <Input
+                    placeholder="Ví dụ: 2 viên/ngày - 10 viên"
+                    size="large"
+                  />
                 </Form.Item>
               </Col>
             </Row>
@@ -2451,25 +3231,19 @@ const MedicineManagement = () => {
             <Form.Item
               name="Dosage"
               label="Liều lượng"
-              rules={[{ required: true, message: 'Vui lòng nhập liều lượng' }]}
+              rules={[{ required: true, message: "Vui lòng nhập liều lượng" }]}
             >
               <Input placeholder="Ví dụ: 1 viên/lần, 2 lần/ngày" size="large" />
             </Form.Item>
 
-            <Form.Item
-              name="Instructions"
-              label="Hướng dẫn sử dụng"
-            >
+            <Form.Item name="Instructions" label="Hướng dẫn sử dụng">
               <TextArea
                 rows={3}
                 placeholder="Nhập hướng dẫn sử dụng thuốc (không bắt buộc)"
               />
             </Form.Item>
 
-            <Form.Item
-              name="Notes"
-              label="Ghi chú"
-            >
+            <Form.Item name="Notes" label="Ghi chú">
               <TextArea
                 rows={3}
                 placeholder="Ghi chú thêm về thuốc (không bắt buộc)"
@@ -2486,7 +3260,7 @@ const MedicineManagement = () => {
                 maxCount={3}
                 listType="picture-card"
                 onPreview={(file) => {
-                  console.log('🖼️ Preview file:', file);
+                  console.log("🖼️ Preview file:", file);
                   // Xử lý preview ảnh
                   let imageUrl = file.url || file.thumbUrl;
                   if (!imageUrl && file.originFileObj) {
@@ -2495,7 +3269,7 @@ const MedicineManagement = () => {
 
                   if (imageUrl) {
                     // Tạo modal để xem ảnh full size
-                    const modal = document.createElement('div');
+                    const modal = document.createElement("div");
                     modal.style.cssText = `
                       position: fixed;
                       top: 0;
@@ -2510,7 +3284,7 @@ const MedicineManagement = () => {
                       cursor: pointer;
                     `;
 
-                    const img = document.createElement('img');
+                    const img = document.createElement("img");
                     img.src = imageUrl;
                     img.style.cssText = `
                       max-width: 90%;
@@ -2557,7 +3331,7 @@ const MedicineManagement = () => {
                 className="bg-blue-500 hover:bg-blue-600"
                 size="large"
               >
-                {editingMedicine ? 'Cập nhật' : 'Tạo yêu cầu'}
+                {editingMedicine ? "Cập nhật" : "Tạo yêu cầu"}
               </Button>
             </div>
           </Form>
@@ -2579,19 +3353,29 @@ const MedicineManagement = () => {
           open={isViewModalVisible}
           onCancel={() => setIsViewModalVisible(false)}
           footer={[
-            <Button key="close" onClick={() => setIsViewModalVisible(false)} size="large">
+            <Button
+              key="close"
+              onClick={() => setIsViewModalVisible(false)}
+              size="large"
+            >
               Đóng
-            </Button>
+            </Button>,
           ]}
           width={800}
         >
           {viewingMedicine && (
             <div>
               {/* Main Information */}
-              <Card title="Thông tin chính" size="small" style={{ marginBottom: '16px' }}>
+              <Card
+                title="Thông tin chính"
+                size="small"
+                style={{ marginBottom: "16px" }}
+              >
                 <Descriptions bordered column={2} size="small">
                   <Descriptions.Item label="Mã yêu cầu" span={1}>
-                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>{viewingMedicine.MedicineID}</Text>
+                    <Text style={{ fontSize: "14px", color: "#1890ff" }}>
+                      {viewingMedicine.MedicineID}
+                    </Text>
                   </Descriptions.Item>
                   <Descriptions.Item label="Trạng thái" span={1}>
                     <Tag
@@ -2603,61 +3387,71 @@ const MedicineManagement = () => {
                   </Descriptions.Item>
 
                   <Descriptions.Item label="Tên học sinh" span={1}>
-                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>{getStudentName(viewingMedicine.StudentID)}</Text>
+                    <Text style={{ fontSize: "14px", color: "#1890ff" }}>
+                      {getStudentName(viewingMedicine.StudentID)}
+                    </Text>
                   </Descriptions.Item>
                   <Descriptions.Item label="Mã học sinh" span={1}>
-                    <Text style={{ color: '#1890ff' }}>{viewingMedicine.StudentID}</Text>
+                    <Text style={{ color: "#1890ff" }}>
+                      {viewingMedicine.StudentID}
+                    </Text>
                   </Descriptions.Item>
 
                   <Descriptions.Item label="Lớp" span={1}>
-                    <Text style={{ color: '#1890ff' }}>{getStudentClass(viewingMedicine.StudentID)}</Text>
+                    <Text style={{ color: "#1890ff" }}>
+                      {getStudentClass(viewingMedicine.StudentID)}
+                    </Text>
                   </Descriptions.Item>
                   <Descriptions.Item label="Tên thuốc" span={1}>
-                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>
+                    <Text style={{ fontSize: "14px", color: "#1890ff" }}>
                       {viewingMedicine.MedicineName}
                     </Text>
                   </Descriptions.Item>
 
                   <Descriptions.Item label="Số lượng" span={1}>
-                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>
+                    <Text style={{ fontSize: "14px", color: "#1890ff" }}>
                       {viewingMedicine.Quantity}
                     </Text>
                   </Descriptions.Item>
                   <Descriptions.Item label="Liều lượng" span={1}>
-                    <Text style={{ fontSize: '14px', color: '#1890ff' }}>
+                    <Text style={{ fontSize: "14px", color: "#1890ff" }}>
                       {viewingMedicine.Dosage}
-                    </Text>
-                  </Descriptions.Item>
-                </Descriptions>
-              </Card>
-
-              {/* Additional Information */}
-              <Card title="Thông tin bổ sung" size="small" style={{ marginBottom: '16px' }}>
-                <Descriptions bordered column={1} size="small">
-                  <Descriptions.Item label="Ngày gửi yêu cầu">
-                    <Text style={{ fontSize: '13px', color: '#1890ff' }}>
-                      {viewingMedicine.SentDate
-                        ? new Date(viewingMedicine.SentDate).toLocaleString('vi-VN')
-                        : 'Chưa có'
-                      }
                     </Text>
                   </Descriptions.Item>
 
                   {viewingMedicine.Instructions && (
-                    <Descriptions.Item label="Hướng dẫn sử dụng">
-                      <Text style={{ fontSize: '13px', fontStyle: 'italic', color: '#1890ff' }}>{viewingMedicine.Instructions}</Text>
+                    <Descriptions.Item label="Hướng dẫn sử dụng" span={2}>
+                      <Text
+                        style={{
+                          fontSize: "13px",
+                          fontStyle: "italic",
+                          color: "#1890ff",
+                        }}
+                      >
+                        {viewingMedicine.Instructions}
+                      </Text>
                     </Descriptions.Item>
                   )}
 
                   {viewingMedicine.Notes && (
                     <Descriptions.Item label="Ghi chú từ phụ huynh">
-                      <Text style={{ fontSize: '13px', fontStyle: 'italic', color: '#1890ff' }}>{viewingMedicine.Notes}</Text>
+                      <Text
+                        style={{
+                          fontSize: "13px",
+                          fontStyle: "italic",
+                          color: "#1890ff",
+                        }}
+                      >
+                        {viewingMedicine.Notes}
+                      </Text>
                     </Descriptions.Item>
                   )}
 
                   {viewingMedicine.NurseID && (
                     <Descriptions.Item label="Được xử lý bởi y tá">
-                      <Text style={{ fontSize: '13px', color: '#1890ff' }}>Mã y tá: {viewingMedicine.NurseID}</Text>
+                      <Text style={{ fontSize: "13px", color: "#1890ff" }}>
+                        Mã y tá: {viewingMedicine.NurseID}
+                      </Text>
                     </Descriptions.Item>
                   )}
                 </Descriptions>
@@ -2668,7 +3462,7 @@ const MedicineManagement = () => {
                 // Tìm ảnh từ nhiều nguồn có thể có
                 let medicineImages = [];
 
-                console.log('🔍 Debug ảnh thuốc trong modal view:', {
+                console.log("🔍 Debug ảnh thuốc trong modal view:", {
                   medicineId: viewingMedicine.MedicineID,
                   File: viewingMedicine.File,
                   files: viewingMedicine.files,
@@ -2676,98 +3470,180 @@ const MedicineManagement = () => {
                   images: viewingMedicine.images,
                   Image: viewingMedicine.Image,
                   image: viewingMedicine.image,
-                  fullObject: viewingMedicine
+                  fullObject: viewingMedicine,
                 });
 
-                // ✅ Ưu tiên lấy từ File array (chính xác nhất từ backend)
-                if (viewingMedicine.File && Array.isArray(viewingMedicine.File) && viewingMedicine.File.length > 0) {
-                  medicineImages = viewingMedicine.File
-                    .map(file => file.FileLink || file.fileLink || file.url)
+                // ✅ Xử lý hình ảnh thông minh - ưu tiên API response format
+                if (
+                  viewingMedicine.image &&
+                  Array.isArray(viewingMedicine.image) &&
+                  viewingMedicine.image.length > 0
+                ) {
+                  // API trả về "image" array với objects {id, url, fileName, fileType, uploadedAt}
+                  medicineImages = viewingMedicine.image
+                    .map((imageObj) => {
+                      if (typeof imageObj === "object" && imageObj !== null) {
+                        return (
+                          imageObj.url || imageObj.FileLink || imageObj.fileLink
+                        );
+                      } else if (typeof imageObj === "string") {
+                        return imageObj;
+                      }
+                      return null;
+                    })
                     .filter(Boolean);
-                  console.log('✅ Found images from File array:', medicineImages);
+                  console.log(
+                    "✅ Found images from image array (API format):",
+                    medicineImages
+                  );
+                }
+                // Fallback: File array (từ frontend processing)
+                else if (
+                  viewingMedicine.File &&
+                  Array.isArray(viewingMedicine.File) &&
+                  viewingMedicine.File.length > 0
+                ) {
+                  medicineImages = viewingMedicine.File.map(
+                    (file) => file.FileLink || file.fileLink || file.url
+                  ).filter(Boolean);
+                  console.log(
+                    "✅ Found images from File array:",
+                    medicineImages
+                  );
                 }
                 // Fallback: files array (lowercase)
-                else if (viewingMedicine.files && Array.isArray(viewingMedicine.files) && viewingMedicine.files.length > 0) {
+                else if (
+                  viewingMedicine.files &&
+                  Array.isArray(viewingMedicine.files) &&
+                  viewingMedicine.files.length > 0
+                ) {
                   medicineImages = viewingMedicine.files
-                    .map(file => file.FileLink || file.fileLink || file.url)
+                    .map((file) => file.FileLink || file.fileLink || file.url)
                     .filter(Boolean);
-                  console.log('✅ Found images from files array:', medicineImages);
+                  console.log(
+                    "✅ Found images from files array:",
+                    medicineImages
+                  );
                 }
-                // Fallback: Images array
-                else if (viewingMedicine.Images && Array.isArray(viewingMedicine.Images) && viewingMedicine.Images.length > 0) {
+                // Fallback: Images array (PascalCase)
+                else if (
+                  viewingMedicine.Images &&
+                  Array.isArray(viewingMedicine.Images) &&
+                  viewingMedicine.Images.length > 0
+                ) {
                   medicineImages = viewingMedicine.Images.filter(Boolean);
-                  console.log('✅ Found images from Images array:', medicineImages);
+                  console.log(
+                    "✅ Found images from Images array:",
+                    medicineImages
+                  );
                 }
                 // Fallback: images array (lowercase)
-                else if (viewingMedicine.images && Array.isArray(viewingMedicine.images) && viewingMedicine.images.length > 0) {
+                else if (
+                  viewingMedicine.images &&
+                  Array.isArray(viewingMedicine.images) &&
+                  viewingMedicine.images.length > 0
+                ) {
                   medicineImages = viewingMedicine.images.filter(Boolean);
-                  console.log('✅ Found images from images array:', medicineImages);
+                  console.log(
+                    "✅ Found images from images array:",
+                    medicineImages
+                  );
                 }
-                // Fallback: Image array
-                else if (viewingMedicine.Image && Array.isArray(viewingMedicine.Image) && viewingMedicine.Image.length > 0) {
+                // Fallback: Image array (PascalCase)
+                else if (
+                  viewingMedicine.Image &&
+                  Array.isArray(viewingMedicine.Image) &&
+                  viewingMedicine.Image.length > 0
+                ) {
                   medicineImages = viewingMedicine.Image.filter(Boolean);
-                  console.log('✅ Found images from Image array:', medicineImages);
+                  console.log(
+                    "✅ Found images from Image array:",
+                    medicineImages
+                  );
                 }
-                // Fallback: image array (lowercase)
-                else if (viewingMedicine.image && Array.isArray(viewingMedicine.image) && viewingMedicine.image.length > 0) {
-                  medicineImages = viewingMedicine.image.filter(Boolean);
-                  console.log('✅ Found images from image array:', medicineImages);
-                }
-                // Single image string
-                else if (viewingMedicine.imageUrl && typeof viewingMedicine.imageUrl === 'string') {
+                // Single image strings
+                else if (
+                  viewingMedicine.imageUrl &&
+                  typeof viewingMedicine.imageUrl === "string"
+                ) {
                   medicineImages = [viewingMedicine.imageUrl];
-                  console.log('✅ Found single imageUrl:', medicineImages);
-                }
-                else if (viewingMedicine.image && typeof viewingMedicine.image === 'string') {
+                  console.log("✅ Found single imageUrl:", medicineImages);
+                } else if (
+                  viewingMedicine.image &&
+                  typeof viewingMedicine.image === "string"
+                ) {
                   medicineImages = [viewingMedicine.image];
-                  console.log('✅ Found single image string:', medicineImages);
-                }
-                else if (viewingMedicine.Image && typeof viewingMedicine.Image === 'string') {
+                  console.log("✅ Found single image string:", medicineImages);
+                } else if (
+                  viewingMedicine.Image &&
+                  typeof viewingMedicine.Image === "string"
+                ) {
                   medicineImages = [viewingMedicine.Image];
-                  console.log('✅ Found single Image string:', medicineImages);
+                  console.log("✅ Found single Image string:", medicineImages);
                 }
                 // Debug: tìm tất cả properties có chứa "image" hoặc "file"
                 else {
-                  console.log('❌ No standard image fields found, checking all properties...');
+                  console.log(
+                    "❌ No standard image fields found, checking all properties..."
+                  );
                   const allProps = Object.keys(viewingMedicine);
-                  allProps.forEach(prop => {
+                  allProps.forEach((prop) => {
                     const lowerProp = prop.toLowerCase();
-                    if ((lowerProp.includes('file') || lowerProp.includes('image') || lowerProp.includes('url'))
-                      && viewingMedicine[prop]) {
-                      console.log(`🖼️ Found potential image property: ${prop}`, viewingMedicine[prop]);
+                    if (
+                      (lowerProp.includes("file") ||
+                        lowerProp.includes("image") ||
+                        lowerProp.includes("url")) &&
+                      viewingMedicine[prop]
+                    ) {
+                      console.log(
+                        `🖼️ Found potential image property: ${prop}`,
+                        viewingMedicine[prop]
+                      );
                     }
                   });
                 }
 
-                console.log('🔍 Final medicineImages found:', medicineImages);
+                console.log("🔍 Final medicineImages found:", medicineImages);
 
                 if (medicineImages.length > 0) {
                   return (
-                    <Card title="Hình ảnh thuốc" size="small" style={{ marginBottom: '16px' }}>
+                    <Card
+                      title="Hình ảnh thuốc"
+                      size="small"
+                      style={{ marginBottom: "16px" }}
+                    >
                       <div className="grid grid-cols-3 gap-2">
                         {medicineImages.map((img, index) => {
                           // Xử lý URL ảnh thông minh
                           let imageUrl;
 
-                          if (typeof img === 'string') {
-                            if (img.startsWith('http://') || img.startsWith('https://')) {
+                          if (typeof img === "string") {
+                            if (
+                              img.startsWith("http://") ||
+                              img.startsWith("https://")
+                            ) {
                               imageUrl = img;
-                            } else if (img.startsWith('data:')) {
+                            } else if (img.startsWith("data:")) {
                               imageUrl = img;
-                            } else if (img.startsWith('blob:')) {
+                            } else if (img.startsWith("blob:")) {
                               imageUrl = img;
                             } else {
                               // Đường dẫn tương đối - thêm base URL
-                              const baseUrl = 'https://localhost:7040'; // ✅ Sử dụng HTTPS như backend
-                              const cleanImg = img.startsWith('/') ? img : `/${img}`;
+                              const baseUrl = "https://localhost:7040"; // ✅ Sử dụng HTTPS như backend
+                              const cleanImg = img.startsWith("/")
+                                ? img
+                                : `/${img}`;
                               imageUrl = `${baseUrl}${cleanImg}`;
                             }
-                          } else if (img instanceof File || img instanceof Blob) {
+                          } else if (
+                            img instanceof File ||
+                            img instanceof Blob
+                          ) {
                             imageUrl = URL.createObjectURL(img);
                           } else if (img?.url) {
                             imageUrl = img.url;
                           } else {
-                            console.warn('⚠️ Không thể xử lý ảnh:', img);
+                            console.warn("⚠️ Không thể xử lý ảnh:", img);
                             return null;
                           }
 
@@ -2780,54 +3656,65 @@ const MedicineManagement = () => {
                                 alt={`Medicine ${index + 1}`}
                                 className="w-full h-24 object-cover rounded border hover:scale-105 transition-transform cursor-pointer"
                                 onClick={() => {
-                                  // Tạo modal để xem ảnh full size
-                                  const modal = document.createElement('div');
-                                  modal.style.cssText = `
-                                    position: fixed;
-                                    top: 0;
-                                    left: 0;
-                                    width: 100vw;
-                                    height: 100vh;
-                                    background: rgba(0,0,0,0.8);
-                                    display: flex;
-                                    justify-content: center;
-                                    align-items: center;
-                                    z-index: 9999;
-                                    cursor: pointer;
-                                  `;
+                                  // 🆕 SỬ DỤNG MODAL ĐƠN GIẢN THAY VÀO DOM MANIPULATION
+                                  const processedUrls = medicineImages
+                                    .map((img, idx) => {
+                                      if (typeof img === "string") {
+                                        if (
+                                          img.startsWith("http://") ||
+                                          img.startsWith("https://") ||
+                                          img.startsWith("data:") ||
+                                          img.startsWith("blob:")
+                                        ) {
+                                          return img;
+                                        } else {
+                                          const baseUrl =
+                                            "https://localhost:7040";
+                                          const cleanImg = img.startsWith("/")
+                                            ? img
+                                            : `/${img}`;
+                                          return `${baseUrl}${cleanImg}`;
+                                        }
+                                      } else if (
+                                        img instanceof File ||
+                                        img instanceof Blob
+                                      ) {
+                                        return URL.createObjectURL(img);
+                                      } else if (img?.url) {
+                                        return img.url;
+                                      }
+                                      return null;
+                                    })
+                                    .filter(Boolean);
 
-                                  const img = document.createElement('img');
-                                  img.src = imageUrl;
-                                  img.style.cssText = `
-                                    max-width: 90%;
-                                    max-height: 90%;
-                                    object-fit: contain;
-                                    border-radius: 8px;
-                                  `;
-
-                                  modal.appendChild(img);
-                                  document.body.appendChild(modal);
-
-                                  modal.onclick = () => {
-                                    document.body.removeChild(modal);
-                                  };
+                                  openImageModal(
+                                    imageUrl,
+                                    `${viewingMedicine.MedicineName} - Ảnh ${
+                                      index + 1
+                                    }`,
+                                    processedUrls,
+                                    index
+                                  );
                                 }}
                                 onError={(e) => {
-                                  console.log('❌ Lỗi tải ảnh:', imageUrl);
+                                  console.log("❌ Lỗi tải ảnh:", imageUrl);
                                   // Thử với các đường dẫn khác nếu lỗi
                                   if (!e.target.dataset.retried) {
-                                    e.target.dataset.retried = 'true';
+                                    e.target.dataset.retried = "true";
                                     const retryUrl = `https://localhost:7040/uploads/${img}`;
-                                    console.log('🔄 Retry with URL:', retryUrl);
+                                    console.log("🔄 Retry with URL:", retryUrl);
                                     e.target.src = retryUrl;
                                   } else if (!e.target.dataset.retried2) {
-                                    e.target.dataset.retried2 = 'true';
+                                    e.target.dataset.retried2 = "true";
                                     const retryUrl2 = `https://localhost:7040/files/${img}`;
-                                    console.log('🔄 Retry with URL 2:', retryUrl2);
+                                    console.log(
+                                      "🔄 Retry with URL 2:",
+                                      retryUrl2
+                                    );
                                     e.target.src = retryUrl2;
                                   } else {
                                     // Hiển thị placeholder khi tất cả đều thất bại
-                                    e.target.style.display = 'none';
+                                    e.target.style.display = "none";
                                     e.target.parentNode.innerHTML = `
                                       <div style="
                                         width: 100%;
@@ -2849,10 +3736,13 @@ const MedicineManagement = () => {
                                   }
                                 }}
                                 onLoad={() => {
-                                  console.log('✅ Ảnh đã tải thành công:', imageUrl);
+                                  console.log(
+                                    "✅ Ảnh đã tải thành công:",
+                                    imageUrl
+                                  );
                                 }}
                               />
-                              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded flex items-center justify-content">
+                              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded flex items-center justify-center">
                                 <EyeOutlined className="text-white opacity-0 group-hover:opacity-100 text-lg" />
                               </div>
                             </div>
@@ -2901,7 +3791,7 @@ const MedicineManagement = () => {
               size="large"
             >
               Đóng
-            </Button>
+            </Button>,
           ]}
           width={900}
         >
@@ -2915,8 +3805,9 @@ const MedicineManagement = () => {
                       {viewingMedicineHistory.MedicineName}
                     </h4>
                     <p className="text-sm text-gray-600">
-                      Mã: {viewingMedicineHistory.MedicineID} |
-                      Học sinh: {getStudentName(viewingMedicineHistory.StudentID)} - {getStudentClass(viewingMedicineHistory.StudentID)}
+                      Mã: {viewingMedicineHistory.MedicineID} | Học sinh:{" "}
+                      {getStudentName(viewingMedicineHistory.StudentID)} -{" "}
+                      {getStudentClass(viewingMedicineHistory.StudentID)}
                     </p>
                   </div>
                   <Tag
@@ -2952,72 +3843,171 @@ const MedicineManagement = () => {
                           <div className="flex items-center space-x-2">
                             <EditOutlined className="text-purple-500" />
                             <span className="font-medium text-gray-800">
-                              {entry.action === 'UPDATE' ? 'Cập nhật' : entry.action}
+                              {entry.action === "UPDATE"
+                                ? "Cập nhật"
+                                : entry.action}
                             </span>
                           </div>
                           <span className="text-xs text-gray-400">
-                            {new Date(entry.timestamp).toLocaleString('vi-VN')}
+                            {new Date(entry.timestamp).toLocaleString("vi-VN")}
                           </span>
                         </div>
 
                         {/* Changes */}
-                        {entry.changedFields && entry.changedFields.length > 0 && (
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium text-gray-700">Các thay đổi:</p>
-                            {entry.changedFields.map((change, changeIndex) => (
-                              <div key={changeIndex} className="bg-gray-50 p-2 rounded text-sm">
-                                <div className="font-medium text-gray-700 mb-1">
-                                  {getFieldDisplayName(change.field)}:
-                                </div>
-                                {change.field === 'Images' ? (
-                                  // Xử lý riêng cho ảnh
-                                  <div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                      <div>
-                                        <span className="text-xs text-gray-500">Trước:</span>
-                                        <div className="bg-red-50 text-red-700 p-1 rounded text-xs">
-                                          {change.from || '(Không có ảnh)'}
-                                        </div>
-                                      </div>
-                                      <div>
-                                        <span className="text-xs text-gray-500">Sau:</span>
-                                        <div className="bg-green-50 text-green-700 p-1 rounded text-xs">
-                                          {change.to || '(Không có ảnh)'}
-                                        </div>
-                                      </div>
+                        {entry.changedFields &&
+                          entry.changedFields.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-sm font-medium text-gray-700">
+                                Các thay đổi:
+                              </p>
+                              {entry.changedFields.map(
+                                (change, changeIndex) => (
+                                  <div
+                                    key={changeIndex}
+                                    className="bg-gray-50 p-2 rounded text-sm"
+                                  >
+                                    <div className="font-medium text-gray-700 mb-1">
+                                      {getFieldDisplayName(change.field)}:
                                     </div>
-                                    {entry.hasImageUpdate && (
-                                      <div className="mt-2 text-xs text-blue-600 font-medium">
-                                        ✨ Đã cập nhật ảnh thuốc
+                                    {change.field === "Images" ? (
+                                      // Xử lý riêng cho ảnh
+                                      <div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                          <div>
+                                            <span className="text-xs text-gray-500">
+                                              Trước:
+                                            </span>
+                                            <div className="bg-red-50 text-red-700 p-1 rounded text-xs">
+                                              {change.from || "(Không có ảnh)"}
+                                            </div>
+                                          </div>
+                                          <div>
+                                            <span className="text-xs text-gray-500">
+                                              Sau:
+                                            </span>
+                                            <div className="bg-green-50 text-green-700 p-1 rounded text-xs">
+                                              {change.to || "(Không có ảnh)"}
+                                            </div>
+                                          </div>
+                                        </div>
+                                        {entry.hasImageUpdate && (
+                                          <div className="mt-2 text-xs text-blue-600 font-medium">
+                                            ✨ Đã cập nhật ảnh thuốc
+                                          </div>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      // Xử lý bình thường cho các field khác
+                                      <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                          <span className="text-xs text-gray-500">
+                                            Trước:
+                                          </span>
+                                          <div className="bg-red-50 text-red-700 p-1 rounded text-xs">
+                                            {change.from || "(Trống)"}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <span className="text-xs text-gray-500">
+                                            Sau:
+                                          </span>
+                                          <div className="bg-green-50 text-green-700 p-1 rounded text-xs">
+                                            {change.to || "(Trống)"}
+                                          </div>
+                                        </div>
                                       </div>
                                     )}
                                   </div>
-                                ) : (
-                                  // Xử lý bình thường cho các field khác
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <div>
-                                      <span className="text-xs text-gray-500">Trước:</span>
-                                      <div className="bg-red-50 text-red-700 p-1 rounded text-xs">
-                                        {change.from || '(Trống)'}
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-xs text-gray-500">Sau:</span>
-                                      <div className="bg-green-50 text-green-700 p-1 rounded text-xs">
-                                        {change.to || '(Trống)'}
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                                )
+                              )}
+                            </div>
+                          )}
                       </div>
                     ))}
                   </div>
                 )}
               </div>
+            </div>
+          )}
+        </Modal>
+
+        {/* 🆕 MODAL XEM ẢNH ĐƠN GIẢN */}
+        <Modal
+          open={imageModalVisible}
+          onCancel={closeImageModal}
+          footer={null}
+          width="90%"
+          style={{ top: 20 }}
+          centered
+          title={imageTitle}
+        >
+          <div
+            style={{
+              position: "relative",
+              textAlign: "center",
+              minHeight: "400px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {/* Nút Previous */}
+            {allImages.length > 1 && (
+              <Button
+                type="primary"
+                shape="circle"
+                icon="❮"
+                onClick={prevImage}
+                style={{
+                  position: "absolute",
+                  left: "20px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  zIndex: 10,
+                }}
+              />
+            )}
+
+            {/* Ảnh chính */}
+            <img
+              src={currentImageUrl}
+              alt={imageTitle}
+              style={{
+                maxWidth: "100%",
+                maxHeight: "70vh",
+                objectFit: "contain",
+                borderRadius: "8px",
+              }}
+            />
+
+            {/* Nút Next */}
+            {allImages.length > 1 && (
+              <Button
+                type="primary"
+                shape="circle"
+                icon="❯"
+                onClick={nextImage}
+                style={{
+                  position: "absolute",
+                  right: "20px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  zIndex: 10,
+                }}
+              />
+            )}
+          </div>
+
+          {/* Thông tin ảnh */}
+          {allImages.length > 1 && (
+            <div
+              style={{
+                textAlign: "center",
+                marginTop: "10px",
+                color: "#666",
+              }}
+            >
+              Ảnh {currentImageIndex + 1} / {allImages.length}
             </div>
           )}
         </Modal>

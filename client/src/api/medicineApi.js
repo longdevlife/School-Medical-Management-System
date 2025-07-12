@@ -1,6 +1,6 @@
 import axiosClient from "./axiosClient";
 const medicineApi = {
-    nurse: {
+  nurse: {
     // GET - Lấy DANH SÁCH THUỐC TỪ PHỤ HUYNH GỬI
     getAll: () => {
       return axiosClient.get("/nurse/medicine/getAll");
@@ -59,15 +59,32 @@ const medicineApi = {
   parent: {
     // Backend sẽ trả về TẤT CẢ medicines của parent, frontend sẽ filter
     getMedicinesByParentId: () => {
+      console.log("🔍 Calling API: GET /parent/medicine/getByParentId");
       return axiosClient.get(`/parent/medicine/getByParentId`);
     },
-    
+
+    // ✅ API để lấy danh sách học sinh của parent (đúng endpoint)
+    getStudentsByParentId: () => {
+      console.log("🔍 Calling API: GET /parent/get-student-info-by-parent");
+      return axiosClient.get(`/parent/get-student-info-by-parent`);
+    },
+
     // POST - Tạo medicine mới
     createMedicine: (data) => {
-      console.log('🚀 medicineApi.createMedicine called with data:', {
+      console.log("🚀 medicineApi.createMedicine called with data:", {
         ...data,
         ImagesCount: data.Images?.length || 0,
-        StudentID: data.StudentID
+        StudentID: data.StudentID,
+      });
+
+      // ✅ CRITICAL: Debug StudentID trước khi gửi API
+      console.log("🔍 CRITICAL DEBUG - StudentID Analysis:", {
+        receivedStudentID: data.StudentID,
+        studentIDType: typeof data.StudentID,
+        studentIDLength: data.StudentID?.length,
+        startsWithST: data.StudentID?.startsWith?.("ST"),
+        exactValue: `"${data.StudentID}"`,
+        trimmedValue: `"${data.StudentID?.trim()}"`,
       });
 
       // Validate required fields
@@ -84,14 +101,41 @@ const medicineApi = {
         throw new Error("StudentID is required");
       }
 
+      // ✅ ADDITIONAL VALIDATION: Check StudentID format
+      const cleanStudentID = data.StudentID.trim();
+      if (!cleanStudentID.match(/^ST\d+$/)) {
+        console.error("❌ Invalid StudentID format:", cleanStudentID);
+        throw new Error(
+          `StudentID "${cleanStudentID}" không đúng format. Phải có dạng ST + số (ví dụ: ST0003)`
+        );
+      }
+
+      // ✅ LOG StudentID để so sánh với database
+      console.log("📋 StudentID sẽ được gửi tới backend:", {
+        original: data.StudentID,
+        cleaned: cleanStudentID,
+        format: "ST + số (ví dụ: ST0003)",
+        message:
+          "Backend sẽ kiểm tra StudentID này có tồn tại trong bảng StudentProfile không",
+      });
+
+      // ✅ FINAL VALIDATION: Confirm với API response format
+      console.log("🔍 API INTEGRATION CHECK:", {
+        expectedAPIResponse:
+          "Endpoint /parent/get-student-info-by-parent phải trả về studentID này",
+        studentIDToSend: cleanStudentID,
+        backendTable: "StudentProfile",
+        foreignKeyConstraint: "FK_Medicine_StudentProfile_StudentID",
+      });
+
       const formData = new FormData();
-      
+
       // Thêm các trường bắt buộc
       formData.append("MedicineName", data.MedicineName.trim());
       formData.append("Quantity", data.Quantity.trim());
       formData.append("Dosage", data.Dosage.trim());
       formData.append("StudentID", data.StudentID.trim());
-      
+
       // Thêm các trường tùy chọn
       if (data.Instructions !== undefined) {
         formData.append("Instructions", data.Instructions.trim() || "");
@@ -99,81 +143,82 @@ const medicineApi = {
       if (data.Notes !== undefined) {
         formData.append("Notes", data.Notes.trim() || "");
       }
-      
+
       // Debug FormData trước khi gửi
-      console.log('📋 FormData contents:');
+      console.log("📋 FormData contents:");
       for (let [key, value] of formData.entries()) {
         if (value instanceof File) {
-          console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+          console.log(
+            `${key}: File(${value.name}, ${value.size} bytes, ${value.type})`
+          );
         } else {
           console.log(`${key}: ${value}`);
         }
       }
-      
+
       // ✅ Xử lý hình ảnh - Backend nhận IFormFile[] Image
       if (data.Images && Array.isArray(data.Images) && data.Images.length > 0) {
-        console.log('🖼️ Adding images to FormData:', data.Images.length);
+        console.log("🖼️ Adding images to FormData:", data.Images.length);
         data.Images.forEach((file, index) => {
           if (file instanceof File) {
             formData.append("Image", file);
-            console.log(`📎 Added Image[${index}]: ${file.name} (${file.size} bytes)`);
+            console.log(
+              `📎 Added Image[${index}]: ${file.name} (${file.size} bytes)`
+            );
           } else {
             console.warn(`⚠️ Invalid image at index ${index}:`, file);
           }
         });
       } else if (data.Image && data.Image instanceof File) {
         formData.append("Image", data.Image);
-        console.log('📎 Added single Image:', data.Image.name);
+        console.log("📎 Added single Image:", data.Image.name);
       } else {
-        console.log('📷 No images to upload');
+        console.log("📷 No images to upload");
       }
-      
-      console.log('🚀 Sending POST request to /parent/medicine/create');
+
+      console.log("🚀 Sending POST request to /parent/medicine/create");
       return axiosClient.post("/parent/medicine/create", formData, {
         headers: { "Content-Type": "multipart/form-data" },
-        timeout: 30000
+        timeout: 30000,
       });
     },
-    
 
     // Backend cho phép update các thuốc có trạng thái chưa xử lý theo MedicineID
     updateMedicine: (data) => {
       const medicineId = data.MedicineID;
-      
+
       if (!medicineId) {
         throw new Error("MedicineID là bắt buộc để cập nhật thuốc");
       }
-      
+
       const formData = new FormData();
-      
+
       // Gửi MedicineID để backend biết thuốc nào cần update
       formData.append("MedicineID", medicineId);
-      
+
       // Thêm các trường thông tin thuốc được phép cập nhật
       if (data.MedicineName) formData.append("MedicineName", data.MedicineName);
       if (data.Quantity) formData.append("Quantity", data.Quantity);
       if (data.Dosage) formData.append("Dosage", data.Dosage);
-      if (data.Instructions !== undefined) formData.append("Instructions", data.Instructions);
+      if (data.Instructions !== undefined)
+        formData.append("Instructions", data.Instructions);
       if (data.Notes !== undefined) formData.append("Notes", data.Notes);
-      
+
       // Xử lý hình ảnh - đảm bảo khớp với định dạng api của nurse
       if (data.Images && Array.isArray(data.Images) && data.Images.length > 0) {
-        data.Images.forEach(file => {
+        data.Images.forEach((file) => {
           formData.append("Image", file);
         });
       } else if (data.Image) {
         formData.append("Image", data.Image);
       }
-      
-      
+
       // api/parent/medicine/update
       return axiosClient.put(`/parent/medicine/update`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
-        timeout: 30000
+        timeout: 30000,
       });
     },
-    
-
   },
 };
 

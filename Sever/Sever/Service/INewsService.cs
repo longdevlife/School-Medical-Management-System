@@ -126,6 +126,7 @@ namespace Sever.Service
                     Summary = item.Summary,
                     Body = item.Body,
                     Image = listImage.Select(i => i.FileLink).ToList(),
+                    Status = item.Status,
                 });
 
             }

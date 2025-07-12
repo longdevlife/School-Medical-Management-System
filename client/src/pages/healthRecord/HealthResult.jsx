@@ -471,8 +471,8 @@ const HealthResult = () => {
       );
 
       const response = await appointApi.parent.confirmAppointment({
-        AppointmentID: appointmentId,
-        Notes: notes,
+        appointmentID: appointmentId,
+        notes: notes || "Phụ huynh đã xác nhận tham gia",
       });
 
       console.log("✅ Xác nhận appointment thành công:", response);
@@ -496,8 +496,8 @@ const HealthResult = () => {
       );
 
       const response = await appointApi.parent.deniedAppointment({
-        AppointmentID: appointmentId,
-        Notes: notes,
+        appointmentID: appointmentId,
+        notes: notes || "Phụ huynh từ chối tham gia",
       });
 
       console.log("✅ Từ chối appointment thành công:", response);
@@ -1999,7 +1999,8 @@ const HealthResult = () => {
               </Descriptions.Item>
             </Descriptions>
             {/* Related Health Checkup */}
-            {viewingAppointment.HealthCheckup && (
+            {(viewingAppointment.healthCheckUp ||
+              viewingAppointment.HealthCheckup) && (
               <Card
                 title="Kết quả khám liên quan"
                 size="small"
@@ -2008,13 +2009,20 @@ const HealthResult = () => {
                 <Descriptions bordered column={2} size="small">
                   <Descriptions.Item label="Mã khám" span={1}>
                     <Text code style={{ fontSize: "14px", color: "#1890ff" }}>
-                      HC-{viewingAppointment.HealthCheckup.HealthCheckUpID}
+                      {viewingAppointment.healthCheckUp?.healthCheckUpID ||
+                        viewingAppointment.HealthCheckup?.HealthCheckUpID ||
+                        viewingAppointment.healthCheckUpID ||
+                        "Chưa có"}
                     </Text>
                   </Descriptions.Item>
                   <Descriptions.Item label="Ngày khám" span={1}>
                     <Text style={{ fontSize: "14px", color: "#1890ff" }}>
-                      {viewingAppointment.HealthCheckup.CheckDate
-                        ? formatDate(viewingAppointment.HealthCheckup.CheckDate)
+                      {viewingAppointment.healthCheckUp?.checkDate ||
+                      viewingAppointment.HealthCheckup?.CheckDate
+                        ? formatDate(
+                            viewingAppointment.healthCheckUp?.checkDate ||
+                              viewingAppointment.HealthCheckup?.CheckDate
+                          )
                         : "Chưa khám"}
                     </Text>
                   </Descriptions.Item>
@@ -2023,7 +2031,9 @@ const HealthResult = () => {
             )}
 
             {/* Actions for pending appointments */}
-            {canTakeAppointmentAction(viewingAppointment.Status) && (
+            {canTakeAppointmentAction(
+              viewingAppointment.status || viewingAppointment.Status
+            ) && (
               <Card title="Xác nhận tham gia" size="small">
                 <Row gutter={16}>
                   <Col span={12}>
@@ -2037,7 +2047,8 @@ const HealthResult = () => {
                       }}
                       onClick={() => {
                         handleConfirmAppointment(
-                          viewingAppointment.AppointmentID
+                          viewingAppointment.appointmentID ||
+                            viewingAppointment.AppointmentID
                         );
                         setIsAppointmentDetailModalVisible(false);
                       }}
@@ -2052,7 +2063,8 @@ const HealthResult = () => {
                       block
                       onClick={() => {
                         handleDeniedAppointment(
-                          viewingAppointment.AppointmentID
+                          viewingAppointment.appointmentID ||
+                            viewingAppointment.AppointmentID
                         );
                         setIsAppointmentDetailModalVisible(false);
                       }}

@@ -93,15 +93,7 @@ namespace Sever.Repository
         }
         public async Task<bool> UpdateStatus(HealthCheckUp healthCheckup, string status)
         {
-            if (!string.IsNullOrWhiteSpace(status) && status.Trim() == "Hoàn thành")
-            {
-                healthCheckup.Status = "Hoàn thành";
-            }
-            else
-            {
-                healthCheckup.Status = "Chờ khám";
-            }
-
+            healthCheckup.Status = "Hoàn thành";
             _context.HealthCheckUp.Update(healthCheckup);
             var result = await _context.SaveChangesAsync();
             return result > 0;

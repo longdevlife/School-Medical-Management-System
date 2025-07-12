@@ -16,26 +16,26 @@ namespace Sever.Repository.Interfaces
         Task<List<string>> GetAllNurseIDsAsync();
 
     }
-        public class NotificationRepository : INotificationRepository
+    public class NotificationRepository : INotificationRepository
+    {
+        private readonly DataContext _context;
+
+        public NotificationRepository(DataContext context)
         {
-            private readonly DataContext _context;
+            _context = context;
+        }
 
-            public NotificationRepository(DataContext context)
-            {
-                _context = context;
-            }
+        public async Task AddNotificationAsync(Notify notification)
+        {
+            await _context.Notify.AddAsync(notification);
+            await _context.SaveChangesAsync();
+        }
 
-            public async Task AddNotificationAsync(Notify notification)
-            {
-                await _context.Notify.AddAsync(notification);
-                await _context.SaveChangesAsync();
-            }
-
-            public async Task<string> GetCurrentNotifyID()
-            {
-                var lastNotify = await _context.Notify
-                    .OrderByDescending(n => n.NotifyID)
-                    .FirstOrDefaultAsync();
+        public async Task<string> GetCurrentNotifyID()
+        {
+            var lastNotify = await _context.Notify
+                .OrderByDescending(n => n.NotifyID)
+                .FirstOrDefaultAsync();
 
             string newId;
             if (lastNotify == null)
@@ -55,48 +55,48 @@ namespace Sever.Repository.Interfaces
         }
 
 
-            public async Task<string> GetParentIdByStudentIdAsync(string studentId)
+        public async Task<string> GetParentIdByStudentIdAsync(string studentId)
+        {
+            if (string.IsNullOrEmpty(studentId))
             {
-                if (string.IsNullOrEmpty(studentId))
-                {
-                    return null;
-                }
-
-                var parentId = await _context.Users
-                    .Where(u => u.RoleID == "1" && u.StudentProfile.Any(sp => sp.StudentID == studentId))
-                    .Select(u => u.UserID)
-                    .FirstOrDefaultAsync();
-
-                return parentId;
-            }
-            //public async Task<List<string>> GetParentIDMedicalEventAsync(string medicalEventID)
-            //{
-            //    var studentIds = await _context.MedicalEventDetail
-            //        .Where(d => d.MedicalEventID == medicalEventID)
-            //        .Select(d => d.StudentID)
-            //        .ToListAsync();
-
-            //    if (!studentIds.Any()) return new List<string>();
-
-            //    var parentIds = await _context.Users
-            //        .Where(u => u.RoleID == "1" && u.StudentProfile.Any(sp => studentIds.Contains(sp.StudentID)))
-            //        .Select(u => u.UserID)
-            //        .ToListAsync();
-
-            //    return parentIds;
-            //}
-            public async Task<bool> CheckParentExistsAsync(string parentID)
-            {
-                return await _context.Users.AnyAsync(u => u.UserID == parentID && u.RoleID == "1");
-            }
-            public async Task<List<string>> GetAllNurseIDsAsync()
-            {
-                return await _context.Users
-                    .Where(u => u.RoleID == "2" && u.IsActive == true)
-                    .Select(u => u.UserID)
-                    .ToListAsync();
+                return null;
             }
 
-        
+            var parentId = await _context.Users
+                .Where(u => u.RoleID == "1" && u.StudentProfile.Any(sp => sp.StudentID == studentId))
+                .Select(u => u.UserID)
+                .FirstOrDefaultAsync();
+
+            return parentId;
+        }
+        //public async Task<List<string>> GetParentIDMedicalEventAsync(string medicalEventID)
+        //{
+        //    var studentIds = await _context.MedicalEventDetail
+        //        .Where(d => d.MedicalEventID == medicalEventID)
+        //        .Select(d => d.StudentID)
+        //        .ToListAsync();
+
+        //    if (!studentIds.Any()) return new List<string>();
+
+        //    var parentIds = await _context.Users
+        //        .Where(u => u.RoleID == "1" && u.StudentProfile.Any(sp => studentIds.Contains(sp.StudentID)))
+        //        .Select(u => u.UserID)
+        //        .ToListAsync();
+
+        //    return parentIds;
+        //}
+        public async Task<bool> CheckParentExistsAsync(string parentID)
+        {
+            return await _context.Users.AnyAsync(u => u.UserID == parentID && u.RoleID == "1");
+        }
+        public async Task<List<string>> GetAllNurseIDsAsync()
+        {
+            return await _context.Users
+                .Where(u => u.RoleID == "2" && u.IsActive == true)
+                .Select(u => u.UserID)
+                .ToListAsync();
+        }
+
+
     }
 }

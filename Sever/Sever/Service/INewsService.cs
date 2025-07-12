@@ -91,7 +91,7 @@ namespace Sever.Service
         public async Task<List<GetNewRespone>> GetAllNewsForHomePage()
         {
             var newsResponse = new List<GetNewRespone>();
-            var listNews = await _newsRepository.GetAllNewsAsync();
+            var listNews = await _newsRepository.GetActiveNewsAsync();
             if(listNews == null) { throw new ArgumentNullException("Không có tin tức nào để hiển thị"); }
             foreach (var item in listNews)
             {
@@ -104,6 +104,7 @@ namespace Sever.Service
                     Summary = item.Summary,
                     Body = item.Body,
                     Image = listImage.Select(i => i.FileLink).ToList(),
+                    Status = item.Status,
                 });
 
             }

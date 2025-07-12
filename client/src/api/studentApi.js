@@ -86,8 +86,10 @@ const studentApi = {
     },
 
     //GET- lấy danh sách con của phụ huynh
+    //GET- lấy danh sách con của phụ huynh
     getMyChildren: () => {
-      return axiosClient.get("parent/get-student-info-by-parent");
+      console.log("🔍 Calling API: GET /parent/get-student-info-by-parent");
+      return axiosClient.get("/parent/get-student-info-by-parent");
     },
   },
 };

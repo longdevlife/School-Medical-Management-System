@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Table,
   Button,
@@ -52,24 +52,9 @@ const HealthResult = () => {
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [studentsLoading, setStudentsLoading] = useState(false);
 
-  // Component mount
-  useEffect(() => {
-    console.log("🚀 HealthResult component mounting...");
-    fetchStudents();
-  }, []);
-
-  // Effect để tải health checkup và appointment khi selectedStudentId thay đổi
-  useEffect(() => {
-    if (selectedStudentId) {
-      console.log("🔄 Học sinh đã thay đổi:", selectedStudentId);
-      fetchHealthCheckups();
-      fetchAppointments();
-    }
-  }, [selectedStudentId]);
-
   // ==================== API FUNCTIONS ====================
 
-  const fetchStudents = async () => {
+  const fetchStudents = useCallback(async () => {
     try {
       setStudentsLoading(true);
       console.log("🔄 Đang lấy danh sách học sinh của phụ huynh...");
@@ -130,9 +115,33 @@ const HealthResult = () => {
     } finally {
       setStudentsLoading(false);
     }
-  };
+  }, [selectedStudentId]); // Dependencies cho useCallback fetchStudents
 
-  const fetchHealthCheckups = async () => {
+  const fetchAppointments = useCallback(async () => {
+    if (!selectedStudentId) {
+      setAppointments([]);
+      return;
+    }
+
+    try {
+      console.log("FE gửi studentId lên backend:", selectedStudentId);
+      // 🎯 Gọi API để lấy appointments cho học sinh
+      console.log(
+        "🔄 Đang lấy danh sách appointments cho học sinh:",
+        selectedStudentId
+      );
+      const res = await appointApi.parent.getAppointmentsByStudentId(
+        selectedStudentId
+      );
+      console.log("✅ Appointments response:", res);
+      setAppointments(res.data || []);
+    } catch (error) {
+      console.error("❌ Lỗi khi lấy danh sách appointments:", error);
+      setAppointments([]);
+    }
+  }, [selectedStudentId]); // Dependencies cho useCallback fetchAppointments
+
+  const fetchHealthCheckups = useCallback(async () => {
     if (!selectedStudentId) {
       console.log("FE gửi studentId lên backend:", selectedStudentId);
       setHealthCheckups([]);
@@ -149,8 +158,8 @@ const HealthResult = () => {
       );
 
       // Lấy thông tin user hiện tại để có parentId
-      const userInfoResponse = await appointApi.parent.getCurrentUserInfo();
-      console.log("✅ User info response:", userInfoResponse);
+      const userInfoResponse =
+        await healthCheckupApi.parent.getCurrentUserInfo();
       const parentId = userInfoResponse?.data?.user?.userID;
 
       if (!parentId) {
@@ -254,6 +263,7 @@ const HealthResult = () => {
           return match;
         });
 
+        // Chuẩn hóa dữ liệu
         const normalizedHealthCheckups = filteredHealthCheckups.map((item) => {
           console.log("🔍 Processing HealthCheckUp item:", item);
           console.log(
@@ -265,9 +275,7 @@ const HealthResult = () => {
           return {
             key: item.healthCheckUpID || item.HealthCheckUpID,
             HealthCheckUpID: item.healthCheckUpID || item.HealthCheckUpID,
-
             CheckDate: item.checkDate || item.CheckDate,
-
             Height: item.height || item.Height,
             Weight: item.weight || item.Weight,
             BMI: item.bmi || item.BMI,
@@ -278,9 +286,7 @@ const HealthResult = () => {
             Skin: item.skin || item.Skin,
             Hearing: item.hearing || item.Hearing,
             Respiration: item.respiration || item.Respiration,
-
-            Cardiovascular:
-              item.ardiovascular || item.cardiovascular || item.Cardiovascular,
+            Cardiovascular: item.cardiovascular || item.Cardiovascular,
             Notes: item.notes || item.Notes,
             Status: item.status || item.Status,
             StudentID: item.studentID || item.StudentID,
@@ -296,7 +302,6 @@ const HealthResult = () => {
         });
 
         // 🎯 Phân loại health checkup cho "Kết quả khám sức khỏe"
-        // 🚨 SỬA: Thêm status tiếng Việt từ backend
         // Tab "Chờ xác nhận": Những health checkup chưa được phụ huynh xác nhận
         const waitingHealthCheckups = normalizedHealthCheckups.filter(
           (item) => {
@@ -322,7 +327,7 @@ const HealthResult = () => {
               status === "đã xác nhận" || // Đã xác nhận (tiếng Việt)
               status === "approved" || // Đã duyệt
               status === "completed" || // Hoàn thành
-              status === "hoàn thành" || // 🚨 SỬA: Backend trả về "Hoàn thành"
+              status === "hoàn thành" || // Hoàn thành (tiếng Việt)
               status === "denied" || // Đã từ chối
               status === "từ chối" || // Từ chối (tiếng Việt)
               status === "đã từ chối" || // Đã từ chối (tiếng Việt)
@@ -350,19 +355,32 @@ const HealthResult = () => {
         setConfirmedHistory(processedHealthCheckups);
 
         console.log(
-          "✅ Đã tải ${normalizedHealthCheckups.length} health checkup records"
+          `✅ Đã tải ${normalizedHealthCheckups.length} health checkup records`
         );
 
-        // 🔍 DEBUG: Kiểm tra chi tiết dữ liệu được map
-        console.log("🔍 DEBUG normalized data:");
-        normalizedHealthCheckups.forEach((item, index) => {
-          console.log(`  [${index}] ID: ${item.HealthCheckUpID}`);
-          console.log(`  [${index}] Status: ${item.Status}`);
-          console.log(`  [${index}] Height: ${item.Height}`);
-          console.log(`  [${index}] Weight: ${item.Weight}`);
-          console.log(`  [${index}] BMI: ${item.BMI}`);
-          console.log(`  [${index}] CheckDate: ${item.CheckDate}`);
+        // 🎯 Sau khi xử lý xong health checkup, kiểm tra xem có appointment nào không
+        // Chỉ gọi fetchAppointments nếu có ít nhất 1 health checkup có appointment
+        const hasAppointments = normalizedHealthCheckups.some((item) => {
+          // Kiểm tra các trường appointment có thể có
+          return (
+            item.appointment ||
+            item.Appointment ||
+            item.appointments ||
+            item.Appointments
+          );
         });
+
+        if (hasAppointments) {
+          console.log(
+            "🔄 Có appointment trong health checkup, đang tải danh sách appointments..."
+          );
+          await fetchAppointments();
+        } else {
+          console.log(
+            "⚠️ Không có appointment nào trong health checkup, bỏ qua việc tải appointments"
+          );
+          setAppointments([]);
+        }
       } else {
         console.warn(
           "⚠️ Dữ liệu health checkup không hợp lệ:",
@@ -370,65 +388,32 @@ const HealthResult = () => {
         );
         setHealthCheckups([]);
         setConfirmedHistory([]);
+        setAppointments([]); // Clear appointments nếu không có health checkup
       }
     } catch (error) {
       console.error("❌ Lỗi khi lấy danh sách health checkup:", error);
       message.error("Không thể tải danh sách khám sức khỏe. Vui lòng thử lại!");
       setHealthCheckups([]);
       setConfirmedHistory([]);
+      setAppointments([]); // Clear appointments nếu có lỗi
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedStudentId, fetchAppointments]); // Dependencies cho useCallback fetchHealthCheckups
 
-  const fetchAppointments = async () => {
-    if (!selectedStudentId) {
-      setAppointments([]);
-      return;
+  // Component mount
+  useEffect(() => {
+    console.log("🚀 HealthResult component mounting...");
+    fetchStudents();
+  }, [fetchStudents]);
+
+  // Effect để tải health checkup khi selectedStudentId thay đổi
+  useEffect(() => {
+    if (selectedStudentId) {
+      console.log("🔄 Học sinh đã thay đổi:", selectedStudentId);
+      fetchHealthCheckups();
     }
-
-    try {
-      console.log("FE gửi studentId lên backend:", selectedStudentId);
-      // 🎯 Gọi API để lấy appointments cho học sinh
-      console.log(
-        "🔄 Đang lấy danh sách appointments cho học sinh:",
-        selectedStudentId
-      );
-      const res = await appointApi.parent.getAppointmentsByStudentId(
-        selectedStudentId
-      );
-      console.log("✅ Appointments response:", res);
-      setAppointments(res.data || []);
-    } catch (error) {
-      console.error("❌ Lỗi khi lấy danh sách appointments:", error);
-
-      // 🚨 Xử lý đặc biệt cho lỗi 500 "No appointments found"
-      if (error.response?.status === 500) {
-        const errorMessage = error.response?.data || "";
-        if (
-          typeof errorMessage === "string" &&
-          errorMessage.includes("No appointments found")
-        ) {
-          console.log(
-            "ℹ️ Không có appointments cho học sinh này - đây là bình thường"
-          );
-          setAppointments([]); // Set empty array thay vì hiển thị error
-          return; // Không show error message cho user
-        }
-      }
-
-      // Chỉ show error cho các lỗi khác (không phải "No appointments found")
-      console.error("❌ Chi tiết lỗi appointments:", {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        message: error.message,
-      });
-
-      setAppointments([]);
-      // message.error("Không thể tải danh sách lịch hẹn. Vui lòng thử lại!"); // Tạm thời comment để không spam user
-    }
-  };
+  }, [selectedStudentId, fetchHealthCheckups]);
 
   // ==================== HANDLER FUNCTIONS ====================
 
@@ -438,16 +423,6 @@ const HealthResult = () => {
     setIsDetailModalVisible(true);
   };
 
-  const handleRefresh = () => {
-    console.log("🔄 Refreshing data...");
-    if (selectedStudentId) {
-      fetchHealthCheckups();
-      fetchAppointments();
-    } else {
-      fetchStudents();
-    }
-  };
-
   // ==================== RENDER FUNCTIONS ====================
 
   const handleConfirmHealthCheckup = async (healthCheckupId) => {
@@ -455,7 +430,8 @@ const HealthResult = () => {
       console.log("🔄 Đang xác nhận health checkup:", healthCheckupId);
 
       await healthCheckupApi.parent.confirmHealthCheckup({
-        HeathCheckUpID: healthCheckupId,
+        heathCheckUpID: healthCheckupId,
+        resson: "Phụ huynh đã xác nhận",
       });
 
       message.success("Đã xác nhận lịch khám sức khỏe");
@@ -471,7 +447,8 @@ const HealthResult = () => {
       console.log("🔄 Đang từ chối health checkup:", healthCheckupId);
 
       await healthCheckupApi.parent.denyHealthCheckup({
-        HeathCheckUpID: healthCheckupId,
+        heathCheckUpID: healthCheckupId,
+        resson: "Phụ huynh từ chối",
       });
 
       message.success("Đã từ chối lịch khám sức khỏe");
@@ -501,9 +478,8 @@ const HealthResult = () => {
       console.log("✅ Xác nhận appointment thành công:", response);
       message.success("Đã xác nhận tham gia cuộc hẹn thành công!");
 
-      // Refresh danh sách
+      // Refresh danh sách - chỉ gọi fetchHealthCheckups, nó sẽ tự gọi fetchAppointments
       await fetchHealthCheckups();
-      await fetchAppointments();
     } catch (error) {
       console.error("❌ Lỗi khi xác nhận appointment:", error);
       message.error("Xác nhận appointment thất bại. Vui lòng thử lại!");
@@ -527,9 +503,8 @@ const HealthResult = () => {
       console.log("✅ Từ chối appointment thành công:", response);
       message.success("Đã từ chối cuộc hẹn thành công!");
 
-      // Refresh danh sách
+      // Refresh danh sách - chỉ gọi fetchHealthCheckups, nó sẽ tự gọi fetchAppointments
       await fetchHealthCheckups();
-      await fetchAppointments();
     } catch (error) {
       console.error("❌ Lỗi khi từ chối appointment:", error);
       message.error("Từ chối appointment thất bại. Vui lòng thử lại!");
@@ -730,8 +705,8 @@ const HealthResult = () => {
   const waitingColumns = [
     {
       title: "Mã khám",
-      dataIndex: "HealthCheckUpID", // 🚨 SỬA: Dùng uppercase để khớp với mapping
-      key: "HealthCheckUpID",
+      dataIndex: "healthCheckUpID",
+      key: "healthCheckUpID",
       width: 120,
       render: (text) => (
         <Text strong className="text-blue-600 text-xs">

@@ -5,7 +5,11 @@ import axiosClient from "./axiosClient";
 export const authApi = {
   login: (credentials) => {
     // POST request với username/password
-    return axiosClient.post("/Auth/login", credentials);
+    return axiosClient.post("/auth/login", credentials);
+  },
+
+  googleLogin: (data) => {
+    return axiosClient.post("/auth/google-login", data);
   },
 
   refreshToken: (token) => {
@@ -15,6 +19,6 @@ export const authApi = {
 
   logout: () => {
     // POST request để logout trên server
-    return axiosClient.post("/Auth/logout");
+    return axiosClient.post("/auth/logout");
   },
 };

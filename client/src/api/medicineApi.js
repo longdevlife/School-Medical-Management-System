@@ -14,8 +14,6 @@ const medicineApi = {
       );
 
       const formData = new FormData();
-
-      // Xử lý từng field một cách cụ thể
       Object.keys(medicineData).forEach((key) => {
         if (medicineData[key] !== null && medicineData[key] !== undefined) {
           // Xử lý riêng trường Image
@@ -61,7 +59,7 @@ const medicineApi = {
       console.log("🚀 Sending POST request to /nurse/medicine/create");
       return axiosClient.post("/nurse/medicine/create", formData, {
         headers: { "Content-Type": "multipart/form-data" },
-        timeout: 30000, // Tăng timeout cho việc upload ảnh
+        timeout: 30000,
       });
     },
 
@@ -151,7 +149,14 @@ const medicineApi = {
   parent: {
     // Backend sẽ trả về TẤT CẢ medicines của parent, frontend sẽ filter
     getMedicinesByParentId: () => {
+      console.log("🔍 Calling API: GET /parent/medicine/getByParentId");
       return axiosClient.get(`/parent/medicine/getByParentId`);
+    },
+
+    // ✅ API để lấy danh sách học sinh của parent (đúng endpoint)
+    getStudentsByParentId: () => {
+      console.log("🔍 Calling API: GET /parent/get-student-info-by-parent");
+      return axiosClient.get(`/parent/get-student-info-by-parent`);
     },
 
     // POST - Tạo medicine mới
@@ -160,6 +165,16 @@ const medicineApi = {
         ...data,
         ImagesCount: data.Images?.length || 0,
         StudentID: data.StudentID,
+      });
+
+      // ✅ CRITICAL: Debug StudentID trước khi gửi API
+      console.log("🔍 CRITICAL DEBUG - StudentID Analysis:", {
+        receivedStudentID: data.StudentID,
+        studentIDType: typeof data.StudentID,
+        studentIDLength: data.StudentID?.length,
+        startsWithST: data.StudentID?.startsWith?.("ST"),
+        exactValue: `"${data.StudentID}"`,
+        trimmedValue: `"${data.StudentID?.trim()}"`,
       });
 
       // Validate required fields
@@ -175,6 +190,33 @@ const medicineApi = {
       if (!data.StudentID?.trim()) {
         throw new Error("StudentID is required");
       }
+
+      // ✅ ADDITIONAL VALIDATION: Check StudentID format
+      const cleanStudentID = data.StudentID.trim();
+      if (!cleanStudentID.match(/^ST\d+$/)) {
+        console.error("❌ Invalid StudentID format:", cleanStudentID);
+        throw new Error(
+          `StudentID "${cleanStudentID}" không đúng format. Phải có dạng ST + số (ví dụ: ST0003)`
+        );
+      }
+
+      // ✅ LOG StudentID để so sánh với database
+      console.log("📋 StudentID sẽ được gửi tới backend:", {
+        original: data.StudentID,
+        cleaned: cleanStudentID,
+        format: "ST + số (ví dụ: ST0003)",
+        message:
+          "Backend sẽ kiểm tra StudentID này có tồn tại trong bảng StudentProfile không",
+      });
+
+      // ✅ FINAL VALIDATION: Confirm với API response format
+      console.log("🔍 API INTEGRATION CHECK:", {
+        expectedAPIResponse:
+          "Endpoint /parent/get-student-info-by-parent phải trả về studentID này",
+        studentIDToSend: cleanStudentID,
+        backendTable: "StudentProfile",
+        foreignKeyConstraint: "FK_Medicine_StudentProfile_StudentID",
+      });
 
       const formData = new FormData();
 

@@ -91,15 +91,53 @@ const medicalEventApi = {
         timeout: 10000,
       });
     },
+
+    // PUT - Thêm ảnh vào medical event theo medicalEventID (giữ ảnh cũ)
+    addImage: (medicalEventID, imageFiles) => {
+      console.log("🖼️ API AddImage - Medical Event ID:", medicalEventID);
+      console.log("🖼️ API AddImage - Image Files:", imageFiles);
+
+      const formData = new FormData();
+
+      // Thêm từng file ảnh vào FormData
+      imageFiles.forEach((file) => {
+        formData.append("Image", file);
+        console.log(`📁 Added image: ${file.name} (${file.size} bytes)`);
+      });
+
+      // Debug FormData contents
+      console.log("📋 AddImage FormData contents:");
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(
+            `  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`
+          );
+        } else {
+          console.log(`  ${key}: ${value}`);
+        }
+      }
+
+      console.log(
+        "🚀 Sending FormData to PUT /nurse/event/addImages/" + medicalEventID
+      );
+
+      return axiosClient.put(
+        `/nurse/event/addImages/${medicalEventID}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 30000,
+        }
+      );
+    },
   },
-  
+
   parent: {
     // GET - Lấy tất cả sự kiện y tế của học sinh thuộc phụ huynh đang đăng nhập
     getMedicalEvents: () => {
-      return axiosClient.get('/parent/event/getByStudentId');
-    }
+      return axiosClient.get("/parent/event/getByStudentId");
+    },
   },
-
 };
 
 export default medicalEventApi;

@@ -661,7 +661,7 @@ function VaccinationManagement() {
     }
   };
 
-  const classes = ["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B"];
+  const classes = ["1A", "2A", "3A", "4A", "5A"];
   const statuses = [
     "pending",
     "confirmed",
@@ -1160,7 +1160,7 @@ function VaccinationManagement() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(245, 158, 11, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1244,7 +1244,7 @@ function VaccinationManagement() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #cffafe 0%, #a7f3d0 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(6, 182, 212, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1286,7 +1286,7 @@ function VaccinationManagement() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(34, 197, 94, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1328,7 +1328,7 @@ function VaccinationManagement() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(147, 51, 234, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1373,7 +1373,7 @@ function VaccinationManagement() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(34, 197, 94, 0.3)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1415,7 +1415,7 @@ function VaccinationManagement() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(239, 68, 68, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1971,81 +1971,6 @@ function VaccinationManagement() {
                   </Descriptions.Item>
                 )}
               </Descriptions>
-
-              {/* Hiển thị ảnh vaccine */}
-              {selectedSubmission.vaccineImages &&
-                selectedSubmission.vaccineImages.length > 0 && (
-                  <div style={{ marginTop: "24px" }}>
-                    <Text
-                      strong
-                      style={{
-                        fontSize: "16px",
-                        marginBottom: "12px",
-                        display: "block",
-                      }}
-                    >
-                      📸 Hình ảnh vaccine:
-                    </Text>
-                    <Row gutter={[12, 12]}>
-                      {selectedSubmission.vaccineImages.map((image, index) => (
-                        <Col xs={24} sm={12} md={8} key={index}>
-                          <div
-                            style={{
-                              border: "2px solid #e5e7eb",
-                              borderRadius: "12px",
-                              padding: "8px",
-                              textAlign: "center",
-                              backgroundColor: "#f9fafb",
-                            }}
-                          >
-                            <img
-                              src={image}
-                              alt={`Vaccine ${index + 1}`}
-                              style={{
-                                width: "100%",
-                                height: "120px",
-                                objectFit: "cover",
-                                borderRadius: "8px",
-                              }}
-                              onError={(e) => {
-                                e.target.style.display = "none";
-                                e.target.nextSibling.style.display = "block";
-                              }}
-                            />
-                            <div
-                              style={{
-                                display: "none",
-                                padding: "20px",
-                                color: "#6b7280",
-                                fontSize: "12px",
-                              }}
-                            >
-                              Không thể tải ảnh
-                            </div>
-                          </div>
-                        </Col>
-                      ))}
-                    </Row>
-                  </div>
-                )}
-
-              {(!selectedSubmission.vaccineImages ||
-                selectedSubmission.vaccineImages.length === 0) && (
-                <div
-                  style={{
-                    marginTop: "24px",
-                    padding: "20px",
-                    textAlign: "center",
-                    backgroundColor: "#f9fafb",
-                    borderRadius: "12px",
-                    border: "2px dashed #d1d5db",
-                  }}
-                >
-                  <Text style={{ color: "#6b7280", fontSize: "14px" }}>
-                    📷 Chưa có hình ảnh vaccine
-                  </Text>
-                </div>
-              )}
             </div>
           )}
         </Modal>
@@ -2381,32 +2306,6 @@ function VaccinationManagement() {
                 rows={3}
                 placeholder="Nhập ghi chú về tiến độ tiêm chủng..."
               />
-            </Form.Item>
-            <Form.Item
-              label="Hình ảnh bổ sung"
-              name="image"
-              valuePropName="fileList"
-              getValueFromEvent={(e) =>
-                Array.isArray(e) ? e : e && e.fileList
-              }
-            >
-              <Upload
-                listType="picture-card"
-                beforeUpload={() => false}
-                multiple
-                maxCount={5}
-                accept="image/*"
-                showUploadList={{
-                  showPreviewIcon: true,
-                  showRemoveIcon: true,
-                  showDownloadIcon: false,
-                }}
-              >
-                <div>
-                  <PlusOutlined />
-                  <div style={{ marginTop: 8 }}>Tải ảnh</div>
-                </div>
-              </Upload>
             </Form.Item>
           </Form>
         </Modal>

@@ -65,6 +65,10 @@ function MedicationSubmission() {
   const [previewImage, setPreviewImage] = useState("");
   const [previewTitle, setPreviewTitle] = useState("");
 
+  // 🆕 Navigation và zoom cho image modal
+  const [imageList, setImageList] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   const getStatusFromBackend = (backendStatus) => {
     switch (backendStatus) {
       case "Chờ xử lý":
@@ -277,16 +281,11 @@ function MedicationSubmission() {
   // Tạo mới thuốc
   const handleCreateMedicine = async (values) => {
     try {
-      // 🔧 Chuyển fileList thành array file gốc - Xử lý cấu trúc Upload component
-      console.log("🔍 CREATE DEBUG - values.image raw:", values.image);
-      console.log("🔍 CREATE DEBUG - values.image type:", typeof values.image);
-
       let imageFiles = [];
 
       // Xử lý cấu trúc Upload component từ Ant Design
       if (values.image) {
         if (Array.isArray(values.image)) {
-          // Trường hợp values.image là array
           imageFiles = values.image
             .map((fileObj) => fileObj.originFileObj || fileObj)
             .filter(Boolean);
@@ -294,12 +293,10 @@ function MedicationSubmission() {
           values.image.fileList &&
           Array.isArray(values.image.fileList)
         ) {
-          // Trường hợp values.image có property fileList
           imageFiles = values.image.fileList
             .map((fileObj) => fileObj.originFileObj || fileObj)
             .filter(Boolean);
         } else if (values.image.originFileObj) {
-          // Trường hợp values.image là single file object
           imageFiles = [values.image.originFileObj];
         }
       }
@@ -313,7 +310,7 @@ function MedicationSubmission() {
         Instructions: values.instructions,
         StudentID: values.studentId,
         Status: "Chờ xử lý",
-        Image: imageFiles, // Gửi array file gốc
+        Image: imageFiles,
       };
 
       console.log("🚀 Data gửi lên API:", createData);
@@ -1218,7 +1215,7 @@ function MedicationSubmission() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(245, 158, 11, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1276,7 +1273,7 @@ function MedicationSubmission() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(34, 197, 94, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1392,7 +1389,7 @@ function MedicationSubmission() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(124, 58, 237, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1450,7 +1447,7 @@ function MedicationSubmission() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(239, 68, 68, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1972,12 +1969,16 @@ function MedicationSubmission() {
                                   cursor: "pointer", // 🆕 Thêm con trỏ click
                                 }}
                                 onClick={() => {
-                                  // 🆕 Xử lý click để phóng to ảnh
+                                  // 🆕 Xử lý click để phóng to ảnh với navigation
+                                  setImageList(
+                                    selectedSubmission.medicationImages
+                                  );
+                                  setCurrentImageIndex(index);
                                   setPreviewImage(image);
                                   setPreviewTitle(
-                                    `Ảnh thuốc ${index + 1} - ${
-                                      selectedSubmission.medicationName
-                                    }`
+                                    `Ảnh thuốc ${index + 1}/${
+                                      selectedSubmission.medicationImages.length
+                                    } - ${selectedSubmission.medicationName}`
                                   );
                                   setImagePreviewVisible(true);
                                 }}
@@ -2337,8 +2338,14 @@ function MedicationSubmission() {
                               cursor: "pointer",
                             }}
                             onClick={() => {
+                              setImageList(selectedSubmission.medicationImages);
+                              setCurrentImageIndex(index);
                               setPreviewImage(imageUrl);
-                              setPreviewTitle(`Ảnh hiện tại ${index + 1}`);
+                              setPreviewTitle(
+                                `Ảnh hiện tại ${index + 1}/${
+                                  selectedSubmission.medicationImages.length
+                                }`
+                              );
                               setImagePreviewVisible(true);
                             }}
                           />
@@ -2353,7 +2360,7 @@ function MedicationSubmission() {
                 </Form.Item>
               )}
 
-            {/* 🆕 Tùy chọn xử lý ảnh */}
+            {/* Tùy chọn xử lý ảnh */}
             <Form.Item
               label="Tùy chọn ảnh"
               name="imageAction"
@@ -2365,7 +2372,7 @@ function MedicationSubmission() {
               </Radio.Group>
             </Form.Item>
 
-            {/* 🆕 Trường upload ảnh mới */}
+            {/* Trường upload ảnh mới */}
             <Form.Item
               label="Ảnh thuốc"
               name="image"
@@ -2391,31 +2398,236 @@ function MedicationSubmission() {
           </Form>
         </Modal>
 
-        {/* 🆕 Modal phóng to ảnh */}
+        {/* Modal phóng to ảnh với navigation và zoom */}
         <Modal
           open={imagePreviewVisible}
-          title={previewTitle}
-          footer={null}
+          title={
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                justifyContent: "space-between",
+              }}
+            >
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "12px" }}
+              >
+                <div
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "8px",
+                    background:
+                      "linear-gradient(135deg, #52c41a 0%, #73d13d 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <span style={{ fontSize: "16px" }}>💊</span>
+                </div>
+                <Text strong style={{ fontSize: "16px" }}>
+                  {previewTitle}
+                </Text>
+              </div>
+              {imageList.length > 1 && (
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <Button
+                    type="text"
+                    icon="⬅️"
+                    size="small"
+                    disabled={currentImageIndex === 0}
+                    onClick={() => {
+                      const newIndex = currentImageIndex - 1;
+                      setCurrentImageIndex(newIndex);
+                      setPreviewImage(imageList[newIndex]);
+                      setPreviewTitle(
+                        `Ảnh thuốc ${newIndex + 1}/${imageList.length}`
+                      );
+                    }}
+                    style={{
+                      borderRadius: "6px",
+                      background:
+                        currentImageIndex === 0 ? "#f5f5f5" : "#e6f7ff",
+                      border: "1px solid #d9d9d9",
+                    }}
+                  >
+                    Trước
+                  </Button>
+                  <Text
+                    style={{
+                      fontSize: "12px",
+                      color: "#666",
+                      minWidth: "40px",
+                      textAlign: "center",
+                    }}
+                  >
+                    {currentImageIndex + 1}/{imageList.length}
+                  </Text>
+                  <Button
+                    type="text"
+                    icon="➡️"
+                    size="small"
+                    disabled={currentImageIndex === imageList.length - 1}
+                    onClick={() => {
+                      const newIndex = currentImageIndex + 1;
+                      setCurrentImageIndex(newIndex);
+                      setPreviewImage(imageList[newIndex]);
+                      setPreviewTitle(
+                        `Ảnh thuốc ${newIndex + 1}/${imageList.length}`
+                      );
+                    }}
+                    style={{
+                      borderRadius: "6px",
+                      background:
+                        currentImageIndex === imageList.length - 1
+                          ? "#f5f5f5"
+                          : "#e6f7ff",
+                      border: "1px solid #d9d9d9",
+                    }}
+                  >
+                    Sau
+                  </Button>
+                </div>
+              )}
+            </div>
+          }
+          footer={
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Button
+                type="default"
+                onClick={() => setImagePreviewVisible(false)}
+                style={{
+                  borderRadius: "6px",
+                }}
+              >
+                Đóng
+              </Button>
+            </div>
+          }
           onCancel={() => setImagePreviewVisible(false)}
-          width="80%"
+          width="90%"
           style={{ top: 20 }}
+          centered
           bodyStyle={{
             padding: "20px",
             textAlign: "center",
-            background: "#f8fafc",
+            maxHeight: "70vh",
+            overflow: "auto",
           }}
         >
-          <img
-            alt="preview"
+          <div
             style={{
+              position: "relative",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
               width: "100%",
-              maxHeight: "70vh",
-              objectFit: "contain",
-              borderRadius: "12px",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+              height: "100%",
             }}
-            src={previewImage}
-          />
+          >
+            <img
+              alt="preview"
+              style={{
+                width: "100%",
+                maxHeight: "70vh",
+                objectFit: "contain",
+              }}
+              src={previewImage}
+              onError={(e) => {
+                e.target.style.display = "none";
+                e.target.parentElement.innerHTML =
+                  '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; background: #fff; border-radius: 12px; border: 2px dashed #d9d9d9; color: #999; min-width: 400px; min-height: 300px;">' +
+                  '<div style="font-size: 48px; margin-bottom: 16px;">💊</div>' +
+                  '<div style="font-size: 16px; font-weight: 500; margin-bottom: 8px;">Không thể tải ảnh</div>' +
+                  '<div style="font-size: 12px; color: #666;">URL: ' +
+                  previewImage +
+                  "</div>" +
+                  "</div>";
+              }}
+              onClick={(e) => {
+                // 🆕 Zoom effect on click - cải thiện zoom
+                if (e.target.style.transform === "scale(1.3)") {
+                  e.target.style.transform = "scale(1)";
+                  e.target.style.cursor = "zoom-in";
+                } else {
+                  e.target.style.transform = "scale(1.3)"; // Giảm zoom từ 1.5 -> 1.3 để không bị cắt
+                  e.target.style.cursor = "zoom-out";
+                }
+              }}
+            />
+
+            {/* 🆕 Navigation arrows on image */}
+            {imageList.length > 1 && (
+              <>
+                <Button
+                  type="primary"
+                  shape="circle"
+                  icon="⬅️"
+                  size="large"
+                  disabled={currentImageIndex === 0}
+                  onClick={() => {
+                    const newIndex = currentImageIndex - 1;
+                    setCurrentImageIndex(newIndex);
+                    setPreviewImage(imageList[newIndex]);
+                    setPreviewTitle(
+                      `Ảnh thuốc ${newIndex + 1}/${imageList.length}`
+                    );
+                  }}
+                  style={{
+                    position: "absolute",
+                    left: "20px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "rgba(0,0,0,0.6)",
+                    borderColor: "rgba(0,0,0,0.6)",
+                    color: "white",
+                    fontSize: "16px",
+                    width: "48px",
+                    height: "48px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                  }}
+                />
+                <Button
+                  type="primary"
+                  shape="circle"
+                  icon="➡️"
+                  size="large"
+                  disabled={currentImageIndex === imageList.length - 1}
+                  onClick={() => {
+                    const newIndex = currentImageIndex + 1;
+                    setCurrentImageIndex(newIndex);
+                    setPreviewImage(imageList[newIndex]);
+                    setPreviewTitle(
+                      `Ảnh thuốc ${newIndex + 1}/${imageList.length}`
+                    );
+                  }}
+                  style={{
+                    position: "absolute",
+                    right: "20px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "rgba(0,0,0,0.6)",
+                    borderColor: "rgba(0,0,0,0.6)",
+                    color: "white",
+                    fontSize: "16px",
+                    width: "48px",
+                    height: "48px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                  }}
+                />
+              </>
+            )}
+          </div>
         </Modal>
       </div>
     </div>

@@ -1548,6 +1548,8 @@ function VaccinationManagement() {
                       <span style={{ fontSize: "13px" }}>
                         {status === "pending"
                           ? "⏳ Chờ phản hồi"
+                          : status === "confirmed"
+                          ? "✅ Đã chấp nhận"
                           : status === "approved"
                           ? "✅ Chờ tiêm"
                           : status === "injected"

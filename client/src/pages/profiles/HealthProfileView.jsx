@@ -488,7 +488,7 @@ function HealthProfileView() {
           bodyStyle={{ padding: "32px" }}
         >
           <Row gutter={[20, 20]} justify="center">
-            <Col xs={12} sm={8} md={6}>
+            <Col xs={12} sm={6} md={4}>
               <Card
                 hoverable
                 style={{
@@ -546,14 +546,14 @@ function HealthProfileView() {
               </Card>
             </Col>
 
-            <Col xs={12} sm={8} md={6}>
+            <Col xs={12} sm={6} md={4}>
               <Card
                 hoverable
                 style={{
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(245, 158, 11, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -589,7 +589,10 @@ function HealthProfileView() {
                       textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
                     }}
                   >
-                    {healthProfiles.filter(p => p.allergyHistory !== "Không").length}
+                    {
+                      healthProfiles.filter((p) => p.allergyHistory !== "Không")
+                        .length
+                    }
                   </div>
                   <Text
                     style={{
@@ -604,14 +607,14 @@ function HealthProfileView() {
               </Card>
             </Col>
 
-            <Col xs={12} sm={8} md={6}>
+            <Col xs={12} sm={6} md={4}>
               <Card
                 hoverable
                 style={{
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(239, 68, 68, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -647,7 +650,11 @@ function HealthProfileView() {
                       textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
                     }}
                   >
-                    {healthProfiles.filter(p => p.chronicDiseases !== "Không").length}
+                    {
+                      healthProfiles.filter(
+                        (p) => p.chronicDiseases !== "Không"
+                      ).length
+                    }
                   </div>
                   <Text
                     style={{
@@ -662,14 +669,14 @@ function HealthProfileView() {
               </Card>
             </Col>
 
-            <Col xs={12} sm={8} md={6}>
+            <Col xs={12} sm={6} md={4}>
               <Card
                 hoverable
                 style={{
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(147, 51, 234, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -705,7 +712,10 @@ function HealthProfileView() {
                       textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
                     }}
                   >
-                    {healthProfiles.filter(p => p.toothDecay !== "Không").length}
+                    {
+                      healthProfiles.filter((p) => p.toothDecay !== "Không")
+                        .length
+                    }
                   </div>
                   <Text
                     style={{
@@ -853,24 +863,16 @@ function HealthProfileView() {
                     </span>
                   </Option>
                   <Option value="allergy">
-                    <span style={{ fontSize: "13px" }}>
-                      🤧 Có dị ứng
-                    </span>
+                    <span style={{ fontSize: "13px" }}>🤧 Có dị ứng</span>
                   </Option>
                   <Option value="chronic">
-                    <span style={{ fontSize: "13px" }}>
-                      🏥 Bệnh mạn tính
-                    </span>
+                    <span style={{ fontSize: "13px" }}>🏥 Bệnh mạn tính</span>
                   </Option>
                   <Option value="tooth">
-                    <span style={{ fontSize: "13px" }}>
-                      🦷 Sâu răng
-                    </span>
+                    <span style={{ fontSize: "13px" }}>🦷 Sâu răng</span>
                   </Option>
                   <Option value="normal">
-                    <span style={{ fontSize: "13px" }}>
-                      ✅ Bình thường
-                    </span>
+                    <span style={{ fontSize: "13px" }}>✅ Bình thường</span>
                   </Option>
                 </Select>
               </Col>

@@ -10,6 +10,7 @@ namespace Sever.Repository
         Task<News> CreateNewsAsync(News news);
         Task<bool> UpdateNewsAsync(News news);
         Task<bool> DeleteNewsAsync(News news);
+        Task<List<News>> GetActiveNewsAsync();
         Task<List<News>> GetAllNewsAsync();
         Task<List<News>> GetNewsByUserIdAsync(string userId);
         Task<News> GetNewsByIdAsync(string id);
@@ -79,6 +80,11 @@ namespace Sever.Repository
             }
             string result = GenerateID.GenerateNextId(crurrentNews.NewsID, "NW", 4);
             return result;
+        }
+
+        public async Task<List<News>> GetActiveNewsAsync()
+        {
+            return await _context.News.Where(n => n.Status == true).ToListAsync();
         }
     }
 }

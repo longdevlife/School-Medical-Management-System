@@ -110,7 +110,8 @@ namespace Sever.Service
                     UserID = user.UserID,
                     UserName = user.UserName,
                     IsActive = user.IsActive,
-                    RoleName = user.Role.RoleName
+                    RoleName = user.Role.RoleName,
+                    Email = user.Email,
                 };
                 userDtos.Add(userDto);
             }
@@ -132,7 +133,8 @@ namespace Sever.Service
                     UserID = user.UserID,
                     UserName = user.UserName,
                     IsActive = user.IsActive,
-                    RoleName = user.Role.RoleName
+                    RoleName = user.Role.RoleName,
+                    Email = user.Email,
                 };
                 userDtos.Add(userDto);
             }

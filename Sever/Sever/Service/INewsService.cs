@@ -13,6 +13,8 @@ namespace Sever.Service
         Task<List<GetNewRespone>> GetNewsByUserIdAsync(string id);
         Task<List<GetNewRespone>> GetAllNewsForHomePage();
         Task<List<GetNews>> GetAllNewsAsync();
+        Task<int> CountActiveNewsAsync(DateTime fromDate, DateTime toDate);
+        Task<int> CountInActiveNewsAsync(DateTime fromDate, DateTime toDate);
     }
     public class NewsService : INewsService
 
@@ -25,6 +27,21 @@ namespace Sever.Service
             _newsRepository = newsRepository;
             _filesService = filesService;
         }
+
+        public Task<int> CountActiveNewsAsync(DateTime fromDate, DateTime toDate)
+        {
+            var count = _newsRepository.CountActiveNewsAsync(fromDate, toDate);
+            if (count == null) throw new ArgumentNullException("Không có tin tức nào để hiển thị");
+            return count;
+        }
+
+        public Task<int> CountInActiveNewsAsync(DateTime fromDate, DateTime toDate)
+        {
+            var count = _newsRepository.CountInActiveNewsAsync(fromDate, toDate);
+            if (count == null) throw new ArgumentNullException("Không có tin tức nào để hiển thị");
+            return count;
+        }
+
         public async Task<News> CreateNewsAsync(CreateNews newNews, string userId)
         {
             if (newNews == null) throw new ArgumentNullException("News Không đúng fomat vui lòng kiểm tra lại");

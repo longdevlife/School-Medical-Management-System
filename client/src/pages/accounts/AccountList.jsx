@@ -1251,7 +1251,7 @@ function AccountList() {
                   label={<span className="font-bold">Tên đăng nhập</span>}
                   rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập" }]}
                 >
-                  <Input className="rounded-2xl text-base" placeholder="Nhập tên đăng nhập" />
+                  <Input disabled className="rounded-2xl text-base" placeholder="Nhập tên đăng nhập" />
                 </Form.Item>
               </Col>
               <Col span={12}>

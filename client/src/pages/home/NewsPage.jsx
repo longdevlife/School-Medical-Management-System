@@ -56,6 +56,20 @@ const NewsPage = () => {
           
           // Use exact field names based on the API response structure
           // Since all fields were undefined before, let's try all possible variations
+          // Lấy ảnh từ các trường phổ biến
+          let image =
+            (Array.isArray(item.image) && item.image.length > 0 && typeof item.image[0] === "string")
+              ? item.image[0]
+              : item.image && typeof item.image === "string"
+              ? item.image
+              : item.image && item.image.url
+              ? item.image.url
+              : item.fileLink
+              ? item.fileLink
+              : item.files && Array.isArray(item.files) && item.files[0]?.fileLink
+              ? item.files[0].fileLink
+              : "";
+
           const newsData = {
             id: item.newsID || item.NewsID || item.id || item.ID || `news-${index + 1}`,
             title: item.title || item.Title || item.newsTitle || item.name || `Tin tức ${index + 1}`,
@@ -63,7 +77,8 @@ const NewsPage = () => {
             summary: item.summary || item.Summary || item.description || item.Description || '',
             body: item.body || item.Body || item.content || item.Content || item.detail || item.Detail || '',
             status: item.status || item.Status || item.isActive || item.IsActive || item.active || 1,
-            userID: item.userID || item.UserID || item.userId || item.UserId || item.user_id || ''
+            userID: item.userID || item.UserID || item.userId || item.UserId || item.user_id || '',
+            image: image
           };
           
           console.log(`✅ Transformed item ${index + 1}:`, newsData);
@@ -79,7 +94,8 @@ const NewsPage = () => {
             content: newsData.summary || newsData.body || 'Nội dung tin tức',
             fullContent: newsData.body || newsData.summary || 'Nội dung chi tiết tin tức',
             status: newsData.status,
-            userID: newsData.userID
+            userID: newsData.userID,
+            image: newsData.image
           };
         });
         
@@ -252,98 +268,86 @@ const NewsPage = () => {
               <div className="absolute bottom-40 right-1/4 w-4 h-4 bg-blue-200 rotate-12 opacity-30 animate-float" style={{ animationDelay: "2.2s" }}></div>
             </div>
             <div className="flex-1 w-full relative z-10 flex items-center justify-center overflow-auto" style={{ minHeight: '600px' }}>
-              <Row gutter={[32, 32]} align="middle" className="w-full h-full min-h-[600px]">
-                {/* Left: News Illustration */}
-                <Col xs={24} lg={10} className="h-full flex items-center justify-center">
-                  <div className="relative h-full flex items-center justify-center px-6 lg:px-8">
-                    {/* Background decorative circles */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-72 h-72 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full opacity-15 animate-pulse"></div>
-                      <div className="absolute w-80 h-80 bg-blue-500 rounded-full opacity-10"></div>
-                    </div>
-                    {/* News Illustration */}
-                    <div className="relative z-10 animate-fadeInRight animate-float">
-                      <img
-                        src="/SchoolMedical.gif"
-                        alt="Tin tức y tế học đường"
-                        className="w-full max-w-sm mx-auto object-contain drop-shadow-2xl rounded-2xl"
-                        onError={e => { e.target.onerror = null; e.target.src = '/anhBacsi.png'; }}
-                      />
-                    </div>
+              {/* Bỏ logo, chỉ giữ khung tin tức lớn ra giữa */}
+              <div className="w-full flex flex-col items-center justify-center">
+                <div className="space-y-8 w-full max-w-5xl flex flex-col items-center justify-center animate-fadeInLeft mx-auto bg-white/95 rounded-3xl shadow-2xl border border-blue-100/40 backdrop-blur-md p-12" style={{ minHeight: '70vh' }}>
+                  {/* Đưa tiêu đề và mô tả ra giữa */}
+                  <div className="flex flex-col items-center justify-center text-center mb-8">
+                    <Title className="text-5xl xl:text-6xl font-bold text-blue-700 leading-tight animate-fadeInUp mb-4" style={{ animationDelay: "0.2s" }}>
+                      Tin tức y tế học đường
+                    </Title>
+                    <Paragraph className="text-xl text-gray-700 leading-relaxed animate-fadeInUp max-w-3xl mx-auto" style={{ animationDelay: "0.4s" }}>
+                      Cập nhật các tin tức, sự kiện mới nhất về y tế học đường, sức khỏe học sinh, các chương trình, hoạt động nổi bật và thông báo quan trọng từ hệ thống.
+                    </Paragraph>
                   </div>
-                </Col>
-                
-                {/* Right: News Content */}
-                <Col xs={24} lg={14} className="h-full flex items-center justify-center">
-                  <div className="space-y-8 w-full max-w-4xl text-center animate-fadeInLeft mx-auto bg-white/95 rounded-3xl shadow-2xl border border-blue-100/40 backdrop-blur-md p-10" style={{ minHeight: '65vh' }}>
-                    <div className="text-center mb-8">
-                      <Title className="text-5xl xl:text-6xl font-bold text-blue-700 leading-tight animate-fadeInUp mb-4" style={{ animationDelay: "0.2s" }}>
-                        Tin tức y tế học đường
-                      </Title>
-                      <Paragraph className="text-xl text-gray-700 leading-relaxed animate-fadeInUp max-w-3xl mx-auto" style={{ animationDelay: "0.4s" }}>
-                        Cập nhật các tin tức, sự kiện mới nhất về y tế học đường, sức khỏe học sinh, các chương trình, hoạt động nổi bật và thông báo quan trọng từ hệ thống.
-                      </Paragraph>
-                    </div>
-                    
-                    {/* News List - Pagination */}
-                    <div className="space-y-5 mt-8 animate-fadeInUp text-left" style={{ animationDelay: "0.6s" }}>
-                      {loading ? (
-                        <div className="text-center py-8">
-                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                          <p className="mt-4 text-gray-600">Đang tải tin tức...</p>
-                        </div>
-                      ) : pagedNews.length > 0 ? (
-                        pagedNews.map((item, idx) => (
-                          <div 
-                            key={item.id || idx} 
-                            className="bg-gradient-to-r from-blue-50 to-blue-100/80 rounded-2xl p-5 shadow-md border border-blue-200 hover:shadow-lg transition-all cursor-pointer hover:from-blue-100 hover:to-blue-200/80 transform hover:-translate-y-1"
-                            onClick={() => handleNewsClick(item)}
-                          >
-                            <h3 className="text-lg font-bold text-blue-700 mb-2 line-clamp-2">{item.title}</h3>
-                            <p className="text-gray-600 mb-2 text-sm font-medium">{item.date}</p>
-                            <p className="text-gray-700 text-sm leading-relaxed line-clamp-2 mb-3">{item.content}</p>
-                            <div className="text-right">
-                              <span className="text-blue-600 text-xs font-semibold bg-blue-100 px-2 py-1 rounded-full hover:bg-blue-200 transition-colors">
-                                Xem chi tiết →
-                              </span>
+                  {/* News List - Pagination */}
+                  <div className="space-y-5 mt-8 animate-fadeInUp text-left w-full" style={{ animationDelay: "0.6s" }}>
+                    {loading ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                        <p className="mt-4 text-gray-600">Đang tải tin tức...</p>
+                      </div>
+                    ) : pagedNews.length > 0 ? (
+                      pagedNews.map((item, idx) => (
+                        <div 
+                          key={item.id || idx} 
+                          className="bg-gradient-to-r from-blue-50 to-blue-100/80 rounded-2xl p-5 shadow-md border border-blue-200 hover:shadow-lg transition-all cursor-pointer hover:from-blue-100 hover:to-blue-200/80 transform hover:-translate-y-1"
+                          onClick={() => handleNewsClick(item)}
+                        >
+                          {/* Hiển thị ảnh nếu có */}
+                          {item.image && (
+                            <div className="mb-3 flex justify-center">
+                              <img
+                                src={item.image}
+                                alt={item.title}
+                                style={{ maxHeight: 120, maxWidth: "100%", borderRadius: 12, objectFit: "cover" }}
+                                onError={e => { e.target.style.display = "none"; }}
+                              />
                             </div>
+                          )}
+                          <h3 className="text-lg font-bold text-blue-700 mb-2 line-clamp-2">{item.title}</h3>
+                          <p className="text-gray-600 mb-2 text-sm font-medium">{item.date}</p>
+                          <p className="text-gray-700 text-sm leading-relaxed line-clamp-2 mb-3">{item.content}</p>
+                          <div className="text-right">
+                            <span className="text-blue-600 text-xs font-semibold bg-blue-100 px-2 py-1 rounded-full hover:bg-blue-200 transition-colors">
+                              Xem chi tiết →
+                            </span>
                           </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-10 text-gray-500">
-                          <div className="mb-4">
-                            <span className="text-6xl">📰</span>
-                          </div>
-                          <p className="text-lg font-medium">Hiện tại chưa có tin tức nào được đăng tải.</p>
                         </div>
-                      )}
-                    </div>
-                    
-                    {newsList.length > 4 && ( // Chỉ hiện pagination khi có nhiều hơn 4 tin tức
-                      <div className="flex justify-center pt-4">
-                        <Pagination
-                          current={currentPage}
-                          pageSize={currentPageSize}
-                          total={newsList.length}
-                          onChange={(page) => setCurrentPage(page)}
-                          showSizeChanger={true}
-                          pageSizeOptions={['5', '10', '20', '50']} // Tăng các tùy chọn
-                          showQuickJumper={true}
-                          size="default"
-                          className="custom-pagination"
-                          showTotal={(total, range) => 
-                            `${range[0]}-${range[1]} của ${total} tin tức`
-                          }
-                          onShowSizeChange={(current, size) => {
-                            setCurrentPageSize(Number(size));
-                            setCurrentPage(1); // Reset to first page when changing page size
-                          }}
-                        />
+                      ))
+                    ) : (
+                      <div className="text-center py-10 text-gray-500">
+                        <div className="mb-4">
+                          <span className="text-6xl">📰</span>
+                        </div>
+                        <p className="text-lg font-medium">Hiện tại chưa có tin tức nào được đăng tải.</p>
                       </div>
                     )}
                   </div>
-                </Col>
-              </Row>
+                  {newsList.length > 4 && (
+                    <div className="flex justify-center pt-4">
+                      <Pagination
+                        current={currentPage}
+                        pageSize={currentPageSize}
+                        total={newsList.length}
+                        onChange={(page) => setCurrentPage(page)}
+                        showSizeChanger={true}
+                        pageSizeOptions={['5', '10', '20', '50']}
+                        showQuickJumper={true}
+                        size="default"
+                        className="custom-pagination"
+                        showTotal={(total, range) => 
+                          `${range[0]}-${range[1]} của ${total} tin tức`
+                        }
+                        onShowSizeChange={(current, size) => {
+                          setCurrentPageSize(Number(size));
+                          setCurrentPage(1);
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </Content>
@@ -453,82 +457,84 @@ const NewsPage = () => {
           styles={{
             body: {
               padding: '24px',
-              maxHeight: '75vh',
-              overflowY: 'auto'
+              // Xóa maxHeight và overflow để không còn thanh kéo
             }
           }}
         >
           {selectedNews && (
-            <div className="space-y-6">
-              {/* News Header */}
-              <div className="text-center border-b border-gray-200 pb-6">
-                <h1 className="text-3xl font-bold text-blue-700 leading-tight mb-4">
-                  {selectedNews.title}
-                </h1>
-                <div className="flex items-center justify-center space-x-6 text-sm text-gray-600">
-                  <span className="flex items-center space-x-2 bg-blue-50 px-3 py-1 rounded-full">
-                    <span>📅</span>
-                    <span className="font-medium">{selectedNews.date}</span>
-                  </span>
-                  {selectedNews.userID && (
-                    <span className="flex items-center space-x-2 bg-gray-50 px-3 py-1 rounded-full">
-                      <span>👤</span>
-                      <span className="font-medium">ID: {selectedNews.userID}</span>
-                    </span>
-                  )}
-                  <span className="flex items-center space-x-2">
-                    <span>🔖</span>
-                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
-                      Đang hoạt động
-                    </span>
+            <div className="flex justify-center">
+              <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200 w-full max-w-2xl mx-auto">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-gray-400 text-xs">
+                    {selectedNews.date}
                   </span>
                 </div>
-              </div>
-
-              {/* News Content */}
-              <div className="prose max-w-none">
-                {selectedNews.fullContent ? (
-                  <div className="space-y-6">
-                    {/* Summary Section */}
-                    <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg border-l-4 border-blue-400">
-                      <div className="flex items-center mb-3">
-                        <span className="text-blue-600 text-lg mr-2">📋</span>
-                        <h3 className="font-bold text-blue-700 text-lg">Tóm tắt</h3>
-                      </div>
-                      <p className="text-gray-700 leading-relaxed text-base">{selectedNews.content}</p>
-                    </div>
-                    
-                    {/* Full Content Section */}
-                    <div className="bg-white p-6 rounded-lg border border-gray-200">
-                      <div className="flex items-center mb-4">
-                        <span className="text-gray-600 text-lg mr-2">📄</span>
-                        <h3 className="font-bold text-gray-800 text-lg">Nội dung chi tiết</h3>
-                      </div>
-                      <div className="text-gray-700 leading-relaxed whitespace-pre-line text-base">
-                        {selectedNews.fullContent}
-                      </div>
-                    </div>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 leading-tight text-center">
+                  {selectedNews.title}
+                </h1>
+              
+               
+                {/* Ảnh lớn */}
+                {selectedNews.image && (
+                  <div className="flex justify-center mb-4">
+                    <img
+                      src={selectedNews.image}
+                      alt={selectedNews.title}
+                      style={{
+                        width: "100%",
+                        maxWidth: 480,
+                        maxHeight: 260,
+                        objectFit: "cover",
+                        borderRadius: 12,
+                        boxShadow: "0 4px 24px rgba(59,130,246,0.08)",
+                        border: "2px solid #e0e7ef",
+                        background: "#f0f9ff",
+                        display: selectedNews.image ? "block" : "none"
+                      }}
+                      onError={e => {
+                        e.target.onerror = null;
+                        e.target.style.display = "none";
+                      }}
+                    />
                   </div>
-                ) : (
-                  <div className="bg-white p-6 rounded-lg border border-gray-200 text-center">
-                    <div className="text-gray-800 leading-relaxed text-base">
-                      <p>{selectedNews.content}</p>
+                )}
+                {/* Nếu không có ảnh hoặc ảnh lỗi, hiển thị placeholder */}
+                {!selectedNews.image && (
+                  <div className="flex justify-center mb-4">
+                    <div style={{
+                      width: 200,
+                      height: 120,
+                      background: "#e5e7eb",
+                      borderRadius: 12,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#94a3b8",
+                      fontSize: 32,
+                      fontWeight: 600
+                    }}>
+                      Không có ảnh
                     </div>
                   </div>
                 )}
-              </div>
-
-              {/* Footer Info */}
-              <div className="border-t border-gray-200 pt-4">
-                <div className="flex items-center justify-between text-sm text-gray-500 bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center space-x-2">
+                {/* Tóm tắt */}
+                <div className="bg-blue-50 rounded-lg p-4 mb-4 text-gray-700 text-base text-center">
+                  {selectedNews.content}
+                </div>
+                {/* Nội dung chi tiết */}
+                <div className="text-gray-800 text-base leading-relaxed whitespace-pre-line mb-4 text-justify">
+                  {selectedNews.fullContent}
+                </div>
+                {/* Footer Info */}
+                <div className="flex flex-wrap items-center justify-center gap-4 pt-4 border-t border-gray-200 mt-6">
+                  <span className="flex items-center gap-2 text-sm text-gray-500">
                     <span>🆔</span>
-                    <span className="font-medium">ID tin tức: {selectedNews.id}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
+                    <span>ID tin tức: {selectedNews.id}</span>
+                  </span>
+                  <span className="flex items-center gap-2 text-sm text-green-700 bg-green-100 px-3 py-1 rounded-full">
                     <span>✅</span>
-                    <span className="font-medium">Trạng thái: Đã xuất bản</span>
-                  </div>
+                    <span>Đã xuất bản</span>
+                  </span>
                 </div>
               </div>
             </div>

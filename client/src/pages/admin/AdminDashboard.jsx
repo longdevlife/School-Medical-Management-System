@@ -75,39 +75,7 @@ function AdminDashboard() {
     },
   ];
 
-  // Biểu đồ tròn mới: chỉ hiển thị phần trăm, không có statistic ở giữa, màu sắc rõ ràng hơn
-  const pieConfig = {
-    data: chartData,
-    angleField: 'count',
-    colorField: 'role',
-    radius: 0.9,
-    innerRadius: 0.5,
-    label: {
-      type: 'spider',
-      content: '{name}: {percentage}',
-      style: {
-        fontSize: 14,
-        fontWeight: 600,
-      },
-    },
-    color: ['#ff6b6b', '#4ecdc4', '#a855f7'],
-    legend: {
-      position: 'bottom',
-      itemName: {
-        style: {
-          fontSize: 14,
-          fontWeight: 600,
-        },
-      },
-    },
-    tooltip: {
-      formatter: (datum) => ({
-        name: datum.role,
-        value: datum.count,
-      }),
-    },
-    interactions: [{ type: 'element-active' }],
-  };
+  
 
   // Chỉ giữ biểu đồ cột ngang (Bar chart)
   const barData = [
@@ -291,35 +259,45 @@ function AdminDashboard() {
           <Col xs={24} lg={16}>
             <Card
               title={
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                  padding: '8px 0',
+                  borderBottom: '1px solid #e0e7ef',
+                  marginBottom: 12
+                }}>
                   <div style={{
-                    width: '40px',
-                    height: '40px',
+                    width: 48,
+                    height: 48,
                     borderRadius: '50%',
                     background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.3)',
+                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.18)',
                   }}>
-                    <span style={{ color: 'white', fontSize: '16px' }}>📊</span>
+                    <span style={{ color: 'white', fontSize: 22 }}>📊</span>
                   </div>
                   <div>
-                    <span style={{ 
-                      fontWeight: 'bold', 
-                      fontSize: '18px', 
+                    <span style={{
+                      fontWeight: 800,
+                      fontSize: 22,
                       color: '#1e293b',
                       background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       display: 'block',
+                      letterSpacing: 1
                     }}>
                       Biểu đồ cột ngang
                     </span>
-                    <span style={{ 
+                    <span style={{
                       color: '#64748b',
-                      fontSize: '12px',
+                      fontSize: 14,
                       fontWeight: 500,
+                      display: 'block',
+                      marginTop: 2
                     }}>
                       So sánh số lượng từng vai trò
                     </span>
@@ -327,20 +305,25 @@ function AdminDashboard() {
                 </div>
               }
               className="rounded-3xl shadow-2xl border-blue-200"
-              style={{ 
-                background: 'rgba(255,255,255,0.95)',
+              style={{
+                background: 'linear-gradient(135deg, #f0f9ff 0%, #fff 100%)',
                 backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(59, 130, 246, 0.2)',
+                border: '1px solid #e0e7ef',
+                marginBottom: 32
               }}
-              styles={{ 
-                body: { 
-                  padding: '24px',
-                  background: 'linear-gradient(135deg, #f8faff 0%, #ffffff 100%)',
-                  borderRadius: '0 0 24px 24px'
-                }
+              bodyStyle={{
+                padding: '36px 32px 32px 32px',
+                background: 'linear-gradient(135deg, #f8faff 0%, #ffffff 100%)',
+                borderRadius: '0 0 24px 24px'
               }}
             >
-              <Bar {...barConfig} />
+              <div style={{ minHeight: 340, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Bar {...{
+                  ...barConfig,
+                  label: false, // Ẩn số lượng trên cột
+                  tooltip: false, // Ẩn bảng khi hover vào biểu đồ
+                }} />
+              </div>
             </Card>
           </Col>
         </Row>
@@ -349,9 +332,8 @@ function AdminDashboard() {
       <style>{`
         .hover-card:hover {
           transform: translateY(-8px);
-          box-shadow: 0 16px 48px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 16px 48px rgba(59, 130, 246, 0.18);
         }
-        
         .hover-card {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }

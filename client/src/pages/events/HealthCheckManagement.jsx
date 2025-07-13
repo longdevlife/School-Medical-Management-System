@@ -1189,13 +1189,16 @@ function HealthCheckManagement() {
           }}
           bodyStyle={{ padding: "16px" }}
         >
-          <Row gutter={[20, 20]}>
-            <Col xs={12} sm={6}>
+          <Row
+            gutter={[20, 20]}
+            style={{ textAlign: "center", justifyContent: "center" }}
+          >
+            <Col xs={12} sm={4}>
               <Card
                 style={{
                   textAlign: "center",
                   background:
-                    "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   borderRadius: "16px",
                 }}
               >
@@ -1214,7 +1217,7 @@ function HealthCheckManagement() {
                 </Text>
               </Card>
             </Col>
-            <Col xs={12} sm={6}>
+            <Col xs={12} sm={4}>
               <Card
                 style={{
                   textAlign: "center",
@@ -1238,12 +1241,12 @@ function HealthCheckManagement() {
                 </Text>
               </Card>
             </Col>
-            <Col xs={12} sm={6}>
+            <Col xs={12} sm={4}>
               <Card
                 style={{
                   textAlign: "center",
                   background:
-                    "linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   borderRadius: "16px",
                 }}
               >
@@ -1262,12 +1265,12 @@ function HealthCheckManagement() {
                 </Text>
               </Card>
             </Col>
-            <Col xs={12} sm={6}>
+            <Col xs={12} sm={4}>
               <Card
                 style={{
                   textAlign: "center",
                   background:
-                    "linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   borderRadius: "16px",
                 }}
               >

@@ -11,7 +11,6 @@ import {
   AlertOutlined,
 } from "@ant-design/icons";
 
-
 const { Sider } = Layout;
 
 function SidebarParent({ collapsed }) {
@@ -34,7 +33,7 @@ function SidebarParent({ collapsed }) {
     {
       key: `${basePath}/health-result`,
       icon: <BarChartOutlined />,
-      label: "Hồ sơ sức khỏe",
+      label: "Khám sức khỏe",
     },
     {
       key: `${basePath}/medical-events`,
@@ -61,7 +60,7 @@ function SidebarParent({ collapsed }) {
       icon: <SendOutlined />,
       label: "Gửi thuốc",
     },
-     {
+    {
       key: `${basePath}/profileParent`,
       icon: <UserOutlined />,
       label: "Hồ sơ cá nhân",

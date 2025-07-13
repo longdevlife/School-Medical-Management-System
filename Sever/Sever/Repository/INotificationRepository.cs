@@ -52,7 +52,7 @@ namespace Sever.Repository.Interfaces
             }
 
             return newId;
-        }
+            }
 
 
             public async Task<string> GetParentIdByStudentIdAsync(string studentId)

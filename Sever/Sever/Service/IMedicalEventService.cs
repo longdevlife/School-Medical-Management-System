@@ -112,10 +112,11 @@ namespace Sever.Service
                 throw new Exception("không tìm thấy sự kiện y tế.");
 
             }
-            medicalEvents.Notes += $"\nUpdate {DateTime.UtcNow.AddHours(7)}: {dto.Notes}";
+            medicalEvents.Notes += $"\n. " +
+                $"Cập nhật {DateTime.UtcNow.AddHours(7)}: {dto.Notes}";
             if (!string.IsNullOrWhiteSpace(dto.ActionTaken))
             {
-                medicalEvents.ActionTaken += $"\n{dto.ActionTaken}";
+                medicalEvents.ActionTaken += $"\n, {dto.ActionTaken}";
             }
             if (!string.IsNullOrWhiteSpace(dto.Description))
             {

@@ -44,7 +44,7 @@ const isRefreshTokenExpired = (refreshToken) => {
 
     const currentTime = Date.now() / 1000;
     // Kiểm tra với buffer 5 phút để tránh race condition
-    return payload.exp < (currentTime + 300);
+    return payload.exp < currentTime + 300;
   } catch (error) {
     console.error("Error checking refresh token expiration:", error);
     return true;
@@ -59,7 +59,10 @@ const handleTokenExpiration = () => {
   localStorage.removeItem("user");
 
   // Tránh redirect liên tục và chỉ redirect nếu không phải trang login
-  if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+  if (
+    window.location.pathname !== "/login" &&
+    window.location.pathname !== "/"
+  ) {
     console.log("Redirecting to login page...");
     window.location.href = "/login";
   }
@@ -183,7 +186,9 @@ const authService = {
 
   // Add method to handle 401 errors
   handle401Error: () => {
-    console.log("401 Không có quyền truy cập - Token đã hết hạn hoặc không hợp lệ");
+    console.log(
+      "401 Không có quyền truy cập - Token đã hết hạn hoặc không hợp lệ"
+    );
     handleTokenExpiration();
   },
 
@@ -230,12 +235,15 @@ const authService = {
         }
       } catch (error) {
         console.error("Làm mới token thất bại:", error);
-        
+
         // Kiểm tra lỗi 401 hoặc 403 - refresh token không hợp lệ
-        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        if (
+          error.response &&
+          (error.response.status === 401 || error.response.status === 403)
+        ) {
           console.log("Refresh token không hợp lệ hoặc đã hết hạn");
         }
-        
+
         handleTokenExpiration();
         resolve(false);
       } finally {
@@ -251,7 +259,7 @@ const authService = {
   initializeAuth: async () => {
     const token = localStorage.getItem("token");
     const refreshToken = localStorage.getItem("refreshToken");
-    
+
     if (!token) {
       console.log("Không có token, người dùng chưa đăng nhập");
       return false;
@@ -260,7 +268,7 @@ const authService = {
     // Kiểm tra token đã hết hạn chưa
     if (isTokenExpired(token)) {
       console.log("Token đã hết hạn, thử làm mới token");
-      
+
       // Thử làm mới token nếu refresh token còn hiệu lực
       if (refreshToken && !isRefreshTokenExpired(refreshToken)) {
         const refreshSuccess = await authService.refreshToken();
@@ -271,7 +279,7 @@ const authService = {
       } else {
         console.log("Refresh token đã hết hạn hoặc không tồn tại");
       }
-      
+
       console.log("Không thể làm mới token, chuyển hướng đến trang đăng nhập");
       handleTokenExpiration();
       return false;
@@ -301,6 +309,118 @@ const authService = {
   stopTokenCheck: (intervalId) => {
     if (intervalId) {
       clearInterval(intervalId);
+    }
+  },
+
+  // Google login method
+  googleLogin: async (idToken) => {
+    try {
+      console.log("=== Auth Service Google Login ===");
+      console.log("Received idToken:", idToken);
+      console.log("ID Token type:", typeof idToken);
+      console.log("ID Token length:", idToken?.length);
+      console.log("ID Token preview:", idToken?.substring(0, 50) + "...");
+
+      if (!idToken || typeof idToken !== "string") {
+        throw new Error("Invalid idToken: must be a string");
+      }
+
+      const tokenParts = idToken.split(".");
+      if (tokenParts.length !== 3) {
+        throw new Error("Invalid idToken format: not a valid JWT");
+      }
+
+      console.log("JWT parts count:", tokenParts.length);
+      console.log("Sending to backend:", { idToken });
+
+      // Send Google idToken to backend, expect accessToken + refreshToken back
+      const response = await authApi.googleLogin({ idToken });
+
+      console.log("Backend response structure:", {
+        hasData: !!response.data,
+        hasAccessToken: !!response.data?.accessToken,
+        hasRefreshToken: !!response.data?.refreshToken,
+        hasUser: !!response.data?.user,
+      });
+
+      // Handle response - backend should return accessToken and refreshToken
+      if (response && response.data && response.data.accessToken) {
+        const decodedToken = decodeToken(response.data.accessToken);
+        if (!decodedToken) {
+          throw new Error("Invalid token format");
+        }
+
+        // Find role claim (backend uses Microsoft claims)
+        const roleId = parseInt(
+          decodedToken[
+            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+          ] ||
+            decodedToken.role ||
+            0
+        );
+
+        const user = {
+          id: decodedToken.UserID || decodedToken.userId,
+          username:
+            decodedToken[
+              "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+            ] ||
+            decodedToken[
+              "http://schemas.microsoft.com/ws/2008/06/identity/claims/name"
+            ] ||
+            decodedToken.name ||
+            decodedToken.username ||
+            response.data.user?.username,
+          email:
+            decodedToken.Email ||
+            decodedToken.email ||
+            response.data.user?.email,
+          role: mapRoleIdToName(roleId),
+          fullName:
+            decodedToken.FullName ||
+            decodedToken.fullName ||
+            response.data.user?.fullName,
+          avatar: response.data.user?.avatar || null,
+          loginProvider: "google",
+        };
+
+        // Save tokens and user info (same as regular login)
+        localStorage.setItem("token", response.data.accessToken);
+        if (response.data.refreshToken) {
+          localStorage.setItem("refreshToken", response.data.refreshToken);
+        }
+        localStorage.setItem("user", JSON.stringify(user));
+
+        console.log(`Google login successful for user: ${user.email}`);
+        return { user, token: response.data.accessToken };
+      } else {
+        throw new Error("No token received from server");
+      }
+    } catch (error) {
+      console.error("Google Login API Error:", error);
+
+      // Log chi tiết error để debug
+      console.error("Error details:", {
+        message: error.message,
+        code: error.code,
+        status: error.response?.status,
+        url: error.config?.url,
+        timeout: error.config?.timeout,
+      });
+
+      // Handle different error types
+      if (error.code === "ECONNABORTED") {
+        throw new Error("Timeout: Server phản hồi quá chậm. Vui lòng thử lại.");
+      } else if (error.response) {
+        const errorMessage =
+          error.response.data?.message ||
+          `Server error: ${error.response.status}`;
+        throw new Error(errorMessage);
+      } else if (error.request) {
+        throw new Error("Không thể kết nối đến server. Kiểm tra kết nối mạng.");
+      } else {
+        throw new Error(error.message || "Đăng nhập Google thất bại");
+      }
     }
   },
 

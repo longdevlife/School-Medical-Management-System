@@ -1,9 +1,9 @@
 import axios from "axios";
-import { authApi } from "./authApi"; // Thêm dòng này
+import { authApi } from "./authApi";
 
 const axiosClient = axios.create({
   baseURL: "https://localhost:7040/api/",
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -11,6 +11,19 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use(
   (config) => {
+    // Log request details for debugging
+    if (config.url?.includes("google-login")) {
+      console.log("🚀 AXIOS REQUEST DEBUG:");
+
+      console.log("Method:", config.method);
+      console.log("Headers:", config.headers);
+      console.log("Data:", config.data);
+      console.log("Data stringified:", JSON.stringify(config.data));
+      console.log("Client UTC Time:", new Date().toISOString());
+
+    }
+    console.log("Client UTC Time:", new Date().toISOString());
+
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -44,7 +57,7 @@ axiosClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // Chỉ xử lý lỗi 401 (Unauthorized)
     if (error.response?.status === 401) {
       // Nếu có refreshToken và chưa retry, thử refresh
@@ -63,24 +76,24 @@ axiosClient.interceptors.response.use(
 
         originalRequest._retry = true;
         isRefreshing = true;
-        
+
         try {
           const refreshToken = localStorage.getItem("refreshToken");
           const res = await authApi.refreshToken(refreshToken);
           const newToken = res.data.token;
-          
+
           // Lưu token mới vào localStorage
           localStorage.setItem("token", newToken);
           processQueue(null, newToken);
           originalRequest.headers.Authorization = "Bearer " + newToken;
-          
+
           return axiosClient(originalRequest);
         } catch (refreshError) {
           // Refresh token thất bại hoặc hết hạn
           processQueue(refreshError, null);
           localStorage.removeItem("token");
           localStorage.removeItem("refreshToken");
-          
+
           // Redirect về login
           window.location.replace("/login");
           return new Promise(() => {}); // Treo promise để ngăn code chạy tiếp
@@ -91,13 +104,13 @@ axiosClient.interceptors.response.use(
         // Không có refreshToken hoặc đã retry rồi => logout luôn
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
-        
+
         // Redirect về login
         window.location.replace("/login");
         return new Promise(() => {}); // Treo promise để ngăn code chạy tiếp
       }
     }
-    
+
     return Promise.reject(error);
   }
 );

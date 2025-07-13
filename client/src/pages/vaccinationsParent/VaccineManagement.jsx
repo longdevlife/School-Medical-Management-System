@@ -951,7 +951,7 @@ const VaccineManagement = () => {
       key: "VaccinatorName",
       width: 150,
       render: (text, record) => (
-        <Text>{text || record?.vaccinatorName || "Chưa xác định"}</Text>
+        <Text>{text || record.vaccinatorName || "Chưa xác định"}</Text>
       ),
     },
     {

@@ -1160,7 +1160,7 @@ function VaccinationManagement() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(245, 158, 11, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1244,7 +1244,7 @@ function VaccinationManagement() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #cffafe 0%, #a7f3d0 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(6, 182, 212, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1286,7 +1286,7 @@ function VaccinationManagement() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(34, 197, 94, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1328,7 +1328,7 @@ function VaccinationManagement() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(147, 51, 234, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1373,7 +1373,7 @@ function VaccinationManagement() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(34, 197, 94, 0.3)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1415,7 +1415,7 @@ function VaccinationManagement() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(239, 68, 68, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",

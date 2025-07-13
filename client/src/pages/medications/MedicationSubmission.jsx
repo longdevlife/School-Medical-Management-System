@@ -1215,7 +1215,7 @@ function MedicationSubmission() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(245, 158, 11, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1273,7 +1273,7 @@ function MedicationSubmission() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(34, 197, 94, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1389,7 +1389,7 @@ function MedicationSubmission() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(124, 58, 237, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
@@ -1447,7 +1447,7 @@ function MedicationSubmission() {
                   borderRadius: "16px",
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   boxShadow: "0 10px 25px rgba(239, 68, 68, 0.2)",
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",

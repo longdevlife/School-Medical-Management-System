@@ -358,29 +358,7 @@ const HealthResult = () => {
           `✅ Đã tải ${normalizedHealthCheckups.length} health checkup records`
         );
 
-        // 🎯 Sau khi xử lý xong health checkup, kiểm tra xem có appointment nào không
-        // Chỉ gọi fetchAppointments nếu có ít nhất 1 health checkup có appointment
-        const hasAppointments = normalizedHealthCheckups.some((item) => {
-          // Kiểm tra các trường appointment có thể có
-          return (
-            item.appointment ||
-            item.Appointment ||
-            item.appointments ||
-            item.Appointments
-          );
-        });
-
-        if (hasAppointments) {
-          console.log(
-            "🔄 Có appointment trong health checkup, đang tải danh sách appointments..."
-          );
-          await fetchAppointments();
-        } else {
-          console.log(
-            "⚠️ Không có appointment nào trong health checkup, bỏ qua việc tải appointments"
-          );
-          setAppointments([]);
-        }
+        // 🎯 Appointments sẽ được tải độc lập qua useEffect riêng biệt
       } else {
         console.warn(
           "⚠️ Dữ liệu health checkup không hợp lệ:",
@@ -414,6 +392,14 @@ const HealthResult = () => {
       fetchHealthCheckups();
     }
   }, [selectedStudentId, fetchHealthCheckups]);
+
+  // Effect để tải appointments khi selectedStudentId thay đổi
+  useEffect(() => {
+    if (selectedStudentId) {
+      console.log("🔄 Tải appointments cho học sinh:", selectedStudentId);
+      fetchAppointments();
+    }
+  }, [selectedStudentId, fetchAppointments]);
 
   // ==================== HANDLER FUNCTIONS ====================
 
@@ -478,8 +464,8 @@ const HealthResult = () => {
       console.log("✅ Xác nhận appointment thành công:", response);
       message.success("Đã xác nhận tham gia cuộc hẹn thành công!");
 
-      // Refresh danh sách - chỉ gọi fetchHealthCheckups, nó sẽ tự gọi fetchAppointments
-      await fetchHealthCheckups();
+      // Refresh danh sách appointments
+      await fetchAppointments();
     } catch (error) {
       console.error("❌ Lỗi khi xác nhận appointment:", error);
       message.error("Xác nhận appointment thất bại. Vui lòng thử lại!");
@@ -503,8 +489,8 @@ const HealthResult = () => {
       console.log("✅ Từ chối appointment thành công:", response);
       message.success("Đã từ chối cuộc hẹn thành công!");
 
-      // Refresh danh sách - chỉ gọi fetchHealthCheckups, nó sẽ tự gọi fetchAppointments
-      await fetchHealthCheckups();
+      // Refresh danh sách appointments
+      await fetchAppointments();
     } catch (error) {
       console.error("❌ Lỗi khi từ chối appointment:", error);
       message.error("Từ chối appointment thất bại. Vui lòng thử lại!");
@@ -986,22 +972,69 @@ const HealthResult = () => {
     {
       title: "Thao tác",
       key: "actions",
-      width: 100,
-      render: (_, record) => (
-        <div style={{ display: "flex", gap: 4, justifyContent: "flex-start" }}>
-          <Tooltip title="Xem chi tiết">
-            <Button
-              type="default"
-              icon={<EyeOutlined />}
-              size="small"
-              onClick={() => handleViewAppointmentDetail(record)}
-              style={{ color: "blue" }}
-            >
-              Chi tiết & phản hồi
-            </Button>
-          </Tooltip>
-        </div>
-      ),
+      width: 200,
+      render: (_, record) => {
+        const status = (record.status || "").toLowerCase();
+        const isPending = status === "pending" || status === "chờ xác nhận";
+
+        return (
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            <Tooltip title="Xem chi tiết">
+              <Button
+                type="default"
+                icon={<EyeOutlined />}
+                size="small"
+                onClick={() => handleViewAppointmentDetail(record)}
+                style={{ color: "blue" }}
+              >
+                Chi tiết
+              </Button>
+            </Tooltip>
+
+            {isPending && (
+              <>
+                <Tooltip title="Xác nhận tham gia">
+                  <Button
+                    type="primary"
+                    size="small"
+                    icon={<CheckCircleOutlined />}
+                    onClick={() =>
+                      handleConfirmAppointment(
+                        record.appointmentID,
+                        "Phụ huynh đã xác nhận tham gia"
+                      )
+                    }
+                    style={{
+                      background: "#22c55e",
+                      borderColor: "#22c55e",
+                      fontSize: "11px",
+                    }}
+                  >
+                    ✓ Xác nhận
+                  </Button>
+                </Tooltip>
+
+                <Tooltip title="Từ chối tham gia">
+                  <Button
+                    danger
+                    size="small"
+                    icon={<CloseCircleOutlined />}
+                    onClick={() =>
+                      handleDeniedAppointment(
+                        record.appointmentID,
+                        "Phụ huynh từ chối tham gia"
+                      )
+                    }
+                    style={{ fontSize: "11px" }}
+                  >
+                    ✗ Từ chối
+                  </Button>
+                </Tooltip>
+              </>
+            )}
+          </div>
+        );
+      },
     },
   ];
 

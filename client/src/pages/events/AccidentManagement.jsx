@@ -151,7 +151,7 @@ export default function AccidentManagement() {
     fetchAllAccidents();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 🆕 Handle search function - sử dụng local filter giống MedicationSubmission
+  // Handle search function - sử dụng local filter giống MedicationSubmission
   const handleSearch = () => {
     // Search is handled in filteredAccidents filter logic
     console.log("🔍 Searching for:", searchText);
@@ -267,7 +267,7 @@ export default function AccidentManagement() {
 
   // Modal chi tiết - cập nhật giống như MedicationSubmission.jsx
   const handleViewDetails = async (accident) => {
-    // 🆕 Gọi API chi tiết để lấy ảnh nếu chưa có hoặc cần refresh
+    // Gọi API chi tiết để lấy ảnh nếu chưa có hoặc cần refresh
     let accidentWithImages = { ...accident };
 
     if (!accident.accidentImages || accident.accidentImages.length === 0) {
@@ -806,7 +806,7 @@ export default function AccidentManagement() {
               <div
                 style={{
                   background:
-                    "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   borderRadius: "16px",
                   padding: "24px",
                   textAlign: "center",
@@ -878,7 +878,7 @@ export default function AccidentManagement() {
               <div
                 style={{
                   background:
-                    "linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   borderRadius: "16px",
                   padding: "24px",
                   textAlign: "center",
@@ -914,7 +914,7 @@ export default function AccidentManagement() {
               <div
                 style={{
                   background:
-                    "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
                   borderRadius: "16px",
                   padding: "24px",
                   textAlign: "center",

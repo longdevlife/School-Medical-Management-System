@@ -626,7 +626,14 @@ function NewsManagement() {
           <img
             src={images[0]}
             alt="thumbnail"
-            style={{ width: 60, height: 40, objectFit: "cover", borderRadius: 4 }}
+            style={{
+              width: "100%",
+              height: "auto",
+              maxHeight: 80,
+              objectFit: "cover",
+              borderRadius: 4,
+              display: "block"
+            }}
           />
         ) : (
           <span style={{ color: "#aaa" }}>Không có ảnh</span>
@@ -915,10 +922,11 @@ function NewsManagement() {
                   alt="Ảnh đại diện"
                   style={{
                     width: "100%",
-                    maxHeight: 320,
-                    objectFit: "cover",
+                    height: "auto",
+                    objectFit: "contain",
                     borderRadius: 8,
                     marginBottom: 16,
+                    display: "block"
                   }}
                 />
               </div>

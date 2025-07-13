@@ -84,16 +84,8 @@ function SidebarNurseManager({ collapsed }) {
             icon: <EditOutlined />,
             label: "Quản lý Tin tức",
           },
-          {
-            key: `${basePath}/reports`, // Tạo và xuất báo cáo
-            icon: <BarChartOutlined />,
-            label: "Báo cáo",
-          },
-          {
-            key: `${basePath}/advanced-analytics`, // Phân tích xu hướng cho sự kiện y tế
-            icon: <LineChartOutlined />,
-            label: "Phân tích nâng cao",
-          },
+         
+         
         ]
       : []),
     {

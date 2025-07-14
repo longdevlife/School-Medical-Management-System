@@ -76,6 +76,23 @@ const HomePage = () => {
   }, []);
 
   const customStyles = `
+    /* Reset margins and paddings for HomePage */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .ant-layout {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
     @keyframes spin-slow {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }

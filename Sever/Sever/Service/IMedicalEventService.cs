@@ -92,8 +92,50 @@ namespace Sever.Service
                 }
 
                 await _notificationService.MedicalEventNotification(medicalEvent, "Sự kiện y tế được tạo bởi y tá. Vui lòng kiểm tra.");
+                var student = await _studentProfileRepository.GetStudentProfileByStudentId(details.ToList().FirstOrDefault().StudentID);
+                var parent = await _userService.GetUserByIdAsyc(student.ParentID);
+                var images = await _filesService.GetImageByMedicalEventIdAsync(medicalEvent.MedicalEventID);
+                string imageSection = "";
+                if (images != null)
+                {
+                    imageSection = "<p><b>Hình ảnh sự cố:</b></p>";
+                    foreach (var image in images)
+                    {
+                        imageSection += $@"
+                                        <p>
+                                            <img src='{image.FileLink}' alt='Hình ảnh sự cố' style='max-width: 100%; height: auto; margin-bottom: 10px; border: 1px solid #ccc; padding: 5px;' />
+                                        </p>";
+                    }
+                }
+                string message = $@"
+                                <p>Kính gửi Quý phụ huynh,</p>
 
-                    return medicalEvent;
+                                <p>Nhà trường xin thông báo về một sự cố y tế liên quan đến học sinh:</p>
+
+                                <ul>
+                                    <li><b>Họ và tên học sinh:</b> {student.StudentName}</li>
+                                    <li><b>Lớp:</b> {student.Class}</li>
+                                    <li><b>Thời gian xảy ra:</b> {medicalEvent.EventDateTime:HH:mm}, ngày {medicalEvent.EventDateTime:dd/MM/yyyy}</li>
+                                    <li><b>Loại sự cố:</b> {medicalEvent.EventType}</li>
+                                </ul>
+
+                                <p><b>Chi tiết sự cố:</b></p>
+                                <p>{medicalEvent.Description}</p>
+
+                                <p><b>Hướng xử lý:</b></p>
+                                <p>{medicalEvent.ActionTaken}</p>
+
+                                {imageSection}
+
+                                <p>Nhà trường đã tiến hành chăm sóc và theo dõi sức khỏe học sinh ngay sau sự cố. Kính mời quý phụ huynh theo dõi thêm tình trạng sức khỏe tại nhà và liên hệ với y tế trường nếu có biểu hiện bất thường.</p>
+
+                                <p>Thông tin chi tiết cũng đã được cập nhật trên hệ thống quản lý y tế học đường.</p>
+
+                                <br>
+                                <p>Trân trọng,</p>
+                                <p><b>Ban Y tế Trường học</b></p>
+                                ";
+                return medicalEvent;
                 }
                 catch (Exception ex)
                 {

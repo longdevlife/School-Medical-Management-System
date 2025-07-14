@@ -27,14 +27,15 @@ namespace Sever.Controllers
         private readonly IHealthCheckUpService _healthCheckUpService;
         private readonly IVaccinationService _vaccinationService;
         private readonly IHealthProfileService _healthProfileService;
-
+        private readonly IUserService _userService;
 
         public NurseController(IMedicineService medicineService,
             IMedicalEventService medicalEventService,
             IHealthCheckUpService healthCheckUpService,
             IAppointmentService appointmentService,
             IVaccinationService vaccinationService,
-            IHealthProfileService healthProfileService)
+            IHealthProfileService healthProfileService,
+            IUserService userService)
         {
             _medicineService = medicineService;
             _medicalEventService = medicalEventService;
@@ -42,6 +43,7 @@ namespace Sever.Controllers
             _appointmentService = appointmentService;
             _vaccinationService = vaccinationService;
             _healthProfileService = healthProfileService;
+            _userService = userService;
         }
 
         [HttpPost("medicine/create")]
@@ -190,7 +192,8 @@ namespace Sever.Controllers
                 return Unauthorized("Bạn cần đăng nhập để thực hiện hành động này.");
             if (dto == null || string.IsNullOrEmpty(dto.HealthCheckId))
                 return BadRequest("Thiếu thông tin khám sức khỏe.");
-            var result = await _healthCheckUpService.UpdateHealthCheckupAsync(dto);
+            var user = await _userService.GetUserAsyc(username);
+            var result = await _healthCheckUpService.UpdateHealthCheckupAsync(dto, user.UserID);
             if (!result)
                 return BadRequest("Cập nhật khám sức khỏe không thành công.");
             return Ok("Cập nhật khám sức khỏe thành công.");

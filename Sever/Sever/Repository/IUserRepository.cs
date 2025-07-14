@@ -19,6 +19,7 @@ namespace Sever.Repository
         Task<List<User>> GetAllUser();
         Task<List<User>?> SearchUser(string key);
         Task<bool> ActivativeUserAsync(string userId);
+        Task<User?> GetUserByIdAsyc(string id);
     }
 
     public class UserRepository : IUserRepository
@@ -100,6 +101,12 @@ namespace Sever.Repository
             var result = await _context.SaveChangesAsync();
             return result > 0;
         }
-        
+
+        public async Task<User?> GetUserByIdAsyc(string id)
+        {
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.UserID == id && u.IsActive == true);
+        }
     }
 }

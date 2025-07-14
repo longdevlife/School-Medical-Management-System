@@ -34,29 +34,32 @@ namespace Sever.Service
 
         Task<int> TotalMedicinesAsync(DateTime fromDate, DateTime toDate);
     }
-        //Parent: create, update, getMedicineByParent, getMedicineByMedicineId, getMedicineByStudentID
-        //Nurse: create, update, getMedicineByStatus, getMedicineByStudentID, getMedicineByMedicineId
-        public class MedicineService : IMedicineService
-        {
-            private readonly IMedicineRepository _medicineRepository;
-            private readonly IFilesService _filesService;
-            private readonly INotificationService _notificationService;
-            private readonly IUserService _userService;
-            private readonly IStudentProfileRepository _studentProfileRepository;
+    //Parent: create, update, getMedicineByParent, getMedicineByMedicineId, getMedicineByStudentID
+    //Nurse: create, update, getMedicineByStatus, getMedicineByStudentID, getMedicineByMedicineId
+    public class MedicineService : IMedicineService
+    {
+        private readonly IMedicineRepository _medicineRepository;
+        private readonly IFilesService _filesService;
+        private readonly INotificationService _notificationService;
+        private readonly IUserService _userService;
+        private readonly IStudentProfileRepository _studentProfileRepository;
+        private readonly IEmailService _emailService;
 
-            public MedicineService(
+        public MedicineService(
                 IMedicineRepository medicineRepository,
                 IFilesService filesService,
                 INotificationService notificationService,
                 IUserService userService,
-                IStudentProfileRepository studentProfileRepository)
-            {
-                _medicineRepository = medicineRepository;
-                _filesService = filesService;
-                _notificationService = notificationService;
-                _userService = userService;
-                _studentProfileRepository = studentProfileRepository;
-            }
+                IStudentProfileRepository studentProfileRepository,
+                IEmailService emailService)
+        {
+            _medicineRepository = medicineRepository;
+            _filesService = filesService;
+            _notificationService = notificationService;
+            _userService = userService;
+            _studentProfileRepository = studentProfileRepository;
+            _emailService = emailService;
+        }
 
         public async Task<Medicine> CreateMedicineByParentAsync(CreateMedicine dto, string userName)
         {
@@ -64,21 +67,21 @@ namespace Sever.Service
             var userId = parent.UserID;
 
 
-                string newId = await _medicineRepository.GetCurrentMedicineID();
+            string newId = await _medicineRepository.GetCurrentMedicineID();
 
-                var medicine = new Medicine
-                {
-                    MedicineID = newId,
-                    MedicineName = dto.MedicineName,
-                    Quantity = dto.Quantity,
-                    Dosage = dto.Dosage,
-                    Instructions = dto.Instructions,
-                    SentDate = DateTime.UtcNow.AddHours(7),
-                    Notes = dto.Notes,
-                    Status = "Chờ xử lý",
-                    StudentID = dto.StudentID,
-                    ParentID = userId,
-                };
+            var medicine = new Medicine
+            {
+                MedicineID = newId,
+                MedicineName = dto.MedicineName,
+                Quantity = dto.Quantity,
+                Dosage = dto.Dosage,
+                Instructions = dto.Instructions,
+                SentDate = DateTime.UtcNow.AddHours(7),
+                Notes = dto.Notes,
+                Status = "Chờ xử lý",
+                StudentID = dto.StudentID,
+                ParentID = userId,
+            };
 
             await _medicineRepository.CreateMedicineAsync(medicine);
 
@@ -102,32 +105,55 @@ namespace Sever.Service
 
             string newId = await _medicineRepository.GetCurrentMedicineID();
             var student = await _studentProfileRepository.GetStudentProfileByStudentId(dto.StudentID);
-                var medicine = new Medicine
+            var medicine = new Medicine
+            {
+                MedicineID = newId,
+                MedicineName = dto.MedicineName,
+                Quantity = dto.Quantity,
+                Dosage = dto.Dosage,
+                Instructions = dto.Instructions,
+                SentDate = DateTime.UtcNow.AddHours(7),
+                Notes = dto.Notes,
+                StudentID = dto.StudentID,
+                Status = (dto.Status == "Chờ xử lý" || dto.Status == "Đã xác nhận" || dto.Status == "Từ chối") ? dto.Status : "Chờ xử lý",
+                NurseID = userId,
+                ParentID = student.ParentID
+
+            };
+            await _medicineRepository.CreateMedicineAsync(medicine);
+            if (dto.Image != null && dto.Image.Length > 0)
+            {
+                foreach (var item in dto.Image)
                 {
-                    MedicineID = newId,
-                    MedicineName = dto.MedicineName,
-                    Quantity = dto.Quantity,
-                    Dosage = dto.Dosage,
-                    Instructions = dto.Instructions,
-                    SentDate = DateTime.UtcNow.AddHours(7),
-                    Notes = dto.Notes,
-                    StudentID = dto.StudentID,
-                    Status = (dto.Status == "Chờ xử lý" || dto.Status == "Đã xác nhận" || dto.Status == "Từ chối") ? dto.Status : "Chờ xử lý",
-                    NurseID = userId, 
-                    ParentID = student.ParentID
-                    
-                };
-                await _medicineRepository.CreateMedicineAsync(medicine);
-                if (dto.Image != null && dto.Image.Length > 0)
-                {
-                    foreach (var item in dto.Image)
-                    {
-                        await _filesService.UploadMedicineImageByAsync(item, medicine.MedicineID);
-                    }
+                    await _filesService.UploadMedicineImageByAsync(item, medicine.MedicineID);
                 }
-                await _notificationService.MedicineNotificationForParent(medicine, "Đơn thuốc được tạo bởi y tá. Vui lòng kiểm tra.");
-                return medicine;
             }
+            var parent = await _userService.GetUserByIdAsyc(student.ParentID);
+            string message = $@"
+                            <p>Kính gửi Quý phụ huynh,</p>
+
+                            <p>Nhà trường xin xác nhận đã nhận được thuốc do quý phụ huynh gửi cho học sinh:</p>
+
+                            <ul>
+                                <li><b>Họ và tên học sinh:</b> {student.StudentName}</li>
+                                <li><b>Lớp:</b> {student.Class}</li>
+                                <li><b>Tên thuốc:</b> {medicine.MedicineName}</li>
+                                <li><b>Liều dùng:</b> {medicine.Dosage}</li>
+                                <li><b>Ngày nhận:</b> {DateTime.Now:dd/MM/yyyy}</li>
+                            </ul>
+
+                            <p>Thuốc sẽ được bảo quản tại phòng y tế và sử dụng đúng theo hướng dẫn của quý phụ huynh trong quá trình chăm sóc học sinh.</p>
+
+                            <p>Xin cảm ơn sự phối hợp của quý phụ huynh trong công tác chăm sóc sức khỏe học đường.</p>
+
+                            <br>
+                            <p>Trân trọng,</p>
+                            <p><b>Ban Y tế Trường học</b></p>
+                            ";
+            await _emailService.SendEmailAsync(parent.Email, "Thông báo xác nhận đơn thuốc đã gửi", message);
+            await _notificationService.MedicineNotificationForParent(medicine, "Đơn thuốc được tạo bởi y tá. Vui lòng kiểm tra.");
+            return medicine;
+        }
 
         public async Task<bool> UpdateMedicinByParentAsync(MedicineUpdateDTO updateDto, string userName)
         {
@@ -322,6 +348,30 @@ namespace Sever.Service
                     }
                 }
             }
+            var student = await _studentProfileRepository.GetStudentProfileByStudentId(medicine.StudentID);
+            var parent = await _userService.GetUserByIdAsyc(student.ParentID);
+            string message = $@"
+                            <p>Kính gửi Quý phụ huynh,</p>
+
+                            <p>Nhà trường xin xác nhận đã nhận được thuốc do quý phụ huynh gửi cho học sinh:</p>
+
+                            <ul>
+                                <li><b>Họ và tên học sinh:</b> {student.StudentName}</li>
+                                <li><b>Lớp:</b> {student.Class}</li>
+                                <li><b>Tên thuốc:</b> {medicine.MedicineName}</li>
+                                <li><b>Liều dùng:</b> {medicine.Dosage}</li>
+                                <li><b>Ngày nhận:</b> {DateTime.Now:dd/MM/yyyy}</li>
+                            </ul>
+
+                            <p>Thuốc sẽ được bảo quản tại phòng y tế và sử dụng đúng theo hướng dẫn của quý phụ huynh trong quá trình chăm sóc học sinh.</p>
+
+                            <p>Xin cảm ơn sự phối hợp của quý phụ huynh trong công tác chăm sóc sức khỏe học đường.</p>
+
+                            <br>
+                            <p>Trân trọng,</p>
+                            <p><b>Ban Y tế Trường học</b></p>
+                            ";
+            await _emailService.SendEmailAsync(parent.Email, "Thông báo xác nhận đơn thuốc đã gửi", message);
             await _notificationService.MedicineNotificationForParent(medicine, $"Đơn thuốc đã được cập nhật bởi y tá với trạng thái '{medicine.Status}'.");
             return true;
         }
@@ -363,10 +413,10 @@ namespace Sever.Service
 
         public async Task<List<MedicineResponse>> GetMedicinesByStudentAsync(string studentId)
         {
-                var medicine = await _medicineRepository.GetMedicineByStudentIdAsync(studentId);
-                List<MedicineResponse> response = new List<MedicineResponse>();
-                foreach (var e in medicine)
-                {
+            var medicine = await _medicineRepository.GetMedicineByStudentIdAsync(studentId);
+            List<MedicineResponse> response = new List<MedicineResponse>();
+            foreach (var e in medicine)
+            {
 
                 var imageFiles = await _filesService.GetImageByMedicineIdAsync(e.MedicineID);
 
@@ -375,41 +425,41 @@ namespace Sever.Service
                     Id = f.FileID,
                     FileName = f.FileName,
                     FileType = f.FileType,
-                    Url = f.FileLink,         
+                    Url = f.FileLink,
                     UploadedAt = f.UploadDate
                 }).ToList();
 
 
                 response.Add(new MedicineResponse
-                    {
-                        MedicineID = e.MedicineID,
-                        SentDate = e.SentDate,
-                        MedicineName = e.MedicineName,
-                        Quantity = e.Quantity,
-                        Dosage = e.Dosage,
-                        Instructions = e.Instructions,
-                        Notes = e.Notes,
-                        NurseID = e.NurseID,
-                        ParentID = e.ParentID,
-                        StudentID = e.StudentID,
-                        Status = e.Status,
-                        Class = e.StudentProfile.Class,
-                        StudentName = e.StudentProfile.StudentName,
-                        Image = imageList              
+                {
+                    MedicineID = e.MedicineID,
+                    SentDate = e.SentDate,
+                    MedicineName = e.MedicineName,
+                    Quantity = e.Quantity,
+                    Dosage = e.Dosage,
+                    Instructions = e.Instructions,
+                    Notes = e.Notes,
+                    NurseID = e.NurseID,
+                    ParentID = e.ParentID,
+                    StudentID = e.StudentID,
+                    Status = e.Status,
+                    Class = e.StudentProfile.Class,
+                    StudentName = e.StudentProfile.StudentName,
+                    Image = imageList
 
                 });
-                }
-                return response;
+            }
+            return response;
         }
 
 
         public async Task<List<MedicineResponse>> GetAllMedicinesAsync()
         {
-                var medicines = await _medicineRepository.GetAllMedicinesAsync();
-                
-                List<MedicineResponse> response = new List<MedicineResponse>();
-                foreach (var e in medicines)
-                {
+            var medicines = await _medicineRepository.GetAllMedicinesAsync();
+
+            List<MedicineResponse> response = new List<MedicineResponse>();
+            foreach (var e in medicines)
+            {
 
                 var imageFiles = await _filesService.GetImageByMedicineIdAsync(e.MedicineID);
 
@@ -423,26 +473,26 @@ namespace Sever.Service
                 }).ToList();
 
                 response.Add(new MedicineResponse
-                    {
-                        MedicineID = e.MedicineID,
-                        SentDate = e.SentDate,
-                        MedicineName = e.MedicineName,
-                        Quantity = e.Quantity,
-                        Dosage = e.Dosage,
-                        Instructions = e.Instructions,
-                        Notes = e.Notes,
-                        NurseID = e.NurseID,
-                        ParentID = e.ParentID,
-                        StudentID = e.StudentID,
-                        Status = e.Status, 
-                        Class = e.StudentProfile.Class,
-                        StudentName = e.StudentProfile.StudentName,
-                        Image = imageList
+                {
+                    MedicineID = e.MedicineID,
+                    SentDate = e.SentDate,
+                    MedicineName = e.MedicineName,
+                    Quantity = e.Quantity,
+                    Dosage = e.Dosage,
+                    Instructions = e.Instructions,
+                    Notes = e.Notes,
+                    NurseID = e.NurseID,
+                    ParentID = e.ParentID,
+                    StudentID = e.StudentID,
+                    Status = e.Status,
+                    Class = e.StudentProfile.Class,
+                    StudentName = e.StudentProfile.StudentName,
+                    Image = imageList
 
 
                 });
-                }
-                return response;
+            }
+            return response;
         }
 
         public async Task<List<MedicineResponse>> GetMedicineByParentAsync(string userName)

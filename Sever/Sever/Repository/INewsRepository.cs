@@ -15,6 +15,8 @@ namespace Sever.Repository
         Task<List<News>> GetNewsByUserIdAsync(string userId);
         Task<News> GetNewsByIdAsync(string id);
         Task<string> GetNewID();
+        Task<int> CountActiveNewsAsync(DateTime fromDate, DateTime toDate);
+        Task<int> CountInActiveNewsAsync(DateTime fromDate, DateTime toDate);
     }
     public class NewsRepository : INewsRepository
     {
@@ -85,6 +87,20 @@ namespace Sever.Repository
         public async Task<List<News>> GetActiveNewsAsync()
         {
             return await _context.News.Where(n => n.Status == true).ToListAsync();
+        }
+
+        public async Task<int> CountActiveNewsAsync(DateTime fromDate, DateTime toDate)
+        {
+            return await _context.News
+                .Where(n => n.Status == true && n.DateTime >= fromDate && n.DateTime <= toDate)
+                .CountAsync();
+        }
+
+        public async Task<int> CountInActiveNewsAsync(DateTime fromDate, DateTime toDate)
+        {
+            return await _context.News
+                .Where(n => n.Status == false && n.DateTime >= fromDate && n.DateTime <= toDate)
+                .CountAsync();
         }
     }
 }

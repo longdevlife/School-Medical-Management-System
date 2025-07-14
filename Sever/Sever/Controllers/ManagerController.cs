@@ -170,6 +170,8 @@ namespace Sever.Controllers
                 var countConfirmVaccines = await _vaccinationService.CountConfirmVaccine(fromDate, toDate);
                 var countDeniedVaccines = await _vaccinationService.CountDeniedVaccine(fromDate, toDate);
                 var countNotResponseVaccines = await _vaccinationService.CountNotResponseVaccine(fromDate, toDate);
+                var countActiveNews = await _newsService.CountActiveNewsAsync(fromDate, toDate);
+                var countInActiveNews = await _newsService.CountInActiveNewsAsync(fromDate, toDate);
                 return Ok(new
                 {
                     TotalHealthCheckUp = totalHealthCheckUp,
@@ -187,7 +189,8 @@ namespace Sever.Controllers
                     CountConfirmVaccines = countConfirmVaccines,
                     CountDeniedVaccines = countDeniedVaccines,
                     CountNotResponseVaccines = countNotResponseVaccines,
-
+                    CountActiveNews  = countActiveNews,
+                    CountInActiveNews = countInActiveNews
                 });
             }
             catch (Exception ex)

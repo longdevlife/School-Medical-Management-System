@@ -1783,6 +1783,16 @@
   },
   {
     "ContainingType": "Sever.Controllers.UserController",
+    "Method": "GetNotifyByUserId",
+    "RelativePath": "api/user/get-notify-by-user-id",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.UserController",
     "Method": "GetUserInfo",
     "RelativePath": "api/user/get-user-info",
     "HttpMethod": "GET",

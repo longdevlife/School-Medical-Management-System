@@ -2,6 +2,7 @@
 using Sever.Context;
 using Sever.Model;
 using Sever.Utilities;
+using System.Formats.Asn1;
 
 namespace Sever.Repository.Interfaces
 {
@@ -14,6 +15,7 @@ namespace Sever.Repository.Interfaces
         Task<string> GetCurrentNotifyID();
         Task<string> GetParentIdByStudentIdAsync(string studentId);
         Task<List<string>> GetAllNurseIDsAsync();
+        Task<List<Notify>> GetNotifyByUserId(string userId);
 
     }
     public class NotificationRepository : INotificationRepository
@@ -97,6 +99,12 @@ namespace Sever.Repository.Interfaces
                 .ToListAsync();
         }
 
-
+        public async Task<List<Notify>> GetNotifyByUserId(string userId)
+        {
+            return await _context.Notify
+                .Where(n => n.UserID == userId)
+                .OrderByDescending(n => n.DateTime)
+                .ToListAsync();
+        }
     }
 }

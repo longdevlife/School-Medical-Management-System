@@ -4,6 +4,22 @@
 }
 
 .scrollbar-hide {
-  -ms-overflow-style: none; 
-  scrollbar-width: none; 
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Notification Panel positioning */
+.notification-panel-container {
+  position: relative;
+}
+
+/* Overlay for closing notification panel when clicking outside */
+.notification-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  background: transparent;
 }

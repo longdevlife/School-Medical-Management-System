@@ -1,0 +1,46 @@
+/* Hide scrollbar for Chrome, Safari and Opera */
+.notification-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.notification-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Tooltip styling */
+.notification-tooltip .ant-tooltip-inner {
+  background: white !important;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  max-width: 350px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #333 !important;
+  opacity: 1 !important;
+}
+
+.notification-tooltip .ant-tooltip-arrow::before {
+  background: white !important;
+}
+
+/* Smooth hover effects */
+.notification-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.notification-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Button hover effects */
+.system-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.system-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+}

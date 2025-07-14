@@ -3,6 +3,7 @@ using Sever.DTO.HealthCheckUp;
 using Sever.DTO.Vaccination;
 using Sever.Model;
 using Sever.Repository;
+using System.Reflection.PortableExecutable;
 using static Sever.Repository.IMedicineRepository;
 
 namespace Sever.Service
@@ -52,17 +53,19 @@ namespace Sever.Service
         private readonly IStudentProfileRepository _studentProfileRepository;
         private readonly INotificationService _notificationService;
         private readonly IUserService _userService;
-
+        private readonly IEmailService _emailService;
 
         public VaccinationService(IVaccinationRepository vaccinationRepository,
                                    IStudentProfileRepository studentProfileRepository,
                                    INotificationService notificationService,
-                                   IUserService userService)
+                                   IUserService userService,
+                                   IEmailService emailService)
         {
             _vaccinationRepository = vaccinationRepository;
             _studentProfileRepository = studentProfileRepository;
             _notificationService = notificationService;
             _userService = userService;
+            _emailService = emailService;
         }
 
         public async Task<VaccinationRecord> CreateVaccinationRecordByStudentIDAsync(CreateVaccination dto, string userName)
@@ -121,6 +124,29 @@ namespace Sever.Service
                     };
                     await _vaccinationRepository.CreateVaccinationAsync(record);
                     await _notificationService.SendVaccinationNotificationAsync(student, record.VaccinatedAt);
+                    var parent = await _userService.GetUserByIdAsyc(student.Parent.UserID);
+                    string message = $@"
+                                    <p>Kính gửi Quý phụ huynh,</p>
+
+                                    <p>Nhà trường xin thông báo lịch tiêm vaccine dành cho học sinh như sau:</p>
+
+                                    <ul>
+                                        <li><b>Họ và tên học sinh:</b> {student.StudentName}</li>
+                                        <li><b>Lớp:</b> {student.Class}</li>
+                                        <li><b>Tên vaccine:</b> {record.Vaccine.VaccineName}</li>
+                                        <li><b>Thời gian tiêm:</b> {record.DateTime:HH:mm} {(record.DateTime.Hour < 12 ? "sáng" : "chiều")}, ngày <b>{record.DateTime:dd/MM/yyyy}</b></li>
+                                        <li><b>Địa điểm:</b> Phòng Y tế – Trường Tiểu học ABC</li>
+                                    </ul>
+
+                                    <p>Việc tiêm vaccine nhằm tăng cường sức khỏe và phòng ngừa bệnh tật cho học sinh. Nhà trường kính mong quý phụ huynh quan tâm và phối hợp để học sinh được tiêm đúng lịch.</p>
+
+                                    <p>Quý phụ huynh vui lòng đăng nhập vào hệ thống để xác nhận đồng ý hoặc từ chối tiêm vaccine cho học sinh.</p>
+
+                                    <br>
+                                    <p>Trân trọng,</p>
+                                    <p><b>Ban Y tế Trường học</b></p>
+                                    ";
+                    await _emailService.SendEmailAsync(parent.Email, "Thông báo xác nhận tiêm chủng", message);
                     resultList.Add(record);
                 }
             }
@@ -225,7 +251,29 @@ namespace Sever.Service
 
             await _vaccinationRepository.UpdateVaccinationAsync(update);
             await _notificationService.UpdateVaccinationNotifycationAsync(student);
+            var parent = await _userService.GetUserByIdAsyc(student.Parent.UserID);
+            string message = $@"
+                            <p>Kính gửi Quý phụ huynh,</p>
 
+                            <p>Nhà trường xin thông báo rằng học sinh sau đây đã hoàn tất việc tiêm vaccine theo lịch trình:</p>
+
+                            <ul>
+                                <li><b>Họ và tên học sinh:</b> {student.StudentName}</li>
+                                <li><b>Lớp:</b> {student.Class}</li>
+                                <li><b>Tên vaccine:</b> {update.Vaccine.VaccineName}</li>
+                                <li><b>Thời gian tiêm:</b> {update.DateTime:HH:mm} {(update.DateTime.Hour < 12 ? "sáng" : "chiều")}, ngày <b>{update.DateTime:dd/MM/yyyy}</b></li>
+                                <li><b>Người tiêm:</b> {nurse.Name}</li>
+                            </ul>
+
+                            <p>Việc tiêm chủng đã được thực hiện đúng quy trình y tế và theo dõi sức khỏe học sinh sau tiêm được đảm bảo.</p>
+
+                            <p>Thông tin chi tiết đã được cập nhật trên hệ thống quản lý y tế học đường.</p>
+
+                            <br>
+                            <p>Trân trọng,</p>
+                            <p><b>Ban Y tế Trường học</b></p>
+                            ";
+            await _emailService.SendEmailAsync(parent.Email, "Thông báo hoàn tất tiêm chủng", message);
             return true;
         }
 

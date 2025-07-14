@@ -23,15 +23,21 @@ namespace Sever.Service
         private readonly INotificationService _notificationService;
         private readonly IHealthCheckupRepository _healthCheckupRepository;
         private readonly IStudentProfileRepository _studentProfileRepository;
+        private readonly IEmailService _emailService;
+        private readonly IUserService _userService;
         public AppointmentService(IAppointmentRepository appointmentRepository,
                                     INotificationService notificationService,
                                     IHealthCheckupRepository healthCheckupRepository,
-                                    IStudentProfileRepository studentProfileRepository)
+                                    IStudentProfileRepository studentProfileRepository,
+                                    IEmailService emailService,
+                                    IUserService userService)
         {
             _appointmentRepository = appointmentRepository;
             _notificationService = notificationService;
             _healthCheckupRepository = healthCheckupRepository;
             _studentProfileRepository = studentProfileRepository;
+            _emailService = emailService;
+            _userService = userService;
         }
         public async Task<List<GetAppointment>> GetAllAppointmentAsync()
         {
@@ -107,6 +113,33 @@ namespace Sever.Service
             if (appointment == null) throw new ArgumentNullException("Appointment cannot be null");
             await _appointmentRepository.CreateAppointment(appointment);
             await _notificationService.AppointmentNotify(appointment);
+            var healthCheck = await _healthCheckupRepository.GetHealthCheckUpByIdAsync(newAppointment.HealthCheckUpID);
+            var student = await _studentProfileRepository.GetStudentProfileByStudentId(healthCheck.StudentID);
+            var parent = await _userService.GetUserByIdAsyc(student.Parent.UserID);
+            var ConsultantName = await _userService.GetUserByIdAsyc(healthCheck.CheckerID);
+            string message = $@"
+                            <p>Kính gửi Quý phụ huynh,</p>
+
+                            <p>Nhà trường xin thông báo về cuộc hẹn tư vấn sức khỏe dành cho học sinh như sau:</p>
+
+                            <ul>
+                                <li><b>Họ và tên học sinh:</b> {student.StudentName}</li>
+                                <li><b>Lớp:</b> {student.Class}</li>
+                                <li><b>Thời gian tư vấn:</b> {appointment.DateTime:HH:mm} {(appointment.DateTime.Hour < 12 ? "sáng" : "chiều")}, ngày <b>{appointment.DateTime:dd/MM/yyyy}</b></li>
+                                <li><b>Địa điểm:</b> Phòng Y tế – Trường Tiểu học ABC</li>
+                                <li><b>Người tư vấn:</b> {ConsultantName.Name}</li>
+                            </ul>
+
+                            <p>Cuộc hẹn nhằm trao đổi, tư vấn và theo dõi tình trạng sức khỏe của học sinh. Mong quý phụ huynh thu xếp thời gian để học sinh tham dự đầy đủ.</p>
+
+                            <p>Vui lòng đăng nhập vào hệ thống để kiểm tra thông tin và xác nhận tham gia cuộc hẹn tư vấn.</p>
+
+                            <br>
+                            <p>Trân trọng,</p>
+                            <p><b>Ban Y tế Trường học</b></p>
+                            ";
+
+            await _emailService.SendEmailAsync(parent.Email, "Thông báo kết cuộc hẹn tư vấn sức khỏe", message);
             return true;
         }
 

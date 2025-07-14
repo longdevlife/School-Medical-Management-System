@@ -89,7 +89,9 @@ namespace Sever.Service
                     await _filesService.UploadMedicineImageByAsync(item, medicine.MedicineID);
                 }
             }
-            await _notificationService.MedicineNotificationForAllNurses(medicine, "Đơn thuốc được tạo bởi phụ huynh. Vui lòng kiểm tra.");
+            await _notificationService.MedicineNotificationForAllNurses(medicine,
+                $"Phụ huynh '{medicine.Parent.Name}' đã tạo đơn thuốc cho học sinh '{medicine.StudentID}'.");
+
             return medicine;
         }
 
@@ -193,7 +195,7 @@ namespace Sever.Service
             await _medicineRepository.UpdateMedicineAsync(medicine);
             await _notificationService.MedicineNotificationForAllNurses(
                 medicine,
-                $"Phụ huynh '{medicine.ParentID}' đã cập nhật đơn thuốc cho học sinh '{medicine.StudentID}'."
+                $"Phụ huynh '{medicine.Parent.Name}' đã cập nhật đơn thuốc cho học sinh '{medicine.StudentProfile.StudentName}'."
             );
 
             return true;

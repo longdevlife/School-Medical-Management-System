@@ -113,6 +113,7 @@ export default {
           "50%": { transform: "scale(1.01)", opacity: "0.9" },
           "100%": { transform: "scale(1) translateY(0)", opacity: "1" },
         },
+        
       },
     },
   },

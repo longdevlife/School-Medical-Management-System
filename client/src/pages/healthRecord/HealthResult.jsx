@@ -1158,7 +1158,7 @@ const HealthResult = () => {
                 marginBottom: 8,
               }}
             >
-              Khám sức khỏe
+              Khám sức khỏe tổng quát
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div

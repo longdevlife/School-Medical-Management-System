@@ -3306,9 +3306,6 @@ const MedicineManagement = () => {
                   <InboxOutlined />
                 </p>
                 <p className="ant-upload-text">Kéo thả hoặc click để tải ảnh</p>
-                <p className="ant-upload-hint">
-                  Tối đa 3 ảnh, định dạng: JPG, PNG
-                </p>
               </Dragger>
             </Form.Item>
 

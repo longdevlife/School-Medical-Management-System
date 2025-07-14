@@ -112,7 +112,7 @@ namespace Sever.Service
                                     ";
 
 
-                    await _emailService.SendEmailAsync("satruong14@gmail.com", "Thông báo khám sức khỏe cho học sinh", message);
+                    await _emailService.SendEmailAsync(parent.Email, "Thông báo khám sức khỏe cho học sinh", message);
                 }
             }
             catch (Exception ex)

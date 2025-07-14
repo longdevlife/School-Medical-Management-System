@@ -217,7 +217,7 @@ namespace Sever.Service
             await _forgotRepo.CreateTokenAsync(resetToken);
             await _forgotRepo.SaveChangesAsync();
 
-            var resetLink = $"{resetUrlBase}?token={Uri.EscapeDataString(token)}";
+            var resetLink = $"http://localhost:5173/resetpassword?token={Uri.EscapeDataString(token)}";
             var subject = "Đặt lại mật khẩu";
             var body = $"Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng truy cập vào đường link sau:\n{resetLink}\nLink này sẽ hết hạn sau 5 phút.";
 

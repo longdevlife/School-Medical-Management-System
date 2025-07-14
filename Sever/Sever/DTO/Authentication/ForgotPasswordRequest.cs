@@ -3,5 +3,6 @@
     public class ForgotPasswordRequest
     {
         public string UsernameOrEmail { get; set; } = "";
+
     }
 }

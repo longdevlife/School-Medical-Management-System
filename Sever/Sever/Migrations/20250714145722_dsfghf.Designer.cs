@@ -12,8 +12,8 @@ using Sever.Context;
 namespace Sever.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250714092844_sdfgd")]
-    partial class sdfgd
+    [Migration("20250714145722_dsfghf")]
+    partial class dsfghf
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

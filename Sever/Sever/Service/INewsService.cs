@@ -100,6 +100,7 @@ namespace Sever.Service
                     Summary = item.Summary,
                     Body = item.Body,
                     Image = listImage
+
                 });
             }
             return lisNews;

@@ -143,31 +143,24 @@ namespace Sever.Service
             return true;
         }
 
-        public async Task<List<Appointment>> GetAppointmentByStudentId(string studentId)
+        public async Task<List<Appointment>> GetAppointmentByStudentId(string Id)
         {
-            var studentAppointments = new List<Appointment>();
-            var healthCheckUps = await _healthCheckupRepository.GetHealthCheckupsByStudentIdAsync(studentId);
-
+            var studenAppointments = new List<Appointment>();
+            var healthCheckUps = await _healthCheckupRepository.GetHealthCheckupsByStudentIdAsync(Id);
             if (healthCheckUps == null || !healthCheckUps.Any())
             {
                 throw new ArgumentException("No health checkups found for the specified student ID.");
             }
-
             foreach (var healthCheck in healthCheckUps)
             {
-                var appointment = await _appointmentRepository.GetAppointmentByHealCheckupAsync(healthCheck.HealthCheckUpID);
-                if (appointment != null)
+                var appointments = await _appointmentRepository.GetAppointmentByHealCheckupAsync(healthCheck.HealthCheckUpID);
+                if (appointments == null)
                 {
-                    studentAppointments.Add(appointment);
+                    throw new ArgumentException("No appointments found for the specified health checkup ID.");
                 }
-                else
-                {
-                    // Có thể bỏ throw, hoặc log warning, vì không phải HealthCheckUp nào cũng có Appointment
-                }
+                studenAppointments.Add(appointments);
             }
-
-            return studentAppointments;
+            return studenAppointments;
         }
-
     }
 }

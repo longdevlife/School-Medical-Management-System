@@ -3,7 +3,7 @@ import { authApi } from "./authApi";
 
 const axiosClient = axios.create({
   baseURL: "https://localhost:7040/api/",
-  timeout: 20000,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },

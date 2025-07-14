@@ -9,7 +9,6 @@ import {
   Badge,
   List,
   Typography,
-  message,
   Spin,
   notification,
 } from "antd";
@@ -200,7 +199,6 @@ function AppHeader({ collapsed, setCollapsed }) {
         setHasShownInitialToasts(true);
       }
     } catch (error) {
-      message.error("Không thể tải thông báo. Vui lòng thử lại!");
       setNotifications([]);
     } finally {
       setNotificationLoading(false);

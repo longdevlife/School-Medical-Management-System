@@ -118,12 +118,12 @@ button {
   transition: all 0.25s ease;
 }
 button:hover {
-  border-color: #0F6CBD;
-  color: #0F6CBD;
+  border-color: #0f6cbd;
+  color: #0f6cbd;
 }
 button:focus,
 button:focus-visible {
-  outline: 2px solid #0F6CBD;
+  outline: 2px solid #0f6cbd;
   outline-offset: 2px;
 }
 
@@ -133,7 +133,7 @@ button:focus-visible {
     background-color: #ffffff;
   }
   a:hover {
-    color: #0F6CBD;
+    color: #0f6cbd;
   }
   button {
     background-color: #f9f9f9;
@@ -141,8 +141,8 @@ button:focus-visible {
   }
   button:hover {
     background-color: #ffffff;
-    border-color: #0F6CBD;
-    color: #0F6CBD;
+    border-color: #0f6cbd;
+    color: #0f6cbd;
   }
 }
 
@@ -213,7 +213,7 @@ button:focus-visible {
 
 /* Button link styling */
 .ant-btn-link {
-  color: #0F6CBD;
+  color: #0f6cbd;
 }
 
 .ant-btn-link:hover,
@@ -354,8 +354,8 @@ button:focus-visible {
 /* Custom Tag colors */
 .ant-tag-blue {
   background: rgba(15, 108, 189, 0.1);
-  border-color: #0F6CBD;
-  color: #0F6CBD;
+  border-color: #0f6cbd;
+  color: #0f6cbd;
 }
 
 .ant-tag-green {

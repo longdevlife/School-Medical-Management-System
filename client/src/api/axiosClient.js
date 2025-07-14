@@ -3,7 +3,7 @@ import { authApi } from "./authApi";
 
 const axiosClient = axios.create({
   baseURL: "https://localhost:7040/api/",
-  timeout: 30000,
+  timeout: 20000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -20,7 +20,6 @@ axiosClient.interceptors.request.use(
       console.log("Data:", config.data);
       console.log("Data stringified:", JSON.stringify(config.data));
       console.log("Client UTC Time:", new Date().toISOString());
-
     }
     console.log("Client UTC Time:", new Date().toISOString());
 

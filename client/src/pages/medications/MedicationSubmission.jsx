@@ -65,7 +65,7 @@ function MedicationSubmission() {
   const [previewImage, setPreviewImage] = useState("");
   const [previewTitle, setPreviewTitle] = useState("");
 
-  // 🆕 Navigation và zoom cho image modal
+  //  Navigation và zoom cho image modal
   const [imageList, setImageList] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 

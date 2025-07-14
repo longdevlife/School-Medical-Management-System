@@ -271,8 +271,19 @@ namespace Sever.Controllers
             {
                 return Unauthorized("Người dùng chưa được cấp quyền.");
             }
-            var appointments = await _appointmentService.GetAppointmentByStudentId(StudentID);
-            return Ok(appointments);
+            try
+            {
+                var appointments = await _appointmentService.GetAppointmentByStudentId(StudentID);
+                if (appointments == null)
+                {
+                    return NotFound("Không tìm thấy hồ sơ khám sức khỏe theo phụ huynh");
+                }
+                return Ok(appointments);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Thất bại khi tải thông tin hồ sơ khám sức khỏe" + ex.Message);
+            }
         }
 
         [HttpPut("update-student-profile")]
@@ -302,6 +313,7 @@ namespace Sever.Controllers
                     inner = ex.InnerException?.Message
                 });
             }
+
         }
     }
 }

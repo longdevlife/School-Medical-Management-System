@@ -102,6 +102,7 @@ function VaccinationManagement() {
               status = "monitoring";
               break;
             case "đã từ chối":
+            case "Đã từ chối":
               status = "rejected";
               break;
             case "Hoàn thành":

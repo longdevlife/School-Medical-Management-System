@@ -62,6 +62,7 @@ namespace Sever.Repository
         public async Task<StudentProfile> GetStudentProfileByStudentId(string id)
         {
             return await _context.StudentProfile
+                .Include(s => s.Parent) 
                 .FirstOrDefaultAsync(s => s.StudentID == id);
 
         }

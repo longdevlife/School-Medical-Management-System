@@ -76,6 +76,12 @@ namespace Sever.Service
             string newId = await _vaccinationRepository.GetCurrentVaccinationRecordID();
             var student = await _studentProfileRepository.GetStudentProfileByStudentId(dto.StudentID);
 
+            if (student == null)
+                throw new Exception("Không tìm thấy học sinh.");
+
+            if (student.Parent == null)
+                throw new Exception("Không tìm thấy thông tin phụ huynh của học sinh.");
+
             var record = new VaccinationRecord
             {
                 RecordID = newId,
@@ -91,8 +97,39 @@ namespace Sever.Service
 
             await _vaccinationRepository.CreateVaccinationAsync(record);
             await _notificationService.SendVaccinationNotificationAsync(student, record.VaccinatedAt);
+
+            var parent = await _userService.GetUserByIdAsyc(student.Parent.UserID);
+            var vaccine = await _vaccinationRepository.GetVaccineByIdAsync(dto.VaccineID);
+
+            if (vaccine == null)
+                throw new Exception("Không tìm thấy thông tin vaccine.");
+
+            string message = $@"
+        <p>Kính gửi Quý phụ huynh,</p>
+
+        <p>Nhà trường xin thông báo lịch tiêm vaccine dành cho học sinh như sau:</p>
+
+        <ul>
+            <li><b>Họ và tên học sinh:</b> {student.StudentName}</li>
+            <li><b>Lớp:</b> {student.Class}</li>
+            <li><b>Tên vaccine:</b> {vaccine.VaccineName}</li>
+            <li><b>Thời gian tiêm:</b> {record.DateTime:HH:mm} {(record.DateTime.Hour < 12 ? "sáng" : "chiều")}, ngày <b>{record.DateTime:dd/MM/yyyy}</b></li>
+            <li><b>Địa điểm:</b> Phòng Y tế – Trường Tiểu học ABC</li>
+        </ul>
+
+        <p>Việc tiêm vaccine nhằm tăng cường sức khỏe và phòng ngừa bệnh tật cho học sinh. Nhà trường kính mong quý phụ huynh quan tâm và phối hợp để học sinh được tiêm đúng lịch.</p>
+
+        <p>Quý phụ huynh vui lòng đăng nhập vào hệ thống để xác nhận đồng ý hoặc từ chối tiêm vaccine cho học sinh.</p>
+
+        <br>
+        <p>Trân trọng,</p>
+        <p><b>Ban Y tế Trường học</b></p>
+    ";
+
+            await _emailService.SendEmailAsync(parent.Email, "Thông báo xác nhận tiêm chủng", message);
             return record;
         }
+
 
         public async Task<List<VaccinationRecord>> CreateVaccinationRecordByClassIDAsync(CreateVaccination dto, string userName)
         {
@@ -120,28 +157,24 @@ namespace Sever.Service
                         DateTime = DateTime.UtcNow.AddHours(7),
                         VaccinatedAt = dto.VaccinatedAt,
                         Status = "Chờ xác nhận",
-
                     };
                     await _vaccinationRepository.CreateVaccinationAsync(record);
                     await _notificationService.SendVaccinationNotificationAsync(student, record.VaccinatedAt);
                     var parent = await _userService.GetUserByIdAsyc(student.Parent.UserID);
+                    var vaccine = await _vaccinationRepository.GetVaccineByIdAsync(dto.VaccineID);
                     string message = $@"
                                     <p>Kính gửi Quý phụ huynh,</p>
 
                                     <p>Nhà trường xin thông báo lịch tiêm vaccine dành cho học sinh như sau:</p>
-
                                     <ul>
                                         <li><b>Họ và tên học sinh:</b> {student.StudentName}</li>
                                         <li><b>Lớp:</b> {student.Class}</li>
-                                        <li><b>Tên vaccine:</b> {record.Vaccine.VaccineName}</li>
+                                        <li><b>Tên vaccine:</b> {vaccine.VaccineName}</li>
                                         <li><b>Thời gian tiêm:</b> {record.DateTime:HH:mm} {(record.DateTime.Hour < 12 ? "sáng" : "chiều")}, ngày <b>{record.DateTime:dd/MM/yyyy}</b></li>
                                         <li><b>Địa điểm:</b> Phòng Y tế – Trường Tiểu học ABC</li>
                                     </ul>
-
                                     <p>Việc tiêm vaccine nhằm tăng cường sức khỏe và phòng ngừa bệnh tật cho học sinh. Nhà trường kính mong quý phụ huynh quan tâm và phối hợp để học sinh được tiêm đúng lịch.</p>
-
                                     <p>Quý phụ huynh vui lòng đăng nhập vào hệ thống để xác nhận đồng ý hoặc từ chối tiêm vaccine cho học sinh.</p>
-
                                     <br>
                                     <p>Trân trọng,</p>
                                     <p><b>Ban Y tế Trường học</b></p>
@@ -251,7 +284,10 @@ namespace Sever.Service
 
             await _vaccinationRepository.UpdateVaccinationAsync(update);
             await _notificationService.UpdateVaccinationNotifycationAsync(student);
+
             var parent = await _userService.GetUserByIdAsyc(student.Parent.UserID);
+            var vaccine = await _vaccinationRepository.GetVaccineByIdAsync(update.VaccineID);
+
             string message = $@"
                             <p>Kính gửi Quý phụ huynh,</p>
 

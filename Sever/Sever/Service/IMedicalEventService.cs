@@ -36,6 +36,7 @@ namespace Sever.Service
         private readonly IFilesService _filesService;
         private readonly IUserService _userService;
         private readonly IStudentProfileRepository _studentProfileRepository;
+        private readonly IEmailService _emailService;
 
 
         public MedicalEventService(
@@ -43,15 +44,17 @@ namespace Sever.Service
                 INotificationService notificationService,
                 IFilesService filesService,
                 IUserService userService,
-                IStudentProfileRepository studentProfileRepository)
-            {
-                _medicalEventRepository = medicalEventRepository;
-                _notificationService = notificationService;
-                _filesService = filesService;
-                _userService = userService;
-                _studentProfileRepository = studentProfileRepository;
-            }
-            public async Task<MedicalEvent> CreateMedicalEvent(CreateMedicalEvent dto, string userName)
+                IStudentProfileRepository studentProfileRepository,
+                IEmailService emailService)
+        {
+            _medicalEventRepository = medicalEventRepository;
+            _notificationService = notificationService;
+            _filesService = filesService;
+            _userService = userService;
+            _studentProfileRepository = studentProfileRepository;
+            _emailService = emailService;
+        }
+        public async Task<MedicalEvent> CreateMedicalEvent(CreateMedicalEvent dto, string userName)
             {
                 try
                 {
@@ -96,45 +99,55 @@ namespace Sever.Service
                 var parent = await _userService.GetUserByIdAsyc(student.ParentID);
                 var images = await _filesService.GetImageByMedicalEventIdAsync(medicalEvent.MedicalEventID);
                 string imageSection = "";
-                if (images != null)
+
+                if (images != null && images.Any())
                 {
-                    imageSection = "<p><b>Hình ảnh sự cố:</b></p>";
+                    imageSection += "<p><b>Hình ảnh sự cố:</b></p>";
+                    imageSection += "<div style='display: flex; flex-wrap: wrap;'>";
+
                     foreach (var image in images)
                     {
                         imageSection += $@"
-                                        <p>
-                                            <img src='{image.FileLink}' alt='Hình ảnh sự cố' style='max-width: 100%; height: auto; margin-bottom: 10px; border: 1px solid #ccc; padding: 5px;' />
-                                        </p>";
+                         <div style='width: 48%; margin: 1%; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #ddd; padding: 5px; background-color: #fefefe;'>
+                         <img src='{image.FileLink}' alt='Hình ảnh sự cố'
+                           style='width: 100%; height: auto; display: block; border-radius: 4px;' />
+                        </div>";
                     }
+
+                    imageSection += "</div>";
                 }
                 string message = $@"
-                                <p>Kính gửi Quý phụ huynh,</p>
+                <div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'>
+                <p>Kính gửi Quý phụ huynh,</p>
 
-                                <p>Nhà trường xin thông báo về một sự cố y tế liên quan đến học sinh:</p>
+                <p>Nhà trường xin thông báo về một sự cố y tế liên quan đến học sinh:</p>
 
-                                <ul>
-                                    <li><b>Họ và tên học sinh:</b> {student.StudentName}</li>
-                                    <li><b>Lớp:</b> {student.Class}</li>
-                                    <li><b>Thời gian xảy ra:</b> {medicalEvent.EventDateTime:HH:mm}, ngày {medicalEvent.EventDateTime:dd/MM/yyyy}</li>
-                                    <li><b>Loại sự cố:</b> {medicalEvent.EventType}</li>
-                                </ul>
+                <ul style='padding-left: 20px;'>
+                <li><b>Họ và tên học sinh:</b> {student.StudentName}</li>
+                <li><b>Lớp:</b> {student.Class}</li>
+                <li><b>Thời gian xảy ra:</b> {medicalEvent.EventDateTime:HH:mm}, ngày {medicalEvent.EventDateTime:dd/MM/yyyy}</li>
+                <li><b>Loại sự cố:</b> {medicalEvent.EventType}</li>
+                </ul>
+                
+                <p><b>Chi tiết sự cố:</b></p>
+                <p>{medicalEvent.Description}</p>
 
-                                <p><b>Chi tiết sự cố:</b></p>
-                                <p>{medicalEvent.Description}</p>
+                <p><b>Hướng xử lý:</b></p>
+                <p>{medicalEvent.ActionTaken}</p>
 
-                                <p><b>Hướng xử lý:</b></p>
-                                <p>{medicalEvent.ActionTaken}</p>
+                {imageSection}
 
-                                {imageSection}
+                <p>Nhà trường đã tiến hành chăm sóc và theo dõi sức khỏe học sinh ngay sau sự cố. Kính mời quý phụ huynh theo dõi thêm tình trạng sức khỏe tại nhà và liên hệ với y tế trường nếu có biểu hiện bất thường.</p>
 
-                                <p>Nhà trường đã tiến hành chăm sóc và theo dõi sức khỏe học sinh ngay sau sự cố. Kính mời quý phụ huynh theo dõi thêm tình trạng sức khỏe tại nhà và liên hệ với y tế trường nếu có biểu hiện bất thường.</p>
+                <p>Thông tin chi tiết cũng đã được cập nhật trên hệ thống quản lý y tế học đường.</p>
 
-                                <p>Thông tin chi tiết cũng đã được cập nhật trên hệ thống quản lý y tế học đường.</p>
+                <br />
+                <p>Trân trọng,</p>
+                <p><b>Ban Y tế Trường học</b></p>
+                </div>
+";
 
-                                <br>
-                                <p>Trân trọng,</p>
-                                <p><b>Ban Y tế Trường học</b></p>
-                                ";
+                await _emailService.SendEmailAsync(parent.Email, "Thông báo sự cố y tế", message);
                 return medicalEvent;
                 }
                 catch (Exception ex)
@@ -154,10 +167,11 @@ namespace Sever.Service
                 throw new Exception("không tìm thấy sự kiện y tế.");
 
             }
-            medicalEvents.Notes += $"\nUpdate {DateTime.UtcNow.AddHours(7)}: {dto.Notes}";
+            medicalEvents.Notes += $"\n. " +
+                $"Cập nhật {DateTime.UtcNow.AddHours(7)}: {dto.Notes}";
             if (!string.IsNullOrWhiteSpace(dto.ActionTaken))
             {
-                medicalEvents.ActionTaken += $"\n{dto.ActionTaken}";
+                medicalEvents.ActionTaken += $"\n, {dto.ActionTaken}";
             }
             if (!string.IsNullOrWhiteSpace(dto.Description))
             {

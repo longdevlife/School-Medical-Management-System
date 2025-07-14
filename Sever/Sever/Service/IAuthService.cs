@@ -184,7 +184,7 @@ namespace Sever.Service
                 throw new Exception("This email has not been registered yet.");
             }
 
-            // Tạo access + refresh token
+            // Tạo access + // refresh token
             var accessToken = _tokenService.GenerateAccessToken(user.UserName, user.RoleID);
             var refreshToken = _tokenService.GenerateRefreshToken();
 

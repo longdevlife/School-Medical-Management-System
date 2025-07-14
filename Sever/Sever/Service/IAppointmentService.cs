@@ -154,11 +154,10 @@ namespace Sever.Service
             foreach (var healthCheck in healthCheckUps)
             {
                 var appointments = await _appointmentRepository.GetAppointmentByHealCheckupAsync(healthCheck.HealthCheckUpID);
-                if (appointments == null)
+                if (appointments != null)
                 {
-                    throw new ArgumentException("No appointments found for the specified health checkup ID.");
+                    studenAppointments.Add(appointments);
                 }
-                studenAppointments.Add(appointments);
             }
             return studenAppointments;
         }

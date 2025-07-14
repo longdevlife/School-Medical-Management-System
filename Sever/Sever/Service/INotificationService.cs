@@ -16,7 +16,7 @@ namespace Sever.Service
         Task MedicineNotificationForAllNurses(Medicine medicine, string customMessage = null);
         Task HealthProfileNotificationForAllNurses(string studentId, string customMessage = null);
         Task HealthProfileNotificationForParent(string studentId, string customMessage = null);
-
+        Task<List<Notify>> GetNotifyByUserId(string userId);
         Task<bool> AppointmentNotify(Appointment appointment);
         Task<bool> SendHealthCheckupNotificationAsync(StudentProfile student, DateTime date);
         Task<bool> UpdateHealthCheckUpNotifycationAsync(StudentProfile student);
@@ -330,6 +330,17 @@ namespace Sever.Service
                 throw new Exception("Lỗi khi gửi thông báo cập nhật khám sức khỏe.", ex);
             }
             return false;
+        }
+        public async Task<List<Notify>> GetNotifyByUserId(string userId)
+        {
+            try
+            {
+                return await _notificationRepository.GetNotifyByUserId(userId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi lấy thông báo theo UserID.", ex);
+            }
         }
     }
 }

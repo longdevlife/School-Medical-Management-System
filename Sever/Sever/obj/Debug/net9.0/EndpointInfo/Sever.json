@@ -2909,6 +2909,18 @@
         }
       }
     },
+    "/api/user/get-notify-by-user-id": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Values/check-token": {
       "get": {
         "tags": [

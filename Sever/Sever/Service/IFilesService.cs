@@ -400,7 +400,7 @@ namespace Sever.Service
         public async Task<List<Files>> GetImageByNewsIdAsync(string id)
         {
             var list = await _fileRepository.GetImageByNewsIdAsync(id);
-            if (list == null || list.Count == 0)
+            if (list == null)
             {
                 throw new ArgumentException("Tải file từ repository thất bại");
             }

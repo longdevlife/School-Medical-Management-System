@@ -224,6 +224,7 @@ namespace Sever.Service
             if (!string.IsNullOrWhiteSpace(updateDto.Notes))
                 update.Notes = updateDto.Notes;
 
+
             update.DateTime = DateTime.UtcNow;
             update.NurseID = userId;
 

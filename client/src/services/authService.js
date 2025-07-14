@@ -136,7 +136,7 @@ const authService = {
       // Handle API errors
       if (error.response) {
         // Server responded with error status
-        throw new Error(error.response.data.message || "Đăng nhập thất bại");
+        throw new Error(error.response?.data?.message || "Sai tên đăng nhập hoặc mật khẩu");
       } else if (error.request) {
         // Network error
         throw new Error("Không thể kết nối đến server");

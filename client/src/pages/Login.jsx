@@ -75,7 +75,8 @@ const Login = () => {
       // Redirect to home page after login
       navigate("/home");
     } catch (error) {
-      message.error(error.message || "Đăng nhập thất bại");
+      console.log("ERROR CATCHED:", error);
+      message.error("Sai tên đăng nhập hoặc mật khẩu");
     } finally {
       setLoading(false);
     }

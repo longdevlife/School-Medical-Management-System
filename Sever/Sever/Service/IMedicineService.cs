@@ -76,7 +76,7 @@ namespace Sever.Service
                 Quantity = dto.Quantity,
                 Dosage = dto.Dosage,
                 Instructions = dto.Instructions,
-                SentDate = DateTime.UtcNow.AddHours(7),
+                SentDate = DateTime.UtcNow,
                 Notes = dto.Notes,
                 Status = "Chờ xử lý",
                 StudentID = dto.StudentID,
@@ -112,7 +112,7 @@ namespace Sever.Service
                 Quantity = dto.Quantity,
                 Dosage = dto.Dosage,
                 Instructions = dto.Instructions,
-                SentDate = DateTime.UtcNow.AddHours(7),
+                SentDate = DateTime.UtcNow,
                 Notes = dto.Notes,
                 StudentID = dto.StudentID,
                 Status = (dto.Status == "Chờ xử lý" || dto.Status == "Đã xác nhận" || dto.Status == "Từ chối") ? dto.Status : "Chờ xử lý",
@@ -197,7 +197,7 @@ namespace Sever.Service
             if (!string.IsNullOrWhiteSpace(updateDto.Notes))
                 medicine.Notes = updateDto.Notes;
 
-            medicine.SentDate = DateTime.UtcNow.AddHours(7);
+            medicine.SentDate = DateTime.UtcNow;
 
             if (updateDto.Image != null && updateDto.Image.Length > 0)
             {
@@ -302,7 +302,7 @@ namespace Sever.Service
             if (!string.IsNullOrWhiteSpace(updateDto.Instructions))
                 medicine.Instructions = updateDto.Instructions;
 
-            medicine.SentDate = DateTime.UtcNow.AddHours(7);
+            medicine.SentDate = DateTime.UtcNow;
 
             if (!string.IsNullOrWhiteSpace(updateDto.Notes))
                 medicine.Notes = updateDto.Notes;

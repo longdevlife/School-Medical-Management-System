@@ -66,7 +66,7 @@ namespace Sever.Service
                         NotifyID = notifyId,
                         UserID = parentId,
                         NotifyName = "Cập nhật thông tin sự kiện y tế",
-                        DateTime = DateTime.UtcNow.AddHours(7),
+                        DateTime = DateTime.UtcNow,
                         Title = "CẬP NHẬT SỰ KIỆN Y TẾ",
                         Description = customMessage ?? $"Sự kiện y tế {medicalEvent.EventType} đã được cập nhật. Vui lòng kiểm tra chi tiết."
                     };
@@ -105,7 +105,7 @@ namespace Sever.Service
                     NotifyID = notifyId,
                     UserID = parentId,
                     NotifyName = "Cập nhật thông tin đơn thuốc từ y tá",
-                    DateTime = DateTime.UtcNow.AddHours(7),
+                    DateTime = DateTime.UtcNow,
                     Title = "CẬP NHẬT ĐƠN THUỐC",
                     Description = customMessage ?? $"Đơn thuốc {medicine.MedicineName} đã được cập nhật. Vui lòng kiểm tra chi tiết.",
                 };
@@ -136,7 +136,7 @@ namespace Sever.Service
                         NotifyID = notifyId,
                         UserID = nurseID,
                         NotifyName = "Cập nhật thông tin đơn thuốc từ phụ huynh",
-                        DateTime = DateTime.UtcNow.AddHours(7),
+                        DateTime = DateTime.UtcNow,
                         Title = "CẬP NHẬT ĐƠN THUỐC",
                         Description = customMessage ?? $"Đơn thuốc \"{medicine.MedicineName}\" vừa được tạo. Vui lòng kiểm tra.",
                     };
@@ -167,7 +167,7 @@ namespace Sever.Service
                         NotifyID = notifyId,
                         UserID = nurseID,
                         NotifyName = "Phụ huynh khai báo hồ sơ sức khỏe",
-                        DateTime = DateTime.UtcNow.AddHours(7),
+                        DateTime = DateTime.UtcNow,
                         Title = "KHAI BÁO HỒ SƠ SỨC KHỎE",
                         Description = customMessage ?? $"Hồ sơ sức khỏe của học sinh có mã {studentId} vừa được phụ huynh cập nhật. Vui lòng xác nhận.",
                     };
@@ -198,7 +198,7 @@ namespace Sever.Service
                     NotifyID = notifyId,
                     UserID = parentId,
                     NotifyName = "Y tá đã cập nhật hồ sơ sức khỏe của học sinh",
-                    DateTime = DateTime.UtcNow.AddHours(7),
+                    DateTime = DateTime.UtcNow,
                     Title = "CẬP NHẬT HỒ SƠ SỨC KHỎE",
                     Description = customMessage ?? $"Hồ sơ sức khỏe của học sinh mã số {studentId} đã được y tá cập nhật. Vui lòng kiểm tra.",
                 };

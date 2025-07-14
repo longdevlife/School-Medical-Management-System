@@ -32,7 +32,7 @@ namespace Sever.Service
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                expires: DateTime.UtcNow.AddMinutes(ConfigSystem.TokenTimeOut),
+                expires: DateTime.UtcNow.AddDays(ConfigSystem.TokenTimeOut),
                 claims: claims,
                 signingCredentials: creds
             );

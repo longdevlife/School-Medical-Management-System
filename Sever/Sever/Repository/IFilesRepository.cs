@@ -33,7 +33,7 @@ namespace Sever.Repository
             await _context.Files.AddAsync(file);
             return file;
         }
-        
+
         public async Task<bool> DeleteAsync(string imageLink)
         {
             var file = _context.Files.FirstOrDefault(f => f.FileLink == imageLink);
@@ -41,7 +41,6 @@ namespace Sever.Repository
             _context.Files.Update(file);
             var result = await _context.SaveChangesAsync();
             return result > 0;
-
         }
 
         public async Task SaveChangesAsync()
@@ -49,7 +48,7 @@ namespace Sever.Repository
             await _context.SaveChangesAsync();
         }
 
-       public async Task<List<Files>> GetLogoBySchoolIdAsync(string id)
+        public async Task<List<Files>> GetLogoBySchoolIdAsync(string id)
         {
             return await _context.Files.Where(f => f.SchoolID == id && f.IsActive == true).ToListAsync();
         }
@@ -66,8 +65,12 @@ namespace Sever.Repository
 
         public async Task<List<Files>> GetImageByMedicineIdAsync(string id)
         {
-            return await _context.Files.Where(m => m.MedicineID == id && m.IsActive == true).ToListAsync();
+            return await _context.Files
+                .Where(m => m.MedicineID == id && m.IsActive == true)
+                .ToListAsync();
         }
+
+
 
     }
 }

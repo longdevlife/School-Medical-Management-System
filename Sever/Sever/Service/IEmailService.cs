@@ -5,7 +5,6 @@ namespace Sever.Service
     public interface IEmailService
     {
         Task SendEmailAsync(string email, string subject, string message);
-
     }
 
     public class EmailSevice : IEmailService
@@ -19,10 +18,17 @@ namespace Sever.Service
                 Credentials = new System.Net.NetworkCredential("truonglsse180413@fpt.edu.vn", "mxsybfvgfngtuhfe")
             };
 
-            return  client.SendMailAsync(new MailMessage(from: "truonglsse180413@fpt.edu.vn",
-                                                            to: email,
-                                                            subject: subject,
-                                                            body: message));
+            var mail = new MailMessage
+            {
+                From = new MailAddress("truonglsse180413@fpt.edu.vn"),
+                Subject = subject,
+                Body = message,
+                IsBodyHtml = true
+            };
+
+            mail.To.Add(email);
+
+            return client.SendMailAsync(mail);
         }
     }
 }

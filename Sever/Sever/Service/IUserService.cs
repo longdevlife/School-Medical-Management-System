@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Identity;
 using OfficeOpenXml.ConditionalFormatting.Contracts;
 using Sever.DTO.User;
 //using Sever.Migrations;
@@ -18,16 +19,20 @@ namespace Sever.Service
         Task<List<GetUser>> GetAllUserAsync();
         Task<List<GetUser>?> SearchUserAsync(string key);
         Task<bool> ActivativeAccountasync(string userName);
+        Task<User> GetUserByIdAsyc(string id);
+
     }
 
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
         private readonly IStudentProfileRepository _studentProfileRepository;
-        public UserService(IUserRepository userRepository, IStudentProfileRepository studentProfileRepository)
+        private readonly IEmailService _emailService;
+        public UserService(IUserRepository userRepository, IStudentProfileRepository studentProfileRepository, IEmailService emailService)
         {
             _userRepository = userRepository;
             _studentProfileRepository = studentProfileRepository;
+            _emailService = emailService;
         }
         public async Task<User> GetUserAsyc(string username)
         {
@@ -56,6 +61,37 @@ namespace Sever.Service
                 _ => throw new ArgumentException("Vai trò không hợp lệ", nameof(userRequest.RoleName))
             };
             user.PasswordHash = passwordHasher.HashPassword(user, user.PasswordHash);
+            string roleDisplayName = userRequest.RoleName switch
+            {
+                "Parent" => "Phụ huynh",
+                "Nurse" => "Y tá",
+                "Manager" => "Quản lý",
+                _ => throw new ArgumentException("Vai trò không hợp lệ", nameof(userRequest.RoleName))
+            };
+            string message = $@"
+                            <p>Kính gửi Quý phụ huynh/nhân viên,</p>
+
+                            <p>Tài khoản của quý vị đã được khởi tạo trên hệ thống quản lý y tế học đường. Dưới đây là thông tin đăng nhập:</p>
+
+                            <ul>
+                                <li><b>Tên đăng nhập (Username):</b> {userRequest.UserName}</li>
+                                <li><b>Mật khẩu (Password):</b> {userRequest.Password}</li>
+                                <li><b>Vai trò:</b> {roleDisplayName}</li>
+                            </ul>
+
+                            <p>Quý vị có thể đăng nhập vào hệ thống tại địa chỉ: <b><a href='http://localhost:5173/login' target='_blank'>http://localhost:5173/login</a></b></p>
+
+                            <p>Vui lòng đổi mật khẩu sau lần đăng nhập đầu tiên để đảm bảo an toàn thông tin cá nhân.</p>
+
+                            <p>Nếu có bất kỳ thắc mắc nào, xin liên hệ với bộ phận quản trị hệ thống.</p>
+
+                            <br>
+                            <p>Trân trọng,</p>
+                            <p><b>Ban Quản Trị Hệ Thống</b></p>
+                            ";
+
+            await _emailService.SendEmailAsync(user.Email, "Thông báo tài khoản đăng nhập hệ thống", message);
+
             return await _userRepository.CreateAsync(user);
         }
 
@@ -110,7 +146,8 @@ namespace Sever.Service
                     UserID = user.UserID,
                     UserName = user.UserName,
                     IsActive = user.IsActive,
-                    RoleName = user.Role.RoleName
+                    RoleName = user.Role.RoleName,
+                    Email = user.Email,
                 };
                 userDtos.Add(userDto);
             }
@@ -132,7 +169,8 @@ namespace Sever.Service
                     UserID = user.UserID,
                     UserName = user.UserName,
                     IsActive = user.IsActive,
-                    RoleName = user.Role.RoleName
+                    RoleName = user.Role.RoleName,
+                    Email = user.Email,
                 };
                 userDtos.Add(userDto);
             }
@@ -147,6 +185,16 @@ namespace Sever.Service
             }
             var result = await _userRepository.ActivativeUserAsync(userName);
             return result;
+        }
+
+        public async Task<User> GetUserByIdAsyc(string id)
+        {
+            var user = await _userRepository.GetUserByIdAsyc(id);
+            if (user == null)
+            {
+                throw new Exception("User not found");
+            }
+            return user;
         }
     }
 }

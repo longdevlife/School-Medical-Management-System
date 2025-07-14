@@ -7,5 +7,6 @@
         public string? ClassID { get; set; }
         public DateTime DateCheckUp { get; set; }
         public string? Note { get; set; }
+        
     }
 }

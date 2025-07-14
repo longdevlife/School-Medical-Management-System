@@ -14,6 +14,7 @@ namespace Sever.Repository
         Task<VaccinationRecord> GetVaccineByRecordIdAsync(string id);
         Task<string> GetCurrentVaccinationRecordID();
         Task<List<VaccinationRecord>> GetAllVaccinationRecordsAsync();
+        Task<Vaccine> GetVaccineByIdAsync(int vaccineId);
         Task<bool> UpdateStatus(VaccinationRecord vaccination, string status);
         Task<List<VaccinationRecord>> GetVaccineDeniedAsync();
         Task<List<VaccinationRecord>> GetVaccineConfirmdAsync();
@@ -55,6 +56,10 @@ namespace Sever.Repository
         {
             return await _context.VaccinationRecord.FirstOrDefaultAsync(h => h.NurseID == id);
         }
+        public async Task<Vaccine> GetVaccineByIdAsync(int vaccineId)
+        {
+            return await _context.Vaccine.FirstOrDefaultAsync(v => v.VaccineID == vaccineId);
+        }
 
         public async Task<VaccinationRecord> GetVaccineByRecordIdAsync(string id)
         {
@@ -94,6 +99,7 @@ namespace Sever.Repository
                  .Include(r => r.Vaccine)
                 .ToListAsync();
         }
+
 
         public async Task<bool> UpdateStatus(VaccinationRecord vaccination, string status)
         {

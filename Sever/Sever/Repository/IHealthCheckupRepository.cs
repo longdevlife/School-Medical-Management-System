@@ -24,7 +24,6 @@ namespace Sever.Repository
         Task<int> CountConfirmHealthCheckUpsAsync(DateTime fromDate, DateTime toDate);
         Task<int> CountDeninedHealthCheckUpsAsync(DateTime fromDate, DateTime toDate);
         Task<int> CountNotResponseHealthCheckUpsAsync(DateTime fromDate, DateTime toDate);
-
     }
 
     public class HealthCheckupRepository : IHealthCheckupRepository
@@ -94,11 +93,20 @@ namespace Sever.Repository
         }
         public async Task<bool> UpdateStatus(HealthCheckUp healthCheckup, string status)
         {
-            healthCheckup.Status = status;
+            if (!string.IsNullOrWhiteSpace(status) && status.Trim() == "Hoàn thành")
+            {
+                healthCheckup.Status = "Hoàn thành";
+            }
+            else
+            {
+                healthCheckup.Status = "Chờ khám";
+            }
+
             _context.HealthCheckUp.Update(healthCheckup);
             var result = await _context.SaveChangesAsync();
             return result > 0;
         }
+
         public string NewID()
         {
             var lastHealthCheckup = _context.HealthCheckUp

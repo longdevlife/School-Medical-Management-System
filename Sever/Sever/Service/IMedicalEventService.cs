@@ -36,6 +36,7 @@ namespace Sever.Service
         private readonly IFilesService _filesService;
         private readonly IUserService _userService;
         private readonly IStudentProfileRepository _studentProfileRepository;
+        private readonly IEmailService _emailService;
 
 
         public MedicalEventService(
@@ -43,15 +44,17 @@ namespace Sever.Service
                 INotificationService notificationService,
                 IFilesService filesService,
                 IUserService userService,
-                IStudentProfileRepository studentProfileRepository)
-            {
-                _medicalEventRepository = medicalEventRepository;
-                _notificationService = notificationService;
-                _filesService = filesService;
-                _userService = userService;
-                _studentProfileRepository = studentProfileRepository;
-            }
-            public async Task<MedicalEvent> CreateMedicalEvent(CreateMedicalEvent dto, string userName)
+                IStudentProfileRepository studentProfileRepository,
+                IEmailService emailService)
+        {
+            _medicalEventRepository = medicalEventRepository;
+            _notificationService = notificationService;
+            _filesService = filesService;
+            _userService = userService;
+            _studentProfileRepository = studentProfileRepository;
+            _emailService = emailService;
+        }
+        public async Task<MedicalEvent> CreateMedicalEvent(CreateMedicalEvent dto, string userName)
             {
                 try
                 {
@@ -92,8 +95,60 @@ namespace Sever.Service
                 }
 
                 await _notificationService.MedicalEventNotification(medicalEvent, "Sự kiện y tế được tạo bởi y tá. Vui lòng kiểm tra.");
+                var student = await _studentProfileRepository.GetStudentProfileByStudentId(details.ToList().FirstOrDefault().StudentID);
+                var parent = await _userService.GetUserByIdAsyc(student.ParentID);
+                var images = await _filesService.GetImageByMedicalEventIdAsync(medicalEvent.MedicalEventID);
+                string imageSection = "";
 
-                    return medicalEvent;
+                if (images != null && images.Any())
+                {
+                    imageSection += "<p><b>Hình ảnh sự cố:</b></p>";
+                    imageSection += "<div style='display: flex; flex-wrap: wrap;'>";
+
+                    foreach (var image in images)
+                    {
+                        imageSection += $@"
+                         <div style='width: 48%; margin: 1%; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #ddd; padding: 5px; background-color: #fefefe;'>
+                         <img src='{image.FileLink}' alt='Hình ảnh sự cố'
+                           style='width: 100%; height: auto; display: block; border-radius: 4px;' />
+                        </div>";
+                    }
+
+                    imageSection += "</div>";
+                }
+                string message = $@"
+                <div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'>
+                <p>Kính gửi Quý phụ huynh,</p>
+
+                <p>Nhà trường xin thông báo về một sự cố y tế liên quan đến học sinh:</p>
+
+                <ul style='padding-left: 20px;'>
+                <li><b>Họ và tên học sinh:</b> {student.StudentName}</li>
+                <li><b>Lớp:</b> {student.Class}</li>
+                <li><b>Thời gian xảy ra:</b> {medicalEvent.EventDateTime:HH:mm}, ngày {medicalEvent.EventDateTime:dd/MM/yyyy}</li>
+                <li><b>Loại sự cố:</b> {medicalEvent.EventType}</li>
+                </ul>
+                
+                <p><b>Chi tiết sự cố:</b></p>
+                <p>{medicalEvent.Description}</p>
+
+                <p><b>Hướng xử lý:</b></p>
+                <p>{medicalEvent.ActionTaken}</p>
+
+                {imageSection}
+
+                <p>Nhà trường đã tiến hành chăm sóc và theo dõi sức khỏe học sinh ngay sau sự cố. Kính mời quý phụ huynh theo dõi thêm tình trạng sức khỏe tại nhà và liên hệ với y tế trường nếu có biểu hiện bất thường.</p>
+
+                <p>Thông tin chi tiết cũng đã được cập nhật trên hệ thống quản lý y tế học đường.</p>
+
+                <br />
+                <p>Trân trọng,</p>
+                <p><b>Ban Y tế Trường học</b></p>
+                </div>
+";
+
+                await _emailService.SendEmailAsync(parent.Email, "Thông báo sự cố y tế", message);
+                return medicalEvent;
                 }
                 catch (Exception ex)
                 {
@@ -112,10 +167,11 @@ namespace Sever.Service
                 throw new Exception("không tìm thấy sự kiện y tế.");
 
             }
-            medicalEvents.Notes += $"\nUpdate {DateTime.UtcNow.AddHours(7)}: {dto.Notes}";
+            medicalEvents.Notes += $"\n. " +
+                $"Cập nhật {DateTime.UtcNow}: {dto.Notes}";
             if (!string.IsNullOrWhiteSpace(dto.ActionTaken))
             {
-                medicalEvents.ActionTaken += $"\n{dto.ActionTaken}";
+                medicalEvents.ActionTaken += $"\n, {dto.ActionTaken}";
             }
             if (!string.IsNullOrWhiteSpace(dto.Description))
             {
@@ -194,6 +250,17 @@ namespace Sever.Service
             string studentName = null;
             string studentClass = null;
 
+            var imageFiles = await _filesService.GetImageByMedicalEventIdAsync(medicalEventID);
+            var imageList = imageFiles?.Select(f => new ImageResponse
+            {
+                Id = f.FileID,
+                FileName = f.FileName,
+                FileType = f.FileType,
+                Url = f.FileLink,
+                UploadedAt = f.UploadDate
+            }).ToList();
+
+
             if (!string.IsNullOrEmpty(studentId))
             {
                 var student = await _studentProfileRepository.GetStudentProfileByStudentId(studentId);
@@ -212,7 +279,9 @@ namespace Sever.Service
                 NurseID = medicalEvent.NurseID,
                 StudentID = medicalEvent.MedicalEventDetail?.Select(d => d.StudentID).ToList(),
                 StudentName = studentName,
-                Class = studentClass
+                Class = studentClass,
+                Image = imageList
+
             };
         }
 
@@ -230,9 +299,23 @@ namespace Sever.Service
 
             foreach (var student in studentList)
             {
+
                 var medicalEvent = await _medicalEventRepository.GetMedicalEventByStudentIdAsync(student.StudentID);
+
+
                 foreach (var e in medicalEvent)
                 {
+                    var imageFiles = await _filesService.GetImageByMedicalEventIdAsync(e.MedicalEventID);
+
+                    var imageList = imageFiles.Select(f => new ImageResponse
+                    {
+                        Id = f.FileID,
+                        FileName = f.FileName,
+                        FileType = f.FileType,
+                        Url = f.FileLink,
+                        UploadedAt = f.UploadDate
+                    }).ToList();
+
                     response.Add(new MedicalEventResponse
                     {
                         MedicalEventID = e.MedicalEventID,
@@ -244,7 +327,8 @@ namespace Sever.Service
                         NurseID = e.NurseID,
                         StudentID = e.MedicalEventDetail.Select(d => d.StudentID).ToList(),
                         StudentName = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.StudentName,
-                        Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class
+                        Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class,
+                        Image = imageList
                     });
                 }
             }
@@ -258,6 +342,17 @@ namespace Sever.Service
 
             foreach (var e in medical)
             {
+                var imageFiles = await _filesService.GetImageByMedicalEventIdAsync(e.MedicalEventID);
+
+                var imageList = imageFiles.Select(f => new ImageResponse
+                {
+                    Id = f.FileID,
+                    FileName = f.FileName,
+                    FileType = f.FileType,
+                    Url = f.FileLink,
+                    UploadedAt = f.UploadDate
+                }).ToList();
+
                 response.Add(new MedicalEventResponse
                 {
                     MedicalEventID = e.MedicalEventID,
@@ -269,7 +364,8 @@ namespace Sever.Service
                     NurseID = e.NurseID,
                     StudentID = e.MedicalEventDetail.Select(d => d.StudentID).ToList(),
                     StudentName = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.StudentName,
-                    Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class
+                    Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class,
+                    Image = imageList
                 });
             }
             return response;
@@ -283,6 +379,16 @@ namespace Sever.Service
 
             foreach (var e in medicalEvents)
             {
+                var imageFiles = await _filesService.GetImageByMedicalEventIdAsync(e.MedicalEventID);
+                var imageList = imageFiles.Select(f => new ImageResponse
+                {
+                    Id = f.FileID,
+                    FileName = f.FileName,
+                    FileType = f.FileType,
+                    Url = f.FileLink,
+                    UploadedAt = f.UploadDate
+                }).ToList();
+
                 response.Add(new MedicalEventResponse
                 {
                     MedicalEventID = e.MedicalEventID,
@@ -294,7 +400,8 @@ namespace Sever.Service
                     NurseID = e.NurseID,
                     StudentID = e.MedicalEventDetail?.Select(d => d.StudentID).ToList(),
                     StudentName = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.StudentName,
-                    Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class
+                    Class = e.MedicalEventDetail.FirstOrDefault()?.StudentProfile?.Class,
+                    Image = imageList
                 });
             }
             return response;

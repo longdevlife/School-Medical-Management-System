@@ -973,6 +973,12 @@ function AccountList() {
       key: "userName",
     },
     {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+      render: (text) => text || <span style={{color: '#aaa'}}>Chưa có email</span>
+    },
+    {
       title: "Mật khẩu",
       dataIndex: "password",
       key: "password",
@@ -1478,7 +1484,12 @@ function AccountList() {
               <Descriptions bordered column={1} size="middle" className="rounded-3xl bg-white/95 text-base mb-6">
                 <Descriptions.Item label={<span className="font-bold">Mã người dùng</span>}>{selectedAccount.userID}</Descriptions.Item>
                 <Descriptions.Item label={<span className="font-bold">Tên đăng nhập</span>}>{selectedAccount.userName}</Descriptions.Item>
-                <Descriptions.Item label={<span className="font-bold">Mật khẩu</span>}>{selectedAccount.password}</Descriptions.Item>
+                <Descriptions.Item label={<span className="font-bold">Email</span>}>
+                  {selectedAccount.email || <span style={{color: '#aaa'}}>Chưa có email</span>}
+                </Descriptions.Item>
+                <Descriptions.Item label={<span className="font-bold">Mật khẩu</span>}>
+                  {selectedAccount.password == null ? <span style={{color: '#aaa'}}>********</span> : selectedAccount.password}
+                </Descriptions.Item>
                 <Descriptions.Item label={<span className="font-bold">Vai trò</span>}>{selectedAccount.roleName}</Descriptions.Item>
                 <Descriptions.Item label={<span className="font-bold">Trạng thái</span>}>{selectedAccount.isActive ? <Tag color="green">Kích hoạt</Tag> : <Tag color="red">Khoá</Tag>}</Descriptions.Item>
               </Descriptions>
@@ -1853,9 +1864,9 @@ function AccountList() {
                           type="file"
                           accept="image/*"
                           style={{ display: "none" }}
-                                                   onChange={(e) => {
-                            const file = e.target.files[0];
-                                                       if (file) {
+                          onChange={(e) => {
+                              const file = e.target.files[0];
+                              if (file) {
                               handleAvatarUpload(file);
                             }
                           }}
@@ -1902,4 +1913,3 @@ function AccountList() {
 }
 
 export default AccountList;
-   

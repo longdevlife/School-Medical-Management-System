@@ -482,9 +482,9 @@ const NewsPage = () => {
                       alt={selectedNews.title}
                       style={{
                         width: "100%",
-                        maxWidth: 480,
-                        maxHeight: 260,
-                        objectFit: "cover",
+                        height: "auto",
+                        maxWidth: "100%",
+                        objectFit: "contain",
                         borderRadius: 12,
                         boxShadow: "0 4px 24px rgba(59,130,246,0.08)",
                         border: "2px solid #e0e7ef",

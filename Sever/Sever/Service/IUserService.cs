@@ -79,7 +79,7 @@ namespace Sever.Service
                                 <li><b>Vai trò:</b> {roleDisplayName}</li>
                             </ul>
 
-                            <p>Quý vị có thể đăng nhập vào hệ thống tại địa chỉ: <b><a href='https://yte.truongabc.edu.vn' target='_blank'>https://yte.truongabc.edu.vn</a></b></p>
+                            <p>Quý vị có thể đăng nhập vào hệ thống tại địa chỉ: <b><a href='http://localhost:5173/login' target='_blank'>http://localhost:5173/login</a></b></p>
 
                             <p>Vui lòng đổi mật khẩu sau lần đăng nhập đầu tiên để đảm bảo an toàn thông tin cá nhân.</p>
 

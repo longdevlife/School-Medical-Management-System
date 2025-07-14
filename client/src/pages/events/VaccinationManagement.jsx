@@ -34,6 +34,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import vaccineApi from "../../api/vaccineApi";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -866,6 +867,9 @@ function VaccinationManagement() {
       ),
     },
   ];
+
+  // Setup auto refresh - tự động refresh mỗi 30 giây
+  useAutoRefresh(fetchSubmissions, 30000);
 
   useEffect(() => {
     fetchSubmissions();

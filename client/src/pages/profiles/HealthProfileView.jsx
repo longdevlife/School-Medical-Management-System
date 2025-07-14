@@ -22,6 +22,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import healthProfileApi from "../../api/healthProfileApi";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -258,6 +259,9 @@ function HealthProfileView() {
       ),
     },
   ];
+
+  // Setup auto refresh - tự động refresh mỗi 30 giây
+  useAutoRefresh(fetchHealthProfiles, 30000);
 
   useEffect(() => {
     fetchHealthProfiles();

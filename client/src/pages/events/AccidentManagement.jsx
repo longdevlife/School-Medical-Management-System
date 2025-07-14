@@ -26,6 +26,7 @@ import {
   CaretDownOutlined,
 } from "@ant-design/icons";
 import medicalEventApi from "../../api/medicalEventApi";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -146,6 +147,9 @@ export default function AccidentManagement() {
       setLoading(false);
     }
   };
+
+  // Setup auto refresh - tự động refresh mỗi 30 giây
+  useAutoRefresh(fetchAllAccidents, 30000);
 
   useEffect(() => {
     fetchAllAccidents();

@@ -30,6 +30,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import healthCheckApi from "../../api/healthCheckApi";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -1015,6 +1016,14 @@ function HealthCheckManagement() {
     }
   };
 
+  // Function tổng hợp để refresh tất cả data
+  const refreshAllData = async () => {
+    await Promise.all([fetchSubmissions(), fetchAppointments()]);
+  };
+
+  // Setup auto refresh - tự động refresh mỗi 30 giây
+  useAutoRefresh(refreshAllData, 30000);
+
   // Fetch data khi component mount
   useEffect(() => {
     fetchSubmissions();
@@ -1125,7 +1134,6 @@ function HealthCheckManagement() {
                 >
                   Tổng hồ sơ
                 </Text>
-                
               </div>
             </div>
           </Col>

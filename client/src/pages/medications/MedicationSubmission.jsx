@@ -32,6 +32,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import medicineApi from "../../api/medicineApi";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -923,6 +924,9 @@ function MedicationSubmission() {
       ),
     },
   ];
+
+  // Setup auto refresh - tự động refresh mỗi 30 giây
+  useAutoRefresh(fetchSubmissions, 30000);
 
   useEffect(() => {
     fetchSubmissions();

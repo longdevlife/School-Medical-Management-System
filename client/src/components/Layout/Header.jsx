@@ -34,6 +34,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
 import notificationApiService from "../../api/notificationApi";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 import "./Header.css";
 
 const { Header } = Layout;
@@ -233,6 +234,17 @@ function AppHeader({ collapsed, setCollapsed }) {
       return "Vừa xong";
     }
   };
+
+  // Setup auto refresh cho thông báo - chỉ khi đã đăng nhập
+  useAutoRefresh(
+    () => {
+      if (isAuthenticated) {
+        fetchNotifications();
+      }
+    },
+    60000,
+    isAuthenticated
+  ); // 60 giây, chỉ khi đã đăng nhập
 
   // Load notifications when user logs in
   useEffect(() => {

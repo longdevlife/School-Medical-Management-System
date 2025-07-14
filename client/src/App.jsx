@@ -1,3 +1,5 @@
+import ResetPass from "./pages/Forgotpassword/ResetPass";
+import ForgotPass from "./pages/Forgotpassword/ForgotPass";
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -56,6 +58,8 @@ function App() {
           <Route path="/gioi-thieu" element={<AboutPage />} />
           <Route path="/tin-tuc" element={<NewsPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPass />} />
+          <Route path="/resetpassword" element={<ResetPass />} />
           {/* Admin layout */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
@@ -124,6 +128,7 @@ function App() {
             <Route path="profile-student" element={<StudentProfile />} />
             <Route path="profileParent" element={<ParentProfile />} />
             <Route path="medical-events" element={<MedicalEvent />} />
+             <Route path="Setting" element={<SettingUser />} />
             <Route
               path="vaccinations/results"
               element={<VaccineManagement />}
@@ -135,6 +140,7 @@ function App() {
             <Route path="health-result" element={<HealthResult />} />
             <Route path="send-medicine" element={<MedicineManagement />} />
             <Route path="declare-health" element={<DeclareHealthProfile />} />
+
           </Route>{" "}
           {/* Redirect root to home page */}
           <Route path="/" element={<Navigate to="/login" replace />} />

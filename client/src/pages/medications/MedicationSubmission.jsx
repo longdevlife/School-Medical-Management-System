@@ -65,7 +65,7 @@ function MedicationSubmission() {
   const [previewImage, setPreviewImage] = useState("");
   const [previewTitle, setPreviewTitle] = useState("");
 
-  // 🆕 Navigation và zoom cho image modal
+  //  Navigation và zoom cho image modal
   const [imageList, setImageList] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -765,7 +765,7 @@ function MedicationSubmission() {
     }
   };
 
-  const classes = ["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B"];
+  const classes = ["1A", "2A", "3A", "4A", "5A"];
   const statuses = ["pending", "approved", "in-use", "completed", "rejected"];
 
   // Handle search function

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Form, Input, Button, Card, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import authService from "../services/authService";
 // React Icons - Nguồn icons rõ ràng và dễ chỉnh sửa
 import {
@@ -12,15 +13,54 @@ import {
   MdEventNote, // Icon ghi chú sự kiện
   MdSecurity, // Icon bảo mật
 } from "react-icons/md";
-import { FaGoogle } from "react-icons/fa"; // Icon Google
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Xử lý đăng nhập bằng Gmail
-  const handleGoogleLogin = () => {
-    // TODO: Implement Google OAuth login
+  // Google login success handler
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+
+      // Log complete response from Google
+      console.log("=== Google OAuth Response ===");
+      console.log("Full response:", credentialResponse);
+      console.log("Client ID:", credentialResponse.clientId);
+      console.log("Credential (idToken):", credentialResponse.credential);
+      console.log("ID Token length:", credentialResponse.credential?.length);
+      console.log(
+        "ID Token starts with:",
+        credentialResponse.credential?.substring(0, 20)
+      );
+
+      // Verify we have the idToken
+      if (!credentialResponse.credential) {
+        throw new Error("No credential (idToken) received from Google");
+      }
+
+      // Call backend API with Google idToken
+      const response = await authService.googleLogin(
+        credentialResponse.credential
+      );
+      console.log("Backend response:", response);
+
+      message.success("Đăng nhập Google thành công!");
+      navigate("/home");
+    } catch (error) {
+      console.error("Google login error:", error);
+      message.error(
+        "Đăng nhập Google thất bại: " + (error.message || "Lỗi không xác định")
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Google login error handler
+  const handleGoogleError = () => {
+    console.error("Google login failed");
+    message.error("Đăng nhập Google thất bại");
   };
 
   const onFinish = async (values) => {
@@ -30,7 +70,7 @@ const Login = () => {
         values.username,
         values.password
       );
-      const userRole = response.user.role;
+      console.log("Login response:", response);
 
       // Redirect to home page after login
       navigate("/home");
@@ -292,26 +332,26 @@ const Login = () => {
                   <span className="px-4 text-gray-500 text-sm">hoặc</span>
                   <div className="flex-1 border-t border-gray-200"></div>
                 </div>
-                {/* Google Login Button */}{" "}
+                {/* Google Login Button */}
                 <Form.Item>
-                  <Button
-                    type="default"
-                    onClick={handleGoogleLogin}
-                    block
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
+                    text="signin_with"
+                    theme="outline"
                     size="large"
-                    className="h-14 rounded-xl font-semibold border-2 border-gray-200 hover:border-red-300 bg-white hover:bg-red-50 text-gray-700 hover:text-red-600 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 text-lg flex items-center justify-center gap-3"
-                  >
-                    <FaGoogle className="text-red-500" />
-                    Đăng nhập bằng Gmail
-                  </Button>
+                    width="100%"
+                    locale="vi"
+                  />
                 </Form.Item>
                 <div className="text-center space-y-4">
-                  <a
-                    href="#"
-                    className="text-sm text-blue-600 hover:text-blue-700 transition-colors font-medium"
+                  <button
+                    type="button"
+                    onClick={() => navigate("/forgot-password")}
+                    className="text-sm text-blue-600 hover:text-blue-700 transition-colors font-medium bg-transparent border-none p-0 cursor-pointer"
                   >
                     Quên mật khẩu?
-                  </a>
+                  </button>
                 </div>
                 <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
                   Bằng cách nhấp vào tiếp tục, bạn đồng ý với{" "}

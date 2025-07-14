@@ -19,7 +19,7 @@ function NurseManagerLayout() {
         }`}
       >
         <AppHeader collapsed={collapsed} setCollapsed={setCollapsed} />
-        <Content className={styles.content}>
+        <Content className={styles.content} style={{ margin: 0 }}>
           <div className={styles.contentWrapper}>
             <Outlet />
           </div>

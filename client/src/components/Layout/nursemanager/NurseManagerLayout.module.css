@@ -7,7 +7,7 @@
 }
 
 .siteLayoutCollapsed {
-  margin-left: 80px; /* Width of collapsed sidebar */
+  margin-left: 80px; 
 }
 
 .siteLayoutExpanded {
@@ -26,6 +26,7 @@
   z-index: 1;
   height: 64px; /* Set a fixed height for the header */
 }
+
 
 .headerLeft {
   display: flex;

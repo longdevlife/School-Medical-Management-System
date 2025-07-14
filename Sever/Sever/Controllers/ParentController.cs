@@ -169,8 +169,20 @@ namespace Sever.Controllers
         {
             if (string.IsNullOrEmpty(parentId))
                 return BadRequest("Thiếu parentId.");
-            var result = await _healthCheckUpService.GetHealthCheckupsByParentIdAsync(parentId);
-            return Ok(result);
+            try
+            {
+                var result = await _healthCheckUpService.GetHealthCheckupsByParentIdAsync(parentId);
+                if(result == null)
+                {
+                    return NotFound("Không tìm thấy hồ sơ khám sức khỏe theo phụ huynh");
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Thất bại khi tải thông tin hồ sơ khám sức khỏe" + ex.Message);
+            }
+
         }
 
         [HttpPut("vaccine/confirm")]

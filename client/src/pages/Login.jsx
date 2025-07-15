@@ -75,7 +75,8 @@ const Login = () => {
       // Redirect to home page after login
       navigate("/home");
     } catch (error) {
-      message.error(error.message || "Đăng nhập thất bại");
+      console.log("ERROR CATCHED:", error);
+      message.error("Sai tên đăng nhập hoặc mật khẩu");
     } finally {
       setLoading(false);
     }
@@ -345,12 +346,13 @@ const Login = () => {
                   />
                 </Form.Item>
                 <div className="text-center space-y-4">
-                  <a
-                    href="#"
-                    className="text-sm text-blue-600 hover:text-blue-700 transition-colors font-medium"
+                  <button
+                    type="button"
+                    onClick={() => navigate("/forgot-password")}
+                    className="text-sm text-blue-600 hover:text-blue-700 transition-colors font-medium bg-transparent border-none p-0 cursor-pointer"
                   >
                     Quên mật khẩu?
-                  </a>
+                  </button>
                 </div>
                 <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
                   Bằng cách nhấp vào tiếp tục, bạn đồng ý với{" "}

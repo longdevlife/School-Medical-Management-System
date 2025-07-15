@@ -14,6 +14,7 @@ namespace Sever.Repository.Interfaces
         Task CreateMedicalEventDetails(IEnumerable<MedicalEventDetail> details);
         Task<MedicalEvent> GetMedicalEventById(string medicalEventId);
         Task<List<MedicalEvent>> GetMedicalEventsByParentIdAsync(string studentId);
+        Task<MedicalEvent> GetMedicalEventByIdAsync(string medicalEventId);
         Task UpdateMedicalEvent(MedicalEvent medicalEvent);
         Task<string> GetCurrentMedicialEventID();
         Task<List<MedicalEvent>> GetMedicalEventByStudentIdAsync(string studentId);
@@ -53,7 +54,6 @@ namespace Sever.Repository.Interfaces
                 .Include(m => m.MedicalEventDetail)
                 .Include(m => m.File)
                 .FirstOrDefaultAsync(m => m.MedicalEventID == medicalEventId);
-
         }
         public async Task<List<MedicalEvent>> GetMedicalEventsByParentIdAsync(string studentId)
         {
@@ -71,6 +71,15 @@ namespace Sever.Repository.Interfaces
 
             return medicalEvents;
         }
+        public async Task<MedicalEvent> GetMedicalEventByIdAsync(string medicalEventId)
+        {
+            return await _context.MedicalEvent
+                .Include(m => m.File)
+                .Include(m => m.MedicalEventDetail)     
+                    .ThenInclude(d => d.StudentProfile)         
+                .FirstOrDefaultAsync(m => m.MedicalEventID == medicalEventId);
+        }
+
         public async Task UpdateMedicalEvent(MedicalEvent medicalEvent)
         {
             _context.MedicalEvent.Update(medicalEvent);
@@ -91,6 +100,7 @@ namespace Sever.Repository.Interfaces
         public async Task<List<MedicalEvent>> GetMedicalEventByStudentIdAsync(string studentId)
         {
             return await _context.MedicalEvent
+               .Include(m => m.File)
                .Include(m => m.MedicalEventDetail)
                     .ThenInclude(d => d.StudentProfile)
                .Where(m => m.MedicalEventDetail.Any(d => d.StudentID == studentId))
@@ -132,6 +142,7 @@ namespace Sever.Repository.Interfaces
         public async Task<List<MedicalEvent>> GetAllMedicialEventAsync()
         {
             return await _context.MedicalEvent
+               .Include(m => m.File)
                .Include(e => e.MedicalEventDetail)
                     .ThenInclude(d => d.StudentProfile)
                .ToListAsync();

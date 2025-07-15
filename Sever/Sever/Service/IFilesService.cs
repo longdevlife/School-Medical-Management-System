@@ -8,6 +8,7 @@ using Sever.DTO.Student;
 using Sever.DTO.User;
 using Sever.Model;
 using Sever.Repository;
+using Sever.Repository.Interfaces;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace Sever.Service
@@ -35,7 +36,11 @@ namespace Sever.Service
         private readonly Cloudinary _cloudinary;
         private readonly DataContext _context;
         private readonly IUserRepository _userRepository;
-        public FilesSevice(IFilesRepository repository, IConfiguration config, DataContext context, IUserRepository userRepository)
+        private readonly IMedicineRepository _medicineRepository;
+        private readonly IMedicalEventRepository _medicalEventRepository;
+        public FilesSevice(IFilesRepository repository, IConfiguration config, DataContext context, 
+                           IUserRepository userRepository, IMedicineRepository medicineRepository, 
+                           IMedicalEventRepository medicalEventRepository)
         {
             _fileRepository = repository;
             var account = new Account(
@@ -46,6 +51,8 @@ namespace Sever.Service
             _cloudinary = new Cloudinary(account);
             _context = context;
             _userRepository = userRepository;
+            _medicineRepository = medicineRepository; 
+            _medicalEventRepository = medicalEventRepository;
         }
 
         public async Task<ImageResponse> UploadSchoolLogoByAsync(IFormFile file, string id)
@@ -142,6 +149,14 @@ namespace Sever.Service
             if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
                 throw new Exception("Image upload failed");
 
+            var medicalEvent = await _medicalEventRepository.GetMedicalEventByIdAsync(id);
+            if (medicalEvent == null)
+                throw new Exception("Medical Event not found");
+
+            var firstDetail = medicalEvent.MedicalEventDetail.FirstOrDefault();
+            if (firstDetail == null)
+                throw new Exception("No detail found for this event");
+
             var image = new Files
             {
                 FileName = file.FileName,
@@ -149,7 +164,9 @@ namespace Sever.Service
                 FileLink = uploadResult.SecureUrl.AbsoluteUri,
                 UploadDate = DateTime.UtcNow,
                 IsActive = true,
-                MedicalEventID = id
+                MedicalEventID = id,
+                StudentID = firstDetail.StudentID 
+
             };
             await _fileRepository.AddAsync(image);
             await _fileRepository.SaveChangesAsync();
@@ -216,6 +233,9 @@ namespace Sever.Service
             if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
                 throw new Exception("Image upload failed");
 
+            var medicine = await _medicineRepository.GetMedicineByIdAsync(id);
+            if (medicine == null)
+                throw new Exception("Medicine not found");
 
             var image = new Files
             {
@@ -224,7 +244,8 @@ namespace Sever.Service
                 FileLink = uploadResult.SecureUrl.AbsoluteUri,
                 UploadDate = DateTime.UtcNow,
                 IsActive = true,
-                MedicineID = id
+                MedicineID = id, 
+                StudentID = medicine.StudentID,
             };
 
             await _fileRepository.AddAsync(image);
@@ -361,7 +382,7 @@ namespace Sever.Service
             var list = await _fileRepository.GetImageByMedicineIdAsync(id);
             if (list == null || list.Count == 0)
             {
-                throw new ArgumentException("Tải file từ repository thất bại");
+                return new List<Files>();
             }
             return list;
         }
@@ -371,7 +392,7 @@ namespace Sever.Service
             var list = await _fileRepository.GetImageByMedicalEventIdAsync(id);
             if (list == null || list.Count == 0)
             {
-                throw new ArgumentException("Tải file từ repository thất bại");
+               return new List<Files>();
             }
             return list;
         }
@@ -379,7 +400,7 @@ namespace Sever.Service
         public async Task<List<Files>> GetImageByNewsIdAsync(string id)
         {
             var list = await _fileRepository.GetImageByNewsIdAsync(id);
-            if (list == null || list.Count == 0)
+            if (list == null)
             {
                 throw new ArgumentException("Tải file từ repository thất bại");
             }
@@ -397,9 +418,6 @@ namespace Sever.Service
             await _context.SaveChangesAsync();
         }
 
-        //public Task<bool> DeleteFileByIdAsync(string id)
-        //{
-        //    throw new NotImplementedException();
-        //}
+
     }
 }

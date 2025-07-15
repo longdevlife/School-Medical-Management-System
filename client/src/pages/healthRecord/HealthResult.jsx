@@ -54,69 +54,6 @@ const HealthResult = () => {
 
   // ==================== API FUNCTIONS ====================
 
-  const fetchStudents = useCallback(async () => {
-    try {
-      setStudentsLoading(true);
-      console.log("🔄 Đang lấy danh sách học sinh của phụ huynh...");
-
-      const response = await studentApi.parent.getMyChildren();
-      console.log("✅ API getMyChildren response:", response);
-
-      const studentsData = response.data || [];
-
-      if (Array.isArray(studentsData) && studentsData.length > 0) {
-        const processedStudents = studentsData.map((student) => ({
-          StudentID: student.studentID || student.StudentID || student.id,
-          StudentName:
-            student.studentName ||
-            student.StudentName ||
-            student.name ||
-            "Học sinh",
-          StudentCode:
-            student.studentID ||
-            student.StudentID ||
-            student.studentCode ||
-            student.id,
-          Class:
-            student.class ||
-            student.className ||
-            student.ClassName ||
-            student.grade ||
-            student.classRoom ||
-            student.class_name ||
-            "Chưa phân lớp",
-        }));
-
-        console.log("📋 Danh sách học sinh đã xử lý:", processedStudents);
-        setStudents(processedStudents);
-
-        // Tự động chọn học sinh đầu tiên nếu chưa chọn
-        if (processedStudents.length > 0 && !selectedStudentId) {
-          console.log(
-            "🔍 Tự động chọn học sinh đầu tiên:",
-            processedStudents[0].StudentID
-          );
-          setSelectedStudentId(processedStudents[0].StudentID);
-        }
-
-        console.log(`✅ Đã tải ${processedStudents.length} học sinh`);
-      } else {
-        console.warn(
-          "⚠️ Không có dữ liệu học sinh hoặc dữ liệu không hợp lệ:",
-          studentsData
-        );
-        setStudents([]);
-        message.warning("Không tìm thấy thông tin học sinh");
-      }
-    } catch (error) {
-      console.error("❌ Lỗi khi lấy danh sách học sinh:", error);
-      message.error("Không thể tải danh sách học sinh. Vui lòng thử lại!");
-      setStudents([]);
-    } finally {
-      setStudentsLoading(false);
-    }
-  }, [selectedStudentId]); // Dependencies cho useCallback fetchStudents
-
   const fetchAppointments = useCallback(async () => {
     if (!selectedStudentId) {
       setAppointments([]);
@@ -124,22 +61,46 @@ const HealthResult = () => {
     }
 
     try {
-      console.log("FE gửi studentId lên backend:", selectedStudentId);
-      // 🎯 Gọi API để lấy appointments cho học sinh
       console.log(
-        "🔄 Đang lấy danh sách appointments cho học sinh:",
+        "🔄 [APPOINTMENTS TAB] Đang lấy danh sách appointments cho học sinh:",
         selectedStudentId
       );
       const res = await appointApi.parent.getAppointmentsByStudentId(
         selectedStudentId
       );
-      console.log("✅ Appointments response:", res);
-      setAppointments(res.data || []);
+      console.log("✅ [APPOINTMENTS TAB] Appointments response:", res);
+
+      // Chuẩn hóa dữ liệu appointments
+      const appointmentsData = res.data || [];
+      const normalizedAppointments = appointmentsData.map((item) => ({
+        appointmentID: item.appointmentID || item.AppointmentID,
+        dateTime: item.dateTime || item.DateTime,
+        location: item.location || item.Location || "Phòng y tế trường",
+        reason: item.reason || item.Reason || "Khám sức khỏe",
+        status: item.status || item.Status,
+        notes: item.notes || item.Notes || "",
+        healthCheckUpID: item.healthCheckUpID,
+      }));
+
+      setAppointments(normalizedAppointments);
+      console.log(
+        `✅ [APPOINTMENTS TAB] Đã tải ${normalizedAppointments.length} appointments`
+      );
+
+      // Force re-render để cập nhật số liệu trên tab
+      if (normalizedAppointments.length > 0) {
+        console.log(
+          `🔄 [APPOINTMENTS TAB] Tab "Lịch tư vấn" sẽ hiển thị (${normalizedAppointments.length})`
+        );
+      }
     } catch (error) {
-      console.error("❌ Lỗi khi lấy danh sách appointments:", error);
+      console.error(
+        "❌ [APPOINTMENTS TAB] Lỗi khi lấy danh sách appointments:",
+        error
+      );
       setAppointments([]);
     }
-  }, [selectedStudentId]); // Dependencies cho useCallback fetchAppointments
+  }, [selectedStudentId]);
 
   const fetchHealthCheckups = useCallback(async () => {
     if (!selectedStudentId) {
@@ -263,14 +224,9 @@ const HealthResult = () => {
           return match;
         });
 
-        // Chuẩn hóa dữ liệu
+        // Chuẩn hóa dữ liệu health checkups từ API response
         const normalizedHealthCheckups = filteredHealthCheckups.map((item) => {
-          console.log("🔍 Processing HealthCheckUp item:", item);
-          console.log(
-            "🔍 Appointment data:",
-            item.appointment || item.Appointment
-          );
-          console.log("🔍 All item keys:", Object.keys(item));
+          console.log("🔍 [HEALTH CHECKUP] Processing item:", item);
 
           return {
             key: item.healthCheckUpID || item.HealthCheckUpID,
@@ -286,7 +242,8 @@ const HealthResult = () => {
             Skin: item.skin || item.Skin,
             Hearing: item.hearing || item.Hearing,
             Respiration: item.respiration || item.Respiration,
-            Cardiovascular: item.cardiovascular || item.Cardiovascular,
+            Cardiovascular:
+              item.cardiovascular || item.Cardiovascular || item.ardiovascular,
             Notes: item.notes || item.Notes,
             Status: item.status || item.Status,
             StudentID: item.studentID || item.StudentID,
@@ -341,13 +298,13 @@ const HealthResult = () => {
           "📋 Health checkup đã lọc theo học sinh:",
           filteredHealthCheckups
         );
-        console.log("📊 Phân loại health checkup:");
+        console.log("📊 [HEALTH CHECKUP] Phân loại health checkup:");
         console.log(
-          "  - Chờ xác nhận (waitingHealthCheckups):",
+          "  - Chờ xác nhận:",
           waitingHealthCheckups.map((v) => `${v.HealthCheckUpID}:${v.Status}`)
         );
         console.log(
-          "  - Lịch sử (processedHealthCheckups):",
+          "  - Lịch sử:",
           processedHealthCheckups.map((v) => `${v.HealthCheckUpID}:${v.Status}`)
         );
 
@@ -355,49 +312,150 @@ const HealthResult = () => {
         setConfirmedHistory(processedHealthCheckups);
 
         console.log(
-          `✅ Đã tải ${normalizedHealthCheckups.length} health checkup records`
+          `✅ [HEALTH CHECKUP] Đã tải ${normalizedHealthCheckups.length} health checkup records`
+        );
+        console.log(
+          `📊 [HEALTH CHECKUP] Chờ xác nhận: ${waitingHealthCheckups.length}, Lịch sử: ${processedHealthCheckups.length}`
         );
 
-        // 🎯 Appointments sẽ được tải độc lập qua useEffect riêng biệt
+        // Force re-render để cập nhật số liệu trên tab
+        if (waitingHealthCheckups.length > 0) {
+          console.log(
+            `🔄 [HEALTH CHECKUP] Tab "Chờ xác nhận" sẽ hiển thị (${waitingHealthCheckups.length})`
+          );
+        }
       } else {
         console.warn(
-          "⚠️ Dữ liệu health checkup không hợp lệ:",
+          "⚠️ [HEALTH CHECKUP] Dữ liệu health checkup không hợp lệ:",
           healthCheckupData
         );
         setHealthCheckups([]);
         setConfirmedHistory([]);
-        setAppointments([]); // Clear appointments nếu không có health checkup
       }
     } catch (error) {
       console.error("❌ Lỗi khi lấy danh sách health checkup:", error);
       message.error("Không thể tải danh sách khám sức khỏe. Vui lòng thử lại!");
       setHealthCheckups([]);
       setConfirmedHistory([]);
-      setAppointments([]); // Clear appointments nếu có lỗi
     } finally {
       setLoading(false);
     }
-  }, [selectedStudentId, fetchAppointments]); // Dependencies cho useCallback fetchHealthCheckups
+  }, [selectedStudentId]); // Bỏ fetchAppointments khỏi dependencies
 
   // Component mount
   useEffect(() => {
     console.log("🚀 HealthResult component mounting...");
-    fetchStudents();
-  }, [fetchStudents]);
 
-  // Effect để tải health checkup khi selectedStudentId thay đổi
+    const fetchStudents = async () => {
+      try {
+        setStudentsLoading(true);
+        console.log("🔄 Đang lấy danh sách học sinh của phụ huynh...");
+
+        const response = await studentApi.parent.getMyChildren();
+        console.log("✅ API getMyChildren response:", response);
+
+        const studentsData = response.data || [];
+
+        if (Array.isArray(studentsData) && studentsData.length > 0) {
+          const processedStudents = studentsData.map((student) => ({
+            StudentID: student.studentID || student.StudentID || student.id,
+            StudentName:
+              student.studentName ||
+              student.StudentName ||
+              student.name ||
+              "Học sinh",
+            StudentCode:
+              student.studentID ||
+              student.StudentID ||
+              student.studentCode ||
+              student.id,
+            Class:
+              student.class ||
+              student.className ||
+              student.ClassName ||
+              student.grade ||
+              student.classRoom ||
+              student.class_name ||
+              "Chưa phân lớp",
+          }));
+
+          console.log("📋 Danh sách học sinh đã xử lý:", processedStudents);
+          setStudents(processedStudents);
+
+          // Tự động chọn học sinh đầu tiên nếu chưa chọn
+          if (processedStudents.length > 0 && !selectedStudentId) {
+            console.log(
+              "🔍 Tự động chọn học sinh đầu tiên:",
+              processedStudents[0].StudentID
+            );
+            setSelectedStudentId(processedStudents[0].StudentID);
+          }
+
+          console.log(`✅ Đã tải ${processedStudents.length} học sinh`);
+        } else {
+          console.warn(
+            "⚠️ Không có dữ liệu học sinh hoặc dữ liệu không hợp lệ:",
+            studentsData
+          );
+          setStudents([]);
+          message.warning("Không tìm thấy thông tin học sinh");
+        }
+      } catch (error) {
+        console.error("❌ Lỗi khi lấy danh sách học sinh:", error);
+        message.error("Không thể tải danh sách học sinh. Vui lòng thử lại!");
+        setStudents([]);
+      } finally {
+        setStudentsLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Effect để tải health checkup khi selectedStudentId thay đổi (luôn tải cho tab chờ xác nhận và lịch sử)
   useEffect(() => {
     if (selectedStudentId) {
-      console.log("🔄 Học sinh đã thay đổi:", selectedStudentId);
+      console.log(
+        "🔄 [HEALTH CHECKUP TAB] Học sinh đã thay đổi:",
+        selectedStudentId
+      );
+      console.log(
+        "🔄 [HEALTH CHECKUP TAB] Tải health checkups cho tab chờ xác nhận và lịch sử..."
+      );
       fetchHealthCheckups();
+    } else {
+      // Reset health checkup data khi không có học sinh
+      setHealthCheckups([]);
+      setConfirmedHistory([]);
     }
   }, [selectedStudentId, fetchHealthCheckups]);
 
-  // Effect để tải appointments khi selectedStudentId thay đổi
+  // Effect để tải appointments khi selectedStudentId thay đổi hoặc khi tab appointments được chọn
+  useEffect(() => {
+    if (selectedStudentId && activeTab === "appointments") {
+      console.log(
+        "🔄 [APPOINTMENTS TAB] Tab appointments được chọn, tải dữ liệu cho học sinh:",
+        selectedStudentId
+      );
+      fetchAppointments();
+    } else if (activeTab !== "appointments") {
+      // Không clear appointments khi chuyển tab khác, chỉ clear khi không có selectedStudentId
+      if (!selectedStudentId) {
+        setAppointments([]);
+      }
+    }
+  }, [selectedStudentId, activeTab, fetchAppointments]);
+
+  // Effect để pre-load appointments data khi selectedStudentId thay đổi (để sẵn sàng khi chuyển tab)
   useEffect(() => {
     if (selectedStudentId) {
-      console.log("🔄 Tải appointments cho học sinh:", selectedStudentId);
+      console.log(
+        "🔄 [APPOINTMENTS TAB] Pre-loading appointments cho học sinh:",
+        selectedStudentId
+      );
       fetchAppointments();
+    } else {
+      setAppointments([]);
     }
   }, [selectedStudentId, fetchAppointments]);
 
@@ -694,9 +752,9 @@ const HealthResult = () => {
       dataIndex: "healthCheckUpID",
       key: "healthCheckUpID",
       width: 120,
-      render: (text) => (
+      render: (text, record) => (
         <Text strong className="text-blue-600 text-xs">
-          {text || "N/A"}
+          {record.healthCheckUpID || record.HealthCheckUpID || "N/A"}
         </Text>
       ),
     },
@@ -1604,7 +1662,10 @@ const HealthResult = () => {
         ) : (
           <Tabs
             activeKey={activeTab}
-            onChange={setActiveTab}
+            onChange={(key) => {
+              console.log("🔄 [TABS] Tab changed to:", key);
+              setActiveTab(key);
+            }}
             style={{ padding: "24px 24px 0 24px" }}
             size="large"
             type="card"

@@ -20,7 +20,6 @@ axiosClient.interceptors.request.use(
       console.log("Data:", config.data);
       console.log("Data stringified:", JSON.stringify(config.data));
       console.log("Client UTC Time:", new Date().toISOString());
-
     }
     console.log("Client UTC Time:", new Date().toISOString());
 
@@ -58,7 +57,15 @@ axiosClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Chỉ xử lý lỗi 401 (Unauthorized)
+    // Nếu là lỗi 401 từ API login thì không redirect, chỉ reject để FE xử lý
+    if (
+      error.response?.status === 401 &&
+      originalRequest.url?.includes("/login")
+    ) {
+      return Promise.reject(error);
+    }
+
+    // Chỉ xử lý lỗi 401 (Unauthorized) cho các API khác
     if (error.response?.status === 401) {
       // Nếu có refreshToken và chưa retry, thử refresh
       if (!originalRequest._retry && localStorage.getItem("refreshToken")) {

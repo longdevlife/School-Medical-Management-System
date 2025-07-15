@@ -1,8 +1,14 @@
-﻿namespace Sever.DTO.HealthCheckUp
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Sever.DTO.HealthCheckUp
 {
-    public class UpdateHealthCheckUp
+    public class GetHealthCheckup
     {
-        public string HealthCheckId { get; set; }
+        public string HealthCheckUpID { get; set; }
+        public DateTime? CheckDate { get; set; }
+        public string? ClassID { get; set; }
+        public string StudentID { get; set; }
+        public string? StudentName { get; set; }
         public float? Height { get; set; }
         public float? Weight { get; set; }
         public float? BMI { get; set; }
@@ -15,7 +21,10 @@
         public string? Respiration { get; set; }
         public string? Ardiovascular { get; set; }
         public string? Notes { get; set; }
-        public string? Status { get; set; }
+        public string Status { get; set; }
+        public string? CheckerID { get; set; }
+        public string? ParentID { get; set; }
+
 
     }
 }

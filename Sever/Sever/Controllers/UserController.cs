@@ -12,9 +12,11 @@ namespace Sever.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly INotificationService _notificationService;
+        public UserController(IUserService userService, INotificationService notificationService)
         {
             _userService = userService;
+            _notificationService = notificationService;
         }
 
         [HttpGet("get-user-info")]
@@ -69,6 +71,30 @@ namespace Sever.Controllers
             catch
             {
                 return BadRequest(new { message = "Cập nhật tài khoản thất bại" });
+            }
+        }
+        [HttpGet("get-notify-by-user-id")]
+        public async Task<IActionResult> GetNotifyByUserId()
+        {
+            string username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                return BadRequest(new { message = "Không tìm thấy thông tin người dùng" });
+            }
+            var user = await _userService.GetUserAsyc(username);
+
+            try
+            {
+                var notifyList = await _notificationService.GetNotifyByUserId(user.UserID);
+                if (notifyList == null || notifyList.Count == 0)
+                {
+                    return NotFound(new { message = "Không có thông báo nào" });
+                }
+                return Ok(notifyList);
+            }
+            catch
+            {
+                return BadRequest(new { message = "Lỗi khi lấy thông báo" });
             }
         }
     }

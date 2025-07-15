@@ -170,6 +170,8 @@ namespace Sever.Controllers
                 var countConfirmVaccines = await _vaccinationService.CountConfirmVaccine(fromDate, toDate);
                 var countDeniedVaccines = await _vaccinationService.CountDeniedVaccine(fromDate, toDate);
                 var countNotResponseVaccines = await _vaccinationService.CountNotResponseVaccine(fromDate, toDate);
+                var countActiveNews = await _newsService.CountActiveNewsAsync(fromDate, toDate);
+                var countInActiveNews = await _newsService.CountInActiveNewsAsync(fromDate, toDate);
                 return Ok(new
                 {
                     TotalHealthCheckUp = totalHealthCheckUp,
@@ -187,14 +189,34 @@ namespace Sever.Controllers
                     CountConfirmVaccines = countConfirmVaccines,
                     CountDeniedVaccines = countDeniedVaccines,
                     CountNotResponseVaccines = countNotResponseVaccines,
-                    
+                    CountActiveNews  = countActiveNews,
+                    CountInActiveNews = countInActiveNews
                 });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { message = $"Lỗi khi tạo báo cáo: {ex.Message}" });
             }
-
+        }
+        [HttpGet("get-all-student")]
+        public async Task<IActionResult> GetAllStudent()
+        {
+            try
+            {
+                var results = await _studentService.GetAllStudentInfo();
+                if (results == null)
+                {
+                    return NotFound("Không tìm thấy học sinh");
+                }
+                else
+                {
+                    return Ok(results);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Thất bại khi tải danh sách học sinh" + ex.Message);
+            }
         }
     }
 }

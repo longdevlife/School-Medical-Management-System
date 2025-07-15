@@ -57,17 +57,17 @@ const HomePage = () => {
             Name: "Y Tế Học Đường",
             Address: "123 Đường ABC, Quận 1, TP.HCM",
             Hotline: "1800 6688",
-            Email: "info@ytehocduong.edu.vn"
+            Email: "info@ytehocduong.edu.vn",
           });
         }
       } catch (error) {
-        console.error('Error fetching school info:', error);
+        console.error("Error fetching school info:", error);
         // Fallback data nếu API lỗi
         setSchoolInfo({
           Name: "Y Tế Học Đường",
           Address: "123 Đường ABC, Quận 1, TP.HCM",
           Hotline: "1800 6688",
-          Email: "info@ytehocduong.edu.vn"
+          Email: "info@ytehocduong.edu.vn",
         });
       }
     };
@@ -214,10 +214,11 @@ const HomePage = () => {
   return (
     <>
       <style>{customStyles}</style>
-      <Layout className="min-h-screen">
+      <Layout className="min-h-screen" style={{ margin: 0 }}>
         <Content
-          className={`p-0 ${isHeaderSticky ? "pt-16" : ""
-            } transition-all duration-300`}
+          className={`p-0 ${
+            isHeaderSticky ? "pt-16" : ""
+          } transition-all duration-300`}
         >
           {" "}
           {/* Section 1 */}
@@ -225,8 +226,9 @@ const HomePage = () => {
             {" "}
             {/* Integrated Header */}
             <div
-              className={`relative z-30 w-full flex-shrink-0 transition-all duration-300 ${isHeaderSticky ? "sticky-header" : ""
-                }`}
+              className={`relative z-30 w-full flex-shrink-0 transition-all duration-300 ${
+                isHeaderSticky ? "sticky-header" : ""
+              }`}
             >
               <div className="w-full">
                 <AppHeader collapsed={collapsed} setCollapsed={setCollapsed} />
@@ -348,10 +350,10 @@ const HomePage = () => {
                         </div>
                         <div>
                           <div className="text-3xl font-bold text-gray-900 mb-1">
-                            5000+
+                            1200+
                           </div>
                           <div className="text-gray-600 text-sm font-medium">
-                            Học sinh được chăm sóc
+                            Học sinh trong trường
                           </div>
                         </div>
                       </div>
@@ -418,11 +420,11 @@ const HomePage = () => {
               {/* Section Title */}
               <div className="text-center mb-16">
                 <h2 className="text-3xl font-bold text-blue-600 mb-4">
-                  Thành tựu của chúng tôi
+                  Thông tin trường học
                 </h2>
                 <p className="text-2xl font-bold text-black max-w-2xl mx-auto">
-                  Những con số ấn tượng thể hiện cam kết và chất lượng dịch vụ
-                  chăm sóc sức khỏe học đường
+                  Những con số thể hiện quy mô và chất lượng chăm sóc sức khỏe
+                  tại trường chúng tôi
                 </p>
               </div>
 
@@ -438,10 +440,10 @@ const HomePage = () => {
                       <Statistic
                         title={
                           <span className="text-blue-800 font-semibold text-lg">
-                            Học sinh được chăm sóc
+                            Học sinh trong trường
                           </span>
                         }
-                        value={5000}
+                        value={1200}
                         suffix="+"
                         valueStyle={{
                           color: "#1e40af",
@@ -450,8 +452,8 @@ const HomePage = () => {
                         }}
                       />
                       <p className="text-blue-600 text-sm mt-3 leading-relaxed">
-                        Học sinh trên toàn quốc đã được chăm sóc sức khỏe chuyên
-                        nghiệp
+                        Học sinh đang theo học và được chăm sóc sức khỏe tại
+                        trường
                       </p>
                     </div>
                   </Card>
@@ -471,7 +473,7 @@ const HomePage = () => {
                             Y tá chuyên nghiệp
                           </span>
                         }
-                        value={50}
+                        value={5}
                         suffix="+"
                         valueStyle={{
                           color: "#1e40af",
@@ -481,7 +483,7 @@ const HomePage = () => {
                       />
                       <p className="text-blue-600 text-sm mt-3 leading-relaxed">
                         Đội ngũ y tá được đào tạo bài bản, có chứng chỉ hành
-                        nghề
+                        nghề tại trường
                       </p>
                     </div>
                   </Card>
@@ -498,11 +500,11 @@ const HomePage = () => {
                       <Statistic
                         title={
                           <span className="text-blue-800 font-semibold text-lg">
-                            Trường học hợp tác
+                            Năm thành lập
                           </span>
                         }
-                        value={100}
-                        suffix="+"
+                        value={15}
+                        suffix="+ năm"
                         valueStyle={{
                           color: "#1e40af",
                           fontSize: "2.5rem",
@@ -510,7 +512,7 @@ const HomePage = () => {
                         }}
                       />
                       <p className="text-blue-600 text-sm mt-3 leading-relaxed">
-                        Trường học tin tưởng và sử dụng hệ thống quản lý y tế
+                        Lịch sử hoạt động và phát triển trong lĩnh vực giáo dục
                       </p>
                     </div>
                   </Card>
@@ -527,11 +529,11 @@ const HomePage = () => {
                       <Statistic
                         title={
                           <span className="text-blue-800 font-semibold text-lg">
-                            Năm kinh nghiệm
+                            Tỷ lệ hài lòng
                           </span>
                         }
-                        value={15}
-                        suffix="+"
+                        value={98}
+                        suffix="%"
                         valueStyle={{
                           color: "#1e40af",
                           fontSize: "2.5rem",
@@ -539,7 +541,7 @@ const HomePage = () => {
                         }}
                       />
                       <p className="text-blue-600 text-sm mt-3 leading-relaxed">
-                        Kinh nghiệm trong lĩnh vực chăm sóc sức khỏe học đường
+                        Đánh giá hài lòng từ phụ huynh về dịch vụ y tế học đường
                       </p>
                     </div>
                   </Card>
@@ -724,159 +726,172 @@ const HomePage = () => {
           </div>
           {/* Health Package Section */}
           <div className="relative py-20 bg-white overflow-hidden">
-  <div className="max-w-6xl mx-auto px-6 relative z-10">
-    <Row gutter={[48, 48]} align="middle" className="min-h-[600px]">
-      {/* Left Content - Medical Package Info */}
-      <Col xs={24} lg={12} className="h-full">
-        <div className="h-full flex items-center justify-center">
-          <div className="space-y-8 max-w-xl animate-fadeInLeft">
-            {/* Section Badge */}
-            <div className="mb-6">
-              <span className="text-blue-500 text-lg font-semibold bg-blue-50 px-6 py-3 rounded-full shadow-sm animate-fadeInUp border border-blue-100">
-                ✨ Gói chăm sóc toàn diện
-              </span>
-            </div>
+            <div className="max-w-6xl mx-auto px-6 relative z-10">
+              <Row gutter={[48, 48]} align="middle" className="min-h-[600px]">
+                {/* Left Content - Medical Package Info */}
+                <Col xs={24} lg={12} className="h-full">
+                  <div className="h-full flex items-center justify-center">
+                    <div className="space-y-8 max-w-xl animate-fadeInLeft">
+                      {/* Section Badge */}
+                      <div className="mb-6">
+                        <span className="text-blue-500 text-lg font-semibold bg-blue-50 px-6 py-3 rounded-full shadow-sm animate-fadeInUp border border-blue-100">
+                          ✨ Gói chăm sóc toàn diện
+                        </span>
+                      </div>
 
-            {/* Main Title */}
-            <h2 
-              className="text-5xl xl:text-6xl font-bold text-gray-900 leading-tight animate-fadeInUp"
-              style={{ animationDelay: "0.2s" }}
-            >
-              Chăm Sóc Sức Khỏe Với{" "}
-              <span className="text-blue-600 relative">
-                Gói Y Tế Học Đường
-              </span>
-            </h2>
+                      {/* Main Title */}
+                      <h2
+                        className="text-5xl xl:text-6xl font-bold text-gray-900 leading-tight animate-fadeInUp"
+                        style={{ animationDelay: "0.2s" }}
+                      >
+                        Chăm Sóc Sức Khỏe Với{" "}
+                        <span className="text-blue-600 relative">
+                          Gói Y Tế Học Đường
+                        </span>
+                      </h2>
 
-            {/* Description */}
-            <p 
-              className="text-xl text-gray-600 leading-relaxed animate-fadeInUp"
-              style={{ animationDelay: "0.4s" }}
-            >
-              Chúng tôi cung cấp các gói chăm sóc sức khỏe toàn diện cho
-              học sinh, bao gồm khám định kỳ, theo dõi phát triển và hỗ
-              trợ y tế khẩn cấp.
-            </p>
+                      {/* Description */}
+                      <p
+                        className="text-xl text-gray-600 leading-relaxed animate-fadeInUp"
+                        style={{ animationDelay: "0.4s" }}
+                      >
+                        Chúng tôi cung cấp các gói chăm sóc sức khỏe toàn diện
+                        cho học sinh, bao gồm khám định kỳ, theo dõi phát triển
+                        và hỗ trợ y tế khẩn cấp.
+                      </p>
 
-            {/* Feature List */}
-            <div 
-              className="space-y-4 animate-fadeInUp"
-              style={{ animationDelay: "0.6s" }}
-            >
-              {[
-                "Khám sức khỏe định kỳ hàng tháng",
-                "Theo dõi phát triển thể chất",
-                "Hỗ trợ y tế 24/7",
-                "Tư vấn dinh dưỡng chuyên nghiệp"
-              ].map((item, index) => (
-                <div key={index} className="flex items-center space-x-4">
-                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
-                    <span className="text-white text-sm font-bold">✓</span>
+                      {/* Feature List */}
+                      <div
+                        className="space-y-4 animate-fadeInUp"
+                        style={{ animationDelay: "0.6s" }}
+                      >
+                        {[
+                          "Khám sức khỏe định kỳ hàng tháng",
+                          "Theo dõi phát triển thể chất",
+                          "Hỗ trợ y tế 24/7",
+                          "Tư vấn sức khỏe & dinh dưỡng toàn diện",
+                        ].map((item, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center space-x-4"
+                          >
+                            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                              <span className="text-white text-sm font-bold">
+                                ✓
+                              </span>
+                            </div>
+                            <span className="text-gray-700 text-lg">
+                              {item}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-gray-700 text-lg">{item}</span>
-                </div>
-              ))}
-            </div>
+                </Col>
 
-          
-          </div>
-        </div>
-      </Col>
+                {/* Right Content - Medical Icon with Floating Cards */}
+                <Col xs={24} lg={12} className="h-full">
+                  <div className="relative h-full flex items-center justify-center">
+                    {/* Background circles - subtle */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-80 h-80 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full opacity-30"></div>
+                      <div className="absolute w-96 h-96 bg-blue-50 rounded-full opacity-20"></div>
+                    </div>
 
-      {/* Right Content - Medical Icon with Floating Cards */}
-      <Col xs={24} lg={12} className="h-full">
-        <div className="relative h-full flex items-center justify-center">
-          {/* Background circles - subtle */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-80 h-80 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full opacity-30"></div>
-            <div className="absolute w-96 h-96 bg-blue-50 rounded-full opacity-20"></div>
-          </div>
+                    {/* Central Medical Icon */}
+                    <div className="relative z-10 transform hover:scale-105 transition-transform duration-700 animate-fadeInRight animate-float">
+                      <div className="w-64 h-64 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center shadow-xl">
+                        <MedicineBoxOutlined className="text-8xl text-blue-600" />
+                      </div>
+                    </div>
 
-          {/* Central Medical Icon */}
-          <div className="relative z-10 transform hover:scale-105 transition-transform duration-700 animate-fadeInRight animate-float">
-            <div className="w-64 h-64 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center shadow-xl">
-              <MedicineBoxOutlined className="text-8xl text-blue-600" />
-            </div>
-          </div>
+                    {/* Floating Cards - Clean version */}
+                    <div
+                      className="absolute top-12 left-2 bg-white rounded-3xl shadow-xl p-6 z-20 transform hover:scale-105 transition-all duration-500 border border-gray-100 animate-fadeInUp"
+                      style={{ animationDelay: "0.8s" }}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-yellow-500 rounded-2xl flex items-center justify-center shadow-lg">
+                          <span className="text-white text-xl">⭐</span>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-bold text-gray-900">
+                            4.9/5
+                          </div>
+                          <div className="text-gray-600 text-sm font-medium">
+                            Đánh giá dịch vụ
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-          {/* Floating Cards - Clean version */}
-          <div
-            className="absolute top-12 left-2 bg-white rounded-3xl shadow-xl p-6 z-20 transform hover:scale-105 transition-all duration-500 border border-gray-100 animate-fadeInUp"
-            style={{ animationDelay: "0.8s" }}
-          >
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-yellow-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <span className="text-white text-xl">⭐</span>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">4.9/5</div>
-                <div className="text-gray-600 text-sm font-medium">
-                  Đánh giá dịch vụ
-                </div>
-              </div>
-            </div>
-          </div>
+                    <div
+                      className="absolute top-60 right-24 bg-white rounded-3xl shadow-xl p-6 z-20 transform hover:scale-105 transition-all duration-500 border border-gray-100 animate-fadeInUp"
+                      style={{ animationDelay: "1s" }}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg">
+                          <span className="text-white text-xl">✓</span>
+                        </div>
+                        <div>
+                          <div className="text-gray-700 text-sm font-medium">
+                            Chứng nhận chất lượng
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-          <div
-            className="absolute top-60 right-24 bg-white rounded-3xl shadow-xl p-6 z-20 transform hover:scale-105 transition-all duration-500 border border-gray-100 animate-fadeInUp"
-            style={{ animationDelay: "1s" }}
-          >
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <span className="text-white text-xl">✓</span>
-              </div>
-              <div>
-                <div className="text-gray-700 text-sm font-medium">
-                  Chứng nhận chất lượng
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="absolute bottom-12 left-72 bg-white 
+                    <div
+                      className="absolute bottom-12 left-72 bg-white 
             rounded-3xl shadow-xl p-6 z-20 transform 
             hover:scale-105 transition-all duration-500 
             border border-gray-100 animate-fadeInUp"
-            style={{ animationDelay: "1.2s" }}
-          >
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-blue-500 rounded-2xl 
-              flex items-center justify-center shadow-lg">
-                <span className="text-white text-xl">🏥</span>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">24/7</div>
-                <div className="text-gray-600 text-sm font-medium">
-                  Hỗ trợ y tế
-                </div>
-              </div>
-            </div>
-          </div>
+                      style={{ animationDelay: "1.2s" }}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div
+                          className="w-12 h-12 bg-blue-500 rounded-2xl 
+              flex items-center justify-center shadow-lg"
+                        >
+                          <span className="text-white text-xl">🏥</span>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-bold text-gray-900">
+                            24/7
+                          </div>
+                          <div className="text-gray-600 text-sm font-medium">
+                            Hỗ trợ y tế
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-          <div
-            className="absolute bottom-64 right-16 bg-white rounded-3xl 
+                    <div
+                      className="absolute bottom-64 right-16 bg-white rounded-3xl 
             shadow-xl p-6 z-20 transform hover:scale-105 transition-all 
             duration-500 border border-gray-100 animate-fadeInUp"
-            style={{ animationDelay: "1.4s" }}
-          >
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-purple-500 rounded-2xl 
-              flex items-center justify-center shadow-lg">
-                <span className="text-white text-xl">👩‍⚕️</span>
-              </div>
-              <div>
-                <div className="text-gray-700 text-sm font-medium">
-                  Đội ngũ chuyên nghiệp
-                </div>
-              </div>
+                      style={{ animationDelay: "1.4s" }}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div
+                          className="w-12 h-12 bg-purple-500 rounded-2xl 
+              flex items-center justify-center shadow-lg"
+                        >
+                          <span className="text-white text-xl">👩‍⚕️</span>
+                        </div>
+                        <div>
+                          <div className="text-gray-700 text-sm font-medium">
+                            Đội ngũ chuyên nghiệp
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Col>
+              </Row>
             </div>
           </div>
-        </div>
-      </Col>
-    </Row>
-  </div>
-</div>
         </Content>
         {/* Footer */}
         <Footer
@@ -1053,24 +1068,49 @@ const HomePage = () => {
                       <div className="flex items-start space-x-3">
                         <EnvironmentOutlined className="text-white mt-1 flex-shrink-0" />
                         <span className="text-white break-words">
-                          {schoolInfo?.Address || schoolInfo?.address || "123 Đường ABC, Quận 1, TP.HCM"}
+                          {schoolInfo?.Address ||
+                            schoolInfo?.address ||
+                            "123 Đường ABC, Quận 1, TP.HCM"}
                         </span>
                       </div>
                       <div className="flex items-center space-x-3">
                         <PhoneOutlined className="text-white" />
-                        <a href={`tel:${schoolInfo?.Hotline || schoolInfo?.hotline || "1800 6688"}`} className="text-white hover:text-blue-200 transition-colors">
-                          {schoolInfo?.Hotline || schoolInfo?.hotline || "1800 6688"}
+                        <a
+                          href={`tel:${
+                            schoolInfo?.Hotline ||
+                            schoolInfo?.hotline ||
+                            "1800 6688"
+                          }`}
+                          className="text-white hover:text-blue-200 transition-colors"
+                        >
+                          {schoolInfo?.Hotline ||
+                            schoolInfo?.hotline ||
+                            "1800 6688"}
                         </a>
                       </div>
                       <div className="flex items-center space-x-3">
                         <MailOutlined className="text-white" />
-                        <a href={`mailto:${schoolInfo?.Email || schoolInfo?.email || "info@ytehocduong.edu.vn"}`} className="text-white hover:text-blue-200 transition-colors break-all">
-                          {schoolInfo?.Email || schoolInfo?.email || "info@ytehocduong.edu.vn"}
+                        <a
+                          href={`mailto:${
+                            schoolInfo?.Email ||
+                            schoolInfo?.email ||
+                            "info@ytehocduong.edu.vn"
+                          }`}
+                          className="text-white hover:text-blue-200 transition-colors break-all"
+                        >
+                          {schoolInfo?.Email ||
+                            schoolInfo?.email ||
+                            "info@ytehocduong.edu.vn"}
                         </a>
                       </div>
                       <div className="flex items-center space-x-3">
                         <GlobalOutlined className="text-white" />
-                        <a href="https://www.ytehocduong.edu.vn" target="_blank" rel="noopener noreferrer" className="text-white hover:text-blue-200 transition-colors">
+                        <a
+                          href="https://www.ytehocduong.edu.vn"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-white hover:text-blue-200 transition-colors"
+                        >
                           www.ytehocduong.edu.vn
                         </a>
                       </div>
@@ -1089,7 +1129,9 @@ const HomePage = () => {
             <div className="max-w-6xl mx-auto px-6">
               <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                 <span className="text-white">
-                  © 2024 {schoolInfo?.Name || schoolInfo?.name || "Y Tế Học Đường"}. Tất cả quyền được bảo lưu.
+                  © 2025{" "}
+                  {schoolInfo?.Name || schoolInfo?.name || "Y Tế Học Đường"}.
+                  Tất cả quyền được bảo lưu.
                 </span>
                 <div className="flex space-x-6">
                   <a

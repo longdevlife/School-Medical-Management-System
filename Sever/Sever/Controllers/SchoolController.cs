@@ -47,5 +47,6 @@ namespace Sever.Controllers
                 return BadRequest(new { message = $"Lỗi khi lấy tất cả tin tức: {ex.Message}" });
             }
         }
+        
     }
 }

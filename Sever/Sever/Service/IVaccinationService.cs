@@ -92,7 +92,7 @@ namespace Sever.Service
                 NurseID = userId,
                 VaccinatedAt = dto.VaccinatedAt,
                 Status = "Chờ xác nhận",
-                DateTime = DateTime.UtcNow,
+                DateTime = DateTime.UtcNow.AddHours(7),
             };
 
             await _vaccinationRepository.CreateVaccinationAsync(record);
@@ -154,7 +154,7 @@ namespace Sever.Service
                         Dose = dto.Dose,
                         Notes = dto.Notes,
                         NurseID = userId,
-                        DateTime = DateTime.UtcNow,
+                        DateTime = DateTime.UtcNow.AddHours(7),
                         VaccinatedAt = dto.VaccinatedAt,
                         Status = "Chờ xác nhận",
                     };
@@ -270,7 +270,7 @@ namespace Sever.Service
                 update.FollowUpDate = updateDto.FollowUpDate;
 
 
-            update.DateTime = DateTime.UtcNow;
+            update.DateTime = DateTime.UtcNow.AddHours(7);
             update.NurseID = userId;
 
             var validStatuses = new List<string> { "Đã tiêm", "Đang theo dõi", "Từ chối", "Hoàn thành" };

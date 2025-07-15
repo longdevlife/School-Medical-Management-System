@@ -52,6 +52,11 @@ function AppHeader({ collapsed, setCollapsed }) {
   const [notifications, setNotifications] = useState([]);
   const [hasShownInitialToasts, setHasShownInitialToasts] = useState(false);
   const [showNotificationPanel, setShowNotificationPanel] = useState(false);
+  const [readNotifications, setReadNotifications] = useState(() => {
+    // Load read notifications from localStorage
+    const saved = localStorage.getItem("readNotifications");
+    return saved ? JSON.parse(saved) : [];
+  });
 
   // Helper function to get notification icon and color based on type
   const getNotificationIcon = useCallback((notifyName = "") => {
@@ -111,6 +116,28 @@ function AppHeader({ collapsed, setCollapsed }) {
     };
   }, []);
 
+  // Function to mark notification as read
+  const markNotificationAsRead = useCallback(
+    (notificationId) => {
+      const updatedReadNotifications = [...readNotifications, notificationId];
+      setReadNotifications(updatedReadNotifications);
+      localStorage.setItem(
+        "readNotifications",
+        JSON.stringify(updatedReadNotifications)
+      );
+
+      // Update notifications state to reflect read status
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === notificationId
+            ? { ...notification, unread: false }
+            : notification
+        )
+      );
+    },
+    [readNotifications]
+  );
+
   // Function to show toast notification
   const showToastNotification = useCallback(
     (item) => {
@@ -157,23 +184,33 @@ function AppHeader({ collapsed, setCollapsed }) {
       const response = await notificationApiService.getNotificationsByUserId();
       const notificationsData = response.data || [];
 
-      const transformedNotifications = notificationsData.map((item, index) => {
-        const displayTitle = item.title || item.notifyName || "Thông báo";
+      const transformedNotifications = notificationsData
+        .map((item, index) => {
+          const displayTitle = item.title || item.notifyName || "Thông báo";
+          const notificationId = item.notifyID || `notify-${index}`;
 
-        return {
-          id: item.notifyID || `notify-${index}`,
-          title: displayTitle,
-          message: item.description || "Không có nội dung",
-          time: formatNotificationTime(item.dateTime),
-          iconData: getNotificationIcon(displayTitle),
-          unread: true,
-          originalData: item,
-        };
-      });
+          return {
+            id: notificationId,
+            title: displayTitle,
+            message: item.description || "Không có nội dung",
+            time: formatNotificationTime(item.dateTime),
+            iconData: getNotificationIcon(displayTitle),
+            unread: !readNotifications.includes(notificationId), // Check if already read
+            originalData: item,
+            dateTime: item.dateTime, // Keep original dateTime for sorting
+          };
+        })
+        .sort((a, b) => {
+          // Sort by dateTime descending (newest first)
+          const dateA = new Date(a.dateTime || 0);
+          const dateB = new Date(b.dateTime || 0);
+          return dateB - dateA;
+        });
 
       setNotifications(transformedNotifications);
 
       if (transformedNotifications.length > 0 && !hasShownInitialToasts) {
+        // Get the 3 most recent notifications (already sorted by newest first)
         const latestNotifications = transformedNotifications.slice(0, 3);
 
         latestNotifications.forEach((notification, index) => {
@@ -192,6 +229,7 @@ function AppHeader({ collapsed, setCollapsed }) {
     hasShownInitialToasts,
     setHasShownInitialToasts,
     getNotificationIcon,
+    readNotifications,
   ]);
 
   // Helper function to format notification time
@@ -228,10 +266,15 @@ function AppHeader({ collapsed, setCollapsed }) {
     isAuthenticated
   ); // 60 giây, chỉ khi đã đăng nhập
 
-  // Load notifications when user logs in
+  // Load notifications when user logs in, clear when logout
   useEffect(() => {
     if (isAuthenticated) {
       fetchNotifications();
+    } else {
+      // Clear notifications and read status when user logs out
+      setNotifications([]);
+      setReadNotifications([]);
+      setHasShownInitialToasts(false);
     }
   }, [isAuthenticated, fetchNotifications]);
 
@@ -261,6 +304,8 @@ function AppHeader({ collapsed, setCollapsed }) {
 
   const handleUserMenuClick = ({ key }) => {
     if (key === "logout") {
+      // Clear notification read status when logout
+      localStorage.removeItem("readNotifications");
       authService.logout();
       navigate("/login");
     } else if (key === "dashboard") {
@@ -433,7 +478,9 @@ function AppHeader({ collapsed, setCollapsed }) {
                   />
                   <div className="absolute top-12 right-0 z-50">
                     <NotificationPanel
+                      notifications={notifications}
                       onClose={() => setShowNotificationPanel(false)}
+                      onMarkAsRead={markNotificationAsRead}
                       onNavigateToSystem={() => {
                         setShowNotificationPanel(false);
                         // Navigate to appropriate dashboard based on role

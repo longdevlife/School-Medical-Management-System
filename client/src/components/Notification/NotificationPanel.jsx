@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Avatar, Typography, Button, Spin, Empty, Tooltip } from "antd";
 import {
   BellOutlined,
@@ -12,7 +12,12 @@ import "./NotificationPanel.css";
 
 const { Text, Title } = Typography;
 
-const NotificationPanel = ({ onClose }) => {
+const NotificationPanel = ({
+  notifications: propNotifications,
+  onClose,
+  onMarkAsRead,
+}) => {
+  // Use propNotifications if provided, otherwise use local state
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -88,28 +93,43 @@ const NotificationPanel = ({ onClose }) => {
     return `${Math.floor(diffInMinutes / 1440)} ngày trước`;
   };
 
-  // Fetch notifications
+  // Handle notification click
+  const handleNotificationClick = (notification) => {
+    if (notification.unread && onMarkAsRead) {
+      onMarkAsRead(notification.id);
+    }
+  };
+
+  // Fetch notifications (fallback)
   const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
       const response = await notificationApi.getNotificationsByUserId();
       const notificationsData = response.data || [];
 
-      const transformedNotifications = notificationsData.map((item, index) => {
-        const displayTitle = item.title || item.notifyName || "Thông báo";
-        const iconConfig = getNotificationIcon(displayTitle);
+      const transformedNotifications = notificationsData
+        .map((item, index) => {
+          const displayTitle = item.title || item.notifyName || "Thông báo";
+          const iconConfig = getNotificationIcon(displayTitle);
 
-        return {
-          id: item.notifyID || `notify-${index}`,
-          title: displayTitle,
-          subtitle: item.notifyName || "Thông báo hệ thống",
-          message: item.description || "Không có nội dung",
-          time: formatNotificationTime(item.dateTime),
-          iconConfig,
-          unread: true,
-          originalData: item,
-        };
-      });
+          return {
+            id: item.notifyID || `notify-${index}`,
+            title: displayTitle,
+            subtitle: item.notifyName || "Thông báo hệ thống",
+            message: item.description || "Không có nội dung",
+            time: formatNotificationTime(item.dateTime),
+            iconConfig,
+            unread: true,
+            originalData: item,
+            dateTime: item.dateTime, // Keep original dateTime for sorting
+          };
+        })
+        .sort((a, b) => {
+          // Sort by dateTime descending (newest first)
+          const dateA = new Date(a.dateTime || 0);
+          const dateB = new Date(b.dateTime || 0);
+          return dateB - dateA;
+        });
 
       setNotifications(transformedNotifications);
     } catch (error) {
@@ -120,9 +140,41 @@ const NotificationPanel = ({ onClose }) => {
     }
   }, [getNotificationIcon]);
 
+  // Transform propNotifications to match expected format
   useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
+    if (propNotifications && propNotifications.length > 0) {
+      const transformedNotifications = propNotifications
+        .map((item) => {
+          const displayTitle =
+            item.title || item.originalData?.notifyName || "Thông báo";
+          const iconConfig = getNotificationIcon(displayTitle);
+
+          return {
+            id: item.id,
+            title: displayTitle,
+            subtitle: item.originalData?.notifyName || "Thông báo hệ thống",
+            message: item.message || "Không có nội dung",
+            time: item.time,
+            iconConfig,
+            unread: item.unread,
+            originalData: item.originalData,
+            dateTime: item.dateTime || item.originalData?.dateTime, // Keep original dateTime for sorting
+          };
+        })
+        .sort((a, b) => {
+          // Sort by dateTime descending (newest first)
+          const dateA = new Date(a.dateTime || 0);
+          const dateB = new Date(b.dateTime || 0);
+          return dateB - dateA;
+        });
+
+      setNotifications(transformedNotifications);
+      setLoading(false);
+    } else if (!propNotifications) {
+      // Fallback to fetch if no propNotifications provided
+      fetchNotifications();
+    }
+  }, [propNotifications, getNotificationIcon, fetchNotifications]);
 
   return (
     <div className="w-96 max-h-[600px] bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-2xl overflow-hidden relative">
@@ -203,6 +255,7 @@ const NotificationPanel = ({ onClose }) => {
                   className={`notification-item flex items-start p-5 border-b border-gray-100 cursor-pointer hover:bg-blue-50 relative group ${
                     index === notifications.length - 1 ? "border-b-0" : ""
                   }`}
+                  onClick={() => handleNotificationClick(notification)}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background =
                       "linear-gradient(90deg, #f8faff 0%, #ffffff 100%)";
@@ -241,8 +294,10 @@ const NotificationPanel = ({ onClose }) => {
                     <Text className="text-gray-600 text-sm leading-5 line-clamp-2">
                       {notification.message}
                     </Text>
-                    {/* Unread indicator */}
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                    {/* Unread indicator - only show if unread */}
+                    {notification.unread && (
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                    )}
                   </div>
                 </div>
               </Tooltip>

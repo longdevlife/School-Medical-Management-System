@@ -90,7 +90,7 @@ namespace Sever.Service
                             <p><b>Ban Quản Trị Hệ Thống</b></p>
                             ";
 
-            await _emailService.SendEmailAsync(user.Email, "Thông báo tài khoản đăng nhập hệ thống", message);
+            _= _emailService.SendEmailAsync(user.Email, "Thông báo tài khoản đăng nhập hệ thống", message);
 
             return await _userRepository.CreateAsync(user);
         }

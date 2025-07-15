@@ -371,7 +371,7 @@ namespace Sever.Service
                             <p>Trân trọng,</p>
                             <p><b>Ban Y tế Trường học</b></p>
                             ";
-            await _emailService.SendEmailAsync(parent.Email, "Thông báo xác nhận đơn thuốc đã gửi", message);
+            _= _emailService.SendEmailAsync(parent.Email, "Thông báo xác nhận đơn thuốc đã gửi", message);
             await _notificationService.MedicineNotificationForParent(medicine, $"Đơn thuốc đã được cập nhật bởi y tá với trạng thái '{medicine.Status}'.");
             return true;
         }

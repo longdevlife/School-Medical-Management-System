@@ -350,10 +350,10 @@ const HomePage = () => {
                         </div>
                         <div>
                           <div className="text-3xl font-bold text-gray-900 mb-1">
-                            5000+
+                            1200+
                           </div>
                           <div className="text-gray-600 text-sm font-medium">
-                            Học sinh được chăm sóc
+                            Học sinh trong trường
                           </div>
                         </div>
                       </div>
@@ -420,11 +420,11 @@ const HomePage = () => {
               {/* Section Title */}
               <div className="text-center mb-16">
                 <h2 className="text-3xl font-bold text-blue-600 mb-4">
-                  Thành tựu của chúng tôi
+                  Thông tin trường học
                 </h2>
                 <p className="text-2xl font-bold text-black max-w-2xl mx-auto">
-                  Những con số ấn tượng thể hiện cam kết và chất lượng dịch vụ
-                  chăm sóc sức khỏe học đường
+                  Những con số thể hiện quy mô và chất lượng chăm sóc sức khỏe
+                  tại trường chúng tôi
                 </p>
               </div>
 
@@ -440,10 +440,10 @@ const HomePage = () => {
                       <Statistic
                         title={
                           <span className="text-blue-800 font-semibold text-lg">
-                            Học sinh được chăm sóc
+                            Học sinh trong trường
                           </span>
                         }
-                        value={5000}
+                        value={1200}
                         suffix="+"
                         valueStyle={{
                           color: "#1e40af",
@@ -452,8 +452,8 @@ const HomePage = () => {
                         }}
                       />
                       <p className="text-blue-600 text-sm mt-3 leading-relaxed">
-                        Học sinh trên toàn quốc đã được chăm sóc sức khỏe chuyên
-                        nghiệp
+                        Học sinh đang theo học và được chăm sóc sức khỏe tại
+                        trường
                       </p>
                     </div>
                   </Card>
@@ -473,7 +473,7 @@ const HomePage = () => {
                             Y tá chuyên nghiệp
                           </span>
                         }
-                        value={50}
+                        value={5}
                         suffix="+"
                         valueStyle={{
                           color: "#1e40af",
@@ -483,7 +483,7 @@ const HomePage = () => {
                       />
                       <p className="text-blue-600 text-sm mt-3 leading-relaxed">
                         Đội ngũ y tá được đào tạo bài bản, có chứng chỉ hành
-                        nghề
+                        nghề tại trường
                       </p>
                     </div>
                   </Card>
@@ -500,11 +500,11 @@ const HomePage = () => {
                       <Statistic
                         title={
                           <span className="text-blue-800 font-semibold text-lg">
-                            Trường học hợp tác
+                            Năm thành lập
                           </span>
                         }
-                        value={100}
-                        suffix="+"
+                        value={15}
+                        suffix="+ năm"
                         valueStyle={{
                           color: "#1e40af",
                           fontSize: "2.5rem",
@@ -512,7 +512,7 @@ const HomePage = () => {
                         }}
                       />
                       <p className="text-blue-600 text-sm mt-3 leading-relaxed">
-                        Trường học tin tưởng và sử dụng hệ thống quản lý y tế
+                        Lịch sử hoạt động và phát triển trong lĩnh vực giáo dục
                       </p>
                     </div>
                   </Card>
@@ -529,11 +529,11 @@ const HomePage = () => {
                       <Statistic
                         title={
                           <span className="text-blue-800 font-semibold text-lg">
-                            Năm kinh nghiệm
+                            Tỷ lệ hài lòng
                           </span>
                         }
-                        value={15}
-                        suffix="+"
+                        value={98}
+                        suffix="%"
                         valueStyle={{
                           color: "#1e40af",
                           fontSize: "2.5rem",
@@ -541,7 +541,7 @@ const HomePage = () => {
                         }}
                       />
                       <p className="text-blue-600 text-sm mt-3 leading-relaxed">
-                        Kinh nghiệm trong lĩnh vực chăm sóc sức khỏe học đường
+                        Đánh giá hài lòng từ phụ huynh về dịch vụ y tế học đường
                       </p>
                     </div>
                   </Card>
@@ -769,7 +769,7 @@ const HomePage = () => {
                           "Khám sức khỏe định kỳ hàng tháng",
                           "Theo dõi phát triển thể chất",
                           "Hỗ trợ y tế 24/7",
-                          "Tư vấn dinh dưỡng chuyên nghiệp",
+                          "Tư vấn sức khỏe & dinh dưỡng toàn diện",
                         ].map((item, index) => (
                           <div
                             key={index}

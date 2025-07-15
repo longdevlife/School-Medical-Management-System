@@ -112,7 +112,7 @@ namespace Sever.Service
                                     ";
 
 
-                    await _emailService.SendEmailAsync(parent.Email, "Thông báo khám sức khỏe cho học sinh", message);
+                    _ = _emailService.SendEmailAsync(parent.Email, "Thông báo khám sức khỏe cho học sinh", message);
                 }
             }
             catch (Exception ex)
@@ -148,7 +148,7 @@ namespace Sever.Service
             healthProfile.VisionLeft = healthCheckUp.VisionLeft;
             healthProfile.VisionRight = healthCheckUp.VisionRight;
             healthProfile.ToothDecay = healthCheckUp.Dental;
-            
+
             try
             {
                 var student = await _studentRepository.SearchStudentProfile(healthCheckUp.StudentID);
@@ -173,7 +173,7 @@ namespace Sever.Service
                                 <p><b>Ban Y tế Trường học</b></p>
                                 ";
 
-                await _emailService.SendEmailAsync(parent.Email, "Thông báo kết quả khám sức khỏe học sinh", message);
+                _= _emailService.SendEmailAsync(parent.Email, "Thông báo kết quả khám sức khỏe học sinh", message);
                 return true;
             }
             catch (Exception ex)

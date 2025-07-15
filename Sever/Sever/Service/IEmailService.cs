@@ -9,7 +9,7 @@ namespace Sever.Service
 
     public class EmailSevice : IEmailService
     {
-        public Task SendEmailAsync(string email, string subject, string message)
+        public async Task SendEmailAsync(string email, string subject, string message)
         {
             var client = new SmtpClient("smtp.gmail.com", 587)
             {
@@ -28,7 +28,7 @@ namespace Sever.Service
 
             mail.To.Add(email);
 
-            return client.SendMailAsync(mail);
+            await client.SendMailAsync(mail);
         }
     }
 }

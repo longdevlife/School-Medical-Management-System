@@ -147,7 +147,7 @@ namespace Sever.Service
                 </div>
 ";
 
-                await _emailService.SendEmailAsync(parent.Email, "Thông báo sự cố y tế", message);
+                _= _emailService.SendEmailAsync(parent.Email, "Thông báo sự cố y tế", message);
                 return medicalEvent;
                 }
                 catch (Exception ex)

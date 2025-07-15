@@ -126,7 +126,7 @@ namespace Sever.Service
         <p><b>Ban Y tế Trường học</b></p>
     ";
 
-            await _emailService.SendEmailAsync(parent.Email, "Thông báo xác nhận tiêm chủng", message);
+            _= _emailService.SendEmailAsync(parent.Email, "Thông báo xác nhận tiêm chủng", message);
             return record;
         }
 

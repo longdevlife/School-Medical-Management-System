@@ -66,10 +66,7 @@ namespace Sever.Service
             try
             {
                 var studentProfiles = await _studentProfileRepository.GetStudentProfileByParentId(parentID);
-                if(studentProfiles != null)
-                {
-                    return null;
-                }
+              
                 foreach (var student in studentProfiles)
                 {
                     studentInfoList.Add(new GetStudentInfoRequest

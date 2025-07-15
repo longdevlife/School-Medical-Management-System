@@ -39,11 +39,7 @@ function SidebarNurseManager({ collapsed }) {
   }
 
   const menuItems = [
-    {
-      key: basePath, // Sử dụng đường dẫn cơ sở cho dashboard
-      icon: <DashboardOutlined />,
-      label: "Tổng quan",
-    },
+  
    // Menu chỉ dành cho Y TÁ (NURSE)
     ...(userRole === "NURSE"
       ? [

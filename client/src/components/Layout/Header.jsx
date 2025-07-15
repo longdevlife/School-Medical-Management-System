@@ -57,6 +57,11 @@ function AppHeader({ collapsed, setCollapsed }) {
     const saved = localStorage.getItem("readNotifications");
     return saved ? JSON.parse(saved) : [];
   });
+  const [shownToastNotifications, setShownToastNotifications] = useState(() => {
+    // Track which notifications have already shown toast
+    const saved = localStorage.getItem("shownToastNotifications");
+    return saved ? JSON.parse(saved) : [];
+  });
 
   // Helper function to get notification icon and color based on type
   const getNotificationIcon = useCallback((notifyName = "") => {
@@ -209,15 +214,37 @@ function AppHeader({ collapsed, setCollapsed }) {
 
       setNotifications(transformedNotifications);
 
-      if (transformedNotifications.length > 0 && !hasShownInitialToasts) {
-        // Get the 3 most recent notifications (already sorted by newest first)
-        const latestNotifications = transformedNotifications.slice(0, 3);
+      // Show toast notifications for new unread notifications that haven't been shown before
+      const newUnreadNotifications = transformedNotifications
+        .filter(
+          (notification) =>
+            notification.unread &&
+            !shownToastNotifications.includes(notification.id)
+        )
+        .slice(0, 3); // Limit to 3 most recent
 
-        latestNotifications.forEach((notification, index) => {
+      if (newUnreadNotifications.length > 0) {
+        // Update shown toast notifications list
+        const updatedShownToasts = [
+          ...shownToastNotifications,
+          ...newUnreadNotifications.map((n) => n.id),
+        ];
+        setShownToastNotifications(updatedShownToasts);
+        localStorage.setItem(
+          "shownToastNotifications",
+          JSON.stringify(updatedShownToasts)
+        );
+
+        // Show toast notifications with delay
+        newUnreadNotifications.forEach((notification, index) => {
           setTimeout(() => {
             showToastNotification(notification.originalData);
           }, (index + 1) * 1500);
         });
+      }
+
+      // Set initial toasts flag if this is the first load
+      if (!hasShownInitialToasts) {
         setHasShownInitialToasts(true);
       }
     } catch (error) {
@@ -230,6 +257,7 @@ function AppHeader({ collapsed, setCollapsed }) {
     setHasShownInitialToasts,
     getNotificationIcon,
     readNotifications,
+    shownToastNotifications,
   ]);
 
   // Helper function to format notification time
@@ -271,9 +299,10 @@ function AppHeader({ collapsed, setCollapsed }) {
     if (isAuthenticated) {
       fetchNotifications();
     } else {
-      // Clear notifications and read status when user logs out
+      // Clear notifications and all related state when user logs out
       setNotifications([]);
       setReadNotifications([]);
+      setShownToastNotifications([]);
       setHasShownInitialToasts(false);
     }
   }, [isAuthenticated, fetchNotifications]);
@@ -304,8 +333,9 @@ function AppHeader({ collapsed, setCollapsed }) {
 
   const handleUserMenuClick = ({ key }) => {
     if (key === "logout") {
-      // Clear notification read status when logout
+      // Clear notification read status and shown toast notifications when logout
       localStorage.removeItem("readNotifications");
+      localStorage.removeItem("shownToastNotifications");
       authService.logout();
       navigate("/login");
     } else if (key === "dashboard") {

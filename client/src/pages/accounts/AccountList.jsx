@@ -1374,6 +1374,7 @@ function AccountList() {
                   name="birthday"
                   label={<span className="font-bold">Ngày sinh</span>}
                   rules={[{ required: true, message: "Vui lòng chọn ngày sinh" }]}
+                  getValueFromEvent={value => value ? value.add(1, 'day') : value}
                 >
                   <DatePicker 
                     className="rounded-2xl text-base w-full" 

@@ -677,9 +677,10 @@ export default function AccidentManagement() {
                 <div
                   style={{
                     background: "rgba(255,255,255,0.15)",
-
+                    borderRadius: "16px",
                     padding: "12px 16px",
-
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    backdropFilter: "blur(10px)",
                     textAlign: "center",
                     minWidth: "100px",
                   }}

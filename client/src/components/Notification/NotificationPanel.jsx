@@ -177,7 +177,12 @@ const NotificationPanel = ({
   }, [propNotifications, getNotificationIcon, fetchNotifications]);
 
   return (
-    <div className="w-96 max-h-[600px] bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-2xl overflow-hidden relative">
+    <div
+      className="w-96 max-h-[600px] rounded-2xl shadow-2xl overflow-hidden relative"
+      style={{
+        background: "linear-gradient(135deg, #47c8f8 0%, #1890ff 100%)",
+      }}
+    >
       {/* Header */}
 
       <div className="relative flex items-center justify-center p-5 bg-white bg-opacity-10 backdrop-blur-sm border-b border-white border-opacity-20">
@@ -265,7 +270,13 @@ const NotificationPanel = ({
                   }}
                 >
                   {/* Left border indicator on hover */}
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #47c8f8 0%, #1890ff 100%)",
+                    }}
+                  ></div>
 
                   <div className="mr-4 flex-shrink-0">
                     <Avatar

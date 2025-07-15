@@ -37,7 +37,7 @@ function HealthProfileView() {
   const [healthFilter, setHealthFilter] = useState("all"); // 🆕 Filter by health status
 
   // List of classes for filter
-  const classes = ["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B"];
+  const classes = ["1A", "2A", "3A", "4A", "5A"];
   const healthStatuses = ["all", "allergy", "chronic", "tooth", "normal"]; // 🆕 Health filter options
 
   // API fetch data từ health profile endpoint

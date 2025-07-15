@@ -32,6 +32,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import medicineApi from "../../api/medicineApi";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -924,6 +925,9 @@ function MedicationSubmission() {
     },
   ];
 
+  // Setup auto refresh - tự động refresh mỗi 30 giây
+  useAutoRefresh(fetchSubmissions, 30000);
+
   useEffect(() => {
     fetchSubmissions();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -940,7 +944,7 @@ function MedicationSubmission() {
       {/* 🎨 Tab Header */}
       <div
         style={{
-          background: "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
+          background: "linear-gradient(135deg, #2196f3 0%, #64b5f6 100%)",
           borderRadius: "0 0 32px 32px",
           padding: "40px 32px 48px",
           marginBottom: "40px",

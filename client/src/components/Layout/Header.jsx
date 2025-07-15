@@ -7,9 +7,6 @@ import {
   Avatar,
   Dropdown,
   Badge,
-  List,
-  Typography,
-  Spin,
   notification,
 } from "antd";
 import {
@@ -34,10 +31,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
 import notificationApiService from "../../api/notificationApi";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
+import NotificationPanel from "../Notification/NotificationPanel";
 import "./Header.css";
 
 const { Header } = Layout;
-const { Text } = Typography;
 
 function AppHeader({ collapsed, setCollapsed }) {
   const navigate = useNavigate();
@@ -52,8 +50,13 @@ function AppHeader({ collapsed, setCollapsed }) {
 
   // Notification state
   const [notifications, setNotifications] = useState([]);
-  const [notificationLoading, setNotificationLoading] = useState(false);
   const [hasShownInitialToasts, setHasShownInitialToasts] = useState(false);
+  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
+  const [readNotifications, setReadNotifications] = useState(() => {
+    // Load read notifications from localStorage
+    const saved = localStorage.getItem("readNotifications");
+    return saved ? JSON.parse(saved) : [];
+  });
 
   // Helper function to get notification icon and color based on type
   const getNotificationIcon = useCallback((notifyName = "") => {
@@ -113,6 +116,28 @@ function AppHeader({ collapsed, setCollapsed }) {
     };
   }, []);
 
+  // Function to mark notification as read
+  const markNotificationAsRead = useCallback(
+    (notificationId) => {
+      const updatedReadNotifications = [...readNotifications, notificationId];
+      setReadNotifications(updatedReadNotifications);
+      localStorage.setItem(
+        "readNotifications",
+        JSON.stringify(updatedReadNotifications)
+      );
+
+      // Update notifications state to reflect read status
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === notificationId
+            ? { ...notification, unread: false }
+            : notification
+        )
+      );
+    },
+    [readNotifications]
+  );
+
   // Function to show toast notification
   const showToastNotification = useCallback(
     (item) => {
@@ -149,17 +174,6 @@ function AppHeader({ collapsed, setCollapsed }) {
     [notificationApi, getNotificationIcon]
   );
 
-  // Function to mark notification as read
-  const markNotificationAsRead = (notificationId) => {
-    setNotifications((prevNotifications) =>
-      prevNotifications.map((notification) =>
-        notification.id === notificationId
-          ? { ...notification, unread: false }
-          : notification
-      )
-    );
-  };
-
   // Fetch notifications from API
   const fetchNotifications = useCallback(async () => {
     if (!isAuthenticated) {
@@ -167,28 +181,36 @@ function AppHeader({ collapsed, setCollapsed }) {
     }
 
     try {
-      setNotificationLoading(true);
-
       const response = await notificationApiService.getNotificationsByUserId();
       const notificationsData = response.data || [];
 
-      const transformedNotifications = notificationsData.map((item, index) => {
-        const displayTitle = item.title || item.notifyName || "Thông báo";
+      const transformedNotifications = notificationsData
+        .map((item, index) => {
+          const displayTitle = item.title || item.notifyName || "Thông báo";
+          const notificationId = item.notifyID || `notify-${index}`;
 
-        return {
-          id: item.notifyID || `notify-${index}`,
-          title: displayTitle,
-          message: item.description || "Không có nội dung",
-          time: formatNotificationTime(item.dateTime),
-          iconData: getNotificationIcon(displayTitle),
-          unread: true,
-          originalData: item,
-        };
-      });
+          return {
+            id: notificationId,
+            title: displayTitle,
+            message: item.description || "Không có nội dung",
+            time: formatNotificationTime(item.dateTime),
+            iconData: getNotificationIcon(displayTitle),
+            unread: !readNotifications.includes(notificationId), // Check if already read
+            originalData: item,
+            dateTime: item.dateTime, // Keep original dateTime for sorting
+          };
+        })
+        .sort((a, b) => {
+          // Sort by dateTime descending (newest first)
+          const dateA = new Date(a.dateTime || 0);
+          const dateB = new Date(b.dateTime || 0);
+          return dateB - dateA;
+        });
 
       setNotifications(transformedNotifications);
 
       if (transformedNotifications.length > 0 && !hasShownInitialToasts) {
+        // Get the 3 most recent notifications (already sorted by newest first)
         const latestNotifications = transformedNotifications.slice(0, 3);
 
         latestNotifications.forEach((notification, index) => {
@@ -200,8 +222,6 @@ function AppHeader({ collapsed, setCollapsed }) {
       }
     } catch (error) {
       setNotifications([]);
-    } finally {
-      setNotificationLoading(false);
     }
   }, [
     isAuthenticated,
@@ -209,6 +229,7 @@ function AppHeader({ collapsed, setCollapsed }) {
     hasShownInitialToasts,
     setHasShownInitialToasts,
     getNotificationIcon,
+    readNotifications,
   ]);
 
   // Helper function to format notification time
@@ -234,129 +255,30 @@ function AppHeader({ collapsed, setCollapsed }) {
     }
   };
 
-  // Load notifications when user logs in
+  // Setup auto refresh cho thông báo - chỉ khi đã đăng nhập
+  useAutoRefresh(
+    () => {
+      if (isAuthenticated) {
+        fetchNotifications();
+      }
+    },
+    60000,
+    isAuthenticated
+  ); // 60 giây, chỉ khi đã đăng nhập
+
+  // Load notifications when user logs in, clear when logout
   useEffect(() => {
     if (isAuthenticated) {
       fetchNotifications();
+    } else {
+      // Clear notifications and read status when user logs out
+      setNotifications([]);
+      setReadNotifications([]);
+      setHasShownInitialToasts(false);
     }
   }, [isAuthenticated, fetchNotifications]);
 
   const unreadCount = notifications.filter((n) => n.unread).length;
-
-  // Notification dropdown content
-  const notificationDropdown = (
-    <div className="w-80 bg-white rounded-lg shadow-lg border border-gray-200">
-      <div className="p-4 border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <Text strong className="text-lg">
-            Thông báo
-          </Text>
-          <div className="flex items-center space-x-2">
-            <Text className="text-xs text-gray-500">
-              {notifications.length > 0 && `${unreadCount} mới`}
-            </Text>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                fetchNotifications();
-              }}
-              disabled={notificationLoading}
-              className="text-gray-400 hover:text-blue-500 transition-colors disabled:opacity-50"
-              title="Tải lại thông báo"
-            >
-              {notificationLoading ? (
-                <Spin size="small" />
-              ) : (
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-h-96 overflow-y-auto scrollbar-hide">
-        {notificationLoading ? (
-          <div className="flex justify-center items-center py-8">
-            <Spin size="small" />
-            <Text className="ml-2 text-gray-500">Đang tải...</Text>
-          </div>
-        ) : notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-gray-500">
-            <BellOutlined className="text-2xl mb-2 opacity-50" />
-            <Text className="text-sm">Không có thông báo nào</Text>
-          </div>
-        ) : (
-          <List
-            dataSource={notifications}
-            renderItem={(item) => (
-              <List.Item
-                className={`px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 ${
-                  item.unread ? "bg-blue-50" : ""
-                }`}
-                onClick={() => {
-                  // Show toast notification with full details
-                  showToastNotification(item.originalData);
-
-                  // Mark notification as read (reduce unread count)
-                  markNotificationAsRead(item.id);
-
-                  // TODO: Handle navigation or other actions
-                }}
-              >
-                <div className="flex items-start space-x-3 w-full">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${item.iconData.bgColor} ${item.iconData.borderColor}`}
-                  >
-                    <span className="text-lg">{item.iconData.icon}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <Text strong={item.unread} className="text-sm">
-                        {item.title}
-                      </Text>
-                      <Text className="text-xs text-gray-400">{item.time}</Text>
-                    </div>
-                    <Text className="text-sm text-gray-600 block mt-1 line-clamp-2">
-                      {item.message}
-                    </Text>
-                    {item.unread && (
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                    )}
-                  </div>
-                </div>
-              </List.Item>
-            )}
-          />
-        )}
-      </div>
-
-      {notifications.length > 0 && (
-        <div className="p-3 border-t border-gray-100 text-center">
-          <Button
-            type="link"
-            className="text-blue-500 font-medium"
-            onClick={() => {
-              // TODO: Navigate to notifications page
-            }}
-          >
-            Xem tất cả thông báo
-          </Button>
-        </div>
-      )}
-    </div>
-  );
 
   // User dropdown menu items
   const userMenuItems = [
@@ -382,6 +304,8 @@ function AppHeader({ collapsed, setCollapsed }) {
 
   const handleUserMenuClick = ({ key }) => {
     if (key === "logout") {
+      // Clear notification read status when logout
+      localStorage.removeItem("readNotifications");
       authService.logout();
       navigate("/login");
     } else if (key === "dashboard") {
@@ -462,13 +386,8 @@ function AppHeader({ collapsed, setCollapsed }) {
               }
             }}
           >
-            <img
-              src="/favicon.svg"
-              alt="School Logo"
-              className="w-10 h-10 mr-3"
-            />
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
-              Y Tế Học Đường
+            <span className="text-2xl font-bold text-gray-900 tracking-tight whitespace-nowrap">
+              Y Tế Học Đường<span className="text-blue-600">.</span>
             </span>
           </div>
         </div>
@@ -532,7 +451,7 @@ function AppHeader({ collapsed, setCollapsed }) {
                     navigate("/login");
                 }
               }}
-              className="font-medium border-blue-500 text-blue-600 hover:bg-blue-50"
+              className="border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-600 font-medium h-9 px-4 transition-colors duration-200"
             >
               Vào hệ thống
             </Button>
@@ -540,18 +459,53 @@ function AppHeader({ collapsed, setCollapsed }) {
 
           {/* Notification Bell - Only for authenticated users */}
           {isAuthenticated && (
-            <Dropdown
-              overlay={notificationDropdown}
-              placement="bottomRight"
-              trigger={["click"]}
-              arrow
-            >
-              <div className="cursor-pointer">
+            <div className="relative notification-panel-container">
+              <div
+                className="cursor-pointer"
+                onClick={() => setShowNotificationPanel(!showNotificationPanel)}
+              >
                 <Badge count={unreadCount} size="small">
                   <BellOutlined className="text-xl text-gray-600 hover:text-blue-600 transition-colors duration-200" />
                 </Badge>
               </div>
-            </Dropdown>
+
+              {/* Notification Panel */}
+              {showNotificationPanel && (
+                <>
+                  <div
+                    className="notification-overlay"
+                    onClick={() => setShowNotificationPanel(false)}
+                  />
+                  <div className="absolute top-12 right-0 z-50">
+                    <NotificationPanel
+                      notifications={notifications}
+                      onClose={() => setShowNotificationPanel(false)}
+                      onMarkAsRead={markNotificationAsRead}
+                      onNavigateToSystem={() => {
+                        setShowNotificationPanel(false);
+                        // Navigate to appropriate dashboard based on role
+                        switch (userRole) {
+                          case "ADMIN":
+                            navigate("/admin");
+                            break;
+                          case "MANAGER":
+                            navigate("/manager");
+                            break;
+                          case "NURSE":
+                            navigate("/nurses");
+                            break;
+                          case "PARENT":
+                            navigate("/parent");
+                            break;
+                          default:
+                            navigate("/login");
+                        }
+                      }}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
           )}
           {/* Login Button or User Dropdown */}
           {isAuthenticated ? (

@@ -76,7 +76,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<NurseDashboard />} />
+            <Route index element={<HealthProfileView  />} />
 
             <Route path="profile-view" element={<HealthProfileView />} />
             <Route

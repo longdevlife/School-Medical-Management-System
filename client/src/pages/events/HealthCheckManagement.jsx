@@ -1125,6 +1125,7 @@ function HealthCheckManagement() {
                 >
                   Tổng hồ sơ
                 </Text>
+                
               </div>
             </div>
           </Col>

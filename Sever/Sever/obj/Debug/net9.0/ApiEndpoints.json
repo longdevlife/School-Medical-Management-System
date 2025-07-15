@@ -490,6 +490,16 @@
   },
   {
     "ContainingType": "Sever.Controllers.ManagerController",
+    "Method": "GetAllStudent",
+    "RelativePath": "api/manager/get-all-student",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ManagerController",
     "Method": "GetNewsByManager",
     "RelativePath": "api/manager/get-news-by-manager",
     "HttpMethod": "GET",
@@ -770,6 +780,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "GetAllAppointmentAsync",
+    "RelativePath": "api/nurse/get-all-appointment",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
@@ -1089,6 +1109,22 @@
   },
   {
     "ContainingType": "Sever.Controllers.NurseController",
+    "Method": "UpdateWaitingStatusHealthCheckUp",
+    "RelativePath": "api/nurse/update-waiting-status-health-check-up/{Id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.NurseController",
     "Method": "CreateVaccinationByClassID",
     "RelativePath": "api/nurse/vaccine/createByClassID",
     "HttpMethod": "POST",
@@ -1285,11 +1321,6 @@
         "IsRequired": false
       },
       {
-        "Name": "DateTime",
-        "Type": "System.DateTime",
-        "IsRequired": false
-      },
-      {
         "Name": "Notes",
         "Type": "System.String",
         "IsRequired": false
@@ -1416,6 +1447,22 @@
     "Parameters": [
       {
         "Name": "parentId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "GetAppointmentByStudentId",
+    "RelativePath": "api/parent/get-appointment-by-student-id/{StudentID}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "StudentID",
         "Type": "System.String",
         "IsRequired": true
       }
@@ -1613,6 +1660,67 @@
   },
   {
     "ContainingType": "Sever.Controllers.ParentController",
+    "Method": "UpdateStudentProfile",
+    "RelativePath": "api/parent/update-student-profile",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "StudentID",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "StudentName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Class",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "StudentAvata",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      },
+      {
+        "Name": "RelationName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Nationality",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Ethnicity",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Birthday",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Sex",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Location",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.ParentController",
     "Method": "ConfirmVaccine",
     "RelativePath": "api/parent/vaccine/confirm",
     "HttpMethod": "PUT",
@@ -1667,6 +1775,16 @@
     "ContainingType": "Sever.Controllers.SchoolController",
     "Method": "GetSchoolInfo",
     "RelativePath": "api/school/get-school-info",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sever.Controllers.UserController",
+    "Method": "GetNotifyByUserId",
+    "RelativePath": "api/user/get-notify-by-user-id",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,

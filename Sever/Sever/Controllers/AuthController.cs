@@ -48,10 +48,7 @@ namespace Sever.Controllers
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto google)
         {
             var jwt = await _authService.AuthenticateWithGoogleAsync(google.IdToken);
-            return Ok(new
-            {
-                token = jwt
-            });
+            return Ok(jwt);
         }
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)

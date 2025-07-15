@@ -13,6 +13,8 @@ namespace Sever.Service
         Task<List<GetNewRespone>> GetNewsByUserIdAsync(string id);
         Task<List<GetNewRespone>> GetAllNewsForHomePage();
         Task<List<GetNews>> GetAllNewsAsync();
+        Task<int> CountActiveNewsAsync(DateTime fromDate, DateTime toDate);
+        Task<int> CountInActiveNewsAsync(DateTime fromDate, DateTime toDate);
     }
     public class NewsService : INewsService
 
@@ -25,6 +27,21 @@ namespace Sever.Service
             _newsRepository = newsRepository;
             _filesService = filesService;
         }
+
+        public Task<int> CountActiveNewsAsync(DateTime fromDate, DateTime toDate)
+        {
+            var count = _newsRepository.CountActiveNewsAsync(fromDate, toDate);
+            if (count == null) throw new ArgumentNullException("Không có tin tức nào để hiển thị");
+            return count;
+        }
+
+        public Task<int> CountInActiveNewsAsync(DateTime fromDate, DateTime toDate)
+        {
+            var count = _newsRepository.CountInActiveNewsAsync(fromDate, toDate);
+            if (count == null) throw new ArgumentNullException("Không có tin tức nào để hiển thị");
+            return count;
+        }
+
         public async Task<News> CreateNewsAsync(CreateNews newNews, string userId)
         {
             if (newNews == null) throw new ArgumentNullException("News Không đúng fomat vui lòng kiểm tra lại");
@@ -83,6 +100,7 @@ namespace Sever.Service
                     Summary = item.Summary,
                     Body = item.Body,
                     Image = listImage
+
                 });
             }
             return lisNews;
@@ -91,7 +109,7 @@ namespace Sever.Service
         public async Task<List<GetNewRespone>> GetAllNewsForHomePage()
         {
             var newsResponse = new List<GetNewRespone>();
-            var listNews = await _newsRepository.GetAllNewsAsync();
+            var listNews = await _newsRepository.GetActiveNewsAsync();
             if(listNews == null) { throw new ArgumentNullException("Không có tin tức nào để hiển thị"); }
             foreach (var item in listNews)
             {
@@ -104,6 +122,7 @@ namespace Sever.Service
                     Summary = item.Summary,
                     Body = item.Body,
                     Image = listImage.Select(i => i.FileLink).ToList(),
+                    Status = item.Status,
                 });
 
             }
@@ -126,6 +145,7 @@ namespace Sever.Service
                     Summary = item.Summary,
                     Body = item.Body,
                     Image = listImage.Select(i => i.FileLink).ToList(),
+                    Status = item.Status,
                 });
 
             }

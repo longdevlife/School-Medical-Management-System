@@ -5,6 +5,7 @@ using Sever.DTO.File;
 using Sever.DTO.HealProfile;
 using Sever.DTO.HealthCheckUp;
 using Sever.DTO.SendMedicine;
+using Sever.DTO.Student;
 using Sever.DTO.Vaccination;
 using Sever.Service;
 using System.Security.Claims;
@@ -168,8 +169,20 @@ namespace Sever.Controllers
         {
             if (string.IsNullOrEmpty(parentId))
                 return BadRequest("Thiếu parentId.");
-            var result = await _healthCheckUpService.GetHealthCheckupsByParentIdAsync(parentId);
-            return Ok(result);
+            try
+            {
+                var result = await _healthCheckUpService.GetHealthCheckupsByParentIdAsync(parentId);
+                if(result == null)
+                {
+                    return NotFound("Không tìm thấy hồ sơ khám sức khỏe theo phụ huynh");
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Thất bại khi tải thông tin hồ sơ khám sức khỏe" + ex.Message);
+            }
+
         }
 
         [HttpPut("vaccine/confirm")]
@@ -247,9 +260,60 @@ namespace Sever.Controllers
         public async Task<IActionResult> GetHeathProfilesByParentID()
         {
             var username = User.Identity?.Name;
-            var result = await _medicalEventService.GetMedicialEventByParentAsync(username);
+            var result = await _healthProfileService.GetHealthProfileByParentIdAsync(username);
             return Ok(result);
         }
+        [HttpGet("get-appointment-by-student-id/{StudentID}")]
+        public async Task<IActionResult> GetAppointmentByStudentId(string StudentID)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Người dùng chưa được cấp quyền.");
+            }
+            try
+            {
+                var appointments = await _appointmentService.GetAppointmentByStudentId(StudentID);
+                if (appointments == null)
+                {
+                    return NotFound("Không tìm thấy hồ sơ khám sức khỏe theo phụ huynh");
+                }
+                return Ok(appointments);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Thất bại khi tải thông tin hồ sơ khám sức khỏe" + ex.Message);
+            }
+        }
 
+        [HttpPut("update-student-profile")]
+        public async Task<IActionResult> UpdateStudentProfile([FromForm] UpdateStudentRequest updateStudentRequest)
+        {
+            if (updateStudentRequest == null || string.IsNullOrEmpty(updateStudentRequest.StudentID))
+            {
+                return BadRequest(new { message = "Thông tin học sinh không được để trống" });
+            }
+            try
+            {
+                var result = await _studentService.UpdateStudentProfile(updateStudentRequest);
+                if (result)
+                {
+                    return Ok(new { message = "Cập nhật hồ sơ học sinh thành công" });
+                }
+                else
+                {
+                    return NotFound(new { message = "Không tìm thấy hồ sơ học sinh để cập nhật" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = $"Cập nhật hồ sơ học sinh thất bại: {ex.Message}",
+                    inner = ex.InnerException?.Message
+                });
+            }
+
+        }
     }
 }

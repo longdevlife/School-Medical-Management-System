@@ -966,6 +966,18 @@
         }
       }
     },
+    "/api/manager/get-all-student": {
+      "get": {
+        "tags": [
+          "Manager"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/news/get-all-news": {
       "get": {
         "tags": [
@@ -1883,10 +1895,6 @@
                     "type": "integer",
                     "format": "int32"
                   },
-                  "DateTime": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
                   "Notes": {
                     "type": "string"
                   },
@@ -1911,9 +1919,6 @@
               },
               "encoding": {
                 "Dose": {
-                  "style": "form"
-                },
-                "DateTime": {
                   "style": "form"
                 },
                 "Notes": {
@@ -2148,6 +2153,40 @@
       }
     },
     "/api/nurse/get-all-health-check-up": {
+      "get": {
+        "tags": [
+          "Nurse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/update-waiting-status-health-check-up/{Id}": {
+      "put": {
+        "tags": [
+          "Nurse"
+        ],
+        "parameters": [
+          {
+            "name": "Id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/nurse/get-all-appointment": {
       "get": {
         "tags": [
           "Nurse"
@@ -2694,6 +2733,115 @@
         }
       }
     },
+    "/api/parent/get-appointment-by-student-id/{StudentID}": {
+      "get": {
+        "tags": [
+          "Parent"
+        ],
+        "parameters": [
+          {
+            "name": "StudentID",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/parent/update-student-profile": {
+      "put": {
+        "tags": [
+          "Parent"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "StudentID": {
+                    "type": "string"
+                  },
+                  "StudentName": {
+                    "type": "string"
+                  },
+                  "Class": {
+                    "type": "string"
+                  },
+                  "StudentAvata": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "RelationName": {
+                    "type": "string"
+                  },
+                  "Nationality": {
+                    "type": "string"
+                  },
+                  "Ethnicity": {
+                    "type": "string"
+                  },
+                  "Birthday": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "Sex": {
+                    "type": "string"
+                  },
+                  "Location": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "StudentID": {
+                  "style": "form"
+                },
+                "StudentName": {
+                  "style": "form"
+                },
+                "Class": {
+                  "style": "form"
+                },
+                "StudentAvata": {
+                  "style": "form"
+                },
+                "RelationName": {
+                  "style": "form"
+                },
+                "Nationality": {
+                  "style": "form"
+                },
+                "Ethnicity": {
+                  "style": "form"
+                },
+                "Birthday": {
+                  "style": "form"
+                },
+                "Sex": {
+                  "style": "form"
+                },
+                "Location": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/school/get-school-info": {
       "get": {
         "tags": [
@@ -2754,6 +2902,18 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/user/get-notify-by-user-id": {
+      "get": {
+        "tags": [
+          "User"
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -3150,6 +3310,10 @@
             "nullable": true
           },
           "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
             "type": "string",
             "nullable": true
           }

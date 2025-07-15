@@ -102,6 +102,7 @@ function VaccinationManagement() {
               status = "monitoring";
               break;
             case "đã từ chối":
+            case "Đã từ chối":
               status = "rejected";
               break;
             case "Hoàn thành":
@@ -1548,8 +1549,6 @@ function VaccinationManagement() {
                       <span style={{ fontSize: "13px" }}>
                         {status === "pending"
                           ? "⏳ Chờ phản hồi"
-                          : status === "confirmed"
-                          ? "✅ Đã chấp nhận"
                           : status === "approved"
                           ? "✅ Chờ tiêm"
                           : status === "injected"

@@ -6,7 +6,6 @@ namespace Sever.DTO.Vaccination
     public class UpdateVaccineDTO
     {
         public int? Dose { get; set; }
-        public DateTime DateTime { get; set; }
         public string? Notes { get; set; }
         public string? Status { get; set; }
         public DateTime? VaccinatedAt { get; set; }

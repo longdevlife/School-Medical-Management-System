@@ -43,7 +43,9 @@ namespace Sever.Repository
         public async Task<Medicine> GetMedicineByIdAsync(string medicineId)
         {
 
-            var result = await _context.Medicine.FirstOrDefaultAsync(n => n.MedicineID == medicineId);
+            var result = await _context.Medicine
+                .Include(m => m.File)
+                .FirstOrDefaultAsync(n => n.MedicineID == medicineId);
             if (result == null)
                 return null;
             return result;
@@ -52,6 +54,7 @@ namespace Sever.Repository
             public async Task<List<Medicine>> GetMedicineByStudentIdAsync(string studentId)
             {
                 return await _context.Medicine
+                    .Include(m => m.File) 
                     .Include(m => m.StudentProfile)
                     .Where(n => n.StudentID == studentId)
                     .ToListAsync();
@@ -91,6 +94,7 @@ namespace Sever.Repository
         public async Task<List<Medicine>> GetAllMedicinesAsync()
         {
             return await _context.Medicine
+                                 .Include(m => m.File)
                                  .Include(m => m.StudentProfile)
                                  .ToListAsync();
         }

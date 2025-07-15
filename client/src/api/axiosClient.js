@@ -13,15 +13,8 @@ axiosClient.interceptors.request.use(
   (config) => {
     // Log request details for debugging
     if (config.url?.includes("google-login")) {
-      console.log("🚀 AXIOS REQUEST DEBUG:");
-
-      console.log("Method:", config.method);
-      console.log("Headers:", config.headers);
-      console.log("Data:", config.data);
-      console.log("Data stringified:", JSON.stringify(config.data));
-      console.log("Client UTC Time:", new Date().toISOString());
+      console.log("AXIOS REQUEST DEBUG:");
     }
-    console.log("Client UTC Time:", new Date().toISOString());
 
     const token = localStorage.getItem("token");
     if (token) {

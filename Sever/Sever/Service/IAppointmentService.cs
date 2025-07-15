@@ -158,6 +158,7 @@ namespace Sever.Service
                 {
                     studenAppointments.Add(appointments);
                 }
+                
             }
             return studenAppointments;
         }

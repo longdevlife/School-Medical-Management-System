@@ -69,6 +69,7 @@ namespace Sever.Service
 
                 if (studentProfiles != null) return null;
 
+
                 foreach (var student in studentProfiles)
                 {
                     studentInfoList.Add(new GetStudentInfoRequest

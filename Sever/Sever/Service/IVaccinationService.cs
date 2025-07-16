@@ -225,7 +225,7 @@ namespace Sever.Service
                 update.Notes = updateDto.Notes;
 
 
-            update.DateTime = DateTime.UtcNow;
+            update.DateTime = DateTime.UtcNow.AddHours(7);
             update.NurseID = userId;
 
             var validStatuses = new List<string> { "Đã tiêm", "Chờ tiêm", "Đang theo dõi", "Từ chối", "Hoàn thành" };
@@ -506,7 +506,7 @@ namespace Sever.Service
                 VaccinatorID = e.VaccinatorID,
                 Class = e.StudentProfile?.Class,
                 StudentName = e.StudentProfile?.StudentName,
-                VaccinatorName = e.Vaccinator?.Name,
+                VaccinatorName = e.Nurse.Name,
                 VaccineName = e.Vaccine?.VaccineName,
             }).ToList();
 

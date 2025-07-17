@@ -8,3 +8,5 @@ obj/
 .vscode/
 *.log
 appsettings.Development.json
+Migrations/
+wwwroot/

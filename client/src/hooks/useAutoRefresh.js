@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Custom hook để auto refresh data tự động
+ * Hook để tự động refresh một hàm theo khoảng thời gian nhất định
  * @param {Function} refreshFunction - Function để gọi khi refresh
- * @param {number} interval - Thời gian interval (ms), mặc định 30 giây
- * @param {boolean} enabled - Có enable auto refresh không, mặc định true
+ * @param {number} interval  mặc định 30 giây
+ * @param {boolean} enabled  mặc định true
  */
 const useAutoRefresh = (refreshFunction, interval = 30000, enabled = true) => {
   const intervalRef = useRef(null);
@@ -15,7 +15,6 @@ const useAutoRefresh = (refreshFunction, interval = 30000, enabled = true) => {
     refreshFunctionRef.current = refreshFunction;
   }, [refreshFunction]);
 
-  // Setup auto refresh interval
   useEffect(() => {
     if (!enabled) {
       if (intervalRef.current) {
@@ -43,7 +42,6 @@ const useAutoRefresh = (refreshFunction, interval = 30000, enabled = true) => {
     };
   }, [interval, enabled]);
 
-  // Cleanup khi component unmount
   useEffect(() => {
     return () => {
       if (intervalRef.current) {

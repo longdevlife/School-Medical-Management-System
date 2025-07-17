@@ -38,7 +38,6 @@ function HealthProfileView() {
 
   // List of classes for filter
   const classes = ["1A", "2A", "3A", "4A", "5A"];
-  const healthStatuses = ["all", "allergy", "chronic", "tooth", "normal"]; // 🆕 Health filter options
 
   // API fetch data từ health profile endpoint
   const fetchHealthProfiles = async () => {
@@ -261,7 +260,7 @@ function HealthProfileView() {
   ];
 
   // Setup auto refresh - tự động refresh mỗi 30 giây
-  useAutoRefresh(fetchHealthProfiles, 30000);
+  useAutoRefresh(fetchHealthProfiles, 10000);
 
   useEffect(() => {
     fetchHealthProfiles();

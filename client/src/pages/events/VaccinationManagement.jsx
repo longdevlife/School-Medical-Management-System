@@ -873,7 +873,7 @@ function VaccinationManagement() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Setup auto refresh - tự động refresh mỗi 30 giây
-  useAutoRefresh(fetchSubmissions, 30000);
+  useAutoRefresh(fetchSubmissions, 10000);
 
   return (
     <div

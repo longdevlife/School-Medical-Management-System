@@ -1,0 +1,10 @@
+# Railway ignore file
+bin/
+obj/
+*.user
+*.suo
+*.cache
+.vs/
+.vscode/
+*.log
+appsettings.Development.json

@@ -107,7 +107,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("CROS", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:5000", "http://localhost:5173")
+        policy.WithOrigins(
+                "http://localhost:3000",
+                "http://localhost:5000",
+                "http://localhost:5173",
+                "https://he-thong-yte-hocduong.vercel.app" // Vercel domain
+              )
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

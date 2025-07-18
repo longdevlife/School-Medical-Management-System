@@ -168,7 +168,7 @@ namespace Sever.Service
 
             }
             medicalEvents.Notes += $"\n. " +
-                $"Cập nhật {DateTime.UtcNow}: {dto.Notes}";
+                $"Cập nhật {DateTime.UtcNow.AddHours(7)}: {dto.Notes}";
             if (!string.IsNullOrWhiteSpace(dto.ActionTaken))
             {
                 medicalEvents.ActionTaken += $"\n, {dto.ActionTaken}";

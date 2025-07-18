@@ -286,6 +286,7 @@ function NewsManagement() {
         })
       );
       message.success("Xóa bài viết thành công!");
+      setTimeout(() => window.location.reload(), 700);
     } catch (error) {
       message.error("Xóa bài viết thất bại!");
     }
@@ -383,7 +384,7 @@ function NewsManagement() {
       message.success("Tạo bài viết thành công!");
       setModalVisible(false);
       form.resetFields();
-      // Không reload lại danh sách từ backend để giữ đúng dữ liệu vừa nhập
+      setTimeout(() => window.location.reload(), 700);
     } catch (error) {
       // Hiển thị lỗi chi tiết từ backend nếu có
       if (error.response?.data?.message) {
@@ -533,6 +534,7 @@ function NewsManagement() {
       message.success("Cập nhật bài viết thành công!");
       setModalVisible(false);
       form.resetFields();
+      setTimeout(() => window.location.reload(), 700);
     } catch (error) {
       message.error("Cập nhật bài viết thất bại!");
     }

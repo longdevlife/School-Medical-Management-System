@@ -18,7 +18,7 @@ function SidebarAdmin({ collapsed }) {
     {
       key: "/admin/dashboard",
       icon: <DashboardOutlined />,
-      label: "Dashboard",
+      label: "Tổng quan",
     },
     {
       key: "/admin/accounts",

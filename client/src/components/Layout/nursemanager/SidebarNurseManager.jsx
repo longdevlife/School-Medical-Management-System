@@ -75,7 +75,11 @@ function SidebarNurseManager({ collapsed }) {
         ]
       : []), // Menu chỉ dành cho QUẢN LÝ (MANAGER)
     ...(userRole === "MANAGER"
-      ? [
+      ? [{
+            key: `${basePath}/nurseDashboard`, // CRUD blog/bài viết sức khỏe
+            icon: <EditOutlined />,
+            label: "Tổng quan ",
+          },
           {
             key: `${basePath}/news-management`, // CRUD blog/bài viết sức khỏe
             icon: <EditOutlined />,

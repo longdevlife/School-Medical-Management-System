@@ -1211,10 +1211,9 @@ function AccountList() {
               rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
             >
               <Select placeholder="Chọn vai trò" className="rounded-2xl text-base">
-          
-                <Option value="Manager">Manager</Option>
-                <Option value="Nurse">Nurse</Option>
-                <Option value="Parent">Parent</Option>
+                <Option value="Quản lý">Quản lý</Option>
+                <Option value="Y tá">Y tá</Option>
+                <Option value="Phụ huynh">Phụ huynh</Option>
               </Select>
             </Form.Item>
           </Form>
@@ -1306,12 +1305,7 @@ function AccountList() {
               name="roleName"
               label={<span className="font-bold">Vai trò</span>}
             >
-              <Select disabled className="rounded-2xl text-base">
-                <Option value="Admin">Admin</Option>
-                <Option value="Manager">Manager</Option>
-                <Option value="Nurse">Nurse</Option>
-                <Option value="Parent">Parent</Option>
-              </Select>
+        
             </Form.Item>
           </Form>
         </Modal>

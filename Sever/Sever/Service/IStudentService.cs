@@ -68,7 +68,9 @@ namespace Sever.Service
                 var studentProfiles = await _studentProfileRepository.GetStudentProfileByParentId(parentID);
 
 
-                
+               
+
+
 
                 foreach (var student in studentProfiles)
                 {

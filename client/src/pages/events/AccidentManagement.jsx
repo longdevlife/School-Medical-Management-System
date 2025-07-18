@@ -149,7 +149,7 @@ export default function AccidentManagement() {
   };
 
   // Setup auto refresh - tự động refresh mỗi 30 giây
-  useAutoRefresh(fetchAllAccidents, 30000);
+  useAutoRefresh(fetchAllAccidents, 10000);
 
   useEffect(() => {
     fetchAllAccidents();

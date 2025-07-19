@@ -22,6 +22,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import healthProfileApi from "../../api/healthProfileApi";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -36,8 +37,7 @@ function HealthProfileView() {
   const [healthFilter, setHealthFilter] = useState("all"); // 🆕 Filter by health status
 
   // List of classes for filter
-  const classes = ["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B"];
-  const healthStatuses = ["all", "allergy", "chronic", "tooth", "normal"]; // 🆕 Health filter options
+  const classes = ["1A", "2A", "3A", "4A", "5A"];
 
   // API fetch data từ health profile endpoint
   const fetchHealthProfiles = async () => {
@@ -259,6 +259,9 @@ function HealthProfileView() {
     },
   ];
 
+  // Setup auto refresh - tự động refresh mỗi 30 giây
+  useAutoRefresh(fetchHealthProfiles, 10000);
+
   useEffect(() => {
     fetchHealthProfiles();
   }, []);
@@ -275,7 +278,7 @@ function HealthProfileView() {
       {/* Enhanced Header */}
       <div
         style={{
-          background: "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
+          background: "linear-gradient(135deg, #2196f3 0%, #64b5f6 100%)",
           borderRadius: "0 0 32px 32px",
           padding: "40px 32px 48px",
           marginBottom: "40px",
@@ -423,6 +426,39 @@ function HealthProfileView() {
                     }}
                   >
                     Hồ sơ
+                  </Text>
+                </div>
+                <div
+                  style={{
+                    background: "rgba(255,255,255,0.15)",
+                    borderRadius: "16px",
+                    padding: "12px 16px",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    backdropFilter: "blur(10px)",
+                    textAlign: "center",
+                    minWidth: "100px",
+                  }}
+                >
+                  <div style={{ fontSize: "18px", marginBottom: "4px" }}>
+                    ⏱️
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "14px",
+                      color: "rgba(255,255,255,0.9)",
+                      fontWeight: "500",
+                    }}
+                  >
+                    {new Date().toLocaleDateString("vi-VN")}
+                  </div>
+                  <Text
+                    style={{
+                      fontSize: "12px",
+                      color: "rgba(255,255,255,0.8)",
+                      fontWeight: "400",
+                    }}
+                  >
+                    Hôm nay
                   </Text>
                 </div>
               </div>

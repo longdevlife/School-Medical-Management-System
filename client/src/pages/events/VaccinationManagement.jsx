@@ -34,6 +34,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import vaccineApi from "../../api/vaccineApi";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -871,6 +872,9 @@ function VaccinationManagement() {
     fetchSubmissions();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Setup auto refresh - tự động refresh mỗi 30 giây
+  useAutoRefresh(fetchSubmissions, 10000);
+
   return (
     <div
       style={{
@@ -880,10 +884,10 @@ function VaccinationManagement() {
         padding: "0",
       }}
     >
-      {/* 🎨 Modern Enhanced Header with Navigation Feel */}
+      {/* Tab Header */}
       <div
         style={{
-          background: "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
+          background: "linear-gradient(135deg, #2196f3 0%, #64b5f6 100%)",
           borderRadius: "0 0 32px 32px",
           padding: "40px 32px 48px",
           marginBottom: "40px",

@@ -153,7 +153,7 @@ function AdminDashboard() {
             <span className="absolute -bottom-3 -right-3 bg-white rounded-full px-3 py-1 text-xs text-blue-700 font-bold shadow border border-blue-100 select-none tracking-wide" style={{letterSpacing: 1}}>ADMIN</span>
           </div>
           <div className="flex flex-col gap-1">
-            <Title level={2} className="text-blue-900 mb-0 font-black tracking-widest drop-shadow-xl leading-tight" style={{letterSpacing: 2}}>Admin Dashboard</Title>
+            <Title level={2} className="text-blue-900 mb-0 font-black tracking-widest drop-shadow-xl leading-tight" style={{letterSpacing: 2}}>Tổng Quan Người Dùng </Title>
             <div className="flex items-center gap-2 mt-1">
               <span className="w-2 h-2 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 animate-pulse shadow"></span>
               <Text type="secondary" className="text-lg font-medium text-gray-600 italic tracking-wide">Hệ thống quản lý toàn diện</Text>

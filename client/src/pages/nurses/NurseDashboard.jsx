@@ -43,6 +43,7 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import authService from "../../services/authService";
 import reportApi from "../../api/reportApi";
 import { Pie } from "@ant-design/plots";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -68,50 +69,58 @@ function NurseDashboard() {
   });
   const [reportLoading, setReportLoading] = useState(false);
 
+  // Hàm fetch dữ liệu báo cáo
+  const fetchReport = async () => {
+    setReportLoading(true);
+    try {
+      const now = new Date();
+      const toDate = now.toISOString();
+      const fromDate = new Date(
+        now.getTime() - 30 * 24 * 60 * 60 * 1000
+      ).toISOString();
+      const res = await reportApi.generateReport(fromDate, toDate);
+      const apiData =
+        res && res.data && res.data.data ? res.data.data : res.data;
+      setReportData({
+        totalHealthCheckUp: apiData?.totalHealthCheckUp ?? 0,
+        confirmHealthCheckUp: apiData?.confirmHealthCheckUp ?? 0,
+        deniedHealthCheckUp: apiData?.deniedHealthCheckUp ?? 0,
+        notResponseHealthCheckUp: apiData?.notResponseHealthCheckUp ?? 0,
+        countActiveNews: apiData?.countActiveNews ?? 0,
+        totalMedicalEvent: apiData?.totalMedicalEvent ?? 0,
+        countInActiveNews: apiData?.countInActiveNews ?? 0,
+        emergencyCount: apiData?.emergencyCount ?? 0,
+        accidentCount: apiData?.accidentCount ?? 0,
+        illnessCount: apiData?.illnessCount ?? 0,
+        otherCount: apiData?.otherCount ?? 0,
+        injuryCount: apiData?.injuryCount ?? 0,
+      });
+    } catch {
+      message.error("Không thể tải dữ liệu báo cáo dashboard!");
+      setReportData({
+        totalHealthCheckUp: 0,
+        confirmHealthCheckUp: 0,
+        deniedHealthCheckUp: 0,
+        notResponseHealthCheckUp: 0,
+        countActiveNews: 0,
+        totalMedicalEvent: 0,
+        countInActiveNews: 0,
+        emergencyCount: 0,
+        accidentCount: 0,
+        illnessCount: 0,
+        otherCount: 0,
+        injuryCount: 0,
+      });
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  // Setup auto refresh - tự động refresh mỗi 30 giây
+  useAutoRefresh(fetchReport, 30000);
+
   // Lấy dữ liệu báo cáo từ API khi load trang
   useEffect(() => {
-    async function fetchReport() {
-      setReportLoading(true);
-      try {
-        const now = new Date();
-        const toDate = now.toISOString();
-        const fromDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-        const res = await reportApi.generateReport(fromDate, toDate);
-        const apiData = res && res.data && res.data.data ? res.data.data : res.data;
-        setReportData({
-          totalHealthCheckUp: apiData?.totalHealthCheckUp ?? 0,
-          confirmHealthCheckUp: apiData?.confirmHealthCheckUp ?? 0,
-          deniedHealthCheckUp: apiData?.deniedHealthCheckUp ?? 0,
-          notResponseHealthCheckUp: apiData?.notResponseHealthCheckUp ?? 0,
-          countActiveNews: apiData?.countActiveNews ?? 0,
-          totalMedicalEvent: apiData?.totalMedicalEvent ?? 0,
-          countInActiveNews: apiData?.countInActiveNews ?? 0,
-          emergencyCount: apiData?.emergencyCount ?? 0,
-          accidentCount: apiData?.accidentCount ?? 0,
-          illnessCount: apiData?.illnessCount ?? 0,
-          otherCount: apiData?.otherCount ?? 0,
-          injuryCount: apiData?.injuryCount ?? 0,
-        });
-      } catch {
-        message.error("Không thể tải dữ liệu báo cáo dashboard!");
-        setReportData({
-          totalHealthCheckUp: 0,
-          confirmHealthCheckUp: 0,
-          deniedHealthCheckUp: 0,
-          notResponseHealthCheckUp: 0,
-          countActiveNews: 0,
-          totalMedicalEvent: 0,
-          countInActiveNews: 0,
-          emergencyCount: 0,
-          accidentCount: 0,
-          illnessCount: 0,
-          otherCount: 0,
-          injuryCount: 0,
-        });
-      } finally {
-        setReportLoading(false);
-      }
-    }
     fetchReport();
     // eslint-disable-next-line
   }, []);
@@ -130,7 +139,9 @@ function NurseDashboard() {
           <Space size="small" style={{ marginTop: 8, flexWrap: "wrap" }}>
             <Tag color="blue">Xác nhận: {reportData.confirmHealthCheckUp}</Tag>
             <Tag color="red">Từ chối: {reportData.deniedHealthCheckUp}</Tag>
-            <Tag color="orange">Chưa phản hồi: {reportData.notResponseHealthCheckUp}</Tag>
+            <Tag color="orange">
+              Chưa phản hồi: {reportData.notResponseHealthCheckUp}
+            </Tag>
           </Space>
         </Card>
       </Col>
@@ -174,7 +185,7 @@ function NurseDashboard() {
     { type: "Bệnh", value: reportData.illnessCount },
     { type: "Chấn thương", value: reportData.injuryCount },
     { type: "Khác", value: reportData.otherCount },
-  ].filter(item => item.value > 0);
+  ].filter((item) => item.value > 0);
 
   const pieConfig = {
     appendPadding: 10,
@@ -219,13 +230,22 @@ function NurseDashboard() {
             {medicalEventPieData.length > 0 ? (
               <Pie {...pieConfig} />
             ) : (
-              <div className="text-center text-gray-400 py-8">Không có dữ liệu sự kiện y tế</div>
+              <div className="text-center text-gray-400 py-8">
+                Không có dữ liệu sự kiện y tế
+              </div>
             )}
           </Card>
         </Col>
         <Col xs={24} md={12}>
           <Card title="Tỉ lệ xác nhận khám sức khỏe" bordered={false}>
-            <div style={{ height: 320, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div
+              style={{
+                height: 320,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Pie
                 data={healthCheckBarData}
                 angleField="value"

@@ -39,11 +39,7 @@ function SidebarNurseManager({ collapsed }) {
   }
 
   const menuItems = [
-    {
-      key: basePath, // Sử dụng đường dẫn cơ sở cho dashboard
-      icon: <DashboardOutlined />,
-      label: "Tổng quan",
-    },
+  
    // Menu chỉ dành cho Y TÁ (NURSE)
     ...(userRole === "NURSE"
       ? [
@@ -79,7 +75,11 @@ function SidebarNurseManager({ collapsed }) {
         ]
       : []), // Menu chỉ dành cho QUẢN LÝ (MANAGER)
     ...(userRole === "MANAGER"
-      ? [
+      ? [{
+            key: `${basePath}/nurseDashboard`, // CRUD blog/bài viết sức khỏe
+            icon: <EditOutlined />,
+            label: "Tổng quan ",
+          },
           {
             key: `${basePath}/news-management`, // CRUD blog/bài viết sức khỏe
             icon: <EditOutlined />,

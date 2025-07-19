@@ -26,6 +26,7 @@ import {
   CaretDownOutlined,
 } from "@ant-design/icons";
 import medicalEventApi from "../../api/medicalEventApi";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -146,6 +147,9 @@ export default function AccidentManagement() {
       setLoading(false);
     }
   };
+
+  // Setup auto refresh - tự động refresh mỗi 30 giây
+  useAutoRefresh(fetchAllAccidents, 10000);
 
   useEffect(() => {
     fetchAllAccidents();
@@ -532,18 +536,14 @@ export default function AccidentManagement() {
         padding: "0",
       }}
     >
-      {/* 🎨 Modern Enhanced Header with Navigation Feel */}
+      {/* TAB HEADER */}
       <div
         style={{
-          background: "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
-          borderRadius: "0 0 32px 32px",
+          background: "linear-gradient(135deg, #2196f3 0%, #64b5f6 100%)",
           padding: "40px 32px 48px",
           marginBottom: "40px",
-          boxShadow:
-            "0 25px 50px rgba(79, 70, 229, 0.25), 0 0 0 1px rgba(255,255,255,0.1)",
           position: "relative",
           overflow: "hidden",
-          border: "none",
         }}
       >
         {/* Enhanced Background decorations */}
@@ -691,7 +691,7 @@ export default function AccidentManagement() {
                   <div
                     style={{
                       fontSize: "20px",
-                      fontWeight: "bold",
+
                       color: "white",
                       textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
                     }}
@@ -792,10 +792,6 @@ export default function AccidentManagement() {
           }
           style={{
             marginBottom: "32px",
-            borderRadius: "20px",
-            boxShadow:
-              "0 10px 30px rgba(0,0,0,0.08), 0 1px 8px rgba(0,0,0,0.02)",
-            border: "1px solid rgba(255,255,255,0.8)",
           }}
         >
           <Row
@@ -803,15 +799,11 @@ export default function AccidentManagement() {
             style={{ textAlign: "center", justifyContent: "center" }}
           >
             <Col xs={24} sm={12} md={4}>
-              <div
+              <Card
                 style={{
+                  textAlign: "center",
                   background:
                     "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
-                  borderRadius: "16px",
-                  padding: "24px",
-                  textAlign: "center",
-                  border: "2px solid rgba(251, 191, 36, 0.2)",
-                  boxShadow: "0 8px 25px rgba(251, 191, 36, 0.15)",
                 }}
               >
                 <div style={{ fontSize: "32px", marginBottom: "12px" }}>⏳</div>
@@ -835,19 +827,15 @@ export default function AccidentManagement() {
                 >
                   Tổng sự cố
                 </Text>
-              </div>
+              </Card>
             </Col>
 
             <Col xs={24} sm={12} md={4}>
-              <div
+              <Card
                 style={{
+                  textAlign: "center",
                   background:
                     "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
-                  borderRadius: "16px",
-                  padding: "24px",
-                  textAlign: "center",
-                  border: "2px solid rgba(59, 130, 246, 0.2)",
-                  boxShadow: "0 8px 25px rgba(59, 130, 246, 0.15)",
                 }}
               >
                 <div style={{ fontSize: "32px", marginBottom: "12px" }}>🔄</div>
@@ -871,19 +859,15 @@ export default function AccidentManagement() {
                 >
                   Đang xử lý
                 </Text>
-              </div>
+              </Card>
             </Col>
 
             <Col xs={24} sm={12} md={4}>
-              <div
+              <Card
                 style={{
+                  textAlign: "center",
                   background:
                     "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
-                  borderRadius: "16px",
-                  padding: "24px",
-                  textAlign: "center",
-                  border: "2px solid rgba(34, 197, 94, 0.2)",
-                  boxShadow: "0 8px 25px rgba(34, 197, 94, 0.15)",
                 }}
               >
                 <div style={{ fontSize: "32px", marginBottom: "12px" }}>✅</div>
@@ -907,19 +891,15 @@ export default function AccidentManagement() {
                 >
                   Đã xử lý
                 </Text>
-              </div>
+              </Card>
             </Col>
 
             <Col xs={24} sm={12} md={4}>
-              <div
+              <Card
                 style={{
+                  textAlign: "center",
                   background:
                     "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
-                  borderRadius: "16px",
-                  padding: "24px",
-                  textAlign: "center",
-                  border: "2px solid rgba(239, 68, 68, 0.2)",
-                  boxShadow: "0 8px 25px rgba(239, 68, 68, 0.15)",
                 }}
               >
                 <div style={{ fontSize: "32px", marginBottom: "12px" }}>🏥</div>
@@ -943,7 +923,7 @@ export default function AccidentManagement() {
                 >
                   Đã chuyển viện
                 </Text>
-              </div>
+              </Card>
             </Col>
           </Row>
         </Card>
@@ -994,11 +974,7 @@ export default function AccidentManagement() {
           }
           style={{
             marginBottom: "32px",
-            borderRadius: "20px",
-            border: "none",
             background: "white",
-            boxShadow:
-              "0 20px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05)",
           }}
           bodyStyle={{ padding: "32px" }}
         >
@@ -1277,12 +1253,7 @@ export default function AccidentManagement() {
               </div>
             </div>
           }
-          style={{
-            borderRadius: "20px",
-            boxShadow:
-              "0 10px 30px rgba(0,0,0,0.08), 0 1px 8px rgba(0,0,0,0.02)",
-            border: "1px solid rgba(255,255,255,0.8)",
-          }}
+          style={{}}
         >
           <Table
             columns={columns}

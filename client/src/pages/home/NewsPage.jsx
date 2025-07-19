@@ -260,6 +260,12 @@ const NewsPage = () => {
     }
   }, [searchOpen]);
 
+
+  // Khi searchValue thay đổi, tự động về trang đầu tiên
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchValue]);
+
   // Filter news by search
   const filteredNews = newsList.filter(item =>
     item.title.toLowerCase().includes(searchValue.trim().toLowerCase())

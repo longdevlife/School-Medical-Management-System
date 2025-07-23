@@ -449,7 +449,7 @@ const VaccineRequest = () => {
             {/* Header */}
             <div
                 style={{
-                    background: "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
+                    background: "linear-gradient(135deg, #2196f3 0%, #64b5f6 100%)",
                     borderRadius: "32px",
                     boxShadow: "0 10px 32px rgba(22,160,133,0.18)",
                     padding: "32px 40px 28px 40px",

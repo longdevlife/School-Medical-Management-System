@@ -150,6 +150,7 @@ function VaccinationManagement() {
           dose: item.dose,
           vaccineID: item.vaccineID,
           vaccinatorID: item.vaccinatorID,
+          vaccinatedAt: item.vaccinatedAt, // Ngày hẹn tiêm từ API
 
           // Follow up fields
           followUpNotes: item.followUpNotes,
@@ -202,8 +203,10 @@ function VaccinationManagement() {
         VaccineID: values.vaccineId || "1",
         Dose: values.dose || "1",
         Notes: values.administrationNotes || "",
-        // Sử dụng thời gian hiện tại thay vì scheduledDate
-        VaccinatedAt: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+        // Sử dụng ngày hẹn tiêm từ form hoặc thời gian hiện tại
+        VaccinatedAt: values.scheduledDate
+          ? dayjs(values.scheduledDate).format("YYYY-MM-DD HH:mm:ss")
+          : dayjs().format("YYYY-MM-DD HH:mm:ss"),
       };
 
       console.log("🚀 Create Type:", values.createType);
@@ -776,8 +779,8 @@ function VaccinationManagement() {
     },
     {
       title: "Ngày thực hiện",
-      dataIndex: "submissionDate",
-      key: "submissionDate",
+      dataIndex: "vaccinatedAt", // Sử dụng vaccinatedAt thay vì submissionDate
+      key: "vaccinatedAt",
       width: 100,
       render: (date) => (
         <div style={{ fontSize: "12px" }}>
@@ -2072,7 +2075,8 @@ function VaccinationManagement() {
                     color: "#374151",
                   }}
                 >
-                  🎯 Loại yêu cầu tiêm chủng
+                  <span style={{ color: "#ff4d4f" }}>*</span> Loại yêu cầu tiêm
+                  chủng
                 </span>
               }
               name="createType"
@@ -2107,7 +2111,7 @@ function VaccinationManagement() {
                       "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
                   }}
                 >
-                  👤 Cho 1 học sinh
+                  Cho 1 học sinh
                 </Radio.Button>
                 <Radio.Button
                   value="class"
@@ -2126,7 +2130,7 @@ function VaccinationManagement() {
                       "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
                   }}
                 >
-                  🏫 Cho cả lớp
+                  Cho cả lớp
                 </Radio.Button>
               </Radio.Group>
             </Form.Item>
@@ -2139,7 +2143,12 @@ function VaccinationManagement() {
                 if (createType === "student") {
                   return (
                     <Form.Item
-                      label="Mã học sinh"
+                      label={
+                        <span>
+                          <span style={{ color: "#ff4d4f" }}>*</span> Mã học
+                          sinh
+                        </span>
+                      }
                       name="studentId"
                       rules={[
                         {
@@ -2154,7 +2163,11 @@ function VaccinationManagement() {
                 } else {
                   return (
                     <Form.Item
-                      label="Chọn lớp"
+                      label={
+                        <span>
+                          <span style={{ color: "#ff4d4f" }}>*</span> Chọn lớp
+                        </span>
+                      }
                       name="classId"
                       rules={[
                         { required: true, message: "Vui lòng chọn lớp!" },
@@ -2163,7 +2176,7 @@ function VaccinationManagement() {
                       <Select placeholder="Chọn lớp để tạo yêu cầu tiêm chủng">
                         {classes.map((cls) => (
                           <Option key={cls} value={cls}>
-                            🏫 Lớp {cls}
+                            Lớp {cls}
                           </Option>
                         ))}
                       </Select>
@@ -2182,7 +2195,7 @@ function VaccinationManagement() {
                     color: "#374151",
                   }}
                 >
-                  🆔 ID Vaccine
+                  <span style={{ color: "#ff4d4f" }}>*</span> ID Vaccine
                 </span>
               }
               name="vaccineId"
@@ -2210,7 +2223,7 @@ function VaccinationManagement() {
                     color: "#374151",
                   }}
                 >
-                  💊 Số liều
+                  <span style={{ color: "#ff4d4f" }}>*</span> Số liều
                 </span>
               }
               name="dose"
@@ -2229,6 +2242,7 @@ function VaccinationManagement() {
               />
             </Form.Item>
 
+            {/* Ngày hẹn tiêm chủng */}
             <Form.Item
               label={
                 <span
@@ -2238,11 +2252,47 @@ function VaccinationManagement() {
                     color: "#374151",
                   }}
                 >
-                  📝 Ghi chú tiêm chủng
+                  <span style={{ color: "#ff4d4f" }}>*</span> Ngày hẹn tiêm
+                  chủng
+                </span>
+              }
+              name="scheduledDate"
+              rules={[
+                { required: true, message: "Vui lòng chọn ngày hẹn tiêm!" },
+              ]}
+              style={{ marginBottom: "20px" }}
+            >
+              <DatePicker
+                showTime
+                format="DD/MM/YYYY HH:mm"
+                style={{
+                  width: "100%",
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  padding: "12px 16px",
+                  height: "48px",
+                }}
+                placeholder="Chọn ngày và giờ hẹn tiêm..."
+                disabledDate={(current) => {
+                  // Không cho chọn ngày trong quá khứ
+                  return current && current < dayjs().startOf("day");
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              label={
+                <span
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "600",
+                    color: "#374151",
+                  }}
+                >
+                  Ghi chú tiêm chủng
                 </span>
               }
               name="administrationNotes"
-              rules={[{ required: true, message: "Vui lòng nhập ghi chú!" }]}
               style={{ marginBottom: "24px" }}
             >
               <TextArea
@@ -2340,7 +2390,7 @@ function VaccinationManagement() {
                     color: "#374151",
                   }}
                 >
-                  ID Vaccine
+                  <span style={{ color: "#ff4d4f" }}>*</span> ID Vaccine
                 </span>
               }
               name="vaccineId"

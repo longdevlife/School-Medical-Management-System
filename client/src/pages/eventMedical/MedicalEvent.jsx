@@ -7,7 +7,6 @@ import {
   Typography,
   Row,
   Col,
-  Space,
   message,
   Alert,
   Modal,
@@ -27,6 +26,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/vi";
 import medicalEventApi from "../../api/medicalEventApi";
 import studentApi from "../../api/studentApi";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 
 // Configure dayjs
 dayjs.extend(relativeTime);
@@ -101,9 +101,9 @@ const MedicalEvent = () => {
         console.log(
           "👤 User role:",
           payload.role ||
-            payload[
-              "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-            ]
+          payload[
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+          ]
         );
         console.log(
           "👤 Username:",
@@ -299,99 +299,13 @@ const MedicalEvent = () => {
       console.error("❌ Lỗi khi lấy danh sách học sinh:", error);
       message.error("Không thể tải danh sách học sinh");
 
-      // Fallback to mock data for development
-      if (process.env.NODE_ENV === "development") {
-        console.log("🔄 Sử dụng dữ liệu mẫu cho development");
-        setStudents(mockStudents);
-      }
     } finally {
       setStudentsLoading(false);
     }
   };
 
-  // Mock data cho học sinh của phụ huynh
-  const mockStudents = [
-    {
-      StudentID: "ST001",
-      StudentName: "Lê Văn Bình",
-      Birthday: "2016-05-15",
-      Class: "2A",
-      Avatar: null,
-    },
-    {
-      StudentID: "ST002",
-      StudentName: "Lê Thị Cẩm Ly",
-      Birthday: "2014-08-22",
-      Class: "4B",
-      Avatar: null,
-    },
-  ];
-
-  // Mock data cho medical events - match với backend API format
-  const mockMedicalEvents = [
-    {
-      MedicalEventID: "ME0001",
-      EventDateTime: "2024-12-06T09:30:00",
-      Description: "Con bị đau đầu trong giờ học Toán",
-      ActionTaken: "Y tá đã cho con nghỉ ngơi và uống thuốc giảm đau",
-      Notes: "Cần theo dõi thêm nếu tình trạng tái diễn",
-      EventTypeID: "Đau đầu",
-      NurseID: "U0004",
-      StudentID: "ST0003",
-      StudentName: "Tran Van C",
-      StudentClass: "2A",
-      Images: [], // Không có ảnh
-    },
-    {
-      MedicalEventID: "ME0002",
-      EventDateTime: "2024-12-05T14:15:00",
-      Description: "Té ngã khi đá bóng, trầy đầu gối phải.",
-      ActionTaken: "Rửa vết thương, băng bó, theo dõi.",
-      Notes: "Vết thương không nghiêm trọng",
-      EventTypeID: "Tai nạn",
-      NurseID: "U0004",
-      StudentID: "ST0003",
-      StudentName: "Tran Van C",
-      StudentClass: "2A",
-      Images: [
-        {
-          id: 15,
-          url: "https://res.cloudinary.com/dmk0iskuk/image/upload/v1752301985/img/d5zrdcjig5zp3oiqjhw7.jpg",
-          fileName: "vet_thuong.jpg",
-          fileType: "Image",
-          uploadedAt: "2024-12-05T14:20:00",
-        },
-      ],
-    },
-    {
-      MedicalEventID: "ME0006",
-      EventDateTime: "2025-07-12T13:32:24",
-      Description: "không có",
-      ActionTaken: "thuốc sốt",
-      Notes: "không có",
-      EventTypeID: "đau",
-      NurseID: "U0004",
-      StudentID: "ST0003",
-      StudentName: "Tran Van C",
-      StudentClass: "2A",
-      Images: [
-        {
-          id: 17,
-          url: "https://res.cloudinary.com/dmk0iskuk/image/upload/v1752301985/img/d5zrdcjig5zp3oiqjhw7.jpg",
-          fileName: "cat.jpg",
-          fileType: "Image",
-          uploadedAt: "2025-07-12T06:32:26",
-        },
-        {
-          id: 18,
-          url: "https://res.cloudinary.com/dmk0iskuk/image/upload/v1752301987/img/jdnipjd0vbiegrxlthxf.jpg",
-          fileName: "image_2.jpg",
-          fileType: "Image",
-          uploadedAt: "2025-07-12T06:32:28",
-        },
-      ],
-    },
-  ];
+  // Auto refresh mỗi 30 giây
+  useAutoRefresh(fetchMedicalEvents, 30000);
 
   useEffect(() => {
     const initializeData = async () => {
@@ -402,10 +316,6 @@ const MedicalEvent = () => {
         localStorage.getItem("refreshToken")
       );
 
-      // Luôn hiển thị mock data trước để có giao diện
-      console.log("🔄 Loading mock data for display...");
-      setStudents(mockStudents);
-      setMedicalEvents(mockMedicalEvents);
 
       // Sau đó thử tải dữ liệu thực từ API
       try {
@@ -526,8 +436,7 @@ const MedicalEvent = () => {
     if (selectedStudentId) {
       console.log(`🔍 [FILTER DETAIL] Checking event ${event.MedicalEventID}:`);
       console.log(
-        `  - Event StudentID: "${
-          event.StudentID
+        `  - Event StudentID: "${event.StudentID
         }" (type: ${typeof event.StudentID})`
       );
       console.log(
@@ -542,8 +451,7 @@ const MedicalEvent = () => {
         `  - Direct comparison: ${event.StudentID === selectedStudentId}`
       );
       console.log(
-        `  - String comparison result: ${
-          String(event.StudentID) === String(selectedStudentId)
+        `  - String comparison result: ${String(event.StudentID) === String(selectedStudentId)
         }`
       );
     }
@@ -602,7 +510,7 @@ const MedicalEvent = () => {
       width: 200,
       render: (_, record) => (
         <div>
-          <Text strong style={{ fontSize: "13px", color: "#1890ff" }}>
+          <Text strong style={{ fontSize: "14px" }}>
             {record.StudentName}
           </Text>
           <br />
@@ -617,8 +525,12 @@ const MedicalEvent = () => {
       dataIndex: "EventTypeID",
       key: "EventTypeID",
       width: 120,
-      render: (eventType) => (
-        <Tag color={getEventTypeColor(eventType)}>{eventType}</Tag>
+      render: (_, record) => (
+        <div>
+          <Text strong style={{ fontSize: "13px", color: "#722ed1" }}>
+            {record.EventTypeID}
+          </Text>
+        </div>
       ),
     },
     {
@@ -635,34 +547,7 @@ const MedicalEvent = () => {
         </div>
       ),
     },
-    {
-      title: "Mô tả",
-      dataIndex: "Description",
-      key: "Description",
-      ellipsis: true,
-      render: (text, record) => (
-        <div>
-          <Text style={{ fontSize: "12px" }}>{text}</Text>
-          {record.Images &&
-            Array.isArray(record.Images) &&
-            record.Images.length > 0 && (
-              <div style={{ marginTop: "4px" }}>
-                <Tag
-                  color="blue"
-                  style={{
-                    fontSize: "10px",
-                    padding: "0 4px",
-                    lineHeight: "16px",
-                  }}
-                  icon={<EyeOutlined style={{ fontSize: "10px" }} />}
-                >
-                  {record.Images.length} ảnh
-                </Tag>
-              </div>
-            )}
-        </div>
-      ),
-    },
+   
     {
       title: "Ảnh sự kiện",
       key: "images",
@@ -1544,9 +1429,8 @@ const MedicalEvent = () => {
                                   image.imageUrl ||
                                   `/api/files/medical-events/${image.fileName}`
                                 }
-                                alt={`Hình ảnh sự kiện ${
-                                  selectedEvent.MedicalEventID
-                                } - ${index + 1}`}
+                                alt={`Hình ảnh sự kiện ${selectedEvent.MedicalEventID
+                                  } - ${index + 1}`}
                                 style={{
                                   width: "100%",
                                   height: "120px",
@@ -1557,10 +1441,9 @@ const MedicalEvent = () => {
                                 onClick={() =>
                                   openImageModal(
                                     image.url ||
-                                      image.imageUrl ||
-                                      `/api/files/medical-events/${image.fileName}`,
-                                    `Ảnh sự kiện ${
-                                      selectedEvent.MedicalEventID
+                                    image.imageUrl ||
+                                    `/api/files/medical-events/${image.fileName}`,
+                                    `Ảnh sự kiện ${selectedEvent.MedicalEventID
                                     } - ${index + 1}`,
                                     imageUrls,
                                     index

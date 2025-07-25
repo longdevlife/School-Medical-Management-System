@@ -31,6 +31,7 @@ import healthCheckupApi from "../../api/healthCheckApi";
 import studentApi from "../../api/studentApi";
 import appointApi from "../../api/appointApi";
 import dayjs from "dayjs";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -101,6 +102,10 @@ const HealthResult = () => {
       setAppointments([]);
     }
   }, [selectedStudentId]);
+
+  //=====================AUTO REFRESH=======================
+  useAutoRefresh(fetchAppointments, 30000);
+
 
   const fetchHealthCheckups = useCallback(async () => {
     if (!selectedStudentId) {
@@ -341,7 +346,10 @@ const HealthResult = () => {
       setLoading(false);
     }
   }, [selectedStudentId]); // Bỏ fetchAppointments khỏi dependencies
+ //=====================AUTO REFRESH========================
+  useAutoRefresh(fetchHealthCheckups, 30000);
 
+  
   // Component mount
   useEffect(() => {
     console.log("🚀 HealthResult component mounting...");

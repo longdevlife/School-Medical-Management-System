@@ -20,18 +20,13 @@ import {
 } from 'antd';
 import {
     EyeOutlined,
-    ReloadOutlined,
-    CheckCircleOutlined,
     ClockCircleOutlined,
-    ExclamationCircleOutlined,
-    CloseCircleOutlined,
-    MedicineBoxOutlined,
-    SafetyCertificateOutlined,
     CheckOutlined,
     CloseOutlined
 } from '@ant-design/icons';
 import vaccineApi from '../../api/vaccineApi';
 import studentApi from '../../api/studentApi';
+import useAutoRefresh  from '../../hooks/useAutoRefresh';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -191,6 +186,9 @@ const VaccineRequest = () => {
             setLoading(false);
         }
     };
+     // ==================== AUTOREFRESH ====================
+     useAutoRefresh(fetchVaccineData, 30000);
+
 
     // ==================== HANDLER FUNCTIONS ====================
 
@@ -200,15 +198,7 @@ const VaccineRequest = () => {
         setIsDetailModalVisible(true);
     };
 
-    const handleRefresh = () => {
-        console.log('🔄 Refreshing data...');
-        if (selectedStudentId) {
-            fetchVaccineData();
-        } else {
-            fetchStudents();
-        }
-    };
-
+   
     const handleConfirmVaccination = async (record) => {
         try {
             console.log('✅ Confirming vaccination:', record.RecordID);
@@ -376,7 +366,7 @@ const VaccineRequest = () => {
             width: 200,
             render: (_, record) => (
                 <div>
-                    <div><Text className="font-medium text-xs text-blue-500">{record.StudentName || 'Chưa có tên'}</Text></div>
+                    <div><Text strong style={{fontsize:"14px"}}>{record.StudentName || 'Chưa có tên'}</Text></div>
                     <div>
                         <Text type="secondary" style={{ fontSize: '12px' }}>
                             Lớp: {record.Class || 'Chưa phân lớp'}
@@ -406,7 +396,7 @@ const VaccineRequest = () => {
             key: 'VaccinatedAt',
             width: 140,
             render: (text) => (
-                <Text className="text-xs font-medium" style={{ color: "black" }}>
+                <Text className="text-xs font-medium" style={{ color: 'black' }}>
                     {formatDate(text)}
                 </Text>
             ),

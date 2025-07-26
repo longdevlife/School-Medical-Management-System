@@ -26,7 +26,8 @@ function AdminDashboard() {
     totalUsers: 0,
     activeAccounts: 0,
     adminCount: 0,
-    nurseManagerCount: 0,
+    nurseCount: 0,
+    managerCount: 0,
     parentCount: 0,
   });
 
@@ -39,16 +40,16 @@ function AdminDashboard() {
       const totalUsers = data.length;
       const activeAccounts = data.filter((acc) => acc.isActive).length;
       const adminCount = data.filter((acc) => acc.roleName === 'Admin').length;
-      const nurseManagerCount = data.filter(
-        (acc) => acc.roleName === 'Nurse' || acc.roleName === 'Manager'
-      ).length;
+      const nurseCount = data.filter((acc) => acc.roleName === 'Nurse').length;
+      const managerCount = data.filter((acc) => acc.roleName === 'Manager').length;
       const parentCount = data.filter((acc) => acc.roleName === 'Parent').length;
 
       setStats({
         totalUsers,
         activeAccounts,
         adminCount,
-        nurseManagerCount,
+        nurseCount,
+        managerCount,
         parentCount,
       });
     } catch (error) {
@@ -80,15 +81,19 @@ function AdminDashboard() {
   // Chỉ giữ biểu đồ cột ngang (Bar chart)
   const barData = [
     {
-      role: 'Admin',
+      role: 'ADMIN',
       count: stats.adminCount,
     },
     {
-      role: 'Nurse + Manager',
-      count: stats.nurseManagerCount,
+      role: 'Y TÁ',
+      count: stats.nurseCount,
     },
     {
-      role: 'Parent',
+      role: 'QUẢN LÝ',
+      count: stats.managerCount,
+    },
+    {
+      role: 'PHỤ HUYNH',
       count: stats.parentCount,
     },
   ];
@@ -116,7 +121,10 @@ function AdminDashboard() {
     },
     yAxis: {
       title: { text: 'Vai trò', style: { fontWeight: 600 } },
-      label: { style: { fontWeight: 600 } },
+      label: {
+        style: { fontWeight: 700, fontSize: 16 },
+        formatter: (text) => text.toUpperCase(),
+      },
     },
     tooltip: {
       formatter: (datum) => ({
@@ -153,7 +161,7 @@ function AdminDashboard() {
             <span className="absolute -bottom-3 -right-3 bg-white rounded-full px-3 py-1 text-xs text-blue-700 font-bold shadow border border-blue-100 select-none tracking-wide" style={{letterSpacing: 1}}>ADMIN</span>
           </div>
           <div className="flex flex-col gap-1">
-            <Title level={2} className="text-blue-900 mb-0 font-black tracking-widest drop-shadow-xl leading-tight" style={{letterSpacing: 2}}>Admin Dashboard</Title>
+            <Title level={2} className="text-blue-900 mb-0 font-black tracking-widest drop-shadow-xl leading-tight" style={{letterSpacing: 2}}>Tổng Quan Người Dùng </Title>
             <div className="flex items-center gap-2 mt-1">
               <span className="w-2 h-2 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 animate-pulse shadow"></span>
               <Text type="secondary" className="text-lg font-medium text-gray-600 italic tracking-wide">Hệ thống quản lý toàn diện</Text>
@@ -162,8 +170,9 @@ function AdminDashboard() {
         </div>
 
         {/* Main Stats Cards */}
+
         <Row gutter={[32, 32]} justify="center" style={{ marginBottom: '40px' }}>
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} md={6}>
             <Card
               style={{
                 ...cardStyle,
@@ -180,7 +189,7 @@ function AdminDashboard() {
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} md={6}>
             <Card
               style={{
                 ...cardStyle,
@@ -197,11 +206,7 @@ function AdminDashboard() {
               />
             </Card>
           </Col>
-        </Row>
-
-        {/* Role Distribution Cards */}
-        <Row gutter={[24, 24]} justify="center" style={{ marginBottom: '40px' }}>
-          <Col xs={24} sm={12} md={8}>
+          <Col xs={24} sm={12} md={6}>
             <Card
               style={{
                 ...cardStyle,
@@ -211,31 +216,14 @@ function AdminDashboard() {
               className="hover-card"
             >
               <Statistic
-                title={<span style={{ color: '#1e40af', fontSize: '16px', fontWeight: 600 }}>👑 Admin</span>}
-                value={stats.adminCount}
-                prefix={<CrownOutlined style={{ color: '#dc2626', fontSize: '24px' }} />}
-                valueStyle={{ color: '#1e40af', fontWeight: 700, fontSize: '28px' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={8}>
-            <Card
-              style={{
-                ...cardStyle,
-                background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
-                border: '2px solid #3b82f6'
-              }}
-              className="hover-card"
-            >
-              <Statistic
-                title={<span style={{ color: '#1e40af', fontSize: '16px', fontWeight: 600 }}>🏥 Nurse + Manager</span>}
+                title={<span style={{ color: '#1e40af', fontSize: '16px', fontWeight: 600 }}>🏥 Nhân Viên </span>}
                 value={stats.nurseManagerCount}
                 prefix={<MedicineBoxOutlined style={{ color: '#10b981', fontSize: '24px' }} />}
                 valueStyle={{ color: '#1e40af', fontWeight: 700, fontSize: '28px' }}
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} md={8}>
+          <Col xs={24} sm={12} md={6}>
             <Card
               style={{
                 ...cardStyle,
@@ -245,7 +233,7 @@ function AdminDashboard() {
               className="hover-card"
             >
               <Statistic
-                title={<span style={{ color: '#1e40af', fontSize: '16px', fontWeight: 600 }}>👨‍👩‍👧‍👦 Parent</span>}
+                title={<span style={{ color: '#1e40af', fontSize: '16px', fontWeight: 600 }}>👨‍👩‍👧‍👦 Phụ Huynh</span>}
                 value={stats.parentCount}
                 prefix={<UserSwitchOutlined style={{ color: '#7c3aed', fontSize: '24px' }} />}
                 valueStyle={{ color: '#1e40af', fontWeight: 700, fontSize: '28px' }}

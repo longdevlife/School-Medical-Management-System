@@ -105,7 +105,30 @@ const NewsPage = () => {
         // const activeNews = transformedNews.filter(news => news.status === 1 || news.status === true);
         console.log('📋 Setting news list to all items:', transformedNews);
         
-        setNewsList(transformedNews);
+        // Sắp xếp tin: ưu tiên ngày (không tính giờ), nếu ngày giống nhau thì so sánh thời gian chi tiết
+        const sortedNews = [...transformedNews].sort((a, b) => {
+          // Lấy giá trị gốc dateTime hoặc date
+          const getRawDate = (item) => {
+            // Ưu tiên dateTime, DateTime, date, Date, createdAt, created_at
+            return (
+              item.dateTime || item.DateTime || item.date || item.Date || item.createdAt || item.created_at || ''
+            );
+          };
+          const rawA = getRawDate(response.data.find(x => x.newsID == a.id || x.NewsID == a.id || x.id == a.id || x.ID == a.id));
+          const rawB = getRawDate(response.data.find(x => x.newsID == b.id || x.NewsID == b.id || x.id == b.id || x.ID == b.id));
+          // Lấy phần ngày (yyyy-mm-dd)
+          const dayA = rawA ? new Date(rawA).toISOString().slice(0, 10) : '';
+          const dayB = rawB ? new Date(rawB).toISOString().slice(0, 10) : '';
+          if (dayA !== dayB) {
+            // So sánh ngày trước
+            return dayB.localeCompare(dayA);
+          }
+          // Nếu ngày giống nhau, so sánh thời gian chi tiết
+          const timeA = rawA ? new Date(rawA).getTime() : 0;
+          const timeB = rawB ? new Date(rawB).getTime() : 0;
+          return timeB - timeA;
+        });
+        setNewsList(sortedNews);
         
       } catch (error) {
         console.error('❌ Error fetching news:', error);
@@ -224,13 +247,43 @@ const NewsPage = () => {
     .sticky-header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(59,130,246,0.3), transparent); }
   `;
 
-  const pageSize = 5; // Tăng số lượng tin tức hiển thị mỗi trang
-  const [currentPageSize, setCurrentPageSize] = useState(10); // Tăng từ 5 lên 10
-  const pagedNews = newsList.slice((currentPage-1)*currentPageSize, currentPage*currentPageSize);
-  
-  console.log('📄 Current page:', currentPage);
-  console.log('📋 Paged news for display:', pagedNews);
-  console.log('🔢 Total news items:', newsList.length);
+
+  // Search bar state
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const searchInputRef = React.useRef(null);
+
+  // Focus input when searchOpen
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchOpen]);
+
+
+  // Khi searchValue thay đổi, tự động về trang đầu tiên
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchValue]);
+
+  // Filter news by search
+  const filteredNews = newsList.filter(item =>
+    item.title.toLowerCase().includes(searchValue.trim().toLowerCase())
+  );
+  const [currentPageSize, setCurrentPageSize] = useState(10);
+  const pageSize = 5;
+  const pagedNews = filteredNews.slice((currentPage-1)*currentPageSize, currentPage*currentPageSize);
+
+  // Close search on Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setSearchOpen(false);
+    };
+    if (searchOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [searchOpen]);
 
   // Function to handle clicking on a news item
   const handleNewsClick = (newsItem) => {
@@ -280,8 +333,54 @@ const NewsPage = () => {
                       Cập nhật các tin tức, sự kiện mới nhất về y tế học đường, sức khỏe học sinh, các chương trình, hoạt động nổi bật và thông báo quan trọng từ hệ thống.
                     </Paragraph>
                   </div>
+                  {/* Search bar - only one, above news list */}
+                  <div className="flex justify-end w-full mb-4">
+                    <div className="relative">
+                      {!searchOpen ? (
+                        <button
+                          className="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-md border border-blue-200 hover:bg-blue-50 transition-all focus:outline-none"
+                          onClick={() => setSearchOpen(true)}
+                          aria-label="Tìm kiếm tin tức"
+                        >
+                          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          </svg>
+                        </button>
+                      ) : (
+                        <div className="flex items-center bg-white rounded-full shadow-md border border-blue-200 px-4 py-2 w-64 transition-all">
+                          <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          </svg>
+                          <input
+                            ref={searchInputRef}
+                            type="text"
+                            className="flex-1 outline-none bg-transparent text-base text-blue-700 placeholder-gray-400"
+                            placeholder="Tìm kiếm tin tức..."
+                            value={searchValue}
+                            onChange={e => setSearchValue(e.target.value)}
+                            onBlur={() => setSearchOpen(false)}
+                          />
+                          {searchValue && (
+                            <button
+                              className="ml-2 text-gray-400 hover:text-blue-600 focus:outline-none"
+                              onClick={() => setSearchValue("")}
+                              tabIndex={-1}
+                              aria-label="Xóa tìm kiếm"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                   {/* News List - Pagination */}
-                  <div className="space-y-5 mt-8 animate-fadeInUp text-left w-full" style={{ animationDelay: "0.6s" }}>
+                  <div className="space-y-5 mt-4 animate-fadeInUp text-left w-full" style={{ animationDelay: "0.6s" }}>
                     {loading ? (
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>

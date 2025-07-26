@@ -1022,7 +1022,7 @@ function HealthCheckManagement() {
   };
 
   // Setup auto refresh - tự động refresh mỗi 30 giây
-  useAutoRefresh(refreshAllData, 30000);
+  useAutoRefresh(refreshAllData, 10000);
 
   // Fetch data khi component mount
   useEffect(() => {
@@ -1135,39 +1135,37 @@ function HealthCheckManagement() {
                   Tổng hồ sơ
                 </Text>
               </div>
-               <div
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.15)",
+                  borderRadius: "16px",
+                  padding: "12px 16px",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  backdropFilter: "blur(10px)",
+                  textAlign: "center",
+                  minWidth: "100px",
+                }}
+              >
+                <div style={{ fontSize: "18px", marginBottom: "4px" }}>⏱️</div>
+                <div
                   style={{
-                    background: "rgba(255,255,255,0.15)",
-                    borderRadius: "16px",
-                    padding: "12px 16px",
-                    border: "1px solid rgba(255,255,255,0.2)",
-                    backdropFilter: "blur(10px)",
-                    textAlign: "center",
-                    minWidth: "100px",
+                    fontSize: "14px",
+                    color: "rgba(255,255,255,0.9)",
+                    fontWeight: "500",
                   }}
                 >
-                  <div style={{ fontSize: "18px", marginBottom: "4px" }}>
-                    ⏱️
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "14px",
-                      color: "rgba(255,255,255,0.9)",
-                      fontWeight: "500",
-                    }}
-                  >
-                    {new Date().toLocaleDateString("vi-VN")}
-                  </div>
-                  <Text
-                    style={{
-                      fontSize: "12px",
-                      color: "rgba(255,255,255,0.8)",
-                      fontWeight: "400",
-                    }}
-                  >
-                    Hôm nay
-                  </Text>
+                  {new Date().toLocaleDateString("vi-VN")}
                 </div>
+                <Text
+                  style={{
+                    fontSize: "12px",
+                    color: "rgba(255,255,255,0.8)",
+                    fontWeight: "400",
+                  }}
+                >
+                  Hôm nay
+                </Text>
+              </div>
             </div>
           </Col>
         </Row>

@@ -311,11 +311,7 @@ function AppHeader({ collapsed, setCollapsed }) {
 
   // User dropdown menu items
   const userMenuItems = [
-    {
-      key: "dashboard",
-      icon: <DashboardOutlined />,
-      label: "Dashboard",
-    },
+   
     {
       key: "settings",
       icon: <SettingOutlined />,

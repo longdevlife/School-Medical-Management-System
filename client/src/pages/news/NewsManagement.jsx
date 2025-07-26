@@ -286,6 +286,7 @@ function NewsManagement() {
         })
       );
       message.success("Xóa bài viết thành công!");
+      setTimeout(() => window.location.reload(), 700);
     } catch (error) {
       message.error("Xóa bài viết thất bại!");
     }
@@ -383,7 +384,7 @@ function NewsManagement() {
       message.success("Tạo bài viết thành công!");
       setModalVisible(false);
       form.resetFields();
-      // Không reload lại danh sách từ backend để giữ đúng dữ liệu vừa nhập
+      setTimeout(() => window.location.reload(), 700);
     } catch (error) {
       // Hiển thị lỗi chi tiết từ backend nếu có
       if (error.response?.data?.message) {
@@ -533,6 +534,7 @@ function NewsManagement() {
       message.success("Cập nhật bài viết thành công!");
       setModalVisible(false);
       form.resetFields();
+      setTimeout(() => window.location.reload(), 700);
     } catch (error) {
       message.error("Cập nhật bài viết thất bại!");
     }
@@ -548,8 +550,6 @@ function NewsManagement() {
         return "Đã lưu";
       case "draft":
         return "Đã xóa";
-      case "archived":
-        return "Đã lưu trữ";
       default:
         return status;
     }
@@ -563,24 +563,27 @@ function NewsManagement() {
         return "green";
       case "draft":
         return "orange";
-      case "archived":
-        return "red";
       default:
         return "default";
     }
   };
+  // Lọc trạng thái: nếu chọn 'Đã lưu' (published) thì chỉ hiện status===true, các trạng thái khác lọc như cũ
+  // Chỉ tìm kiếm theo title
   const filteredNews = news.filter((newsItem) => {
     const matchesSearch =
-      newsItem.title.toLowerCase().includes(searchText.toLowerCase()) ||
-      newsItem.content.toLowerCase().includes(searchText.toLowerCase()) ||
-      newsItem.tags.some((tag) =>
-        tag.toLowerCase().includes(searchText.toLowerCase())
-      );
+      newsItem.title.toLowerCase().includes(searchText.toLowerCase());
 
     const matchesCategory =
       categoryFilter === "all" || newsItem.category === categoryFilter;
-    const matchesStatus =
-      statusFilter === "all" || newsItem.status === statusFilter;
+
+    let matchesStatus = true;
+    if (statusFilter === "published") {
+      matchesStatus = newsItem.status === true;
+    } else if (statusFilter === "draft") {
+      matchesStatus = newsItem.status === false;
+    } else if (statusFilter !== "all") {
+      matchesStatus = newsItem.status === statusFilter;
+    }
 
     return matchesSearch && matchesCategory && matchesStatus;
   });
@@ -683,7 +686,7 @@ function NewsManagement() {
     "Sơ cứu",
     "Tâm lý",
   ];
-  const statuses = ["published", "draft", "archived"];
+  const statuses = ["published", "draft"];
 
   return (
     <div className="p-6">
@@ -709,21 +712,7 @@ function NewsManagement() {
               onChange={(e) => setSearchText(e.target.value)}
             />
           </Col>
-          <Col xs={24} sm={6} md={4}>
-            <Select
-              placeholder="Danh mục"
-              style={{ width: "100%" }}
-              value={categoryFilter}
-              onChange={setCategoryFilter}
-            >
-              <Option value="all">Tất cả danh mục</Option>
-              {categories.map((category) => (
-                <Option key={category} value={category}>
-                  {category}
-                </Option>
-              ))}
-            </Select>
-          </Col>
+         
           <Col xs={24} sm={6} md={4}>
             <Select
               placeholder="Trạng thái"

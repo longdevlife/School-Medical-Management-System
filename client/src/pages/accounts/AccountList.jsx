@@ -973,12 +973,6 @@ function AccountList() {
       key: "userName",
     },
     {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-      render: (text) => text || <span style={{color: '#aaa'}}>Chưa có email</span>
-    },
-    {
       title: "Mật khẩu",
       dataIndex: "password",
       key: "password",
@@ -988,6 +982,20 @@ function AccountList() {
       title: "Vai trò",
       dataIndex: "roleName",
       key: "roleName",
+      render: (roleName) => {
+        switch (roleName) {
+          case "Admin":
+            return "Quản Trị Viên";
+          case "Parent":
+            return "Phụ Huynh";
+          case "Nurse":
+            return "Y Tá";
+          case "Manager":
+            return "Quản Lý";
+          default:
+            return roleName;
+        }
+      },
     },
     {
       title: "Trạng thái",
@@ -1095,7 +1103,7 @@ function AccountList() {
               {/* Import Users File */}
               <label className="inline-flex items-center cursor-pointer bg-blue-50 border border-blue-200 rounded-2xl px-5 py-2 hover:bg-blue-100 transition gap-2 shadow-md">
                 <span className="text-blue-600 font-semibold flex items-center gap-1">
-                  <UserOutlined />Import Users
+                  <UserOutlined />Thêm nhanh người dùng
                 </span>
                 <input
                   type="file"
@@ -1114,7 +1122,7 @@ function AccountList() {
               {/* Import Students File */}
               <label className="inline-flex items-center cursor-pointer bg-green-50 border border-green-200 rounded-2xl px-5 py-2 hover:bg-green-100 transition gap-2 shadow-md">
                 <span className="text-green-600 font-semibold flex items-center gap-1">
-                  <UserAddOutlined />Import Students
+                  <UserAddOutlined />Thêm nhanh học sinh
                 </span>
                 <input
                   type="file"
@@ -1212,9 +1220,9 @@ function AccountList() {
             >
               <Select placeholder="Chọn vai trò" className="rounded-2xl text-base">
           
-                <Option value="Manager">Manager</Option>
-                <Option value="Nurse">Nurse</Option>
-                <Option value="Parent">Parent</Option>
+                <Option value="Manager">Quản Lý</Option>
+                <Option value="Nurse">Y Tá</Option>
+                <Option value="Parent">Phụ Huynh</Option>
               </Select>
             </Form.Item>
           </Form>
@@ -1257,7 +1265,7 @@ function AccountList() {
                   label={<span className="font-bold">Tên đăng nhập</span>}
                   rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập" }]}
                 >
-                  <Input disabled className="rounded-2xl text-base" placeholder="Nhập tên đăng nhập" />
+                  <Input className="rounded-2xl text-base" placeholder="Nhập tên đăng nhập" />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -1307,10 +1315,10 @@ function AccountList() {
               label={<span className="font-bold">Vai trò</span>}
             >
               <Select disabled className="rounded-2xl text-base">
-                <Option value="Admin">Admin</Option>
-                <Option value="Manager">Manager</Option>
-                <Option value="Nurse">Nurse</Option>
-                <Option value="Parent">Parent</Option>
+                <Option value="Admin">Quản Trị Viên</Option>
+                <Option value="Manager">Quản Lý</Option>
+                <Option value="Nurse">Y Tá</Option>
+                <Option value="Parent">Phụ Huynh</Option>
               </Select>
             </Form.Item>
           </Form>
@@ -1484,13 +1492,23 @@ function AccountList() {
               <Descriptions bordered column={1} size="middle" className="rounded-3xl bg-white/95 text-base mb-6">
                 <Descriptions.Item label={<span className="font-bold">Mã người dùng</span>}>{selectedAccount.userID}</Descriptions.Item>
                 <Descriptions.Item label={<span className="font-bold">Tên đăng nhập</span>}>{selectedAccount.userName}</Descriptions.Item>
-                <Descriptions.Item label={<span className="font-bold">Email</span>}>
-                  {selectedAccount.email || <span style={{color: '#aaa'}}>Chưa có email</span>}
-                </Descriptions.Item>
-                <Descriptions.Item label={<span className="font-bold">Mật khẩu</span>}>
-                  {selectedAccount.password == null ? <span style={{color: '#aaa'}}>********</span> : selectedAccount.password}
-                </Descriptions.Item>
-                <Descriptions.Item label={<span className="font-bold">Vai trò</span>}>{selectedAccount.roleName}</Descriptions.Item>
+                <Descriptions.Item label={<span className="font-bold">Mật khẩu</span>}>********{selectedAccount.password}</Descriptions.Item>
+<Descriptions.Item label={<span className="font-bold">Vai trò</span>}>
+  {(() => {
+    switch (selectedAccount.roleName) {
+      case "Admin":
+        return "Quản Trị Viên";
+      case "Parent":
+        return "Phụ Huynh";
+      case "Nurse":
+        return "Y Tá";
+      case "Manager":
+        return "Quản Lý";
+      default:
+        return selectedAccount.roleName;
+    }
+  })()}
+</Descriptions.Item>
                 <Descriptions.Item label={<span className="font-bold">Trạng thái</span>}>{selectedAccount.isActive ? <Tag color="green">Kích hoạt</Tag> : <Tag color="red">Khoá</Tag>}</Descriptions.Item>
               </Descriptions>
 
@@ -1498,7 +1516,7 @@ function AccountList() {
               {(selectedAccount.roleName === "Parent" || selectedAccount.roleName === "Admin") && (
                 <div>
                   <Title level={4} className="text-blue-700 mb-4">
-                    {selectedAccount.roleName === "Admin" ? "Thông tin học sinh (Admin View)" : "Thông tin học sinh"}
+                    {selectedAccount.roleName === "Admin" ? "Thông tin học sinh " : "Thông tin học sinh"}
                   </Title>
                   {loadingStudentInfo ? (
                     <div className="text-center py-4">
@@ -1714,7 +1732,7 @@ function AccountList() {
                             </p>
                             <ul className="text-sm text-green-600 space-y-1">
                               <li>• Nhấn nút <strong>"Tạo hồ sơ học sinh"</strong> ở cột thao tác</li>
-                              <li>• Hoặc sử dụng <strong>"Import Students"</strong> để import từ file Excel</li>
+                              <li>• Hoặc sử dụng <strong>"Thêm Nhanh Học Sinh"</strong> để thêm nhanh từ file Excel</li>
                               <li>• Học sinh được tạo sẽ có ParentID = "{selectedAccount.userID}"</li>
                               <li>• Dữ liệu sẽ được lưu vào database và hiển thị ngay lập tức</li>
                             </ul>
@@ -1864,9 +1882,9 @@ function AccountList() {
                           type="file"
                           accept="image/*"
                           style={{ display: "none" }}
-                          onChange={(e) => {
-                              const file = e.target.files[0];
-                              if (file) {
+                                                   onChange={(e) => {
+                            const file = e.target.files[0];
+                                                       if (file) {
                               handleAvatarUpload(file);
                             }
                           }}
@@ -1913,3 +1931,4 @@ function AccountList() {
 }
 
 export default AccountList;
+   

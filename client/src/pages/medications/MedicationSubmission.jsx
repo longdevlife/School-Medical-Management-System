@@ -926,7 +926,7 @@ function MedicationSubmission() {
   ];
 
   // Setup auto refresh - tự động refresh mỗi 30 giây
-  useAutoRefresh(fetchSubmissions, 30000);
+  useAutoRefresh(fetchSubmissions, 10000);
 
   useEffect(() => {
     fetchSubmissions();

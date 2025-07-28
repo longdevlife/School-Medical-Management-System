@@ -87,21 +87,79 @@ function NurseDashboardNew() {
     fetchDashboardData();
   }, []);
 
-  // Calculate statistics từ real data với fallback
-  const todayVaccinations = Array.isArray(vaccineData) ? vaccineData.length : 0;
-  const injectedVaccines = Array.isArray(vaccineData)
-    ? vaccineData.filter(
-        (v) => v?.status === "injected" || v?.status === "Đã tiêm"
-      ).length
+  // ✅ Calculate statistics từ real data - tất cả theo tuần này để nhất quán
+  const getWeekRange = () => {
+    const today = new Date();
+    const currentDay = today.getDay(); // 0 = CN, 1 = T2, ...
+
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - currentDay);
+    weekStart.setHours(0, 0, 0, 0);
+
+    const weekEnd = new Date(today);
+    weekEnd.setDate(today.getDate() - currentDay + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    return { weekStart, weekEnd };
+  };
+
+  const { weekStart, weekEnd } = getWeekRange();
+
+  // Vaccine tuần này
+  const weeklyVaccinations = Array.isArray(vaccineData)
+    ? vaccineData.filter((v) => {
+        const vaccineDate = new Date(
+          v?.createdAt || v?.dateCreated || v?.injectionDate
+        );
+        return (
+          !isNaN(vaccineDate.getTime()) &&
+          vaccineDate >= weekStart &&
+          vaccineDate <= weekEnd
+        );
+      }).length
     : 0;
 
-  const healthCheckups = Array.isArray(healthCheckData)
-    ? healthCheckData.length
+  const injectedVaccines = Array.isArray(vaccineData)
+    ? vaccineData.filter((v) => {
+        const vaccineDate = new Date(
+          v?.createdAt || v?.dateCreated || v?.injectionDate
+        );
+        const isThisWeek =
+          !isNaN(vaccineDate.getTime()) &&
+          vaccineDate >= weekStart &&
+          vaccineDate <= weekEnd;
+        const isInjected = v?.status === "injected" || v?.status === "Đã tiêm";
+        return isThisWeek && isInjected;
+      }).length
     : 0;
+
+  // Health check tuần này
+  const weeklyHealthChecks = Array.isArray(healthCheckData)
+    ? healthCheckData.filter((h) => {
+        const checkDate = new Date(
+          h?.createdAt || h?.dateCreated || h?.checkupDate
+        );
+        return (
+          !isNaN(checkDate.getTime()) &&
+          checkDate >= weekStart &&
+          checkDate <= weekEnd
+        );
+      }).length
+    : 0;
+
   const completedHealthChecks = Array.isArray(healthCheckData)
-    ? healthCheckData.filter(
-        (h) => h?.status === "completed" || h?.status === "Hoàn thành"
-      ).length
+    ? healthCheckData.filter((h) => {
+        const checkDate = new Date(
+          h?.createdAt || h?.dateCreated || h?.checkupDate
+        );
+        const isThisWeek =
+          !isNaN(checkDate.getTime()) &&
+          checkDate >= weekStart &&
+          checkDate <= weekEnd;
+        const isCompleted =
+          h?.status === "completed" || h?.status === "Hoàn thành";
+        return isThisWeek && isCompleted;
+      }).length
     : 0;
 
   const totalMedications = Array.isArray(medicineData)
@@ -113,13 +171,18 @@ function NurseDashboardNew() {
         const medicineDate = new Date(
           m?.createdAt || m?.dateCreated || m?.submissionDate
         );
+
+        // ✅ Fix: Không mutate Date object
         const today = new Date();
-        const weekStart = new Date(
-          today.setDate(today.getDate() - today.getDay())
-        ); // Đầu tuần
-        const weekEnd = new Date(
-          today.setDate(today.getDate() - today.getDay() + 6)
-        ); // Cuối tuần
+        const currentDay = today.getDay(); // 0 = CN, 1 = T2, ...
+
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - currentDay);
+        weekStart.setHours(0, 0, 0, 0);
+
+        const weekEnd = new Date(today);
+        weekEnd.setDate(today.getDate() - currentDay + 6);
+        weekEnd.setHours(23, 59, 59, 999);
 
         if (isNaN(medicineDate.getTime())) return false;
 
@@ -152,14 +215,17 @@ function NurseDashboardNew() {
           return false;
         }
 
-        // Filter theo tuần này để nhất quán với các box khác
+        // ✅ Fix: Filter theo tuần này với logic đúng
         const today = new Date();
-        const weekStart = new Date(
-          today.setDate(today.getDate() - today.getDay())
-        ); // Đầu tuần
-        const weekEnd = new Date(
-          today.setDate(today.getDate() - today.getDay() + 6)
-        ); // Cuối tuần
+        const currentDay = today.getDay(); // 0 = CN, 1 = T2, ...
+
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - currentDay);
+        weekStart.setHours(0, 0, 0, 0);
+
+        const weekEnd = new Date(today);
+        weekEnd.setDate(today.getDate() - currentDay + 6);
+        weekEnd.setHours(23, 59, 59, 999);
 
         return eventDate >= weekStart && eventDate <= weekEnd;
       }).length
@@ -243,8 +309,8 @@ function NurseDashboardNew() {
   // Generate chart data với số tổng (cho hiển thị đường xu hướng đẹp)
   const generateLineChartData = () => {
     const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
-    const baseVaccinations = Math.max(todayVaccinations, 5); // Minimum 5 để tránh 0
-    const baseCheckups = Math.max(healthCheckups, 3); // Minimum 3
+    const baseVaccinations = Math.max(weeklyVaccinations, 5); // Minimum 5 để tránh 0
+    const baseCheckups = Math.max(weeklyHealthChecks, 3); // Minimum 3
     const baseMedications = Math.max(totalMedications, 2); // Minimum 2
     const baseMedicalEvents = Math.max(totalMedicalEvents, 1); // Minimum 1
 
@@ -288,14 +354,14 @@ function NurseDashboardNew() {
     {
       skill: "Tiêm chủng",
       value: Math.min(
-        (injectedVaccines / Math.max(todayVaccinations, 1)) * 100,
+        (injectedVaccines / Math.max(weeklyVaccinations, 1)) * 100,
         100
       ),
     },
     {
       skill: "Khám sức khỏe",
       value: Math.min(
-        (completedHealthChecks / Math.max(healthCheckups, 1)) * 100,
+        (completedHealthChecks / Math.max(weeklyHealthChecks, 1)) * 100,
         100
       ),
     },
@@ -315,13 +381,13 @@ function NurseDashboardNew() {
     }, // Ít sự cố = tốt hơn
     {
       skill: "Hiệu suất",
-      value: Math.min((todayVaccinations + healthCheckups) * 2, 100),
+      value: Math.min((weeklyVaccinations + weeklyHealthChecks) * 2, 100),
     },
     {
       skill: "Chất lượng",
       value: Math.min(
         ((injectedVaccines + completedHealthChecks) /
-          Math.max(todayVaccinations + healthCheckups, 1)) *
+          Math.max(weeklyVaccinations + weeklyHealthChecks, 1)) *
           100,
         100
       ),
@@ -708,10 +774,10 @@ function NurseDashboardNew() {
                     marginBottom: "4px",
                   }}
                 >
-                  {todayVaccinations}
+                  {weeklyVaccinations}
                 </div>
                 <Text type="secondary" style={{ fontSize: "12px" }}>
-                  +12% tăng
+                  {injectedVaccines} đã tiêm
                 </Text>
               </div>
               <div
@@ -769,7 +835,7 @@ function NurseDashboardNew() {
                     marginBottom: "4px",
                   }}
                 >
-                  {healthCheckups}
+                  {weeklyHealthChecks}
                 </div>
                 <Text type="secondary" style={{ fontSize: "12px" }}>
                   {completedHealthChecks} hoàn thành

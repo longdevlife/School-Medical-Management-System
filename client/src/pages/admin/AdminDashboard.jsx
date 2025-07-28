@@ -29,6 +29,7 @@ function AdminDashboard() {
     nurseCount: 0,
     managerCount: 0,
     parentCount: 0,
+    nurseManagerCount: 0,
   });
 
   const fetchStats = async () => {
@@ -43,6 +44,7 @@ function AdminDashboard() {
       const nurseCount = data.filter((acc) => acc.roleName === 'Nurse').length;
       const managerCount = data.filter((acc) => acc.roleName === 'Manager').length;
       const parentCount = data.filter((acc) => acc.roleName === 'Parent').length;
+      const nurseManagerCount = nurseCount + managerCount;
 
       setStats({
         totalUsers,
@@ -51,6 +53,7 @@ function AdminDashboard() {
         nurseCount,
         managerCount,
         parentCount,
+        nurseManagerCount,
       });
     } catch (error) {
       message.error('Không thể tải dữ liệu thống kê!');
@@ -67,8 +70,12 @@ function AdminDashboard() {
       count: stats.adminCount,
     },
     {
-      role: 'Nurse + Manager',
-      count: stats.nurseManagerCount,
+      role: 'Nurse',
+      count: stats.nurseCount,
+    },
+    {
+      role: 'Manager',
+      count: stats.managerCount,
     },
     {
       role: 'Parent',
@@ -79,24 +86,13 @@ function AdminDashboard() {
   
 
   // Chỉ giữ biểu đồ cột ngang (Bar chart)
+  // Sort barData by count descending so the longest bar is the largest group
   const barData = [
-    {
-      role: 'ADMIN',
-      count: stats.adminCount,
-    },
-    {
-      role: 'Y TÁ',
-      count: stats.nurseCount,
-    },
-    {
-      role: 'QUẢN LÝ',
-      count: stats.managerCount,
-    },
-    {
-      role: 'PHỤ HUYNH',
-      count: stats.parentCount,
-    },
-  ];
+    { role: 'ADMIN', count: stats.adminCount },
+    { role: 'Y TÁ', count: stats.nurseCount },
+    { role: 'QUẢN LÝ', count: stats.managerCount },
+    { role: 'PHỤ HUYNH', count: stats.parentCount },
+  ].sort((a, b) => b.count - a.count);
   const barConfig = {
     data: barData,
     xField: 'count',

@@ -151,6 +151,7 @@ function VaccinationManagement() {
           vaccineID: item.vaccineID,
           vaccinatorID: item.vaccinatorID,
           vaccinatedAt: item.vaccinatedAt, // Ngày hẹn tiêm từ API
+          dateTime: item.dateTime, // ✅ Ngày thực hiện thực tế từ API
 
           // Follow up fields
           followUpNotes: item.followUpNotes,
@@ -719,7 +720,8 @@ function VaccinationManagement() {
     return matchesTab && matchesStatus && matchesClass && matchesSearch;
   });
 
-  const columns = [
+  // ✅ Tạo columns động dựa trên tab hiện tại
+  const getColumns = (currentTab) => [
     {
       title: "Mã yêu cầu",
       dataIndex: "submissionCode",
@@ -779,8 +781,9 @@ function VaccinationManagement() {
     },
     {
       title: "Ngày thực hiện",
-      dataIndex: "vaccinatedAt", // ✅ Sử dụng VaccinatedAt từ backend
-      key: "vaccinatedAt",
+      // ✅ Tab "Chờ xác nhận" dùng vaccinatedAt, 2 tab còn lại dùng dateTime
+      dataIndex: currentTab === "pending" ? "vaccinatedAt" : "dateTime",
+      key: currentTab === "pending" ? "vaccinatedAt" : "dateTime",
       width: 100,
       render: (date) => (
         <div style={{ fontSize: "12px" }}>
@@ -793,7 +796,7 @@ function VaccinationManagement() {
             </>
           ) : (
             <Text type="secondary" style={{ fontSize: "11px" }}>
-              Chưa có ngày
+              {currentTab === "pending" ? "Chưa có lịch hẹn" : "Chưa thực hiện"}
             </Text>
           )}
         </div>
@@ -1836,7 +1839,7 @@ function VaccinationManagement() {
                 children: (
                   /* Bảng danh sách cho Tab Chờ xác nhận */
                   <Table
-                    columns={columns}
+                    columns={getColumns("pending")}
                     dataSource={filteredSubmissions}
                     loading={loading}
                     rowKey="id"
@@ -1868,7 +1871,7 @@ function VaccinationManagement() {
                 children: (
                   /* Bảng danh sách cho Tab Tiêm chủng */
                   <Table
-                    columns={columns}
+                    columns={getColumns("vaccination")}
                     dataSource={filteredSubmissions}
                     loading={loading}
                     rowKey="id"
@@ -1900,7 +1903,7 @@ function VaccinationManagement() {
                 children: (
                   /* Bảng danh sách cho Tab Theo dõi sau tiêm */
                   <Table
-                    columns={columns}
+                    columns={getColumns("monitoring")}
                     dataSource={filteredSubmissions}
                     loading={loading}
                     rowKey="id"

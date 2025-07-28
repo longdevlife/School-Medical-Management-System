@@ -305,7 +305,7 @@ const MedicalEvent = () => {
   };
 
   // Auto refresh mỗi 30 giây
-  useAutoRefresh(fetchMedicalEvents, 30000);
+  useAutoRefresh(fetchMedicalEvents, 10000);
 
   useEffect(() => {
     const initializeData = async () => {

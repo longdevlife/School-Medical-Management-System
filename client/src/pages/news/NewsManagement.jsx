@@ -666,7 +666,10 @@ function NewsManagement() {
       dataIndex: "publishDate",
       key: "publishDate",
       width: 180,
-      render: (date) => (date ? date : "-"),
+      render: (date) =>
+        date
+          ? dayjs(date).format("DD/MM/YYYY HH:mm")
+          : "-",
     },
     {
       title: "Ảnh",
@@ -948,7 +951,11 @@ function NewsManagement() {
             <div className="mb-2">
               <Space wrap>
                 <Text type="secondary">
-                  Ngày xuất bản: {previewNews.publishDate || "Chưa xuất bản"}
+                  Ngày xuất bản: {
+                    previewNews.publishDate
+                      ? dayjs(previewNews.publishDate).format("DD/MM/YYYY HH:mm")
+                      : "Chưa xuất bản"
+                  }
                 </Text>
                 <Tag color={getStatusColor(previewNews.status)}>
                   {getStatusText(previewNews.status)}

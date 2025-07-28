@@ -12,7 +12,7 @@ using Sever.Context;
 namespace Sever.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250715042441_Init")]
+    [Migration("20250728075919_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -402,8 +402,8 @@ namespace Sever.Migrations
                     b.Property<string>("NotifyID")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("date");
+                    b.Property<DateTime?>("DateTime")
+                        .HasColumnType("datetime");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");

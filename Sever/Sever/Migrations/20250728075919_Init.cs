@@ -159,7 +159,7 @@ namespace Sever.Migrations
                 {
                     NotifyID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     NotifyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DateTime = table.Column<DateTime>(type: "date", nullable: false),
+                    DateTime = table.Column<DateTime>(type: "datetime", nullable: true),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserID = table.Column<string>(type: "nvarchar(450)", nullable: true)

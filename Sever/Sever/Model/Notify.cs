@@ -8,7 +8,7 @@ namespace Sever.Model
         [Key]
         public string NotifyID { get; set; }
         public string NotifyName { get; set; }
-        public DateTime DateTime { get; set; }
+        public DateTime? DateTime { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
         public string? UserID { get; set; }

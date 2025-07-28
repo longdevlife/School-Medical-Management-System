@@ -48,7 +48,7 @@ namespace Sever.Context
                 .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Notify>()
                 .Property(n => n.DateTime)
-                .HasColumnType("date");
+                .HasColumnType("datetime");
             #endregion
 
             #region Health Check Up

@@ -973,6 +973,12 @@ function AccountList() {
       key: "userName",
     },
     {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+      render: (email) => email || <span style={{color: '#aaa'}}>Chưa có</span>
+    },
+    {
       title: "Mật khẩu",
       dataIndex: "password",
       key: "password",
@@ -1492,6 +1498,7 @@ function AccountList() {
               <Descriptions bordered column={1} size="middle" className="rounded-3xl bg-white/95 text-base mb-6">
                 <Descriptions.Item label={<span className="font-bold">Mã người dùng</span>}>{selectedAccount.userID}</Descriptions.Item>
                 <Descriptions.Item label={<span className="font-bold">Tên đăng nhập</span>}>{selectedAccount.userName}</Descriptions.Item>
+                <Descriptions.Item label={<span className="font-bold">Email</span>}>{selectedAccount.email || <span style={{color: '#aaa'}}>Chưa có</span>}</Descriptions.Item>
                 <Descriptions.Item label={<span className="font-bold">Mật khẩu</span>}>********{selectedAccount.password}</Descriptions.Item>
 <Descriptions.Item label={<span className="font-bold">Vai trò</span>}>
   {(() => {

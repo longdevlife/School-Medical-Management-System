@@ -20,6 +20,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 }
 import NurseManagerLayout from "./components/Layout/nursemanager/NurseManagerLayout";
 import NurseDashboard from "./pages/nurses/NurseDashboard";
+import NurseDashboardNew from "./pages/nurses/NurseDashboardNew";
 import HealthProfileView from "./pages/profiles/HealthProfileView";
 import MedicationSubmission from "./pages/medications/MedicationSubmission";
 import NewsManagement from "./pages/news/NewsManagement";
@@ -76,7 +77,8 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<HealthProfileView  />} />
+            <Route index element={<NurseDashboardNew />} />
+            <Route path="dashboard" element={<NurseDashboardNew />} />
 
             <Route path="profile-view" element={<HealthProfileView />} />
             <Route
@@ -108,7 +110,6 @@ function App() {
             }
           >
             <Route index element={<NurseDashboard />} />
-            <Route path="nurseDashboard" element={<NurseDashboard />} />
 
             <Route path="profile-view" element={<HealthProfileView />} />
             <Route path="news-management" element={<NewsManagement />} />
@@ -129,7 +130,7 @@ function App() {
             <Route path="profile-student" element={<StudentProfile />} />
             <Route path="profileParent" element={<ParentProfile />} />
             <Route path="medical-events" element={<MedicalEvent />} />
-             <Route path="Setting" element={<SettingUser />} />
+            <Route path="Setting" element={<SettingUser />} />
             <Route
               path="vaccinations/results"
               element={<VaccineManagement />}
@@ -141,7 +142,6 @@ function App() {
             <Route path="health-result" element={<HealthResult />} />
             <Route path="send-medicine" element={<MedicineManagement />} />
             <Route path="declare-health" element={<DeclareHealthProfile />} />
-
           </Route>{" "}
           {/* Redirect root to home page */}
           <Route path="/" element={<Navigate to="/login" replace />} />

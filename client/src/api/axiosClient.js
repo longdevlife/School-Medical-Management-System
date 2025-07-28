@@ -2,7 +2,7 @@ import axios from "axios";
 import { authApi } from "./authApi";
 
 const axiosClient = axios.create({
-  baseURL: "https://localhost:7040/api/",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://localhost:7040/api/",
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",

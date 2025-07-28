@@ -39,15 +39,19 @@ function SidebarNurseManager({ collapsed }) {
   }
 
   const menuItems = [
-  
-   // Menu chỉ dành cho Y TÁ (NURSE)
+    // Menu chỉ dành cho Y TÁ (NURSE)
     ...(userRole === "NURSE"
       ? [
           {
-      key: `${basePath}/profile-view`, // Xem hồ sơ sức khỏe học sinh (chỉ đọc)
-      icon: <HeartOutlined />,
-      label: "Hồ sơ sức khỏe",
-    }, // Menu chỉ dành cho
+            key: `${basePath}/dashboard`, // Tổng quan cho Y TÁ
+            icon: <DashboardOutlined />,
+            label: "Tổng quan",
+          },
+          {
+            key: `${basePath}/profile-view`, // Xem hồ sơ sức khỏe học sinh (chỉ đọc)
+            icon: <HeartOutlined />,
+            label: "Hồ sơ sức khỏe",
+          }, // Menu chỉ dành cho
           {
             key: `${basePath}/medication-submission`, // Tiếp nhận & xác minh thuốc từ phụ huynh
             icon: <MedicineBoxOutlined />,
@@ -75,7 +79,8 @@ function SidebarNurseManager({ collapsed }) {
         ]
       : []), // Menu chỉ dành cho QUẢN LÝ (MANAGER)
     ...(userRole === "MANAGER"
-      ? [{
+      ? [
+          {
             key: `${basePath}/nurseDashboard`, // CRUD blog/bài viết sức khỏe
             icon: <EditOutlined />,
             label: "Tổng quan ",
@@ -85,8 +90,6 @@ function SidebarNurseManager({ collapsed }) {
             icon: <EditOutlined />,
             label: "Quản lý Tin tức",
           },
-         
-         
         ]
       : []),
     {

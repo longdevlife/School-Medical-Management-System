@@ -27,6 +27,7 @@ import {
 } from "@ant-design/icons";
 import vaccineApi from "../../api/vaccineApi";
 import studentApi from "../../api/studentApi";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -494,6 +495,11 @@ const VaccineManagement = () => {
     }
   };
 
+
+  //======================AUTOREFRESH==========================
+  // Tự động refresh mỗi 30 giây
+  useAutoRefresh(fetchVaccineData, 30000);
+
   // ==================== HANDLER FUNCTIONS ====================
 
   const handleViewDetail = (record) => {
@@ -502,7 +508,7 @@ const VaccineManagement = () => {
     setIsDetailModalVisible(true);
   };
 
-  const handleConfirmVaccination = async (record) => {
+  {/* const handleConfirmVaccination = async (record) => {
     try {
       console.log("✅ Confirming vaccination for record:", record.RecordID);
 
@@ -521,9 +527,9 @@ const VaccineManagement = () => {
       console.error("❌ Error confirming vaccination:", error);
       message.error("Không thể xác nhận đồng ý. Vui lòng thử lại!");
     }
-  };
+  };*/}
 
-  const handleDenyVaccination = async (record) => {
+  {/*const handleDenyVaccination = async (record) => {
     try {
       console.log("❌ Denying vaccination for record:", record.RecordID);
 
@@ -542,7 +548,7 @@ const VaccineManagement = () => {
       console.error("❌ Error denying vaccination:", error);
       message.error("Không thể từ chối vaccine. Vui lòng thử lại!");
     }
-  };
+  };*/}
 
   const handleRefresh = () => {
     console.log("🔄 Refreshing data...");
@@ -776,7 +782,7 @@ const VaccineManagement = () => {
       render: (_, record) => (
         <div>
           <div>
-            <Text className="font-medium text-xs text-blue-500">
+            <Text strong style={{fontsize:"14px"}}>
               {record.StudentName || "Chưa có tên"}
             </Text>
           </div>
@@ -839,14 +845,14 @@ const VaccineManagement = () => {
       key: "action",
       width: 200,
       render: (_, record) => {
-        const status = (record.Status || "").toLowerCase().trim();
-        const needsParentResponse = [
-          "pending",
-          "waiting",
-          "created",
-          "new",
-          "chờ xác nhận",
-        ].includes(status);
+       //const status = (record.Status || "").toLowerCase().trim();
+       //const needsParentResponse = [
+       //"pending",
+       //"waiting",
+       //"created",
+       //"new",
+       //"chờ xác nhận",
+       //].includes(status);
 
         return (
           <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
@@ -861,7 +867,7 @@ const VaccineManagement = () => {
                 Chi tiết
               </Button>
             </Tooltip>
-
+            {/*
             {needsParentResponse && (
               <>
                 <Tooltip title="Đồng ý tiêm vaccine">
@@ -891,6 +897,7 @@ const VaccineManagement = () => {
                 </Tooltip>
               </>
             )}
+            */}
           </div>
         );
       },
@@ -992,7 +999,7 @@ const VaccineManagement = () => {
       {/* Header */}
       <div
         style={{
-          background: "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
+          background: "linear-gradient(135deg, #2196f3 0%, #64b5f6 100%)",
           borderRadius: "32px",
           boxShadow: "0 10px 32px rgba(22,160,133,0.18)",
           padding: "32px 40px 28px 40px",

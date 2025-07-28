@@ -15,7 +15,6 @@ import {
   Col,
   Descriptions,
   Typography,
-  Popconfirm,
 } from "antd";
 import {
   PlusOutlined,
@@ -32,6 +31,8 @@ import {
 } from "@ant-design/icons";
 import medicineApi from "../../api/medicineApi";
 import studentApi from "../../api/studentApi";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
+
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -288,7 +289,7 @@ const MedicineManagement = () => {
 
   const getMedicineHistory = (medicineId) => {
     try {
-      const historyData = localStorage.getItem(MEDICINE_HISTORY_KEY);
+      const historyData = localStorage.getItem("medicine_history");
       if (historyData) {
         const allHistory = JSON.parse(historyData);
         return allHistory[medicineId] || [];
@@ -299,6 +300,23 @@ const MedicineManagement = () => {
       return [];
     }
   };
+
+  //lưu thông tin sau khi cập nhật 
+    const saveMedicineHistory = (medicineId, historyEntry) => {
+    try {
+      const historyData = localStorage.getItem("medicine_history");
+      let allHistory = historyData ? JSON.parse(historyData) : {};
+      if (!allHistory[medicineId]) {
+        allHistory[medicineId] = [];
+      }
+      historyEntry.timestamp = new Date().toISOString();
+      allHistory[medicineId].push(historyEntry);
+      localStorage.setItem("medicine_history", JSON.stringify(allHistory));
+    } catch (error) {
+      console.error("❌ Error saving medicine history:", error);
+    }
+  };
+
 
   const getChangedFields = (oldData, newData) => {
     const changes = [];
@@ -1006,7 +1024,9 @@ const MedicineManagement = () => {
       setLoading(false);
     }
   };
-
+  
+  //tự động refresh 
+  useAutoRefresh(fetchMedicinesFromServer, 30000);
   // ==================== HANDLER FUNCTIONS ====================
 
   const getStudentName = (studentId) => {
@@ -2562,7 +2582,7 @@ const MedicineManagement = () => {
       {/* Header */}
       <div
         style={{
-          background: "linear-gradient(90deg, #0DACCD 0%, #2980b9 100%)",
+          background: "linear-gradient(135deg, #2196f3 0%, #64b5f6 100%)",
           borderRadius: "32px",
           boxShadow: "0 10px 32px rgba(22,160,133,0.18)",
           padding: "32px 40px 28px 40px",
@@ -3431,7 +3451,7 @@ const MedicineManagement = () => {
                   )}
 
                   {viewingMedicine.Notes && (
-                    <Descriptions.Item label="Ghi chú từ phụ huynh">
+                    <Descriptions.Item label="Ghi chú">
                       <Text
                         style={{
                           fontSize: "13px",

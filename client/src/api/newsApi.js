@@ -25,8 +25,43 @@ const newsApi = {
   },
   manager: {
     getAll: () => axiosClient.get("/manager/get-news-by-manager"),
-    create: ({ url, formData }) => axiosClient.post(url, formData),
-    update: (formData) => axiosClient.put("/manager/update-news", formData),
+    create: ({ url, newsData }) => {
+      // Tự động chuyển object sang FormData, xử lý trường Image
+      const formData = new FormData();
+      Object.keys(newsData).forEach((key) => {
+        if (newsData[key] !== null && newsData[key] !== undefined) {
+          if (key === "Image" && Array.isArray(newsData[key])) {
+            newsData[key].forEach((file) => {
+              formData.append("Image", file);
+            });
+          } else {
+            formData.append(key, newsData[key]);
+          }
+        }
+      });
+      return axiosClient.post(url, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000,
+      });
+    },
+    update: (newsId, updateData) => {
+      const formData = new FormData();
+      Object.keys(updateData).forEach((key) => {
+        if (updateData[key] !== null && updateData[key] !== undefined) {
+          if (key === "Image" && Array.isArray(updateData[key])) {
+            updateData[key].forEach((file) => {
+              formData.append("Image", file);
+            });
+          } else {
+            formData.append(key, updateData[key]);
+          }
+        }
+      });
+      return axiosClient.put(`/manager/update-news/${newsId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000,
+      });
+    },
     delete: (newsId) => axiosClient.delete(`/manager/delete-news/${newsId}`),
   },
 };

@@ -31,4 +31,18 @@ const newsApi = {
   },
 };
 
+
+// Named exports for compatibility
+export const getAllNews = newsApi.general.getAll;
+export const getNewsById = newsApi.general.getById;
+export const createNews = newsApi.general.create;
+export const updateNews = newsApi.general.update;
+export const deleteNews = newsApi.general.delete;
+export const getActiveNews = newsApi.general.getActive;
+
+export const getNewsByManager = newsApi.manager.getAll;
+export const createNewsByManager = newsApi.manager.create;
+export const updateNewsByManager = newsApi.manager.update;
+export const deleteNewsByManager = newsApi.manager.delete;
+
 export default newsApi;

@@ -78,6 +78,7 @@ function App() {
             }
           >
             <Route index element={<NurseDashboardNew />} />
+            <Route path="dashboard" element={<NurseDashboardNew />} />
 
             <Route path="profile-view" element={<HealthProfileView />} />
             <Route

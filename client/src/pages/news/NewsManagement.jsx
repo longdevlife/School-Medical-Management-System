@@ -49,7 +49,10 @@ function NewsManagement() {
   function getImagesFromNewsItem(item) {
     let images = [];
     // Debug chi tiết các trường có thể chứa ảnh
-    console.log("🔍 Debugging all possible image fields for", item.id || item.NewsID || item.newsID);
+    console.log(
+      "🔍 Debugging all possible image fields for",
+      item.id || item.NewsID || item.newsID
+    );
     console.log("📋 item.image:", item.image);
     console.log("📋 item.file:", item.file);
     console.log("📋 item.files:", item.files);
@@ -57,7 +60,9 @@ function NewsManagement() {
 
     // Nếu item.image là mảng string (kiểu ['url1', ...])
     if (Array.isArray(item.image) && typeof item.image[0] === "string") {
-      images = item.image.filter((img) => typeof img === "string" && img.startsWith("http"));
+      images = item.image.filter(
+        (img) => typeof img === "string" && img.startsWith("http")
+      );
     }
     // Nếu item.image là mảng object (kiểu [{url: "..."}])
     else if (item.image && Array.isArray(item.image) && item.image.length > 0) {
@@ -116,7 +121,10 @@ function NewsManagement() {
         .filter(Boolean);
     }
 
-    console.log(`🖼️ Final images for ${item.id || item.NewsID || item.newsID}:`, images);
+    console.log(
+      `🖼️ Final images for ${item.id || item.NewsID || item.newsID}:`,
+      images
+    );
     return images;
   }
 
@@ -125,7 +133,9 @@ function NewsManagement() {
     async function fetchNews() {
       try {
         const res = await getNewsByManager();
-        const newsArr = Array.isArray(res.data) ? res.data : res.data?.data || [];
+        const newsArr = Array.isArray(res.data)
+          ? res.data
+          : res.data?.data || [];
         setNews(
           newsArr.map((item, idx) => {
             // Nếu có trường image là mảng string, ưu tiên lấy trường này
@@ -142,7 +152,14 @@ function NewsManagement() {
             }
             // Đảm bảo status đúng kiểu boolean với mọi trường hợp (0/1, "0"/"1", true/false)
             // Log để kiểm tra kiểu dữ liệu thực tế của status
-            console.log("DEBUG status fields:", item.status, typeof item.status, item.Status, typeof item.Status, item);
+            console.log(
+              "DEBUG status fields:",
+              item.status,
+              typeof item.status,
+              item.Status,
+              typeof item.Status,
+              item
+            );
 
             // Nếu status là boolean thì giữ nguyên, nếu không thì kiểm tra các trường hợp khác
             let statusValue = false;
@@ -161,13 +178,22 @@ function NewsManagement() {
             }
             // Nếu statusValue vẫn là false, log cảnh báo để kiểm tra dữ liệu backend
             if (!statusValue) {
-              console.warn("⚠️ Bản ghi có status=false hoặc không xác định, kiểm tra dữ liệu backend:", item);
+              console.warn(
+                "⚠️ Bản ghi có status=false hoặc không xác định, kiểm tra dữ liệu backend:",
+                item
+              );
             }
             return {
               ...item,
-              id: item.id || item.NewsID || item.newsID || item.newsID || `N${idx + 1}`,
+              id:
+                item.id ||
+                item.NewsID ||
+                item.newsID ||
+                item.newsID ||
+                `N${idx + 1}`,
               title: item.title || item.Title,
-              publishDate: item.publishDate || item.PublishDate || item.dateTime || null,
+              publishDate:
+                item.publishDate || item.PublishDate || item.dateTime || null,
               status: statusValue,
               tags: item.tags || item.Tags || [],
               featured: item.featured ?? item.Featured ?? false,
@@ -178,7 +204,8 @@ function NewsManagement() {
                 item.userName ||
                 item.UserName ||
                 "",
-              images: images.length > 0 && images[0].startsWith("http") ? images : [],
+              images:
+                images.length > 0 && images[0].startsWith("http") ? images : [],
             };
           })
         );
@@ -224,20 +251,22 @@ function NewsManagement() {
   const handleDelete = async (newsId) => {
     try {
       // Nếu newsId là object hoặc có trường khác, lấy đúng trường id thực tế (newsID)
-      const realId = typeof newsId === "object" && newsId.newsID ? newsId.newsID : newsId;
+      const realId =
+        typeof newsId === "object" && newsId.newsID ? newsId.newsID : newsId;
       const response = await fetch(
         `https://localhost:7040/api/manager/delete-news/${realId}`,
         {
           method: "DELETE",
           credentials: "include",
-          headers:
-            localStorage.getItem("token")
-              ? { Authorization: "Bearer " + localStorage.getItem("token") }
-              : undefined,
+          headers: localStorage.getItem("token")
+            ? { Authorization: "Bearer " + localStorage.getItem("token") }
+            : undefined,
         }
       );
       if (response.status === 401) {
-        message.error("Bạn chưa đăng nhập hoặc không có quyền xóa bài viết này (401 Unauthorized). Vui lòng đăng nhập lại.");
+        message.error(
+          "Bạn chưa đăng nhập hoặc không có quyền xóa bài viết này (401 Unauthorized). Vui lòng đăng nhập lại."
+        );
         return;
       }
       if (!response.ok) {
@@ -265,13 +294,20 @@ function NewsManagement() {
           }
           return {
             ...item,
-            id: item.id || item.NewsID || item.newsID || item.newsID || `N${idx + 1}`,
+            id:
+              item.id ||
+              item.NewsID ||
+              item.newsID ||
+              item.newsID ||
+              `N${idx + 1}`,
             title: item.title || item.Title,
-            publishDate: item.publishDate || item.PublishDate || item.dateTime || null,
+            publishDate:
+              item.publishDate || item.PublishDate || item.dateTime || null,
             // Giữ nguyên status là boolean nếu backend trả về boolean
-            status: typeof item.status === "boolean"
-              ? item.status
-              : item.status || item.Status || false,
+            status:
+              typeof item.status === "boolean"
+                ? item.status
+                : item.status || item.Status || false,
             tags: item.tags || item.Tags || [],
             featured: item.featured ?? item.Featured ?? false,
             author:
@@ -281,7 +317,8 @@ function NewsManagement() {
               item.userName ||
               item.UserName ||
               "",
-            images: images.length > 0 && images[0].startsWith("http") ? images : [],
+            images:
+              images.length > 0 && images[0].startsWith("http") ? images : [],
           };
         })
       );
@@ -331,21 +368,23 @@ function NewsManagement() {
       // Gọi API tạo mới bài viết
       let response;
       try {
-        response = await fetch(
-          "https://localhost:7040/api/manager/create-news?" + params,
-          {
-            method: "POST",
-            body: formData,
-            credentials: "include",
-            // Không gửi Authorization nếu không có token
-            headers:
-              localStorage.getItem("token")
-                ? { Authorization: "Bearer " + localStorage.getItem("token") }
-                : undefined,
-          }
-        );
+        const baseURL =
+          import.meta.env.VITE_API_BASE_URL || "https://localhost:7040/api/";
+        const apiUrl = baseURL + "manager/create-news?" + params;
+
+        response = await fetch(apiUrl, {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+          // Không gửi Authorization nếu không có token
+          headers: localStorage.getItem("token")
+            ? { Authorization: "Bearer " + localStorage.getItem("token") }
+            : undefined,
+        });
         if (response.status === 401) {
-          message.error("Bạn chưa đăng nhập hoặc không có quyền thực hiện thao tác này (401 Unauthorized). Vui lòng đăng nhập lại.");
+          message.error(
+            "Bạn chưa đăng nhập hoặc không có quyền thực hiện thao tác này (401 Unauthorized). Vui lòng đăng nhập lại."
+          );
           // Gợi ý đăng nhập lại
           // window.location.href = "/login"; // Nếu muốn chuyển hướng sang trang đăng nhập
           return;
@@ -353,7 +392,9 @@ function NewsManagement() {
         if (!response.ok) {
           const errorData = await response.json();
           if (errorData?.errors?.Image) {
-            message.error("Ảnh đại diện là bắt buộc. " + errorData.errors.Image[0]);
+            message.error(
+              "Ảnh đại diện là bắt buộc. " + errorData.errors.Image[0]
+            );
           } else if (errorData?.message) {
             message.error(errorData.message);
           } else {
@@ -406,7 +447,9 @@ function NewsManagement() {
       const formData = new FormData();
 
       if (!newsId || !title || !content) {
-        message.error("Vui lòng nhập đầy đủ các trường bắt buộc (ID, tiêu đề, nội dung)!");
+        message.error(
+          "Vui lòng nhập đầy đủ các trường bắt buộc (ID, tiêu đề, nội dung)!"
+        );
         return;
       }
 
@@ -435,14 +478,17 @@ function NewsManagement() {
         console.log("UPDATE FORM DATA:", pair[0], pair[1]);
       }
 
-      const response = await fetch("https://localhost:7040/api/manager/update-news", {
+      const baseURL =
+        import.meta.env.VITE_API_BASE_URL || "https://localhost:7040/api/";
+      const apiUrl = baseURL + "manager/update-news";
+
+      const response = await fetch(apiUrl, {
         method: "PUT",
         body: formData,
         credentials: "include",
-        headers:
-          localStorage.getItem("token")
-            ? { Authorization: "Bearer " + localStorage.getItem("token") }
-            : undefined,
+        headers: localStorage.getItem("token")
+          ? { Authorization: "Bearer " + localStorage.getItem("token") }
+          : undefined,
       });
 
       if (response.status === 400) {
@@ -459,7 +505,9 @@ function NewsManagement() {
         return;
       }
       if (response.status === 401) {
-        message.error("Bạn chưa đăng nhập hoặc không có quyền cập nhật bài viết này (401 Unauthorized). Vui lòng đăng nhập lại.");
+        message.error(
+          "Bạn chưa đăng nhập hoặc không có quyền cập nhật bài viết này (401 Unauthorized). Vui lòng đăng nhập lại."
+        );
         return;
       }
       if (!response.ok) {
@@ -495,7 +543,14 @@ function NewsManagement() {
           }
           // Đảm bảo status đúng kiểu boolean với mọi trường hợp (0/1, "0"/"1", true/false)
           // Log để kiểm tra kiểu dữ liệu thực tế của status
-          console.log("DEBUG status fields:", item.status, typeof item.status, item.Status, typeof item.Status, item);
+          console.log(
+            "DEBUG status fields:",
+            item.status,
+            typeof item.status,
+            item.Status,
+            typeof item.Status,
+            item
+          );
 
           // Nếu status là boolean thì giữ nguyên, nếu không thì kiểm tra các trường hợp khác
           let statusValue = false;
@@ -514,9 +569,15 @@ function NewsManagement() {
           }
           return {
             ...item,
-            id: item.id || item.NewsID || item.newsID || item.newsID || `N${idx + 1}`,
+            id:
+              item.id ||
+              item.NewsID ||
+              item.newsID ||
+              item.newsID ||
+              `N${idx + 1}`,
             title: item.title || item.Title,
-            publishDate: item.publishDate || item.PublishDate || item.dateTime || null,
+            publishDate:
+              item.publishDate || item.PublishDate || item.dateTime || null,
             status: statusValue,
             tags: item.tags || item.Tags || [],
             featured: item.featured ?? item.Featured ?? false,
@@ -527,7 +588,8 @@ function NewsManagement() {
               item.userName ||
               item.UserName ||
               "",
-            images: images.length > 0 && images[0].startsWith("http") ? images : [],
+            images:
+              images.length > 0 && images[0].startsWith("http") ? images : [],
           };
         })
       );
@@ -570,8 +632,9 @@ function NewsManagement() {
   // Lọc trạng thái: nếu chọn 'Đã lưu' (published) thì chỉ hiện status===true, các trạng thái khác lọc như cũ
   // Chỉ tìm kiếm theo title
   const filteredNews = news.filter((newsItem) => {
-    const matchesSearch =
-      newsItem.title.toLowerCase().includes(searchText.toLowerCase());
+    const matchesSearch = newsItem.title
+      .toLowerCase()
+      .includes(searchText.toLowerCase());
 
     const matchesCategory =
       categoryFilter === "all" || newsItem.category === categoryFilter;
@@ -602,7 +665,9 @@ function NewsManagement() {
       key: "status",
       width: 120,
       render: (status, record) => (
-        <Tag color={getStatusColor(status)}>{getStatusText(status, record)}</Tag>
+        <Tag color={getStatusColor(status)}>
+          {getStatusText(status, record)}
+        </Tag>
       ),
     },
     {
@@ -635,7 +700,7 @@ function NewsManagement() {
               maxHeight: 80,
               objectFit: "cover",
               borderRadius: 4,
-              display: "block"
+              display: "block",
             }}
           />
         ) : (
@@ -712,7 +777,7 @@ function NewsManagement() {
               onChange={(e) => setSearchText(e.target.value)}
             />
           </Col>
-         
+
           <Col xs={24} sm={6} md={4}>
             <Select
               placeholder="Trạng thái"
@@ -798,7 +863,7 @@ function NewsManagement() {
               </Form.Item>
             </Col>
             */}
-          
+
             <Col span={24}>
               <Form.Item name="excerpt" label="Tóm tắt">
                 <TextArea
@@ -893,7 +958,9 @@ function NewsManagement() {
       >
         {previewNews && (
           <div>
-            <Title level={2} className="mb-2">{previewNews.title}</Title>
+            <Title level={2} className="mb-2">
+              {previewNews.title}
+            </Title>
             <div className="mb-2">
               <Space wrap>
                 <Text type="secondary">
@@ -915,7 +982,7 @@ function NewsManagement() {
                     objectFit: "contain",
                     borderRadius: 8,
                     marginBottom: 16,
-                    display: "block"
+                    display: "block",
                   }}
                 />
               </div>
@@ -962,4 +1029,3 @@ function NewsManagement() {
 }
 
 export default NewsManagement;
-

@@ -1,17 +1,12 @@
-import axios from "axios";
-
-BASE_URL: import.meta.env.VITE_API_BASE_URL || "https://localhost:7040/api/";
+import axiosClient from "./axiosClient";
 
 // API: GET /api/manager/generate-report?fromDate=...&toDate=...
 // Trả về: { totalHealthCheckUp, countActiveNews, countInActiveNews }
 const reportApi = {
   generateReport: (fromDate, toDate) =>
-    axios
-      .get(`${BASE_URL}/manager/generate-report`, {
+    axiosClient
+      .get("/manager/generate-report", {
         params: { fromDate, toDate },
-        headers: localStorage.getItem("token")
-          ? { Authorization: "Bearer " + localStorage.getItem("token") }
-          : undefined,
       })
       .then((res) => {
         // Đảm bảo trả về đúng object dữ liệu cho dashboard

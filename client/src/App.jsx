@@ -29,9 +29,8 @@ import HealthCheckManagement from "./pages/events/HealthCheckManagement";
 import AccidentManagement from "./pages/events/AccidentManagement";
 import Reports from "./pages/reports/Reports";
 import AdvancedAnalytics from "./pages/analytics/AdvancedAnalytics";
-{
-  /*Parent Layout*/
-}
+
+// Parent Layout
 import ParentLayout from "./components/Layout/parent/ParentLayout";
 import StudentProfile from "./pages/studentProfile/StudentProfile";
 import ParentProfile from "./pages/parent/ParentProfile";

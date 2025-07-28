@@ -128,7 +128,7 @@ function NewsManagement() {
     return images;
   }
 
-  // Mock data - replace with actual API call
+  // Fetch and sort news by newest publish date
   useEffect(() => {
     async function fetchNews() {
       try {
@@ -136,79 +136,63 @@ function NewsManagement() {
         const newsArr = Array.isArray(res.data)
           ? res.data
           : res.data?.data || [];
-        setNews(
-          newsArr.map((item, idx) => {
-            // Nếu có trường image là mảng string, ưu tiên lấy trường này
-            let images = getImagesFromNewsItem(item);
-
-            // Nếu không có ảnh, kiểm tra trường image nhập từ form (nếu có)
-            if (
-              (!images || images.length === 0) &&
-              item.image &&
-              typeof item.image === "string" &&
-              item.image.startsWith("http")
-            ) {
-              images = [item.image];
-            }
-            // Đảm bảo status đúng kiểu boolean với mọi trường hợp (0/1, "0"/"1", true/false)
-            // Log để kiểm tra kiểu dữ liệu thực tế của status
-            console.log(
-              "DEBUG status fields:",
-              item.status,
-              typeof item.status,
-              item.Status,
-              typeof item.Status,
-              item
-            );
-
-            // Nếu status là boolean thì giữ nguyên, nếu không thì kiểm tra các trường hợp khác
-            let statusValue = false;
-            if (typeof item.status === "boolean") {
-              statusValue = item.status;
-            } else if (typeof item.status === "number") {
-              statusValue = Number(item.status) === 1;
-            } else if (typeof item.status === "string") {
-              statusValue = item.status === "1" || item.status === "true";
-            } else if (typeof item.Status === "boolean") {
-              statusValue = item.Status;
-            } else if (typeof item.Status === "number") {
-              statusValue = Number(item.Status) === 1;
-            } else if (typeof item.Status === "string") {
-              statusValue = item.Status === "1" || item.Status === "true";
-            }
-            // Nếu statusValue vẫn là false, log cảnh báo để kiểm tra dữ liệu backend
-            if (!statusValue) {
-              console.warn(
-                "⚠️ Bản ghi có status=false hoặc không xác định, kiểm tra dữ liệu backend:",
-                item
-              );
-            }
-            return {
-              ...item,
-              id:
-                item.id ||
-                item.NewsID ||
-                item.newsID ||
-                item.newsID ||
-                `N${idx + 1}`,
-              title: item.title || item.Title,
-              publishDate:
-                item.publishDate || item.PublishDate || item.dateTime || null,
-              status: statusValue,
-              tags: item.tags || item.Tags || [],
-              featured: item.featured ?? item.Featured ?? false,
-              author:
-                item.author ||
-                item.Author ||
-                (item.user && (item.user.name || item.user.userName)) ||
-                item.userName ||
-                item.UserName ||
-                "",
-              images:
-                images.length > 0 && images[0].startsWith("http") ? images : [],
-            };
-          })
-        );
+        const mappedNews = newsArr.map((item, idx) => {
+          let images = getImagesFromNewsItem(item);
+          if (
+            (!images || images.length === 0) &&
+            item.image &&
+            typeof item.image === "string" &&
+            item.image.startsWith("http")
+          ) {
+            images = [item.image];
+          }
+          // Status mapping
+          let statusValue = false;
+          if (typeof item.status === "boolean") {
+            statusValue = item.status;
+          } else if (typeof item.status === "number") {
+            statusValue = Number(item.status) === 1;
+          } else if (typeof item.status === "string") {
+            statusValue = item.status === "1" || item.status === "true";
+          } else if (typeof item.Status === "boolean") {
+            statusValue = item.Status;
+          } else if (typeof item.Status === "number") {
+            statusValue = Number(item.Status) === 1;
+          } else if (typeof item.Status === "string") {
+            statusValue = item.Status === "1" || item.Status === "true";
+          }
+          return {
+            ...item,
+            id:
+              item.id ||
+              item.NewsID ||
+              item.newsID ||
+              item.newsID ||
+              `N${idx + 1}`,
+            title: item.title || item.Title,
+            publishDate:
+              item.publishDate || item.PublishDate || item.dateTime || null,
+            status: statusValue,
+            tags: item.tags || item.Tags || [],
+            featured: item.featured ?? item.Featured ?? false,
+            author:
+              item.author ||
+              item.Author ||
+              (item.user && (item.user.name || item.user.userName)) ||
+              item.userName ||
+              item.UserName ||
+              "",
+            images:
+              images.length > 0 && images[0].startsWith("http") ? images : [],
+          };
+        });
+        // Sort by newest publishDate (descending)
+        mappedNews.sort((a, b) => {
+          const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
+          const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
+          return dateB - dateA;
+        });
+        setNews(mappedNews);
       } catch (error) {
         message.error("Không thể tải danh sách tin tức!");
       } finally {

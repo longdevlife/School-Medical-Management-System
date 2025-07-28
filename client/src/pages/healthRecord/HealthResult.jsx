@@ -1041,7 +1041,7 @@ const HealthResult = () => {
       width: 200,
       render: (_, record) => {
         const status = (record.status || "").toLowerCase();
-        const isPending = status === "pending" || status === "chờ xác nhận";
+       
 
         return (
           <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
@@ -1057,47 +1057,7 @@ const HealthResult = () => {
               </Button>
             </Tooltip>
 
-            {isPending && (
-              <>
-                <Tooltip title="Xác nhận tham gia">
-                  <Button
-                    type="primary"
-                    size="small"
-                    icon={<CheckCircleOutlined />}
-                    onClick={() =>
-                      handleConfirmAppointment(
-                        record.appointmentID,
-                        "Phụ huynh đã xác nhận tham gia"
-                      )
-                    }
-                    style={{
-                      background: "#22c55e",
-                      borderColor: "#22c55e",
-                      fontSize: "11px",
-                    }}
-                  >
-                    ✓ Xác nhận
-                  </Button>
-                </Tooltip>
-
-                <Tooltip title="Từ chối tham gia">
-                  <Button
-                    danger
-                    size="small"
-                    icon={<CloseCircleOutlined />}
-                    onClick={() =>
-                      handleDeniedAppointment(
-                        record.appointmentID,
-                        "Phụ huynh từ chối tham gia"
-                      )
-                    }
-                    style={{ fontSize: "11px" }}
-                  >
-                    ✗ Từ chối
-                  </Button>
-                </Tooltip>
-              </>
-            )}
+          
           </div>
         );
       },

@@ -151,6 +151,7 @@ function VaccinationManagement() {
           vaccineID: item.vaccineID,
           vaccinatorID: item.vaccinatorID,
           vaccinatedAt: item.vaccinatedAt, // Ngày hẹn tiêm từ API
+          dateTime: item.dateTime, // ✅ Ngày thực hiện thực tế từ API
 
           // Follow up fields
           followUpNotes: item.followUpNotes,
@@ -203,9 +204,9 @@ function VaccinationManagement() {
         VaccineID: values.vaccineId || "1",
         Dose: values.dose || "1",
         Notes: values.administrationNotes || "",
-        // Sử dụng ngày hẹn tiêm từ form hoặc thời gian hiện tại
-        VaccinatedAt: values.scheduledDate
-          ? dayjs(values.scheduledDate).format("YYYY-MM-DD HH:mm:ss")
+        // ✅ Sử dụng VaccinatedAt field từ form
+        VaccinatedAt: values.vaccinatedAt
+          ? dayjs(values.vaccinatedAt).format("YYYY-MM-DD HH:mm:ss")
           : dayjs().format("YYYY-MM-DD HH:mm:ss"),
       };
 
@@ -277,7 +278,7 @@ function VaccinationManagement() {
       currentStatus: submission.status,
       newStatus: nextStatus,
       progressNotes: "",
-      administrationTime: dayjs(),
+      vaccinatedAt: dayjs(),
     });
     setUpdateModalVisible(true);
   };
@@ -317,8 +318,8 @@ function VaccinationManagement() {
         // confirmed/approved → injected: Nút "Thực hiện tiêm" - Dùng updateAfterByRecordID
 
         const updateData = {
-          DateTime: values.administrationTime
-            ? dayjs(values.administrationTime).format("YYYY-MM-DD HH:mm:ss")
+          DateTime: values.vaccinatedAt
+            ? dayjs(values.vaccinatedAt).format("YYYY-MM-DD HH:mm:ss")
             : dayjs().format("YYYY-MM-DD HH:mm:ss"),
           Status: backendStatus, // "Đã tiêm"
           FollowUpNotes: values.progressNotes || "",
@@ -333,7 +334,7 @@ function VaccinationManagement() {
         console.log("📝 Form values:", values);
         console.log("🆔 Record ID:", selectedSubmission.id);
         console.log("🔄 Expected status change: approved → injected");
-        console.log("📅 Administration time:", values.administrationTime);
+        console.log("📅 VaccinatedAt time:", values.vaccinatedAt);
         console.log("🏥 Backend status to send:", backendStatus);
 
         const updateResponse = await vaccineApi.nurse.updateAfterByRecordID(
@@ -362,8 +363,8 @@ function VaccinationManagement() {
       ) {
         // injected → monitoring, monitoring → completed: Dùng updateAfterByRecordID
         const updateAfterData = {
-          DateTime: values.administrationTime
-            ? dayjs(values.administrationTime).format("YYYY-MM-DD HH:mm:ss")
+          DateTime: values.vaccinatedAt
+            ? dayjs(values.vaccinatedAt).format("YYYY-MM-DD HH:mm:ss")
             : dayjs().format("YYYY-MM-DD HH:mm:ss"),
           Status: backendStatus,
           FollowUpNotes: values.progressNotes || "",
@@ -424,8 +425,8 @@ function VaccinationManagement() {
           const updateData = {
             dose: parseInt(selectedSubmission.dose) || 1,
             vaccineId: parseInt(selectedSubmission.vaccineID) || 1,
-            vaccinatedAt: values.administrationTime
-              ? dayjs(values.administrationTime).format("YYYY-MM-DD")
+            vaccinatedAt: values.vaccinatedAt
+              ? dayjs(values.vaccinatedAt).format("YYYY-MM-DD")
               : dayjs().format("YYYY-MM-DD"),
             vaccinatorID: nurseID,
             notes: values.progressNotes || "",
@@ -448,8 +449,8 @@ function VaccinationManagement() {
           const updateData = {
             dose: parseInt(selectedSubmission.dose) || 1,
             vaccineId: parseInt(selectedSubmission.vaccineID) || 1,
-            vaccinatedAt: values.administrationTime
-              ? dayjs(values.administrationTime).format("YYYY-MM-DD")
+            vaccinatedAt: values.vaccinatedAt
+              ? dayjs(values.vaccinatedAt).format("YYYY-MM-DD")
               : dayjs().format("YYYY-MM-DD"),
             vaccinatorID: nurseID,
             notes: values.progressNotes || "",
@@ -719,7 +720,8 @@ function VaccinationManagement() {
     return matchesTab && matchesStatus && matchesClass && matchesSearch;
   });
 
-  const columns = [
+  // ✅ Tạo columns động dựa trên tab hiện tại
+  const getColumns = (currentTab) => [
     {
       title: "Mã yêu cầu",
       dataIndex: "submissionCode",
@@ -779,15 +781,24 @@ function VaccinationManagement() {
     },
     {
       title: "Ngày thực hiện",
-      dataIndex: "vaccinatedAt", // Sử dụng vaccinatedAt thay vì submissionDate
-      key: "vaccinatedAt",
+      // ✅ Tab "Chờ xác nhận" dùng vaccinatedAt, 2 tab còn lại dùng dateTime
+      dataIndex: currentTab === "pending" ? "vaccinatedAt" : "dateTime",
+      key: currentTab === "pending" ? "vaccinatedAt" : "dateTime",
       width: 100,
       render: (date) => (
         <div style={{ fontSize: "12px" }}>
-          <div>{dayjs(date).format("DD/MM/YYYY")}</div>
-          <Text type="secondary" style={{ fontSize: "11px" }}>
-            {dayjs(date).format("HH:mm")}
-          </Text>
+          {date ? (
+            <>
+              <div>{dayjs(date).format("DD/MM/YYYY")}</div>
+              <Text type="secondary" style={{ fontSize: "11px" }}>
+                {dayjs(date).format("HH:mm")}
+              </Text>
+            </>
+          ) : (
+            <Text type="secondary" style={{ fontSize: "11px" }}>
+              {currentTab === "pending" ? "Chưa có lịch hẹn" : "Chưa thực hiện"}
+            </Text>
+          )}
         </div>
       ),
     },
@@ -1828,7 +1839,7 @@ function VaccinationManagement() {
                 children: (
                   /* Bảng danh sách cho Tab Chờ xác nhận */
                   <Table
-                    columns={columns}
+                    columns={getColumns("pending")}
                     dataSource={filteredSubmissions}
                     loading={loading}
                     rowKey="id"
@@ -1860,7 +1871,7 @@ function VaccinationManagement() {
                 children: (
                   /* Bảng danh sách cho Tab Tiêm chủng */
                   <Table
-                    columns={columns}
+                    columns={getColumns("vaccination")}
                     dataSource={filteredSubmissions}
                     loading={loading}
                     rowKey="id"
@@ -1892,7 +1903,7 @@ function VaccinationManagement() {
                 children: (
                   /* Bảng danh sách cho Tab Theo dõi sau tiêm */
                   <Table
-                    columns={columns}
+                    columns={getColumns("monitoring")}
                     dataSource={filteredSubmissions}
                     loading={loading}
                     rowKey="id"
@@ -1968,9 +1979,19 @@ function VaccinationManagement() {
                   {selectedSubmission.vaccinationType}
                 </Descriptions.Item>
 
-                <Descriptions.Item label="Ngày gửi" span={2}>
+                <Descriptions.Item label="Ngày gửi">
                   {dayjs(selectedSubmission.submissionDate).format(
                     "DD/MM/YYYY HH:mm"
+                  )}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Ngày thực hiện">
+                  {selectedSubmission.vaccinatedAt ? (
+                    dayjs(selectedSubmission.vaccinatedAt).format(
+                      "DD/MM/YYYY HH:mm"
+                    )
+                  ) : (
+                    <Text type="secondary">Chưa thực hiện</Text>
                   )}
                 </Descriptions.Item>
                 {selectedSubmission.verificationNotes && (
@@ -2256,7 +2277,7 @@ function VaccinationManagement() {
                   chủng
                 </span>
               }
-              name="scheduledDate"
+              name="vaccinatedAt"
               rules={[
                 { required: true, message: "Vui lòng chọn ngày hẹn tiêm!" },
               ]}
@@ -2348,7 +2369,7 @@ function VaccinationManagement() {
                 <Option value="completed">🎯 Hoàn thành</Option>
               </Select>
             </Form.Item>
-            <Form.Item label="Thời gian tiêm chủng" name="administrationTime">
+            <Form.Item label="Thời gian tiêm chủng" name="vaccinatedAt">
               <DatePicker
                 showTime
                 format="DD/MM/YYYY HH:mm"

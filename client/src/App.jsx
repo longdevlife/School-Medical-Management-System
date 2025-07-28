@@ -29,9 +29,8 @@ import HealthCheckManagement from "./pages/events/HealthCheckManagement";
 import AccidentManagement from "./pages/events/AccidentManagement";
 import Reports from "./pages/reports/Reports";
 import AdvancedAnalytics from "./pages/analytics/AdvancedAnalytics";
-{
-  /*Parent Layout*/
-}
+
+// Parent Layout
 import ParentLayout from "./components/Layout/parent/ParentLayout";
 import StudentProfile from "./pages/studentProfile/StudentProfile";
 import ParentProfile from "./pages/parent/ParentProfile";
@@ -68,7 +67,7 @@ function App() {
             <Route path="accounts" element={<AccountList />} />
             <Route path="settings" element={<Settings />} />
           </Route>
-          {/* Nurse Routes */}
+          {/* Nurse Route */}
           <Route
             path="/nurses/*"
             element={
@@ -111,11 +110,14 @@ function App() {
           >
             <Route index element={<NurseDashboard />} />
 
+            <Route path="managerDashboard" element={<NurseDashboard />} />
+
             <Route path="profile-view" element={<HealthProfileView />} />
             <Route path="news-management" element={<NewsManagement />} />
             <Route path="reports" element={<Reports />} />
             <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
             <Route path="settings" element={<SettingUser />} />
+          
           </Route>
           {/*Parent Route*/}
           <Route

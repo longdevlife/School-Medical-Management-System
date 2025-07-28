@@ -409,6 +409,8 @@ function AccountList() {
       console.log('📝 Updating student with values:', values);
       
       // Prepare student data
+      // Add 1 day to birthday before sending to backend
+      const birthdayPlusOne = values.birthday ? values.birthday.add(1, 'day') : null;
       const studentData = {
         StudentID: editingStudent.studentID || editingStudent.StudentID || editingStudent.id,
         StudentName: values.studentName,
@@ -416,7 +418,7 @@ function AccountList() {
         RelationName: values.relationName,
         Nationality: values.nationality,
         Ethnicity: values.ethnicity,
-        Birthday: values.birthday ? values.birthday.toISOString() : null,
+        Birthday: birthdayPlusOne ? birthdayPlusOne.toISOString() : null,
         Sex: values.sex,
         Location: values.location
       };
@@ -584,6 +586,8 @@ function AccountList() {
       }
 
       // Direct payload matching Swagger API schema exactly - NO wrapper
+      // Add 1 day to birthday before sending to backend
+      const birthdayPlusOne = values.birthday ? values.birthday.add(1, 'day') : null;
       const studentData = {
         studentName: values.studentName.trim(),
         class: values.class.trim(),
@@ -591,7 +595,7 @@ function AccountList() {
         relationName: values.relationName || "Con",
         nationality: values.nationality.trim() || "Việt Nam",
         ethnicity: values.ethnicity.trim() || "Kinh",
-        birthday: values.birthday.toISOString(),
+        birthday: birthdayPlusOne ? birthdayPlusOne.toISOString() : undefined,
         sex: values.sex,
         location: values.location.trim(),
         parentUserName: selectedUserForProfile.userName
@@ -973,6 +977,12 @@ function AccountList() {
       key: "userName",
     },
     {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+      render: (email) => email || <span style={{color: '#aaa'}}>Chưa có</span>
+    },
+    {
       title: "Mật khẩu",
       dataIndex: "password",
       key: "password",
@@ -1265,7 +1275,7 @@ function AccountList() {
                   label={<span className="font-bold">Tên đăng nhập</span>}
                   rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập" }]}
                 >
-                  <Input className="rounded-2xl text-base" placeholder="Nhập tên đăng nhập" />
+                  <Input disabled className="rounded-2xl text-base" placeholder="Nhập tên đăng nhập" />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -1492,6 +1502,7 @@ function AccountList() {
               <Descriptions bordered column={1} size="middle" className="rounded-3xl bg-white/95 text-base mb-6">
                 <Descriptions.Item label={<span className="font-bold">Mã người dùng</span>}>{selectedAccount.userID}</Descriptions.Item>
                 <Descriptions.Item label={<span className="font-bold">Tên đăng nhập</span>}>{selectedAccount.userName}</Descriptions.Item>
+                <Descriptions.Item label={<span className="font-bold">Email</span>}>{selectedAccount.email || <span style={{color: '#aaa'}}>Chưa có</span>}</Descriptions.Item>
                 <Descriptions.Item label={<span className="font-bold">Mật khẩu</span>}>********{selectedAccount.password}</Descriptions.Item>
 <Descriptions.Item label={<span className="font-bold">Vai trò</span>}>
   {(() => {

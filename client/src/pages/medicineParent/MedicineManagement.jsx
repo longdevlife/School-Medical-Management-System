@@ -2046,8 +2046,10 @@ const MedicineManagement = () => {
         const student = students.find((s) => s.StudentID === studentId);
         return (
           <div>
-            <div className="font-medium text-xs text-blue-500 ">
+            <div>
+              <Text strong style={{ fontSize: "14px" }}>
               {student?.StudentName || "N/A"}
+              </Text>
             </div>
             <div className="text-xs text-gray-500">
               {getStudentClass(studentId)}

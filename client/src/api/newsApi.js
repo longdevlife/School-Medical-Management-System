@@ -1,137 +1,83 @@
 import axiosClient from "./axiosClient";
 
-// Get all news
-export const getAllNews = async () => {
-  try {
-    console.log('Calling API /news/get-all-news');
-    const response = await axiosClient.get('/news/get-all-news');
-    console.log('Get all news success:', response);
-    return response;
-  } catch (error) {
-    console.error('Get all news error:', error);
-    throw error;
-  }
+const newsApi = {
+  general: {
+    getAll: () => axiosClient.get("/news/get-all-news"),
+    getById: (newsId) => axiosClient.get(`/news/get-news-by-id/${newsId}`),
+    create: (newsData) => axiosClient.post("/news/create-news", newsData),
+    update: (newsData) => axiosClient.put("/news/update-news", newsData),
+    delete: (newsId) => axiosClient.delete(`/news/delete-news/${newsId}`),
+    getActive: async () => {
+      try {
+        const response = await axiosClient.get("/news/get-active-news");
+        return response;
+      } catch (error) {
+        // Fallback to get all news and filter
+        try {
+          const allNewsResponse = await newsApi.general.getAll();
+          const activeNews = allNewsResponse.data.filter(news => news.Status === 1);
+          return { ...allNewsResponse, data: activeNews };
+        } catch (fallbackError) {
+          throw error;
+        }
+      }
+    },
+  },
+  manager: {
+    getAll: () => axiosClient.get("/manager/get-news-by-manager"),
+    create: ({ url, newsData }) => {
+      // Tự động chuyển object sang FormData, xử lý trường Image
+      const formData = new FormData();
+      Object.keys(newsData).forEach((key) => {
+        if (newsData[key] !== null && newsData[key] !== undefined) {
+          if (key === "Image" && Array.isArray(newsData[key])) {
+            newsData[key].forEach((file) => {
+              formData.append("Image", file);
+            });
+          } else {
+            formData.append(key, newsData[key]);
+          }
+        }
+      });
+      return axiosClient.post(url, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000,
+      });
+    },
+    update: (newsId, updateData) => {
+      const formData = new FormData();
+      Object.keys(updateData).forEach((key) => {
+        if (updateData[key] !== null && updateData[key] !== undefined) {
+          if (key === "Image" && Array.isArray(updateData[key])) {
+            updateData[key].forEach((file) => {
+              formData.append("Image", file);
+            });
+          } else {
+            formData.append(key, updateData[key]);
+          }
+        }
+      });
+      return axiosClient.put(`/manager/update-news/${newsId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000,
+      });
+    },
+    delete: (newsId) => axiosClient.delete(`/manager/delete-news/${newsId}`),
+  },
 };
 
-// Get news by ID
-export const getNewsById = async (newsId) => {
-  try {
-    console.log('Calling API /news/get-news-by-id with ID:', newsId);
-    const response = await axiosClient.get(`/news/get-news-by-id/${newsId}`);
-    console.log('Get news by ID success:', response);
-    return response;
-  } catch (error) {
-    console.error('Get news by ID error:', error);
-    throw error;
-  }
-};
 
-// Create new news
-export const createNews = async (newsData) => {
-  try {
-    console.log('Calling API /news/create-news with data:', newsData);
-    const response = await axiosClient.post('/news/create-news', newsData);
-    console.log('Create news success:', response);
-    return response;
-  } catch (error) {
-    console.error('Create news error:', error);
-    console.error('Error response:', error.response);
-    console.error('Error data:', error.response?.data);
-    console.error('Error status:', error.response?.status);
-    throw error;
-  }
-};
+// Named exports for compatibility
+export const getAllNews = newsApi.general.getAll;
+export const getNewsById = newsApi.general.getById;
+export const createNews = newsApi.general.create;
+export const updateNews = newsApi.general.update;
+export const deleteNews = newsApi.general.delete;
+export const getActiveNews = newsApi.general.getActive;
 
-// Update news
-export const updateNews = async (newsData) => {
-  try {
-    console.log('Calling API /news/update-news with data:', newsData);
-    const response = await axiosClient.put('/news/update-news', newsData);
-    console.log('Update news success:', response);
-    return response;
-  } catch (error) {
-    console.error('Update news error:', error);
-    console.error('Error response:', error.response);
-    console.error('Error data:', error.response?.data);
-    console.error('Error status:', error.response?.status);
-    throw error;
-  }
-};
+export const getNewsByManager = newsApi.manager.getAll;
+export const createNewsByManager = newsApi.manager.create;
+export const updateNewsByManager = newsApi.manager.update;
+export const deleteNewsByManager = newsApi.manager.delete;
 
-// Delete news
-export const deleteNews = async (newsId) => {
-  try {
-    console.log('Calling API /news/delete-news with ID:', newsId);
-    const response = await axiosClient.delete(`/news/delete-news/${newsId}`);
-    console.log('Delete news success:', response);
-    return response;
-  } catch (error) {
-    console.error('Delete news error:', error);
-    console.error('Error response:', error.response);
-    console.error('Error data:', error.response?.data);
-    console.error('Error status:', error.response?.status);
-    throw error;
-  }
-};
-
-// Get active news only
-export const getActiveNews = async () => {
-  try {
-    console.log('Calling API /news/get-active-news');
-    const response = await axiosClient.get('/news/get-active-news');
-    console.log('Get active news success:', response);
-    return response;
-  } catch (error) {
-    console.error('Get active news error:', error);
-    // Fallback to get all news and filter
-    try {
-      const allNewsResponse = await getAllNews();
-      const activeNews = allNewsResponse.data.filter(news => news.Status === 1);
-      return { ...allNewsResponse, data: activeNews };
-    } catch (fallbackError) {
-      console.error('Fallback get active news error:', fallbackError);
-      throw error;
-    }
-  }
-};
-
-// Get news by manager
-export const getNewsByManager = async () => {
-  try {
-    const response = await axiosClient.get('/manager/get-news-by-manager');
-    return response;
-  } catch (error) {
-    throw error;
-  }
-};
-
-// Create news by manager (POST /api/manager/create-news?Title=...&Summary=...&Body=..., multipart/form-data)
-export const createNewsByManager = async ({ url, formData }) => {
-  try {
-    // url có thể là /api/manager/create-news?Title=...&Summary=...&Body=...
-    const response = await axiosClient.post(url, formData);
-    return response;
-  } catch (error) {
-    throw error;
-  }
-};
-
-// Update news by manager (PUT /api/manager/update-news, multipart/form-data)
-export const updateNewsByManager = async (formData) => {
-  try {
-    const response = await axiosClient.put('/manager/update-news', formData);
-    return response;
-  } catch (error) {
-    throw error;
-  }
-};
-
-// Delete news by manager (DELETE /api/manager/delete-news/{id})
-export const deleteNewsByManager = async (newsId) => {
-  try {
-    const response = await axiosClient.delete(`/manager/delete-news/${newsId}`);
-    return response;
-  } catch (error) {
-    throw error;
-  }
-};
+export default newsApi;

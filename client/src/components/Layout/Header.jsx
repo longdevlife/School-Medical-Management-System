@@ -299,9 +299,8 @@ function AppHeader({ collapsed, setCollapsed }) {
     if (isAuthenticated) {
       fetchNotifications();
     } else {
-      // Clear notifications and all related state when user logs out
+      // Clear notifications and some state when user logs out, but keep read status
       setNotifications([]);
-      setReadNotifications([]);
       setShownToastNotifications([]);
       setHasShownInitialToasts(false);
     }
@@ -328,8 +327,7 @@ function AppHeader({ collapsed, setCollapsed }) {
 
   const handleUserMenuClick = ({ key }) => {
     if (key === "logout") {
-      // Clear notification read status and shown toast notifications when logout
-      localStorage.removeItem("readNotifications");
+      // Only clear shown toast notifications when logout, keep read status
       localStorage.removeItem("shownToastNotifications");
       authService.logout();
       navigate("/login");

@@ -22,7 +22,7 @@ const mapRoleIdToName = (roleId) => {
   return roleMap[roleId] || "USER";
 };
 
-// Helper function to check if token is expired
+// Helper function to check if token is expire
 const isTokenExpired = (token) => {
   try {
     const payload = decodeToken(token);

@@ -71,8 +71,7 @@ namespace Sever.Service
                         ActionTaken = dto.ActionTaken,
                         Notes = dto.Notes,
                         EventType = dto.EventType,
-                        NurseID = userId,
-                        
+                        NurseID = userId,        
                         
                     };
 
@@ -168,7 +167,7 @@ namespace Sever.Service
 
             }
             medicalEvents.Notes += $"\n. " +
-                $"Cập nhật {DateTime.UtcNow.AddHours(7)}: {dto.Notes}";
+                $"Cập nhật: {dto.Notes}";
             if (!string.IsNullOrWhiteSpace(dto.ActionTaken))
             {
                 medicalEvents.ActionTaken += $"\n, {dto.ActionTaken}";

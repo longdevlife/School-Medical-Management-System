@@ -81,7 +81,7 @@ function SidebarNurseManager({ collapsed }) {
     ...(userRole === "MANAGER"
       ? [
           {
-            key: `${basePath}/nurseDashboard`, // CRUD blog/bài viết sức khỏe
+            key: `${basePath}/managerDashboard`, // CRUD blog/bài viết sức khỏe
             icon: <EditOutlined />,
             label: "Tổng quan ",
           },

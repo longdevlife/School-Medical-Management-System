@@ -410,7 +410,7 @@ function AppHeader({ collapsed, setCollapsed }) {
             }}
           >
             <span className="text-2xl font-bold text-gray-900 tracking-tight whitespace-nowrap">
-              Y Tế Học Đường<span className="text-blue-600">.</span>
+              Y Tế Học Đường<span className="text-blue-600"></span>
             </span>
           </div>
         </div>

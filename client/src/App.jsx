@@ -110,11 +110,14 @@ function App() {
           >
             <Route index element={<NurseDashboard />} />
 
+            <Route path="managerDashboard" element={<NurseDashboard />} />
+
             <Route path="profile-view" element={<HealthProfileView />} />
             <Route path="news-management" element={<NewsManagement />} />
             <Route path="reports" element={<Reports />} />
             <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
             <Route path="settings" element={<SettingUser />} />
+          
           </Route>
           {/*Parent Route*/}
           <Route

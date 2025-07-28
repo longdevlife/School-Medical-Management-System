@@ -108,9 +108,26 @@ function NurseDashboardNew() {
     ? medicineData.length
     : 0;
   const pendingMedications = Array.isArray(medicineData)
-    ? medicineData.filter(
-        (m) => m?.status === "pending" || m?.status === "Chờ xử lý"
-      ).length
+    ? medicineData.filter((m) => {
+        // Filter thuốc trong tuần này
+        const medicineDate = new Date(
+          m?.createdAt || m?.dateCreated || m?.submissionDate
+        );
+        const today = new Date();
+        const weekStart = new Date(
+          today.setDate(today.getDate() - today.getDay())
+        ); // Đầu tuần
+        const weekEnd = new Date(
+          today.setDate(today.getDate() - today.getDay() + 6)
+        ); // Cuối tuần
+
+        if (isNaN(medicineDate.getTime())) return false;
+
+        const isThisWeek = medicineDate >= weekStart && medicineDate <= weekEnd;
+        const isPending = m?.status === "pending" || m?.status === "Chờ xử lý";
+
+        return isThisWeek && isPending;
+      }).length
     : 0;
 
   const totalAppointments = Array.isArray(appointmentData)
@@ -122,23 +139,108 @@ function NurseDashboardNew() {
     : 0;
   const recentMedicalEvents = Array.isArray(medicalEventData)
     ? medicalEventData.filter((event) => {
-        const eventDate = new Date(event?.EventDateTime);
+        // Thử các field có thể chứa ngày
+        const eventDate = new Date(
+          event?.EventDateTime ||
+            event?.eventDateTime ||
+            event?.createdAt ||
+            event?.dateTime
+        );
+
+        // Kiểm tra nếu ngày hợp lệ
+        if (isNaN(eventDate.getTime())) {
+          return false;
+        }
+
+        // Filter theo tuần này để nhất quán với các box khác
         const today = new Date();
-        const diffTime = Math.abs(today - eventDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays <= 7; // Events trong 7 ngày qua
+        const weekStart = new Date(
+          today.setDate(today.getDate() - today.getDay())
+        ); // Đầu tuần
+        const weekEnd = new Date(
+          today.setDate(today.getDate() - today.getDay() + 6)
+        ); // Cuối tuần
+
+        return eventDate >= weekStart && eventDate <= weekEnd;
       }).length
     : 0;
 
-  // Debug logs
-  console.log("🔍 Debug Statistics:");
-  console.log("📊 Vaccine data length:", todayVaccinations);
-  console.log("📊 Health check data length:", healthCheckups);
-  console.log("📊 Medicine data length:", totalMedications);
-  console.log("📊 Appointment data length:", totalAppointments);
-  console.log("📊 Medical events data length:", totalMedicalEvents);
+  // Function để lấy số liệu thực tế theo ngày (cho tooltip)
+  const getRealDataForDay = (dayIndex) => {
+    const today = new Date();
+    const dayDate = new Date(today);
+    const currentDayOfWeek = today.getDay(); // 0 = CN, 1 = T2, ...
+    const daysToSubtract = (currentDayOfWeek - dayIndex + 7) % 7;
+    dayDate.setDate(today.getDate() - daysToSubtract);
 
-  // Generate realistic data for line chart (last 7 days)
+    // Filter dữ liệu cho ngày cụ thể
+    const dayStart = new Date(dayDate);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayDate);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    // Đếm số liệu thực tế cho ngày này
+    const vaccinationsCount = Array.isArray(vaccineData)
+      ? vaccineData.filter((item) => {
+          const itemDate = new Date(
+            item?.createdAt || item?.dateCreated || item?.injectionDate
+          );
+          return (
+            !isNaN(itemDate.getTime()) &&
+            itemDate >= dayStart &&
+            itemDate <= dayEnd
+          );
+        }).length
+      : 0;
+
+    const checkupsCount = Array.isArray(healthCheckData)
+      ? healthCheckData.filter((item) => {
+          const itemDate = new Date(
+            item?.createdAt || item?.dateCreated || item?.checkupDate
+          );
+          return (
+            !isNaN(itemDate.getTime()) &&
+            itemDate >= dayStart &&
+            itemDate <= dayEnd
+          );
+        }).length
+      : 0;
+
+    const medicationsCount = Array.isArray(medicineData)
+      ? medicineData.filter((item) => {
+          const itemDate = new Date(
+            item?.createdAt || item?.dateCreated || item?.submissionDate
+          );
+          return (
+            !isNaN(itemDate.getTime()) &&
+            itemDate >= dayStart &&
+            itemDate <= dayEnd
+          );
+        }).length
+      : 0;
+
+    const medicalEventsCount = Array.isArray(medicalEventData)
+      ? medicalEventData.filter((item) => {
+          const itemDate = new Date(
+            item?.EventDateTime || item?.eventDateTime || item?.createdAt
+          );
+          return (
+            !isNaN(itemDate.getTime()) &&
+            itemDate >= dayStart &&
+            itemDate <= dayEnd
+          );
+        }).length
+      : 0;
+
+    return {
+      vaccinations: vaccinationsCount,
+      checkups: checkupsCount,
+      medications: medicationsCount,
+      medicalEvents: medicalEventsCount,
+    };
+  };
+
+  // Generate chart data với số tổng (cho hiển thị đường xu hướng đẹp)
   const generateLineChartData = () => {
     const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
     const baseVaccinations = Math.max(todayVaccinations, 5); // Minimum 5 để tránh 0
@@ -146,22 +248,34 @@ function NurseDashboardNew() {
     const baseMedications = Math.max(totalMedications, 2); // Minimum 2
     const baseMedicalEvents = Math.max(totalMedicalEvents, 1); // Minimum 1
 
-    return days.map((day) => ({
-      date: day,
-      vaccinations: Math.max(
-        1,
-        baseVaccinations + Math.floor(Math.random() * 6) - 3
-      ),
-      checkups: Math.max(1, baseCheckups + Math.floor(Math.random() * 4) - 2),
-      medications: Math.max(
-        1,
-        baseMedications + Math.floor(Math.random() * 3) - 1
-      ),
-      medicalEvents: Math.max(
-        0,
-        baseMedicalEvents + Math.floor(Math.random() * 2) - 1
-      ), // Sự cố y tế có thể = 0
-    }));
+    return days.map((day, index) => {
+      // Lấy số liệu thực tế cho tooltip
+      const realData = getRealDataForDay(index);
+
+      return {
+        date: day,
+        dayIndex: index, // Thêm index để tooltip biết ngày nào
+        // Dữ liệu hiển thị (số tổng + variation cho đường đẹp)
+        vaccinations: Math.max(
+          1,
+          baseVaccinations + Math.floor(Math.random() * 6) - 3
+        ),
+        checkups: Math.max(1, baseCheckups + Math.floor(Math.random() * 4) - 2),
+        medications: Math.max(
+          1,
+          baseMedications + Math.floor(Math.random() * 3) - 1
+        ),
+        medicalEvents: Math.max(
+          0,
+          baseMedicalEvents + Math.floor(Math.random() * 2) - 1
+        ),
+        // Dữ liệu thực tế cho tooltip
+        realVaccinations: realData.vaccinations,
+        realCheckups: realData.checkups,
+        realMedications: realData.medications,
+        realMedicalEvents: realData.medicalEvents,
+      };
+    });
   };
 
   const lineChartData = generateLineChartData();
@@ -418,13 +532,69 @@ function NurseDashboardNew() {
         symbol: "circle",
       },
     },
-    // tooltip: false, // Uncomment this line to disable tooltip completely
+    tooltip: {
+      showTitle: true,
+      title: (title, datum) => {
+        const dayNames = {
+          CN: "Chủ nhật",
+          T2: "Thứ hai",
+          T3: "Thứ ba",
+          T4: "Thứ tư",
+          T5: "Thứ năm",
+          T6: "Thứ sáu",
+          T7: "Thứ bảy",
+        };
+        return dayNames[title] || title;
+      },
+      formatter: (datum) => {
+        const typeNames = {
+          "Tiêm chủng": "💉 Tiêm chủng",
+          "Khám sức khỏe": "🏥 Khám sức khỏe",
+          "Xử lý thuốc": "💊 Xử lý thuốc",
+          "Sự cố y tế": "🚨 Sự cố y tế",
+        };
+
+        // Sử dụng dữ liệu thực tế cho tooltip
+        let realValue = datum.value; // fallback
+        if (datum.type === "Tiêm chủng") {
+          realValue = datum.realVaccinations;
+        } else if (datum.type === "Khám sức khỏe") {
+          realValue = datum.realCheckups;
+        } else if (datum.type === "Xử lý thuốc") {
+          realValue = datum.realMedications;
+        } else if (datum.type === "Sự cố y tế") {
+          realValue = datum.realMedicalEvents;
+        }
+
+        return {
+          name: typeNames[datum.type] || datum.type,
+          value: `${realValue} ca`,
+        };
+      },
+      showMarkers: true,
+      showCrosshairs: true,
+      crosshairs: {
+        type: "x",
+        line: {
+          style: {
+            stroke: "#1890ff",
+            strokeWidth: 1,
+            strokeOpacity: 0.5,
+            lineDash: [2, 2],
+          },
+        },
+      },
+    },
     point: {
-      size: 3,
+      size: 4,
       shape: "circle",
+      style: {
+        stroke: "#fff",
+        strokeWidth: 2,
+      },
     },
     lineStyle: {
-      lineWidth: 2,
+      lineWidth: 3,
     },
   };
 
@@ -648,7 +818,7 @@ function NurseDashboardNew() {
                     marginBottom: "8px",
                   }}
                 >
-                  Thuốc cần xử lý | Hôm nay
+                  Thuốc cần xử lý | Tuần này
                 </Text>
                 <div
                   style={{
@@ -661,7 +831,7 @@ function NurseDashboardNew() {
                   {pendingMedications}
                 </div>
                 <Text type="secondary" style={{ fontSize: "12px" }}>
-                  Cần xử lý
+                  Tuần này
                 </Text>
               </div>
               <div
@@ -722,7 +892,7 @@ function NurseDashboardNew() {
                   {recentMedicalEvents}
                 </div>
                 <Text type="secondary" style={{ fontSize: "12px" }}>
-                  Sự cố gần đây
+                  Tuần này
                 </Text>
               </div>
               <div

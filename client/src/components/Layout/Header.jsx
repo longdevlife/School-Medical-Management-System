@@ -172,7 +172,7 @@ function AppHeader({ collapsed, setCollapsed }) {
         showProgress: true,
         pauseOnHover: true,
         placement: "topRight",
-        duration: 6,
+        duration: 2,
         className: "custom-notification",
       });
     },
@@ -311,7 +311,6 @@ function AppHeader({ collapsed, setCollapsed }) {
 
   // User dropdown menu items
   const userMenuItems = [
-   
     {
       key: "settings",
       icon: <SettingOutlined />,

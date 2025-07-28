@@ -17,6 +17,7 @@ import {
   Upload,
   Descriptions,
   Radio,
+  Tabs,
 } from "antd";
 import {
   PlusOutlined,
@@ -47,6 +48,7 @@ function MedicationSubmission() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [classFilter, setClassFilter] = useState("all");
   const [searchText, setSearchText] = useState(""); // 🆕 Search text for multi-field search
+  const [activeTab, setActiveTab] = useState("waiting-confirmation"); // 🆕 Tab state
   const [form] = Form.useForm();
 
   // modal thêm thuốc
@@ -775,8 +777,30 @@ function MedicationSubmission() {
     console.log("🔍 Searching for:", searchText);
   };
 
-  // Updated filter logic to use searchText for multi-field search
+  // Updated filter logic with 3 tabs
   const filteredSubmissions = submissions.filter((submission) => {
+    // Tab filtering first
+    let matchesTab = false;
+    if (activeTab === "waiting-confirmation") {
+      // Tab 1: Chờ xác nhận (pending, Chờ xử lý, submitted)
+      matchesTab = ["pending", "Chờ xử lý", "submitted"].includes(
+        submission.status
+      );
+    } else if (activeTab === "in-use") {
+      // Tab 2: Đang sử dụng (approved, Đã xác nhận, in-use, Đang sử dụng)
+      matchesTab = [
+        "approved",
+        "Đã xác nhận",
+        "in-use",
+        "Đang sử dụng",
+      ].includes(submission.status);
+    } else if (activeTab === "completed") {
+      // Tab 3: Hoàn thành (completed, Hoàn thành, rejected, Từ chối)
+      matchesTab = ["completed", "Hoàn thành", "rejected", "Từ chối"].includes(
+        submission.status
+      );
+    }
+
     const matchesStatus =
       statusFilter === "all" || submission.status === statusFilter;
     const matchesClass =
@@ -793,7 +817,7 @@ function MedicationSubmission() {
       (submission.studentClass &&
         String(submission.studentClass).toLowerCase().includes(search));
 
-    return matchesStatus && matchesClass && matchesSearch;
+    return matchesTab && matchesStatus && matchesClass && matchesSearch;
   });
 
   const columns = [
@@ -1847,20 +1871,121 @@ function MedicationSubmission() {
           }}
           bodyStyle={{ padding: "0" }}
         >
-          <Table
-            columns={columns}
-            dataSource={filteredSubmissions}
-            loading={loading}
-            rowKey="id"
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} của ${total} thuốc`,
-            }}
-            scroll={{ x: 800 }}
-            style={{ borderRadius: "0 0 20px 20px" }}
+          {/* 🎯 Tabs cho workflow thuốc - Đặt ngay dưới tiêu đề */}
+          <Tabs
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            style={{ padding: "24px 24px 0 24px" }}
+            size="large"
+            type="card"
+            items={[
+              {
+                key: "waiting-confirmation",
+                label: (
+                  <span style={{ fontSize: "16px", fontWeight: "600" }}>
+                    📋 Chờ xác nhận (
+                    {
+                      submissions.filter((s) =>
+                        ["pending", "Chờ xử lý", "submitted"].includes(s.status)
+                      ).length
+                    }
+                    )
+                  </span>
+                ),
+                children: (
+                  /* Bảng danh sách cho Tab Chờ xác nhận */
+                  <Table
+                    columns={columns}
+                    dataSource={filteredSubmissions}
+                    loading={loading}
+                    rowKey="id"
+                    pagination={{
+                      pageSize: 10,
+                      showSizeChanger: true,
+                      showQuickJumper: true,
+                      showTotal: (total, range) =>
+                        `${range[0]}-${range[1]} của ${total} thuốc chờ xác nhận`,
+                    }}
+                    scroll={{ x: 800 }}
+                    style={{ borderRadius: "0 0 20px 20px" }}
+                  />
+                ),
+              },
+              {
+                key: "in-use",
+                label: (
+                  <span style={{ fontSize: "16px", fontWeight: "600" }}>
+                    💊 Đang sử dụng (
+                    {
+                      submissions.filter((s) =>
+                        [
+                          "approved",
+                          "Đã xác nhận",
+                          "in-use",
+                          "Đang sử dụng",
+                        ].includes(s.status)
+                      ).length
+                    }
+                    )
+                  </span>
+                ),
+                children: (
+                  /* Bảng danh sách cho Tab Đang sử dụng */
+                  <Table
+                    columns={columns}
+                    dataSource={filteredSubmissions}
+                    loading={loading}
+                    rowKey="id"
+                    pagination={{
+                      pageSize: 10,
+                      showSizeChanger: true,
+                      showQuickJumper: true,
+                      showTotal: (total, range) =>
+                        `${range[0]}-${range[1]} của ${total} thuốc đang sử dụng`,
+                    }}
+                    scroll={{ x: 800 }}
+                    style={{ borderRadius: "0 0 20px 20px" }}
+                  />
+                ),
+              },
+              {
+                key: "completed",
+                label: (
+                  <span style={{ fontSize: "16px", fontWeight: "600" }}>
+                    ✅ Hoàn thành (
+                    {
+                      submissions.filter((s) =>
+                        [
+                          "completed",
+                          "Hoàn thành",
+                          "rejected",
+                          "Từ chối",
+                        ].includes(s.status)
+                      ).length
+                    }
+                    )
+                  </span>
+                ),
+                children: (
+                  /* Bảng danh sách cho Tab Hoàn thành */
+                  <Table
+                    columns={columns}
+                    dataSource={filteredSubmissions}
+                    loading={loading}
+                    rowKey="id"
+                    pagination={{
+                      pageSize: 10,
+                      showSizeChanger: true,
+                      showQuickJumper: true,
+                      showTotal: (total, range) =>
+                        `${range[0]}-${range[1]} của ${total} thuốc đã hoàn thành`,
+                    }}
+                    scroll={{ x: 800 }}
+                    style={{ borderRadius: "0 0 20px 20px" }}
+                  />
+                ),
+              },
+            ]}
           />
         </Card>
 

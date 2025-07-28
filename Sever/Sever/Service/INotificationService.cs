@@ -18,10 +18,13 @@ namespace Sever.Service
         Task HealthProfileNotificationForParent(string studentId, string customMessage = null);
         Task<List<Notify>> GetNotifyByUserId(string userId);
         Task<bool> AppointmentNotify(Appointment appointment);
+        Task<bool> AppointmentNotifyConfirm(Appointment appointment);
+        Task<bool> AppointmentNotifyDenied(Appointment appointment);
         Task<bool> SendHealthCheckupNotificationAsync(StudentProfile student, DateTime date);
         Task<bool> UpdateHealthCheckUpNotifycationAsync(StudentProfile student);
         Task<bool> SendVaccinationNotificationAsync(StudentProfile student, DateTime? date);
         Task<bool> UpdateVaccinationNotifycationAsync(StudentProfile student);
+
 
     }
     public class NotificationService : INotificationService
@@ -284,6 +287,81 @@ namespace Sever.Service
                 throw new Exception("Lỗi khi gửi thông báo cuộc hẹn khám sức khỏe.", ex);
             }
         }
+
+        public async Task<bool> AppointmentNotifyConfirm(Appointment appointment)
+        {
+            try
+            {
+                var healthCheckUp = await _healthCheckUpRepository.GetHealthCheckUpByIdAsync(appointment.HealthCheckUpID);
+                var student = await _studentProfileRepository.SearchStudentProfile(healthCheckUp.StudentID);
+                var allNurseIDs = await _notificationRepository.GetAllNurseIDsAsync();
+
+                if (allNurseIDs == null || !allNurseIDs.Any())
+                    return false;
+
+                foreach (var nurseID in allNurseIDs)
+                {
+                    string notifyId = await _notificationRepository.GetCurrentNotifyID();
+
+                    var notification = new Notify
+                    {
+                        NotifyID = notifyId,
+                        UserID = nurseID,
+                        NotifyName = "Xác nhận cuộc hẹn khám sức khỏe",
+                        DateTime = DateTime.UtcNow.AddHours(7),
+                        Title = "Cuộc hẹn đã được xác nhận",
+                        Description = $"Cuộc hẹn khám sức khỏe cho học sinh {student.StudentName} đã được xác nhận. Mong phụ huynh sắp xếp thời gian đi cùng em đến buổi hẹn."
+                    };
+
+                    await _notificationRepository.AddNotificationAsync(notification);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi gửi thông báo xác nhận cuộc hẹn đến y tá.", ex);
+            }
+        }
+
+
+        public async Task<bool> AppointmentNotifyDenied(Appointment appointment)
+        {
+            try
+            {
+                var healthCheckUp = await _healthCheckUpRepository.GetHealthCheckUpByIdAsync(appointment.HealthCheckUpID);
+                var student = await _studentProfileRepository.SearchStudentProfile(healthCheckUp.StudentID);
+                var allNurseIDs = await _notificationRepository.GetAllNurseIDsAsync();
+
+                if (allNurseIDs == null || !allNurseIDs.Any())
+                    return false;
+
+                foreach (var nurseID in allNurseIDs)
+                {
+                    string notifyId = await _notificationRepository.GetCurrentNotifyID();
+
+                    var notification = new Notify
+                    {
+                        NotifyID = notifyId,
+                        UserID = nurseID,
+                        NotifyName = "Từ chối cuộc hẹn khám sức khỏe",
+                        DateTime = DateTime.UtcNow.AddHours(7),
+                        Title = "Cuộc hẹn đã bị từ chối",
+                        Description = $"Cuộc hẹn khám sức khỏe cho học sinh {student.StudentName} đã bị từ chối. Ghi chú: {appointment.Notes}"
+                    };
+
+                    await _notificationRepository.AddNotificationAsync(notification);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi gửi thông báo từ chối cuộc hẹn đến y tá.", ex);
+            }
+        }
+
+
 
         public async Task<bool> SendVaccinationNotificationAsync(StudentProfile student, DateTime? date)
         {

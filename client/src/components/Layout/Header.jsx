@@ -290,7 +290,7 @@ function AppHeader({ collapsed, setCollapsed }) {
         fetchNotifications();
       }
     },
-    60000,
+    10000,
     isAuthenticated
   ); // 60 giây, chỉ khi đã đăng nhập
 

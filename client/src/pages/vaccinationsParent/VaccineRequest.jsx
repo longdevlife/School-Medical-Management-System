@@ -187,7 +187,7 @@ const VaccineRequest = () => {
         }
     };
      // ==================== AUTOREFRESH ====================
-     useAutoRefresh(fetchVaccineData, 30000);
+     useAutoRefresh(fetchVaccineData, 10000);
 
 
     // ==================== HANDLER FUNCTIONS ====================

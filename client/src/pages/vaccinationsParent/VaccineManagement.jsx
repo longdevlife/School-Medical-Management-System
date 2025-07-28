@@ -174,7 +174,7 @@ const VaccineManagement = () => {
           VaccinatorID: vaccine.vaccinatorID,
           NurseID: vaccine.nurseID,
           ParentID: vaccine.parentID,
-          vaccinatorName: vaccine.vaccinatorName,
+         
         }));
         console.log("📋 Vaccine đã lọc theo học sinh:", normalizedVaccines);
 
@@ -498,7 +498,7 @@ const VaccineManagement = () => {
 
   //======================AUTOREFRESH==========================
   // Tự động refresh mỗi 30 giây
-  useAutoRefresh(fetchVaccineData, 30000);
+  useAutoRefresh(fetchVaccineData, 10000);
 
   // ==================== HANDLER FUNCTIONS ====================
 

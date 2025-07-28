@@ -104,7 +104,7 @@ const HealthResult = () => {
   }, [selectedStudentId]);
 
   //=====================AUTO REFRESH=======================
-  useAutoRefresh(fetchAppointments, 30000);
+  useAutoRefresh(fetchAppointments, 10000);
 
 
   const fetchHealthCheckups = useCallback(async () => {
@@ -347,7 +347,7 @@ const HealthResult = () => {
     }
   }, [selectedStudentId]); // Bỏ fetchAppointments khỏi dependencies
  //=====================AUTO REFRESH========================
-  useAutoRefresh(fetchHealthCheckups, 30000);
+  useAutoRefresh(fetchHealthCheckups, 10000);
 
   
   // Component mount

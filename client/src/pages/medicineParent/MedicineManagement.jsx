@@ -1026,7 +1026,7 @@ const MedicineManagement = () => {
   };
   
   //tự động refresh 
-  useAutoRefresh(fetchMedicinesFromServer, 30000);
+  useAutoRefresh(fetchMedicinesFromServer, 10000);
   // ==================== HANDLER FUNCTIONS ====================
 
   const getStudentName = (studentId) => {

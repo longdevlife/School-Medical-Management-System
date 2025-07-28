@@ -67,7 +67,7 @@ function App() {
             <Route path="accounts" element={<AccountList />} />
             <Route path="settings" element={<Settings />} />
           </Route>
-          {/* Nurse Routes */}
+          {/* Nurse Route */}
           <Route
             path="/nurses/*"
             element={

@@ -282,7 +282,7 @@ const StudentProfile = () => {
                 <div className="space-y-0 md:border-l border-gray-200">
                   <InfoRow 
                     icon={<UserOutlined />}
-                    label="Họ tên phụ huynh" 
+                    label="Họ tên cha mẹ" 
                     value={currentStudent.Parent?.UserName || currentStudent.RelationName} 
                   />
                   <InfoRow 
@@ -297,7 +297,7 @@ const StudentProfile = () => {
                   />
                   <InfoRow
                     icon={<MailOutlined />} 
-                    label="Email phụ huynh" 
+                    label="Email cha mẹ" 
                     value={currentStudent.Parent?.Email} 
                   />
                   <InfoRow 

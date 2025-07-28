@@ -131,10 +131,12 @@ namespace Sever.Repository
             return await _context.VaccinationRecord
                 .Where(v => v.StudentID == studentId)
                 .Include(r => r.StudentProfile)
+                .Include(v => v.Nurse)
                 .Include(r => r.Vaccinator)
                 .Include(r => r.Vaccine)
                 .ToListAsync();
         }
+
         public async Task<List<VaccinationRecord>> GetVaccineNotResponseAsync()
         {
             return await _context.VaccinationRecord

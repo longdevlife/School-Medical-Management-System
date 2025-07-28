@@ -506,8 +506,8 @@ namespace Sever.Service
                 VaccinatorID = e.VaccinatorID,
                 Class = e.StudentProfile?.Class,
                 StudentName = e.StudentProfile?.StudentName,
-                VaccinatorName = e.Nurse.Name,
-                VaccineName = e.Vaccine?.VaccineName,
+                VaccinatorName = e.Nurse.Name ?? "chưa rõ",
+                VaccineName = e.Vaccine?.VaccineName ?? "chưa rõ",
             }).ToList();
 
             return responses;

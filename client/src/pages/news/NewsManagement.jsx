@@ -237,16 +237,17 @@ function NewsManagement() {
       // Nếu newsId là object hoặc có trường khác, lấy đúng trường id thực tế (newsID)
       const realId =
         typeof newsId === "object" && newsId.newsID ? newsId.newsID : newsId;
-      const response = await fetch(
-        `https://localhost:7040/api/manager/delete-news/${realId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-          headers: localStorage.getItem("token")
-            ? { Authorization: "Bearer " + localStorage.getItem("token") }
-            : undefined,
-        }
-      );
+      const baseURL =
+        import.meta.env.VITE_API_BASE_URL || "https://localhost:7040/api/";
+      const apiUrl = `${baseURL}manager/delete-news/${realId}`;
+
+      const response = await fetch(apiUrl, {
+        method: "DELETE",
+        credentials: "include",
+        headers: localStorage.getItem("token")
+          ? { Authorization: "Bearer " + localStorage.getItem("token") }
+          : undefined,
+      });
       if (response.status === 401) {
         message.error(
           "Bạn chưa đăng nhập hoặc không có quyền xóa bài viết này (401 Unauthorized). Vui lòng đăng nhập lại."

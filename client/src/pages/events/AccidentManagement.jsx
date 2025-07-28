@@ -330,6 +330,26 @@ export default function AccidentManagement() {
   const handleCreateAccident = async (values) => {
     setCreateLoading(true);
     try {
+      // ✅ VALIDATION: Kiểm tra StudentID format
+      const studentID = values.studentID?.trim();
+      if (!studentID) {
+        Modal.error({
+          title: "Lỗi validation",
+          content: "Vui lòng nhập mã học sinh!",
+        });
+        setCreateLoading(false);
+        return;
+      }
+
+      if (!studentID.match(/^ST\d+$/)) {
+        Modal.error({
+          title: "Mã học sinh không hợp lệ",
+          content: `Mã học sinh "${studentID}" không đúng định dạng.\nVui lòng nhập theo format: ST + số (ví dụ: ST0001)`,
+        });
+        setCreateLoading(false);
+        return;
+      }
+
       // Chuyển fileList thành array file gốc - Xử lý cấu trúc Upload component giống MedicationSubmission.jsx
       console.log("🔍 CREATE DEBUG - values.image raw:", values.image);
       console.log("🔍 CREATE DEBUG - values.image type:", typeof values.image);
@@ -379,8 +399,30 @@ export default function AccidentManagement() {
     } catch (err) {
       console.error("❌ Lỗi tạo sự cố:", err);
 
-      // Hiển thị thông báo lỗi chi tiết từ backend
-      if (err?.response?.data?.message) {
+      // ✅ Kiểm tra lỗi StudentID không tồn tại
+      const errorMessage = err?.response?.data?.message || "";
+      const isStudentNotFound =
+        errorMessage.includes("StudentID") ||
+        errorMessage.includes("student") ||
+        errorMessage.includes("không tồn tại") ||
+        errorMessage.includes("not found");
+
+      if (isStudentNotFound) {
+        Modal.error({
+          title: "Học sinh không tồn tại",
+          content: (
+            <div>
+              <p>
+                Mã học sinh <strong>"{values.studentID}"</strong> không tồn tại
+                trong hệ thống!
+              </p>
+              <p>
+                Vui lòng kiểm tra lại mã học sinh hoặc liên hệ quản trị viên.
+              </p>
+            </div>
+          ),
+        });
+      } else if (err?.response?.data?.message) {
         message.error(`Lỗi: ${err.response.data.message}`);
       } else if (err?.response?.data?.errors) {
         // Nếu backend trả về validation errors

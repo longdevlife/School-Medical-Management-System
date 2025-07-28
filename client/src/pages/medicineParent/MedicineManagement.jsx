@@ -1756,10 +1756,24 @@ const MedicineManagement = () => {
                 }))
               );
 
-              message.error(`❌ Lỗi: Học sinh với ID "${medicineData.StudentID}" không tồn tại trong hệ thống. 
-                           Vui lòng:
-                           1. Kiểm tra lại danh sách học sinh
-                           2. Liên hệ quản trị viên nếu vấn đề vẫn tiếp diễn`);
+              Modal.error({
+                title: "Học sinh không tồn tại",
+                content: (
+                  <div>
+                    <p>
+                      Mã học sinh <strong>"{medicineData.StudentID}"</strong>{" "}
+                      không tồn tại trong hệ thống!
+                    </p>
+                    <p>
+                      <strong>Vui lòng:</strong>
+                    </p>
+                    <ul>
+                      <li>Kiểm tra lại danh sách học sinh</li>
+                      <li>Liên hệ quản trị viên nếu vấn đề vẫn tiếp diễn</li>
+                    </ul>
+                  </div>
+                ),
+              });
 
               // Tự động refresh danh sách học sinh
               console.log("🔄 Auto refreshing students list...");

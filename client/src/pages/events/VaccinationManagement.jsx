@@ -198,6 +198,26 @@ function VaccinationManagement() {
   // Tạo mới vaccine - sử dụng vaccineApi
   const handleCreateVaccine = async (values) => {
     try {
+      // ✅ VALIDATION: Kiểm tra StudentID format nếu tạo cho học sinh
+      if (values.createType === "student") {
+        const studentID = values.studentId?.trim();
+        if (!studentID) {
+          Modal.error({
+            title: "Lỗi validation",
+            content: "Vui lòng nhập mã học sinh!",
+          });
+          return;
+        }
+
+        if (!studentID.match(/^ST\d+$/)) {
+          Modal.error({
+            title: "Mã học sinh không hợp lệ",
+            content: `Mã học sinh "${studentID}" không đúng định dạng.\nVui lòng nhập theo format: ST + số (ví dụ: ST0001)`,
+          });
+          return;
+        }
+      }
+
       // Tạo data theo format vaccineApi
       const createData = {
         VaccineID: values.vaccineId || "1",
@@ -239,7 +259,31 @@ function VaccinationManagement() {
       console.error("Error response:", error.response?.data);
       console.error("Error status:", error.response?.status);
 
-      if (error.response?.status === 400) {
+      // ✅ Kiểm tra lỗi StudentID không tồn tại
+      const errorMessage = error?.response?.data?.message || "";
+      const isStudentNotFound =
+        errorMessage.includes("StudentID") ||
+        errorMessage.includes("student") ||
+        errorMessage.includes("không tồn tại") ||
+        errorMessage.includes("not found") ||
+        error.response?.status === 404;
+
+      if (isStudentNotFound && values.createType === "student") {
+        Modal.error({
+          title: "Học sinh không tồn tại",
+          content: (
+            <div>
+              <p>
+                Mã học sinh <strong>"{values.studentId}"</strong> không tồn tại
+                trong hệ thống!
+              </p>
+              <p>
+                Vui lòng kiểm tra lại mã học sinh hoặc liên hệ quản trị viên.
+              </p>
+            </div>
+          ),
+        });
+      } else if (error.response?.status === 400) {
         const errorMessage =
           error.response?.data?.message || "Dữ liệu không hợp lệ";
         message.error(`Lỗi: ${errorMessage}`);

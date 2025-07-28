@@ -333,6 +333,24 @@ function HealthCheckManagement() {
   // Tạo mới health check (manual - Tab 2)
   const handleCreateHealthCheck = async (values) => {
     try {
+      // ✅ VALIDATION: Kiểm tra StudentID format
+      const studentID = values.studentId?.trim();
+      if (!studentID) {
+        Modal.error({
+          title: "Lỗi validation",
+          content: "Vui lòng nhập mã học sinh!",
+        });
+        return;
+      }
+
+      if (!studentID.match(/^ST\d+$/)) {
+        Modal.error({
+          title: "Mã học sinh không hợp lệ",
+          content: `Mã học sinh "${studentID}" không đúng định dạng.\nVui lòng nhập theo format: ST + số (ví dụ: ST0001)`,
+        });
+        return;
+      }
+
       const createData = {
         StudentID: values.studentId,
         CheckDate: values.checkDate
@@ -363,7 +381,33 @@ function HealthCheckManagement() {
     } catch (error) {
       console.error("❌ Error creating health check:", error);
       console.error("❌ Error response:", error.response?.data);
-      message.error("Tạo hồ sơ khám sức khỏe thất bại!");
+
+      // ✅ Kiểm tra lỗi StudentID không tồn tại
+      const errorMessage = error?.response?.data?.message || "";
+      const isStudentNotFound =
+        errorMessage.includes("StudentID") ||
+        errorMessage.includes("student") ||
+        errorMessage.includes("không tồn tại") ||
+        errorMessage.includes("not found");
+
+      if (isStudentNotFound) {
+        Modal.error({
+          title: "Học sinh không tồn tại",
+          content: (
+            <div>
+              <p>
+                Mã học sinh <strong>"{values.studentId}"</strong> không tồn tại
+                trong hệ thống!
+              </p>
+              <p>
+                Vui lòng kiểm tra lại mã học sinh hoặc liên hệ quản trị viên.
+              </p>
+            </div>
+          ),
+        });
+      } else {
+        message.error("Tạo hồ sơ khám sức khỏe thất bại!");
+      }
     }
   };
 

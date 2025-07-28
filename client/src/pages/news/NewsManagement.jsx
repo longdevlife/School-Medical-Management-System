@@ -457,7 +457,7 @@ function NewsManagement() {
       formData.append("Summary", excerpt?.trim() || "");
       formData.append("Body", content?.trim() || "");
 
-      // Debug dữ liệu gửi lên
+      // Debug dữ liệu gửi lênN
       for (let pair of formData.entries()) {
         console.log("UPDATE FORM DATA:", pair[0], pair[1]);
       }

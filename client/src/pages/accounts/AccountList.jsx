@@ -121,9 +121,10 @@ function AccountList() {
       if (Array.isArray(res.data) && res.data.length > 0) {
         console.log('Sample account object:', res.data[0]);
       }
-      // Lấy đúng mảng tài khoản từ res.data
+      // Lấy đúng mảng tài khoản từ res.data và loại bỏ tài khoản Admin
       const data = Array.isArray(res.data) ? res.data : [];
-      setAccounts(data);
+      const filtered = data.filter(acc => acc.roleName !== 'Admin');
+      setAccounts(filtered);
     } catch (err) {
       setAccounts([]);
       message.error("Không thể tải danh sách tài khoản từ server!");

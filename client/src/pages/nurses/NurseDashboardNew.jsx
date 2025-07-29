@@ -87,7 +87,7 @@ function NurseDashboardNew() {
     fetchDashboardData();
   }, []);
 
-  // ✅ Calculate statistics từ real data - tất cả theo tuần này để nhất quán
+  // Calculate statistics từ real data
   const getWeekRange = () => {
     const today = new Date();
     const currentDay = today.getDay(); // 0 = CN, 1 = T2, ...
@@ -105,12 +105,11 @@ function NurseDashboardNew() {
 
   const { weekStart, weekEnd } = getWeekRange();
 
-  // Vaccine tuần này
+  // ✅ VACCINE STATS - Theo cấu trúc API thực tế từ VaccinationManagement.jsx
   const weeklyVaccinations = Array.isArray(vaccineData)
     ? vaccineData.filter((v) => {
-        const vaccineDate = new Date(
-          v?.createdAt || v?.dateCreated || v?.injectionDate
-        );
+        // Filter theo tuần này
+        const vaccineDate = new Date(v?.dateTime || v?.createdAt);
         return (
           !isNaN(vaccineDate.getTime()) &&
           vaccineDate >= weekStart &&
@@ -121,112 +120,120 @@ function NurseDashboardNew() {
 
   const injectedVaccines = Array.isArray(vaccineData)
     ? vaccineData.filter((v) => {
-        const vaccineDate = new Date(
-          v?.createdAt || v?.dateCreated || v?.injectionDate
-        );
+        // Filter theo tuần này + status đã tiêm
+        const vaccineDate = new Date(v?.dateTime || v?.createdAt);
         const isThisWeek =
           !isNaN(vaccineDate.getTime()) &&
           vaccineDate >= weekStart &&
           vaccineDate <= weekEnd;
-        const isInjected = v?.status === "injected" || v?.status === "Đã tiêm";
+
+        // ✅ Theo mapping từ VaccinationManagement.jsx
+        const backendStatus = v?.status?.trim();
+        const isInjected =
+          backendStatus === "Đã tiêm" ||
+          backendStatus === "Đã tiêm xong" ||
+          backendStatus === "Hoàn tất tiêm" ||
+          backendStatus === "Đang tiêm";
+
         return isThisWeek && isInjected;
       }).length
     : 0;
 
-  // Health check tuần này
+  // ✅ HEALTH CHECK STATS - Theo cấu trúc API thực tế từ HealthCheckManagement.jsx
+  console.log("🔍 DEBUG HEALTH CHECK DATA:", healthCheckData);
+
   const weeklyHealthChecks = Array.isArray(healthCheckData)
     ? healthCheckData.filter((h) => {
-        const checkDate = new Date(
-          h?.createdAt || h?.dateCreated || h?.checkupDate
+        // ✅ Theo API healthCheckApi.nurse.getAll() - field checkDate
+        const checkDate = new Date(h?.checkDate);
+        console.log(
+          "🔍 Health check date:",
+          h?.checkDate,
+          "Parsed:",
+          checkDate
         );
-        return (
+        const isInWeek =
           !isNaN(checkDate.getTime()) &&
           checkDate >= weekStart &&
-          checkDate <= weekEnd
-        );
+          checkDate <= weekEnd;
+        console.log("🔍 Health check in week:", isInWeek);
+        return isInWeek;
       }).length
     : 0;
 
   const completedHealthChecks = Array.isArray(healthCheckData)
     ? healthCheckData.filter((h) => {
-        const checkDate = new Date(
-          h?.createdAt || h?.dateCreated || h?.checkupDate
-        );
+        const checkDate = new Date(h?.checkDate);
         const isThisWeek =
           !isNaN(checkDate.getTime()) &&
           checkDate >= weekStart &&
           checkDate <= weekEnd;
-        const isCompleted =
-          h?.status === "completed" || h?.status === "Hoàn thành";
+        // ✅ Theo status từ HealthCheckManagement.jsx - backend trả về "Hoàn thành"
+        const isCompleted = h?.status === "Hoàn thành";
+        console.log(
+          "🔍 Health check status:",
+          h?.status,
+          "Is completed:",
+          isCompleted
+        );
         return isThisWeek && isCompleted;
       }).length
     : 0;
 
+  console.log("📊 HEALTH CHECK STATS:");
+  console.log("📅 Weekly health checks:", weeklyHealthChecks);
+  console.log("✅ Completed health checks:", completedHealthChecks);
+
+  // ✅ MEDICINE STATS - Theo cấu trúc API thực tế từ MedicationSubmission.jsx
+  console.log("🔍 DEBUG MEDICINE DATA:", medicineData);
+
   const totalMedications = Array.isArray(medicineData)
     ? medicineData.length
     : 0;
+
   const pendingMedications = Array.isArray(medicineData)
     ? medicineData.filter((m) => {
-        // Filter thuốc trong tuần này
-        const medicineDate = new Date(
-          m?.createdAt || m?.dateCreated || m?.submissionDate
-        );
+        // ✅ Theo MedicationSubmission.jsx - field sentDate
+        const medicineDate = new Date(m?.sentDate);
+        console.log("🔍 Medicine date:", m?.sentDate, "Parsed:", medicineDate);
+        const isThisWeek =
+          !isNaN(medicineDate.getTime()) &&
+          medicineDate >= weekStart &&
+          medicineDate <= weekEnd;
+        console.log("🔍 Medicine in week:", isThisWeek);
 
-        // ✅ Fix: Không mutate Date object
-        const today = new Date();
-        const currentDay = today.getDay(); // 0 = CN, 1 = T2, ...
-
-        const weekStart = new Date(today);
-        weekStart.setDate(today.getDate() - currentDay);
-        weekStart.setHours(0, 0, 0, 0);
-
-        const weekEnd = new Date(today);
-        weekEnd.setDate(today.getDate() - currentDay + 6);
-        weekEnd.setHours(23, 59, 59, 999);
-
-        if (isNaN(medicineDate.getTime())) return false;
-
-        const isThisWeek = medicineDate >= weekStart && medicineDate <= weekEnd;
-        const isPending = m?.status === "pending" || m?.status === "Chờ xử lý";
+        // ✅ Theo status từ MedicationSubmission.jsx - backend trả về "Chờ xử lý"
+        const isPending = m?.status === "Chờ xử lý";
+        console.log("🔍 Medicine status:", m?.status, "Is pending:", isPending);
 
         return isThisWeek && isPending;
       }).length
     : 0;
 
+  console.log("📊 MEDICINE STATS:");
+  console.log("📅 Total medications:", totalMedications);
+  console.log("⏳ Pending medications:", pendingMedications);
+
   const totalAppointments = Array.isArray(appointmentData)
     ? appointmentData.length
     : 0;
 
+  // ✅ MEDICAL EVENTS STATS - Theo cấu trúc API thực tế từ AccidentManagement.jsx
   const totalMedicalEvents = Array.isArray(medicalEventData)
     ? medicalEventData.length
     : 0;
+
   const recentMedicalEvents = Array.isArray(medicalEventData)
     ? medicalEventData.filter((event) => {
-        // Thử các field có thể chứa ngày
-        const eventDate = new Date(
-          event?.EventDateTime ||
-            event?.eventDateTime ||
-            event?.createdAt ||
-            event?.dateTime
-        );
+        // ✅ Theo API medicalEventApi.nurse.getAll() từ AccidentManagement.jsx
+        const eventDate = new Date(event?.eventDateTime || event?.createdAt);
 
         // Kiểm tra nếu ngày hợp lệ
         if (isNaN(eventDate.getTime())) {
           return false;
         }
 
-        // ✅ Fix: Filter theo tuần này với logic đúng
-        const today = new Date();
-        const currentDay = today.getDay(); // 0 = CN, 1 = T2, ...
-
-        const weekStart = new Date(today);
-        weekStart.setDate(today.getDate() - currentDay);
-        weekStart.setHours(0, 0, 0, 0);
-
-        const weekEnd = new Date(today);
-        weekEnd.setDate(today.getDate() - currentDay + 6);
-        weekEnd.setHours(23, 59, 59, 999);
-
+        // Filter theo tuần này
         return eventDate >= weekStart && eventDate <= weekEnd;
       }).length
     : 0;
@@ -249,7 +256,7 @@ function NurseDashboardNew() {
     const vaccinationsCount = Array.isArray(vaccineData)
       ? vaccineData.filter((item) => {
           const itemDate = new Date(
-            item?.createdAt || item?.dateCreated || item?.injectionDate
+            item?.createdAt || item?.dateCreated || item?.vaccinatedAt
           );
           return (
             !isNaN(itemDate.getTime()) &&
@@ -307,7 +314,7 @@ function NurseDashboardNew() {
   };
 
   // Generate chart data với số tổng (cho hiển thị đường xu hướng đẹp)
-  // ✅ Generate REAL chart data với fallback cho demo
+  // Generate REAL chart data với fallback cho demo
   const generateLineChartData = () => {
     const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 
@@ -315,7 +322,7 @@ function NurseDashboardNew() {
       // Lấy số liệu THỰC TẾ cho từng ngày
       const realData = getRealDataForDay(index);
 
-      // ✅ Nếu không có data thật, dùng sample data để demo
+      // Nếu không có data thật, dùng sample data để demo
       const hasRealData =
         realData.vaccinations > 0 ||
         realData.checkups > 0 ||
@@ -403,9 +410,9 @@ function NurseDashboardNew() {
     },
   ];
 
-  // Recent activities từ real data
+  // ✅ Recent activities từ real data - theo cấu trúc API thực tế
   const recentActivities = [
-    // Vaccine activities
+    // ✅ Vaccine activities - theo VaccinationManagement.jsx (field: dateTime)
     ...vaccineData.slice(0, 2).map((vaccine, index) => ({
       key: `vaccine-${index}`,
       time: vaccine.dateTime
@@ -413,37 +420,39 @@ function NurseDashboardNew() {
             hour: "2-digit",
             minute: "2-digit",
           })
-        : "N/A",
+        : "00:00",
       activity: `Tiêm ${vaccine.vaccineName || "vaccine"}`,
       student: vaccine.studentName || "N/A",
       class: vaccine.class || "N/A",
       status:
-        vaccine.status === "injected" || vaccine.status === "Đã tiêm"
+        vaccine.status === "Đã tiêm" ||
+        vaccine.status === "Đã tiêm xong" ||
+        vaccine.status === "Hoàn tất tiêm"
           ? "completed"
-          : vaccine.status === "approved" || vaccine.status === "Đã duyệt"
+          : vaccine.status === "Chờ tiêm" || vaccine.status === "Đã xác nhận"
           ? "in-progress"
           : "pending",
     })),
-    // Health check activities
+    // ✅ Health check activities - theo HealthCheckManagement.jsx (field: checkDate)
     ...healthCheckData.slice(0, 2).map((health, index) => ({
       key: `health-${index}`,
-      time: health.dateCheckUp
-        ? new Date(health.dateCheckUp).toLocaleTimeString("vi-VN", {
+      time: health.checkDate
+        ? new Date(health.checkDate).toLocaleTimeString("vi-VN", {
             hour: "2-digit",
             minute: "2-digit",
           })
-        : "N/A",
+        : "00:00",
       activity: "Khám sức khỏe định kỳ",
       student: health.studentName || "N/A",
-      class: health.class || "N/A",
+      class: health.classID || "N/A",
       status:
-        health.status === "completed" || health.status === "Hoàn thành"
+        health.status === "Hoàn thành"
           ? "completed"
-          : health.status === "in-progress" || health.status === "Đang khám"
+          : health.status === "Đang khám"
           ? "in-progress"
           : "pending",
     })),
-    // Medicine activities
+    // ✅ Medicine activities - theo MedicationSubmission.jsx (field: sentDate)
     ...medicineData.slice(0, 1).map((medicine, index) => ({
       key: `medicine-${index}`,
       time: medicine.sentDate
@@ -451,31 +460,31 @@ function NurseDashboardNew() {
             hour: "2-digit",
             minute: "2-digit",
           })
-        : "N/A",
-      activity: `Xử lý thuốc ${
-        medicine.medicineName || medicine.medicationName || "N/A"
-      }`,
+        : "00:00",
+      activity: `Xử lý thuốc ${medicine.medicineName || "N/A"}`,
       student: medicine.studentName || "N/A",
       class: medicine.class || "N/A",
       status:
-        medicine.status === "approved" || medicine.status === "Đã duyệt"
+        medicine.status === "Đã duyệt"
           ? "completed"
-          : medicine.status === "pending" || medicine.status === "Chờ xử lý"
+          : medicine.status === "Chờ xử lý"
           ? "pending"
           : "in-progress",
     })),
-    // Medical event activities
+    // ✅ Medical event activities - theo AccidentManagement.jsx (field: eventDateTime)
     ...medicalEventData.slice(0, 1).map((event, index) => ({
       key: `medical-event-${index}`,
-      time: event.EventDateTime
-        ? new Date(event.EventDateTime).toLocaleTimeString("vi-VN", {
+      time: event.eventDateTime
+        ? new Date(event.eventDateTime).toLocaleTimeString("vi-VN", {
             hour: "2-digit",
             minute: "2-digit",
           })
-        : "N/A",
-      activity: `Sự cố y tế: ${event.EventType || "N/A"}`,
-      student: event.StudentName || "N/A",
-      class: event.Class || "N/A",
+        : "00:00",
+      activity: `Sự cố y tế: ${
+        event.eventTypeID || event.eventTypeName || "N/A"
+      }`,
+      student: event.studentName || "N/A",
+      class: event.class || "N/A",
       status: "completed", // Medical events are usually completed when recorded
     })),
   ].slice(0, 4); // Chỉ lấy 4 activities gần nhất

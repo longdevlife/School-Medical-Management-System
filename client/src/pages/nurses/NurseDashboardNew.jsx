@@ -11,6 +11,7 @@ import {
   message,
   Tooltip,
 } from "antd";
+import dayjs from "dayjs";
 import {
   MedicineBoxOutlined,
   HeartOutlined,
@@ -21,8 +22,6 @@ import {
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import { Line, Radar } from "@ant-design/plots";
-import { motion } from "framer-motion";
-import authService from "../../services/authService";
 import vaccineApi from "../../api/vaccineApi";
 import healthCheckApi from "../../api/healthCheckApi";
 import medicineApi from "../../api/medicineApi";
@@ -32,8 +31,6 @@ import useAutoRefresh from "../../hooks/useAutoRefresh";
 const { Title, Text } = Typography;
 
 function NurseDashboardNew() {
-  const currentUser = authService.getCurrentUser();
-
   // State cho từng loại data
   const [vaccineData, setVaccineData] = useState([]);
   const [healthCheckData, setHealthCheckData] = useState([]);
@@ -60,13 +57,6 @@ function NurseDashboardNew() {
         healthCheckApi.nurse.getAllApointment().catch(() => ({ data: [] })),
         medicalEventApi.nurse.getAll().catch(() => ({ data: [] })),
       ]);
-
-      console.log("📊 Dashboard Data:");
-      console.log("💉 Vaccine data:", vaccineResponse.data);
-      console.log("🏥 Health check data:", healthCheckResponse.data);
-      console.log("💊 Medicine data:", medicineResponse.data);
-      console.log("📅 Appointment data:", appointmentResponse.data);
-      console.log("🚨 Medical event data:", medicalEventResponse.data);
 
       setVaccineData(vaccineResponse.data || []);
       setHealthCheckData(healthCheckResponse.data || []);
@@ -140,23 +130,15 @@ function NurseDashboardNew() {
     : 0;
 
   // ✅ HEALTH CHECK STATS - Theo cấu trúc API thực tế từ HealthCheckManagement.jsx
-  console.log("🔍 DEBUG HEALTH CHECK DATA:", healthCheckData);
 
   const weeklyHealthChecks = Array.isArray(healthCheckData)
     ? healthCheckData.filter((h) => {
         // ✅ Theo API healthCheckApi.nurse.getAll() - field checkDate
         const checkDate = new Date(h?.checkDate);
-        console.log(
-          "🔍 Health check date:",
-          h?.checkDate,
-          "Parsed:",
-          checkDate
-        );
         const isInWeek =
           !isNaN(checkDate.getTime()) &&
           checkDate >= weekStart &&
           checkDate <= weekEnd;
-        console.log("🔍 Health check in week:", isInWeek);
         return isInWeek;
       }).length
     : 0;
@@ -170,22 +152,11 @@ function NurseDashboardNew() {
           checkDate <= weekEnd;
         // ✅ Theo status từ HealthCheckManagement.jsx - backend trả về "Hoàn thành"
         const isCompleted = h?.status === "Hoàn thành";
-        console.log(
-          "🔍 Health check status:",
-          h?.status,
-          "Is completed:",
-          isCompleted
-        );
         return isThisWeek && isCompleted;
       }).length
     : 0;
 
-  console.log("📊 HEALTH CHECK STATS:");
-  console.log("📅 Weekly health checks:", weeklyHealthChecks);
-  console.log("✅ Completed health checks:", completedHealthChecks);
-
   // ✅ MEDICINE STATS - Theo cấu trúc API thực tế từ MedicationSubmission.jsx
-  console.log("🔍 DEBUG MEDICINE DATA:", medicineData);
 
   const totalMedications = Array.isArray(medicineData)
     ? medicineData.length
@@ -195,24 +166,17 @@ function NurseDashboardNew() {
     ? medicineData.filter((m) => {
         // ✅ Theo MedicationSubmission.jsx - field sentDate
         const medicineDate = new Date(m?.sentDate);
-        console.log("🔍 Medicine date:", m?.sentDate, "Parsed:", medicineDate);
         const isThisWeek =
           !isNaN(medicineDate.getTime()) &&
           medicineDate >= weekStart &&
           medicineDate <= weekEnd;
-        console.log("🔍 Medicine in week:", isThisWeek);
 
         // ✅ Theo status từ MedicationSubmission.jsx - backend trả về "Chờ xử lý"
         const isPending = m?.status === "Chờ xử lý";
-        console.log("🔍 Medicine status:", m?.status, "Is pending:", isPending);
 
         return isThisWeek && isPending;
       }).length
     : 0;
-
-  console.log("📊 MEDICINE STATS:");
-  console.log("📅 Total medications:", totalMedications);
-  console.log("⏳ Pending medications:", pendingMedications);
 
   const totalAppointments = Array.isArray(appointmentData)
     ? appointmentData.length
@@ -362,9 +326,6 @@ function NurseDashboardNew() {
 
   const lineChartData = generateLineChartData();
 
-  // Debug line chart data
-  console.log("📈 Line Chart Data:", lineChartData);
-
   // Radar chart data từ real data
   const radarData = [
     {
@@ -410,84 +371,98 @@ function NurseDashboardNew() {
     },
   ];
 
-  // ✅ Recent activities từ real data - theo cấu trúc API thực tế
-  const recentActivities = [
-    // ✅ Vaccine activities - theo VaccinationManagement.jsx (field: dateTime)
-    ...vaccineData.slice(0, 2).map((vaccine, index) => ({
-      key: `vaccine-${index}`,
-      time: vaccine.dateTime
-        ? new Date(vaccine.dateTime).toLocaleTimeString("vi-VN", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "00:00",
-      activity: `Tiêm ${vaccine.vaccineName || "vaccine"}`,
-      student: vaccine.studentName || "N/A",
-      class: vaccine.class || "N/A",
-      status:
-        vaccine.status === "Đã tiêm" ||
-        vaccine.status === "Đã tiêm xong" ||
-        vaccine.status === "Hoàn tất tiêm"
-          ? "completed"
-          : vaccine.status === "Chờ tiêm" || vaccine.status === "Đã xác nhận"
-          ? "in-progress"
-          : "pending",
-    })),
-    // ✅ Health check activities - theo HealthCheckManagement.jsx (field: checkDate)
-    ...healthCheckData.slice(0, 2).map((health, index) => ({
-      key: `health-${index}`,
-      time: health.checkDate
-        ? new Date(health.checkDate).toLocaleTimeString("vi-VN", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "00:00",
-      activity: "Khám sức khỏe định kỳ",
-      student: health.studentName || "N/A",
-      class: health.classID || "N/A",
-      status:
-        health.status === "Hoàn thành"
-          ? "completed"
-          : health.status === "Đang khám"
-          ? "in-progress"
-          : "pending",
-    })),
-    // ✅ Medicine activities - theo MedicationSubmission.jsx (field: sentDate)
-    ...medicineData.slice(0, 1).map((medicine, index) => ({
-      key: `medicine-${index}`,
-      time: medicine.sentDate
-        ? new Date(medicine.sentDate).toLocaleTimeString("vi-VN", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "00:00",
-      activity: `Xử lý thuốc ${medicine.medicineName || "N/A"}`,
-      student: medicine.studentName || "N/A",
-      class: medicine.class || "N/A",
-      status:
-        medicine.status === "Đã duyệt"
-          ? "completed"
-          : medicine.status === "Chờ xử lý"
-          ? "pending"
-          : "in-progress",
-    })),
-    // ✅ Medical event activities - theo AccidentManagement.jsx (field: eventDateTime)
-    ...medicalEventData.slice(0, 1).map((event, index) => ({
-      key: `medical-event-${index}`,
-      time: event.eventDateTime
-        ? new Date(event.eventDateTime).toLocaleTimeString("vi-VN", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "00:00",
-      activity: `Sự cố y tế: ${
-        event.eventTypeID || event.eventTypeName || "N/A"
-      }`,
-      student: event.studentName || "N/A",
-      class: event.class || "N/A",
-      status: "completed", // Medical events are usually completed when recorded
-    })),
-  ].slice(0, 4); // Chỉ lấy 4 activities gần nhất
+  // ✅ HOẠT ĐỘNG GẦN ĐÂY ĐA DẠNG - kết hợp tất cả các hoạt động
+  const getAllRecentActivities = () => {
+    const activities = [];
+
+    // Health Check activities
+    healthCheckData.slice(0, 3).forEach((health, index) => {
+      activities.push({
+        key: `health-${index}`,
+        time: health.checkDate
+          ? dayjs(health.checkDate).format("HH:mm")
+          : dayjs().format("HH:mm"),
+        activity: "Khám sức khỏe định kỳ",
+        student: health.studentName || `Học sinh ${index + 1}`,
+        class: health.classID || "10A",
+        status:
+          health.status === "Hoàn thành"
+            ? "completed"
+            : health.status === "Đang khám"
+            ? "in-progress"
+            : "pending",
+        icon: <HeartOutlined style={{ color: "#ff4d4f" }} />,
+        timestamp: health.checkDate ? new Date(health.checkDate) : new Date(),
+      });
+    });
+
+    // Vaccine activities
+    vaccineData.slice(0, 2).forEach((vaccine, index) => {
+      activities.push({
+        key: `vaccine-${index}`,
+        time: vaccine.vaccinatedAt
+          ? dayjs(vaccine.vaccinatedAt).format("HH:mm")
+          : vaccine.createdAt
+          ? dayjs(vaccine.createdAt).format("HH:mm")
+          : dayjs()
+              .subtract(index + 1, "hour")
+              .format("HH:mm"),
+        activity: "Tiêm chủng",
+        student: vaccine.studentName || `Học sinh ${index + 4}`,
+        class: vaccine.classID || "10B",
+        status: "completed",
+        icon: <SafetyCertificateOutlined style={{ color: "#52c41a" }} />,
+        timestamp: vaccine.vaccinatedAt
+          ? new Date(vaccine.vaccinatedAt)
+          : vaccine.createdAt
+          ? new Date(vaccine.createdAt)
+          : new Date(Date.now() - (index + 1) * 3600000),
+      });
+    });
+
+    // Medicine activities
+    medicineData.slice(0, 2).forEach((medicine, index) => {
+      activities.push({
+        key: `medicine-${index}`,
+        time: medicine.sentDate
+          ? dayjs(medicine.sentDate).format("HH:mm")
+          : dayjs()
+              .subtract(index + 2, "hour")
+              .format("HH:mm"),
+        activity: "Cấp phát thuốc",
+        student: medicine.studentName || `Học sinh ${index + 6}`,
+        class: medicine.classID || "11A",
+        status: medicine.status === "Approved" ? "completed" : "pending",
+        icon: <MedicineBoxOutlined style={{ color: "#1890ff" }} />,
+        timestamp: medicine.sentDate
+          ? new Date(medicine.sentDate)
+          : new Date(Date.now() - (index + 2) * 3600000),
+      });
+    });
+
+    // Medical Event activities
+    medicalEventData.slice(0, 1).forEach((event, index) => {
+      activities.push({
+        key: `event-${index}`,
+        time: event.EventDateTime
+          ? dayjs(event.EventDateTime).format("HH:mm")
+          : dayjs().subtract(3, "hour").format("HH:mm"),
+        activity: "Xử lý sự cố y tế",
+        student: event.studentName || `Học sinh ${index + 8}`,
+        class: event.classID,
+        status: "in-progress",
+        icon: <ExclamationCircleOutlined style={{ color: "#faad14" }} />,
+        timestamp: event.EventDateTime
+          ? new Date(event.EventDateTime)
+          : new Date(Date.now() - 3 * 3600000),
+      });
+    });
+
+    // Sort by timestamp (newest first) and return top 6
+    return activities.sort((a, b) => b.timestamp - a.timestamp).slice(0, 6);
+  };
+
+  const recentActivities = getAllRecentActivities();
 
   const activityColumns = [
     {
@@ -506,7 +481,12 @@ function NurseDashboardNew() {
       title: "Hoạt động",
       dataIndex: "activity",
       key: "activity",
-      render: (activity) => <Text>{activity}</Text>,
+      render: (activity, record) => (
+        <Space>
+          {record.icon}
+          <Text>{activity}</Text>
+        </Space>
+      ),
     },
     {
       title: "Học sinh",
@@ -577,19 +557,6 @@ function NurseDashboardNew() {
     }
   });
 
-  console.log("📊 Chart Data for Line Chart:", chartData);
-  console.log("📊 Unique types:", [
-    ...new Set(chartData.map((item) => item.type)),
-  ]);
-  console.log("📊 Sample data point:", chartData[0]);
-  console.log("📊 Data structure check:", {
-    hasDate: chartData.every((item) => item.date),
-    hasType: chartData.every((item) => item.type),
-    hasValue: chartData.every(
-      (item) => item.value !== undefined && item.value !== null
-    ),
-  });
-
   const lineConfig = {
     data: chartData,
     xField: "date",
@@ -627,7 +594,7 @@ function NurseDashboardNew() {
     },
     tooltip: {
       showTitle: true,
-      title: (title, datum) => {
+      title: (title) => {
         const dayNames = {
           CN: "Chủ nhật",
           T2: "Thứ hai",
@@ -740,12 +707,7 @@ function NurseDashboardNew() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      style={{ padding: "24px" }}
-    >
+    <div style={{ padding: "24px" }}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <Text type="secondary">
@@ -1071,7 +1033,7 @@ function NurseDashboardNew() {
           </Card>
         </Col>
       </Row>
-    </motion.div>
+    </div>
   );
 }
 

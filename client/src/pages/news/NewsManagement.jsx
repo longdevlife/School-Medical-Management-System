@@ -234,7 +234,7 @@ function NewsManagement() {
 
   const handleDelete = async (newsId) => {
     try {
-      // Nếu newsId là object hoặc có trường khác, lấy đúng trường id thực tế (newID)
+      // Nếu newsId là object hoặc có trường khác, lấy đúng trường id thực tế (newsID)
       const realId =
         typeof newsId === "object" && newsId.newsID ? newsId.newsID : newsId;
       const baseURL =

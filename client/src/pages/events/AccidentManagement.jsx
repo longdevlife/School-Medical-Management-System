@@ -215,7 +215,7 @@ export default function AccidentManagement() {
       ),
     },
     {
-      title: "Sự cố & Mức độ",
+      title: "Sự cố",
       key: "incident",
       width: 200,
       render: (_, record) => (
@@ -1531,12 +1531,20 @@ export default function AccidentManagement() {
             <Form.Item
               label="Loại sự cố"
               name="eventType"
-              rules={[{ required: true, message: "Vui lòng nhập loại sự cố!" }]}
+              rules={[{ required: true, message: "Vui lòng chọn loại sự cố!" }]}
             >
-              <Input
-                placeholder="Nhập loại sự cố (ví dụ: đau, ngã, sốt...)"
+              <Select
+                placeholder="Chọn loại sự cố"
                 size="large"
-              />
+                style={{ width: "100%" }}
+              >
+                <Select.Option value="Tai nạn">🚨 Tai nạn</Select.Option>
+                <Select.Option value="Cấp cứu">🏥 Cấp cứu</Select.Option>
+                <Select.Option value="Chấn thương">
+                  🩹 Chấn thương
+                </Select.Option>
+                <Select.Option value="Bệnh tật">🤒 Bệnh tật</Select.Option>
+              </Select>
             </Form.Item>
             <Form.Item label="Mô tả" name="description">
               <Input.TextArea placeholder="Mô tả chi tiết sự cố" rows={3} />
@@ -1641,9 +1649,16 @@ export default function AccidentManagement() {
             <Form.Item
               label="Loại sự cố"
               name="eventType"
-              rules={[{ required: true, message: "Vui lòng nhập loại sự cố!" }]}
+              rules={[{ required: true, message: "Vui lòng chọn loại sự cố!" }]}
             >
-              <Input placeholder="Nhập loại sự cố (ví dụ: đau, ngã, sốt...)" />
+              <Select placeholder="Chọn loại sự cố" style={{ width: "100%" }}>
+                <Select.Option value="Tai nạn">🚨 Tai nạn</Select.Option>
+                <Select.Option value="Cấp cứu">🏥 Cấp cứu</Select.Option>
+                <Select.Option value="Chấn thương">
+                  🩹 Chấn thương
+                </Select.Option>
+                <Select.Option value="Bệnh tật">🤒 Bệnh tật</Select.Option>
+              </Select>
             </Form.Item>
 
             {/* Hiển thị ảnh hiện tại nếu có */}

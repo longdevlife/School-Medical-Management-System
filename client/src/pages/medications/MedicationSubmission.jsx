@@ -2300,8 +2300,6 @@ function MedicationSubmission() {
                   </div>
                   <div style={{ fontSize: "12px", color: "#666" }}>
                     Chọn ảnh
-                    <br />
-                    (tối đa 5 ảnh)
                   </div>
                 </div>
               </Upload>

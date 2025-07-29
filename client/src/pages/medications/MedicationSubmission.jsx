@@ -2494,8 +2494,8 @@ function MedicationSubmission() {
               initialValue="add"
             >
               <Radio.Group>
-                <Radio value="add">➕ Thêm ảnh mới (giữ ảnh cũ)</Radio>
-                <Radio value="replace">🔄 Thay thế toàn bộ ảnh</Radio>
+                <Radio value="add">Thêm ảnh mới (giữ ảnh cũ)</Radio>
+                <Radio value="replace">Thay thế toàn bộ ảnh</Radio>
               </Radio.Group>
             </Form.Item>
 

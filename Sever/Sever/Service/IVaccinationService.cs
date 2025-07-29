@@ -92,7 +92,7 @@ namespace Sever.Service
                 NurseID = userId,
                 VaccinatedAt = dto.VaccinatedAt,
                 Status = "Chờ xác nhận",
-                DateTime = DateTime.UtcNow,
+                DateTime = DateTime.UtcNow.AddHours(7),
             };
 
             await _vaccinationRepository.CreateVaccinationAsync(record);
@@ -126,7 +126,7 @@ namespace Sever.Service
         <p><b>Ban Y tế Trường học</b></p>
     ";
 
-            await _emailService.SendEmailAsync(parent.Email, "Thông báo xác nhận tiêm chủng", message);
+            _= _emailService.SendEmailAsync(parent.Email, "Thông báo xác nhận tiêm chủng", message);
             return record;
         }
 
@@ -154,7 +154,7 @@ namespace Sever.Service
                         Dose = dto.Dose,
                         Notes = dto.Notes,
                         NurseID = userId,
-                        DateTime = DateTime.UtcNow,
+                        DateTime = DateTime.UtcNow.AddHours(7),
                         VaccinatedAt = dto.VaccinatedAt,
                         Status = "Chờ xác nhận",
                     };
@@ -179,7 +179,7 @@ namespace Sever.Service
                                     <p>Trân trọng,</p>
                                     <p><b>Ban Y tế Trường học</b></p>
                                     ";
-                    await _emailService.SendEmailAsync(parent.Email, "Thông báo xác nhận tiêm chủng", message);
+                    _= _emailService.SendEmailAsync(parent.Email, "Thông báo xác nhận tiêm chủng", message);
                     resultList.Add(record);
                 }
             }
@@ -224,7 +224,8 @@ namespace Sever.Service
             if (!string.IsNullOrWhiteSpace(updateDto.Notes))
                 update.Notes = updateDto.Notes;
 
-            update.DateTime = DateTime.UtcNow;
+
+            update.DateTime = DateTime.UtcNow.AddHours(7);
             update.NurseID = userId;
 
             var validStatuses = new List<string> { "Đã tiêm", "Chờ tiêm", "Đang theo dõi", "Từ chối", "Hoàn thành" };
@@ -269,7 +270,7 @@ namespace Sever.Service
                 update.FollowUpDate = updateDto.FollowUpDate;
 
 
-            update.DateTime = DateTime.UtcNow;
+            update.DateTime = DateTime.UtcNow.AddHours(7);
             update.NurseID = userId;
 
             var validStatuses = new List<string> { "Đã tiêm", "Đang theo dõi", "Từ chối", "Hoàn thành" };
@@ -309,7 +310,7 @@ namespace Sever.Service
                             <p>Trân trọng,</p>
                             <p><b>Ban Y tế Trường học</b></p>
                             ";
-            await _emailService.SendEmailAsync(parent.Email, "Thông báo hoàn tất tiêm chủng", message);
+            _= _emailService.SendEmailAsync(parent.Email, "Thông báo hoàn tất tiêm chủng", message);
             return true;
         }
 
@@ -505,8 +506,8 @@ namespace Sever.Service
                 VaccinatorID = e.VaccinatorID,
                 Class = e.StudentProfile?.Class,
                 StudentName = e.StudentProfile?.StudentName,
-                VaccinatorName = e.Vaccinator?.Name,
-                VaccineName = e.Vaccine?.VaccineName,
+                VaccinatorName = e.Nurse.Name ?? "chưa rõ",
+                VaccineName = e.Vaccine?.VaccineName ?? "chưa rõ",
             }).ToList();
 
             return responses;

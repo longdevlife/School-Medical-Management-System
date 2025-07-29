@@ -304,6 +304,7 @@ namespace Sever.Controllers
                 {
                     return NotFound(new { message = "Không tìm thấy hồ sơ học sinh để cập nhật" });
                 }
+
             }
             catch (Exception ex)
             {

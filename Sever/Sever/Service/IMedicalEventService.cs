@@ -71,8 +71,7 @@ namespace Sever.Service
                         ActionTaken = dto.ActionTaken,
                         Notes = dto.Notes,
                         EventType = dto.EventType,
-                        NurseID = userId,
-                        
+                        NurseID = userId,        
                         
                     };
 
@@ -147,7 +146,7 @@ namespace Sever.Service
                 </div>
 ";
 
-                await _emailService.SendEmailAsync(parent.Email, "Thông báo sự cố y tế", message);
+                _= _emailService.SendEmailAsync(parent.Email, "Thông báo sự cố y tế", message);
                 return medicalEvent;
                 }
                 catch (Exception ex)
@@ -168,7 +167,7 @@ namespace Sever.Service
 
             }
             medicalEvents.Notes += $"\n. " +
-                $"Cập nhật {DateTime.UtcNow}: {dto.Notes}";
+                $"Cập nhật: {dto.Notes}";
             if (!string.IsNullOrWhiteSpace(dto.ActionTaken))
             {
                 medicalEvents.ActionTaken += $"\n, {dto.ActionTaken}";

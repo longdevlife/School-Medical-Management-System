@@ -18,10 +18,13 @@ namespace Sever.Service
         Task HealthProfileNotificationForParent(string studentId, string customMessage = null);
         Task<List<Notify>> GetNotifyByUserId(string userId);
         Task<bool> AppointmentNotify(Appointment appointment);
+        Task<bool> AppointmentNotifyConfirm(Appointment appointment);
+        Task<bool> AppointmentNotifyDenied(Appointment appointment);
         Task<bool> SendHealthCheckupNotificationAsync(StudentProfile student, DateTime date);
         Task<bool> UpdateHealthCheckUpNotifycationAsync(StudentProfile student);
         Task<bool> SendVaccinationNotificationAsync(StudentProfile student, DateTime? date);
         Task<bool> UpdateVaccinationNotifycationAsync(StudentProfile student);
+
 
     }
     public class NotificationService : INotificationService
@@ -66,7 +69,7 @@ namespace Sever.Service
                         NotifyID = notifyId,
                         UserID = parentId,
                         NotifyName = "Cập nhật thông tin sự kiện y tế",
-                        DateTime = DateTime.UtcNow,
+                        DateTime = DateTime.UtcNow.AddHours(7),
                         Title = "CẬP NHẬT SỰ KIỆN Y TẾ",
                         Description = customMessage ?? $"Sự kiện y tế {medicalEvent.EventType} đã được cập nhật. Vui lòng kiểm tra chi tiết."
                     };
@@ -105,7 +108,7 @@ namespace Sever.Service
                     NotifyID = notifyId,
                     UserID = parentId,
                     NotifyName = "Cập nhật thông tin đơn thuốc từ y tá",
-                    DateTime = DateTime.UtcNow,
+                    DateTime = DateTime.UtcNow.AddHours(7),
                     Title = "CẬP NHẬT ĐƠN THUỐC",
                     Description = customMessage ?? $"Đơn thuốc {medicine.MedicineName} đã được cập nhật. Vui lòng kiểm tra chi tiết.",
                 };
@@ -136,7 +139,7 @@ namespace Sever.Service
                         NotifyID = notifyId,
                         UserID = nurseID,
                         NotifyName = "Cập nhật thông tin đơn thuốc từ phụ huynh",
-                        DateTime = DateTime.UtcNow,
+                        DateTime = DateTime.UtcNow.AddHours(7),
                         Title = "CẬP NHẬT ĐƠN THUỐC",
                         Description = customMessage ?? $"Đơn thuốc \"{medicine.MedicineName}\" vừa được tạo. Vui lòng kiểm tra.",
                     };
@@ -167,7 +170,7 @@ namespace Sever.Service
                         NotifyID = notifyId,
                         UserID = nurseID,
                         NotifyName = "Phụ huynh khai báo hồ sơ sức khỏe",
-                        DateTime = DateTime.UtcNow,
+                        DateTime = DateTime.UtcNow.AddHours(7),
                         Title = "KHAI BÁO HỒ SƠ SỨC KHỎE",
                         Description = customMessage ?? $"Hồ sơ sức khỏe của học sinh có mã {studentId} vừa được phụ huynh cập nhật. Vui lòng xác nhận.",
                     };
@@ -198,7 +201,7 @@ namespace Sever.Service
                     NotifyID = notifyId,
                     UserID = parentId,
                     NotifyName = "Y tá đã cập nhật hồ sơ sức khỏe của học sinh",
-                    DateTime = DateTime.UtcNow,
+                    DateTime = DateTime.UtcNow.AddHours(7),
                     Title = "CẬP NHẬT HỒ SƠ SỨC KHỎE",
                     Description = customMessage ?? $"Hồ sơ sức khỏe của học sinh mã số {studentId} đã được y tá cập nhật. Vui lòng kiểm tra.",
                 };
@@ -222,7 +225,7 @@ namespace Sever.Service
                     NotifyID = notifyId,
                     UserID = student.ParentID,
                     NotifyName = "Khám sức khỏe định kì",
-                    DateTime = DateTime.UtcNow,
+                    DateTime = DateTime.UtcNow.AddHours(7),
                     Title = "KHÁM SỨC KHỎE ĐỊNH KÌ",
                     Description = $"Thông báo khám sức khỏe định kì của {student.StudentName} vào ngày {date} mong quý phụ huynh xác nhận cho con khám sức khỏe"
                 };
@@ -246,9 +249,9 @@ namespace Sever.Service
                     NotifyID = notifyId,
                     UserID = student.ParentID,
                     NotifyName = "Khám sức khỏe định kì",
-                    DateTime = DateTime.UtcNow,
+                    DateTime = DateTime.UtcNow.AddHours(7),
                     Title = "KHÁM SỨC KHỎE ĐỊNH KÌ",
-                    Description = $"Thông báo cập nhât khám sức khỏe định kì của {student.StudentName} vào ngày {DateTime.UtcNow} mong quý phụ huynh theo dõi kết quả khám sức khỏe"
+                    Description = $"Thông báo cập nhât khám sức khỏe định kì của {student.StudentName} vào ngày {DateTime.UtcNow.AddHours(7)} mong quý phụ huynh theo dõi kết quả khám sức khỏe"
                 };
                 await _notificationRepository.AddNotificationAsync(notification);
                 return true;
@@ -272,7 +275,7 @@ namespace Sever.Service
                     NotifyID = notifyId,
                     UserID = student.ParentID,
                     NotifyName = "Cuộc hẹn khám sức khỏe",
-                    DateTime = DateTime.UtcNow,
+                    DateTime = DateTime.UtcNow.AddHours(7),
                     Title = "Cuộc hẹn khám sức khỏe",
                     Description = $"Học sinh {student} đang có vấn đề về {appointment.Reason} mong phụ huynh có thể xác nhận đi cùng và tham gia cuộc hẹn tư vấn sức khỏe cho em"
                 };
@@ -285,6 +288,81 @@ namespace Sever.Service
             }
         }
 
+        public async Task<bool> AppointmentNotifyConfirm(Appointment appointment)
+        {
+            try
+            {
+                var healthCheckUp = await _healthCheckUpRepository.GetHealthCheckUpByIdAsync(appointment.HealthCheckUpID);
+                var student = await _studentProfileRepository.SearchStudentProfile(healthCheckUp.StudentID);
+                var allNurseIDs = await _notificationRepository.GetAllNurseIDsAsync();
+
+                if (allNurseIDs == null || !allNurseIDs.Any())
+                    return false;
+
+                foreach (var nurseID in allNurseIDs)
+                {
+                    string notifyId = await _notificationRepository.GetCurrentNotifyID();
+
+                    var notification = new Notify
+                    {
+                        NotifyID = notifyId,
+                        UserID = nurseID,
+                        NotifyName = "Xác nhận cuộc hẹn khám sức khỏe",
+                        DateTime = DateTime.UtcNow.AddHours(7),
+                        Title = "Cuộc hẹn đã được xác nhận",
+                        Description = $"Cuộc hẹn khám sức khỏe cho học sinh {student.StudentName} đã được xác nhận. Mong phụ huynh sắp xếp thời gian đi cùng em đến buổi hẹn."
+                    };
+
+                    await _notificationRepository.AddNotificationAsync(notification);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi gửi thông báo xác nhận cuộc hẹn đến y tá.", ex);
+            }
+        }
+
+
+        public async Task<bool> AppointmentNotifyDenied(Appointment appointment)
+        {
+            try
+            {
+                var healthCheckUp = await _healthCheckUpRepository.GetHealthCheckUpByIdAsync(appointment.HealthCheckUpID);
+                var student = await _studentProfileRepository.SearchStudentProfile(healthCheckUp.StudentID);
+                var allNurseIDs = await _notificationRepository.GetAllNurseIDsAsync();
+
+                if (allNurseIDs == null || !allNurseIDs.Any())
+                    return false;
+
+                foreach (var nurseID in allNurseIDs)
+                {
+                    string notifyId = await _notificationRepository.GetCurrentNotifyID();
+
+                    var notification = new Notify
+                    {
+                        NotifyID = notifyId,
+                        UserID = nurseID,
+                        NotifyName = "Từ chối cuộc hẹn khám sức khỏe",
+                        DateTime = DateTime.UtcNow.AddHours(7),
+                        Title = "Cuộc hẹn đã bị từ chối",
+                        Description = $"Cuộc hẹn khám sức khỏe cho học sinh {student.StudentName} đã bị từ chối. Ghi chú: {appointment.Notes}"
+                    };
+
+                    await _notificationRepository.AddNotificationAsync(notification);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi gửi thông báo từ chối cuộc hẹn đến y tá.", ex);
+            }
+        }
+
+
+
         public async Task<bool> SendVaccinationNotificationAsync(StudentProfile student, DateTime? date)
         {
             try
@@ -295,7 +373,7 @@ namespace Sever.Service
                     NotifyID = notifyId,
                     UserID = student.ParentID,
                     NotifyName = "Tiêm Chủng",
-                    DateTime = DateTime.UtcNow,
+                    DateTime = DateTime.UtcNow.AddHours(7),
                     Title = "TIÊM CHỦNG",
                     Description = $"Thông báo tiêm chủng của {student.StudentName} vào ngày {date?.ToString("dd/MM/yyyy")} - mong quý phụ huynh xác nhận cho con tiêm."
                 };
@@ -319,9 +397,9 @@ namespace Sever.Service
                     NotifyID = notifyId,
                     UserID = student.ParentID,
                     NotifyName = "Cập nhật tiêm chủng",
-                    DateTime = DateTime.UtcNow,
+                    DateTime = DateTime.UtcNow.AddHours(7),
                     Title = "CẬP NHÂT TIÊM CHỦNG",
-                    Description = $"Thông báo cập nhât tiêm chủng của {student.StudentName} vào ngày {DateTime.UtcNow} mong quý phụ huynh theo dõi kết quả tiêm chủng hoặc kết quả theo dõi sau tiêm"
+                    Description = $"Thông báo cập nhât tiêm chủng của {student.StudentName} vào ngày {DateTime.UtcNow.AddHours(7)} mong quý phụ huynh theo dõi kết quả tiêm chủng hoặc kết quả theo dõi sau tiêm"
                 }; await _notificationRepository.AddNotificationAsync(notification);
                 return true;
             }

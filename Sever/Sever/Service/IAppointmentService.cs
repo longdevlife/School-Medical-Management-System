@@ -89,6 +89,7 @@ namespace Sever.Service
             var appointment = await GetAppointmentByIdAsync(dto.AppointmentID);
             if (appointment == null) throw new ArgumentException("No appointment found for the specified ID.");
             appointment.Notes = dto.Notes;
+            await _notificationService.AppointmentNotifyConfirm(appointment);
             return await _appointmentRepository.UpdateStatus(appointment, "Đã xác nhận");
         }
         public async Task<bool> DeniedAppointMent(UpdateAppointment dto)
@@ -96,6 +97,7 @@ namespace Sever.Service
             var appointment = await GetAppointmentByIdAsync(dto.AppointmentID);
             if (appointment == null) throw new ArgumentException("No appointment found for the specified ID.");
             appointment.Notes = dto.Notes;
+            await _notificationService.AppointmentNotifyDenied(appointment);
             return await _appointmentRepository.UpdateStatus(appointment, "Đã từ chối");
         }
         public async Task<bool> CreateAppointmentAsync(CreateAppointment newAppointment)
@@ -139,7 +141,7 @@ namespace Sever.Service
                             <p><b>Ban Y tế Trường học</b></p>
                             ";
 
-            await _emailService.SendEmailAsync(parent.Email, "Thông báo kết cuộc hẹn tư vấn sức khỏe", message);
+            _= _emailService.SendEmailAsync(parent.Email, "Thông báo kết cuộc hẹn tư vấn sức khỏe", message);
             return true;
         }
 
@@ -158,6 +160,7 @@ namespace Sever.Service
                 {
                     studenAppointments.Add(appointments);
                 }
+                
             }
             return studenAppointments;
         }

@@ -399,8 +399,8 @@ namespace Sever.Migrations
                     b.Property<string>("NotifyID")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("date");
+                    b.Property<DateTime?>("DateTime")
+                        .HasColumnType("datetime");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");

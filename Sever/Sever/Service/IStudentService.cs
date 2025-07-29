@@ -66,6 +66,12 @@ namespace Sever.Service
             try
             {
                 var studentProfiles = await _studentProfileRepository.GetStudentProfileByParentId(parentID);
+
+
+               
+
+
+
                 foreach (var student in studentProfiles)
                 {
                     studentInfoList.Add(new GetStudentInfoRequest
@@ -115,7 +121,7 @@ namespace Sever.Service
             };
             await _studentProfileRepository.CreateStudentProfile(student);
 
-            return await _healthProfileRepository.AddHealthProfile( new HealthProfile
+            return await _healthProfileRepository.AddHealthProfile(new HealthProfile
             {
                 HealthProfileID = await _healthProfileRepository.NewID(),
                 StudentID = student.StudentID,
